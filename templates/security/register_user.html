@@ -1,0 +1,41 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}Register | Forum{% endblock %}
+
+{% block s_body %}
+{% include "security/_messages.html" %}
+<div class="pageTitle">{{ _('Register') }}</div>
+<form action="{{ url_for_security('register') }}" method="POST" name="register_user_form" role="form">
+    <div class="row pad">
+        <div class="col-lg-12">
+            {{ register_user_form.hidden_tag() }}
+  
+            <div class="form-group">
+                {{ render_field_with_errors(register_user_form.email, class="form-control", placeholder="Enter email" ) }}
+            </div>
+
+            <div class="form-group">
+                {{ render_field_with_errors(register_user_form.password, class="form-control", placeholder="Enter password") }}
+            </div>
+
+            {% if register_user_form.password_confirm %}
+                <div class="form-group">
+                    {{ render_field_with_errors(register_user_form.password_confirm, class="form-control", placeholder="Enter password") }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                {{ render_field(register_user_form.submit,  class="btn btn-primary") }}
+            </div>
+        <div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+              <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Login</a>
+        </div>
+    </div>
+
+</form>
+{% endblock %}

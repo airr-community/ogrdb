@@ -1,0 +1,36 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}Resend confirmation instructionss{% endblock %}
+{% block s_body %}
+{% include "security/_messages.html" %}
+<div class="pageTitle">{{ _('Resend confirmation instructions') }}</div>
+
+<div class="row pad">
+    <div class="col-lg-10 col-lg-offset-1">
+
+    <form action="{{ url_for_security('send_confirmation', token=send_confirmation_token) }}" method="POST" name="send_confirmation_form">
+        {{ send_confirmation_form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ render_field_with_errors(send_confirmation_form.email, class="form-control", placeholder="Enter email") }}
+        </div>
+
+        <div class="form-group">
+            {{ render_field(send_confirmation_form.submit, class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <div class="row">
+        <div class="col-sm-12">
+              <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Login</a>
+        </div>
+    </div>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+

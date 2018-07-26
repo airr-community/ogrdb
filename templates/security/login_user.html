@@ -1,0 +1,41 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}Login{% endblock %}
+
+{% block s_body %}
+{% include "security/_messages.html" %}
+<div class="pageTitle">{{ _('Login') }}</div>
+
+<div class="row pad">
+    <div class="col-lg-10 col-lg-offset-1">
+        <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form" role="form">
+            {{ login_user_form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ render_field_with_errors(login_user_form.email, class="form-control", placeholder="Enter email") }}
+            </div>
+
+            <div class="form-group">
+                {{ render_field_with_errors(login_user_form.password, class="form-control", placeholder="Enter password") }}
+            </div>       
+
+            {{ render_field_with_errors(login_user_form.remember) }}
+            {{ render_field(login_user_form.next) }}
+        
+            <div class="form-group">
+                {{ render_field(login_user_form.submit, class="btn btn-primary") }}
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                      <a href="{{ url_for_security('register') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Register</a>
+                      <a href="{{ url_for_security('forgot_password') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Recover password</a>
+                      <a href="{{ url_for_security('send_confirmation') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Resend confirmation</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
