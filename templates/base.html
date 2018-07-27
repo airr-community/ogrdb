@@ -6,40 +6,45 @@
 {% endblock %}
 
 {% block content %}
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 col-lg-offset-0">
-                    
-                    <div class="logo">
-                        <div>
-                            <a href="{{ url_for('index') }}">Ogre</a>
-                            <span class="tagline">...serving alleles since 2018</span>
-                        </div>
-                    </div>
-                    <div class="menu">
-                        <a href="{{ url_for('index') }}" class="m-item">Home</a> | 
-                        {% if current_user.active %}
-                        <a href="{{ url_for('profile') }}" class="m-item">Profile</a> |  
-                        <a href="{{ url_for_security('logout') }}" class="m-item">Logout</a>
-                        {% else %}
-                        <a href="{{ url_for_security('register') }}" class="m-item">Register</a> |
-                        <a href="{{ url_for_security('login') }}" class="m-item">Login</a>
-                        {% endif %}                  
-                        
-                    </div>
 
-                    {% block c_body %}{% endblock %}
-                            
-                    <footer>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="center">
-                                    Copyright &copy; 2018 AIRR Community. All rights reserved.
-                                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-lg-offset-0">
+
+                <div class="logo">
+                    <div>
+                        <a href="{{ url_for('index') }}">Ogre</a>
+                        <span class="tagline">...serving alleles since 2018</span>
+                    </div>
+                </div>
+
+                {% include "_messages.html" %}
+
+                <div class="menu">
+                    <a href="{{ url_for('index') }}" class="m-item">Home</a> |
+                    {% if current_user.active %}
+                    <a href="{{ url_for('profile') }}" class="m-item">Profile</a> |
+                    {% if current_user.has_role('Admin') %}
+                        <a href="{{ '/admin' }}" class="m-item">Admin</a> |
+                    {%  endif %}
+                    <a href="{{ url_for_security('logout') }}" class="m-item">Logout</a>
+                    {% else %}
+                    <a href="{{ url_for_security('register') }}" class="m-item">Register</a> |
+                    <a href="{{ url_for_security('login') }}" class="m-item">Login</a>
+                    {% endif %}
+                </div>
+
+                {% block c_body %}{% endblock %}
+
+                <footer>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="center">
+                                Copyright &copy; 2018 AIRR Community. All rights reserved.
                             </div>
                         </div>
-                    </footer>
-
+                    </div>
+                </footer>
             </div>
         </div>
     </div>
