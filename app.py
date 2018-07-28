@@ -12,9 +12,7 @@ bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
-handler = logging.handlers.RotatingFileHandler(
-        'app.log',
-        maxBytes=1024 * 1024)
+handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
 handler.setLevel(logging.INFO)
 app.logger.addHandler(handler)
 
