@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %} Submission {% endblock %}
+
+{% block c_body %}
+<div class="pageTitle"> Submission </div>
+    <div class="row pad">
+
+        <form action="{{ url_for('submission') }}" method="POST" name="form" class="form-horizontal">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group col-sm-10">
+                    {{ form.submission_id.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submission_id(class="form-control", readonly=true) }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submission_date.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submission_date(class="form-control", readonly=true) }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submission_status.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submission_status(class="form-control", readonly=true) }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submitter_name.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submitter_name(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submitter_address.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submitter_address(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submitter_email.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submitter_email(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.submitter_phone.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.submitter_phone(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.species.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.species(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group col-sm-10">
+                    {{ form.population_ethnicity.label(class="col-sm-3 control-label") }}
+                <div class="col-sm-6">
+                    {{ form.population_ethnicity(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group row col-sm-10">
+                <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

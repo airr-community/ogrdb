@@ -1,0 +1,23 @@
+#
+# Schema definitions for IARC inferred gene submissions
+#
+# Submission Details
+Submission:
+    properties:
+        submission_id:
+            readonly: true
+        submission_date:
+            readonly: true
+        submission_status:
+            readonly: true
+        submitter_name:
+        submitter_address:
+        submitter_email:
+        submitter_phone:
+        species:
+            type: [human, mouse, macaque]
+        population_ethnicity:
+        IARC_tracking:
+            ignore: true
+
+
