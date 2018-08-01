@@ -5,7 +5,7 @@ from wtforms import StringField, SelectField, DateField, BooleanField, IntegerFi
 class SubmissionForm(FlaskForm):
     submission_id = StringField('submission_id')
     submission_date = DateField('submission_date')
-    submission_status = SelectField('submission_status', choices=[('received', 'received'), ('reviewing', 'reviewing'), ('complete', 'complete')])
+    submission_status = SelectField('submission_status', choices=[('draft', 'draft'), ('received', 'received'), ('reviewing', 'reviewing'), ('complete', 'complete')])
     submitter_name = StringField('submitter_name')
     submitter_address = StringField('submitter_address')
     submitter_email = StringField('submitter_email')

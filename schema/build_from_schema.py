@@ -88,29 +88,36 @@ def write_model(schema, section, outfile):
                 fo.write("\n")
             except Exception as e:
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
-        fo.write("\n\n")
+        fo.write("\n")
 
         fo.write(
 """
-def save_%s(db, mod, form, new=False):
-    obj = %s()
-    
-""" % (section, section))
+def save_%s(db, object, form, new=False):   
+""" % (section))
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
                     or 'hide' in schema[section]['properties'][sc_item]:
                 continue
 
-            fo.write("    obj.%s = %s.%s\n" % (sc_item, section, sc_item))
+            fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
 
         fo.write(
 """
     if new:
-        db.add(obj)
+        db.session.add(object)
         
-    db.commit()   
+    db.session.commit()   
+
+
 """)
+
+        fo.write("from flask_table import Table, Col\n\n")
+        fo.write('class Results(Table):\n    id = Col("id", show=False)\n')
+
+        for sc_item in schema[section]['properties']:
+            if 'tableview' in schema[section]['properties'][sc_item]:
+                fo.write('    %s = Col("%s")\n' % (sc_item, sc_item))
 
 
 
@@ -174,23 +181,24 @@ def write_inp(schema, section, outfile):
 <div class="pageTitle"> %s </div>
     <div class="row pad">
 
-        <form action="{{ url_for('%s') }}" method="POST" name="form" class="form-horizontal">
+        <form action="{{ url_for(url) }}" method="POST" name="form" class="form-horizontal">
             {{ form.hidden_tag() }}
-""" % (section, section, section.lower()))
+""" % (section, section.lower()))
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item]:
                 continue
 
-            fo.write(
+            if 'readonly' in schema[section]['properties'][sc_item]:
+                fo.write(
 """
-            <div class="form-group col-sm-10">
-                    {{ form.%s.label(class="col-sm-3 control-label") }}
-                <div class="col-sm-6">
-                    {{ form.%s(class="form-control"%s) }}
-                </div>
-            </div>
-""" % (sc_item, sc_item, ', readonly=true' if 'readonly' in schema[section]['properties'][sc_item] else ''))
+            {{ render_static_field(form.%s) }}
+""" % (sc_item))
+            else:
+                fo.write(
+"""
+            {{ render_field_with_errors(form.%s, class="form-control") }}
+""" % (sc_item))
 
         fo.write(
 """

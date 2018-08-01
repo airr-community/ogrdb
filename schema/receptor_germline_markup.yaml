@@ -6,16 +6,21 @@ Submission:
     properties:
         submission_id:
             readonly: true
+            tableview: true
         submission_date:
             readonly: true
+            tableview: true
         submission_status:
             readonly: true
+            tableview: true
         submitter_name:
+            tableview: true
         submitter_address:
         submitter_email:
         submitter_phone:
         species:
             type: [human, mouse, macaque]
+            tableview: true
         population_ethnicity:
         IARC_tracking:
             ignore: true

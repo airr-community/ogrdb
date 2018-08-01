@@ -1,17 +1,35 @@
-{% macro render_field_with_errors(field) %}
-  <p>
-      {{ field.label }}
-      {{ field(**kwargs)|safe }}
-    {% if field.errors %}
-      <ul>
-      {% for error in field.errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  </p>
+{% macro render_field(field) %}
+    <div class="form-group col-sm-10">
+        {{ field.label(class="col-sm-3 control-label") }}
+        <div class="col-sm-6">
+            {{ field(**kwargs)|safe }}
+        </div>
+    </div>
 {% endmacro %}
 
-{% macro render_field(field) %}
-  <p>{{ field(**kwargs)|safe }}</p>
+{% macro render_static_field(field) %}
+    <div class="form-group col-sm-10">
+        {{ field.label(class="col-sm-3 control-label") }}
+        <div class="col-sm-6">
+            <p class="form-control-static">{{ field.data }}</p>
+        </div>
+    </div>
 {% endmacro %}
+
+
+{% macro render_field_with_errors(field) %}
+    <div class="form-group col-sm-10">
+        {{ field.label(class="col-sm-3 control-label") }}
+        <div class="col-sm-6">
+            {{ field(**kwargs)|safe }}
+            {% if field.errors %}
+              <ul>
+              {% for error in field.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+              </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+

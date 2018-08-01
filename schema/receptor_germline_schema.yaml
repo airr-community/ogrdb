@@ -18,7 +18,7 @@ Submission:
             description: Date submission received
             completed_by: IARC
         submission_status:
-            type: [received,reviewing,complete]
+            type: [draft,received,reviewing,complete]
             description: Status of submission
             completed_by: IARC
         submitter_name:

@@ -3,7 +3,6 @@
 from app import db
 
 class Submission(db.Model):
-    __tablename__ = 'Submission'
     id = db.Column(db.Integer, primary_key=True)
     submission_id = db.Column(db.String(255))
     submission_date = db.Column(db.Date)
@@ -16,21 +15,29 @@ class Submission(db.Model):
     population_ethnicity = db.Column(db.String(255))
 
 
-
-def save_Submission(db, mod, form, new=False):
-    obj = Submission()
-    
-    obj.submission_id = Submission.submission_id
-    obj.submission_date = Submission.submission_date
-    obj.submission_status = Submission.submission_status
-    obj.submitter_name = Submission.submitter_name
-    obj.submitter_address = Submission.submitter_address
-    obj.submitter_email = Submission.submitter_email
-    obj.submitter_phone = Submission.submitter_phone
-    obj.species = Submission.species
-    obj.population_ethnicity = Submission.population_ethnicity
+def save_Submission(db, object, form, new=False):   
+    object.submission_id = form.submission_id.data
+    object.submission_date = form.submission_date.data
+    object.submission_status = form.submission_status.data
+    object.submitter_name = form.submitter_name.data
+    object.submitter_address = form.submitter_address.data
+    object.submitter_email = form.submitter_email.data
+    object.submitter_phone = form.submitter_phone.data
+    object.species = form.species.data
+    object.population_ethnicity = form.population_ethnicity.data
 
     if new:
-        db.add(obj)
+        db.session.add(object)
         
-    db.commit()   
+    db.session.commit()   
+
+
+from flask_table import Table, Col
+
+class Submission_table(Table):
+    id = Col("id", show=False)
+    submission_id = Col("submission_id")
+    submission_date = Col("submission_date")
+    submission_status = Col("submission_status")
+    submitter_name = Col("submitter_name")
+    species = Col("species")
