@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% block title %} Submission {% endblock %}
+{% block pagetitle %} New Submission {% endblock %}
 
 {% block c_body %}
-<div class="pageTitle"> submission </div>
     <div class="row pad">
 
         <form action="{{ url_for(url) }}" method="POST" name="form" class="form-horizontal">
@@ -14,13 +13,13 @@
 
             {{ render_static_field(form.submission_status) }}
 
-            {{ render_field_with_errors(form.submitter_name, class="form-control") }}
+            {{ render_static_field(form.submitter_name) }}
 
-            {{ render_field_with_errors(form.submitter_address, class="form-control") }}
+            {{ render_static_field(form.submitter_address) }}
 
-            {{ render_field_with_errors(form.submitter_email, class="form-control") }}
+            {{ render_static_field(form.submitter_email) }}
 
-            {{ render_field_with_errors(form.submitter_phone, class="form-control") }}
+            {{ render_static_field(form.submitter_phone) }}
 
             {{ render_field_with_errors(form.species, class="form-control") }}
 

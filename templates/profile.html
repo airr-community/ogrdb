@@ -1,32 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Profile{% endblock %}
+{% block pagetitle %} My Profile {% endblock %}
 
-{% block body %}
-<!-- display the page title and the number of threads we got from the database -->
-<div class="pageTitle">My Profile</div>
+{% block c_body %}
 
-<div class="row pad">
-    <div class="col-lg-10  col-lg-offset-1">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">My Info</h3>
+    <div class="row pad">
+
+        <form action="{{ url_for(url) }}" method="POST" name="form" class="form-horizontal">
+            {{ form.hidden_tag() }}
+
+            {{ render_field_with_errors(form.name, class="form-control") }}
+
+            {{ render_field_with_errors(form.address, class="form-control") }}
+
+            {{ render_field_with_errors(form.phone, class="form-control") }}
+
+            <div class="form-group row col-sm-10">
+                <input type="submit" value="Save Changes" class="btn btn-primary  col-sm-offset-1">
             </div>
-            <div class="panel-body">
-                Below are my basic info
-            </div>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    Name: <strong class="pull-right">{{ current_user.name }}</strong>
-                </li>
-                <li class="list-group-item">
-                    Email: <strong class="pull-right">{{ current_user.email }}</strong>
-                </li>
-                <li class="list-group-item">
-                    Username: <strong class="pull-right">{{ current_user.username }}</strong>
-                </li>
-            </ul>
-        </div>
+        </form>
     </div>
 </div>
-{% endblock %}
+{% endblock %}% endblock %}

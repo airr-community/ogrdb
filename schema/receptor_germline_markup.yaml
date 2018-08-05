@@ -15,14 +15,46 @@ Submission:
             tableview: true
         submitter_name:
             tableview: true
+            readonly: true
         submitter_address:
+            readonly: true
         submitter_email:
+            readonly: true
+            private: true
         submitter_phone:
+            readonly: true
+            private: true
         species:
-            type: [human, mouse, macaque]
+            type: []
             tableview: true
         population_ethnicity:
         IARC_tracking:
             ignore: true
+        owner_id:
+            type: integer
+            hide: true
+            foreign_key: user.id
+            relationship: [owner, User, submissions]
+
+
+# Repertoire Dataset
+Repertoire:
+    properties:
+        pub_ids:
+            subtable: true
+        repository_name:
+        repository_id:
+        dataset_url:
+        dataset_doi:
+        miarr_compliant:
+        miairr_link:
+        sequencing_platform:
+        read_length:
+        forward_primer_set:
+            subtable: true
+        reverse_primer_set:
+            subtable: true
+        primers_not_overlapping:
+        notes:
 
 

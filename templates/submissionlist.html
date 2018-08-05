@@ -1,10 +1,41 @@
 {% extends "base.html" %}
-{% block title %} Submissions {% endblock %}
+{% block pagetitle %} Submissions {% endblock %}
 
 {% block c_body %}
-<div class="pageTitle"> Submissions </div>
-    <div class=".table">
-        {{ table }}
+    {% if 'mine' in tables %}
+        <div class="col-md-8"><h2>My Submissions</h2></div>
+        <div class="col-md-offset-10">
+            <a href="{{ url_for('new_submission') }}" class="btn btn-default heading-btn">New Submission</a>
+        </div>
+        <div class=".table col-md-12">
+            {{ tables['mine'] }}
+        </div>
+    {%  endif %}
+
+    {% if 'species' in tables %}
+        {% for sp, t in tables['species'].items() %}
+
+                <div class="col-md-8"><h2>Submissions for IARC {{ sp }} Committee</h2></div>
+                {% if loop.previtem is not defined %}
+                    <div class="col-md-offset-10">
+                    {% if show_completed %}
+                        <a href="{{ url_for(request.endpoint) }}?completed=no" class="btn btn-default heading-btn">Hide Completed</a>
+                    {% else %}
+                        <a href="{{ url_for(request.endpoint) }}?completed=yes" class="btn btn-default heading-btn">Show Completed</a>
+                    {% endif %}
+                    </div>
+                {% endif %}
+
+            <div class=".table col-md-12">
+                {{ t }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <div class="col-md-8"><h2>Published Submissions</h2></div>
+    <div class="col-md-8"><p>Submissions are published once on or more infereneces they contain have been affirmed by IARC.</p></div>
+    <div class=".table col-md-12">
+        {{ tables['public'] }}
     </div>
-</div>
 {% endblock %}

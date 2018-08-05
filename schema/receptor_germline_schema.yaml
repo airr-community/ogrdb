@@ -18,7 +18,7 @@ Submission:
             description: Date submission received
             completed_by: IARC
         submission_status:
-            type: [draft,received,reviewing,complete]
+            type: [draft,reviewing,published,complete]
             description: Status of submission
             completed_by: IARC
         submitter_name:
@@ -95,11 +95,11 @@ Repertoire:
             description: Read length in bases for each direction
             completed_by: submitter
         forward_primer_set:
-            type: IUPAC nucleotide notation
+            type: list of IUPAC nucleotide notation
             description: sequences of forward pcr primers used for sequence amplification
             completed_by: submitter
         reverse_primer_set:
-            type: IUPAC nucleotide notation
+            type: list of IUPAC nucleotide notation
             description: sequences of reverse pcr primers used for sequence amplification
             completed_by: submitter
         primers_not_overlapping:

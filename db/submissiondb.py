@@ -1,6 +1,7 @@
 # ORM definitions for Submission
 
 from app import db
+from db.userdb import User
 
 class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,6 +14,9 @@ class Submission(db.Model):
     submitter_phone = db.Column(db.String(255))
     species = db.Column(db.String(255))
     population_ethnicity = db.Column(db.String(255))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    owner = db.relationship(User, backref = 'submissions')
+    from db._submissionrights import can_see, can_edit
 
 
 def save_Submission(db, object, form, new=False):   
@@ -32,12 +36,38 @@ def save_Submission(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col
+from flask_table import Table, Col, LinkCol
 
 class Submission_table(Table):
     id = Col("id", show=False)
-    submission_id = Col("submission_id")
+    submission_id = LinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])
     submission_date = Col("submission_date")
     submission_status = Col("submission_status")
     submitter_name = Col("submitter_name")
     species = Col("species")
+
+
+def make_Submission_table(results, private = False):
+    ret = Submission_table(results)
+    return ret
+
+class Submission_view(Table):
+    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    value = Col("")
+
+
+def make_Submission_view(sub, private = False):
+    ret = Submission_view([])
+    ret.items.append({"item": "submission_id", "value": sub.submission_id})
+    ret.items.append({"item": "submission_date", "value": sub.submission_date})
+    ret.items.append({"item": "submission_status", "value": sub.submission_status})
+    ret.items.append({"item": "submitter_name", "value": sub.submitter_name})
+    ret.items.append({"item": "submitter_address", "value": sub.submitter_address})
+    if private:
+        ret.items.append({"item": "submitter_email", "value": sub.submitter_email})
+    if private:
+        ret.items.append({"item": "submitter_phone", "value": sub.submitter_phone})
+    ret.items.append({"item": "species", "value": sub.species})
+    ret.items.append({"item": "population_ethnicity", "value": sub.population_ethnicity})
+    return ret
+

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block pagetitle %} Submission {{ sub.submission_id }} ({{ sub.owner.name }})  {% endblock %}
+
+{% block c_body %}
+        <div class=".table">
+            {{ table }}
+        </div>
+{% endblock %}

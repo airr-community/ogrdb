@@ -45,7 +45,7 @@ def merge_markup(schema, markup):
 # flexibility in the db itself
 def write_model(schema, section, outfile):
     with open(outfile, 'w') as fo:
-        fo.write("# ORM definitions for %s\n\nfrom app import db\n\nclass %s(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n" % (section, section))
+        fo.write("# ORM definitions for %s\n\nfrom app import db\nfrom db.userdb import User\n\nclass %s(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n" % (section, section))
         for sc_item in schema[section]['properties']:
             try:
                 if 'ignore' in schema[section]['properties'][sc_item]:
@@ -74,7 +74,14 @@ def write_model(schema, section, outfile):
                 elif 'IUPAC' in type:
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'integer':
-                    fo.write("    %s = db.Column(db.Integer)" % sc_item)
+                    if 'foreign_key' in schema[section]['properties'][sc_item]:
+                        fo.write("    %s = db.Column(db.Integer, db.ForeignKey('%s'))" % (sc_item, schema[section]['properties'][sc_item]['foreign_key']))
+                        if 'relationship' in schema[section]['properties'][sc_item]:
+                            rel = schema[section]['properties'][sc_item]['relationship']
+                            fo.write("\n    %s = db.relationship(%s, backref = '%s')" % (rel[0], rel[1], rel[2]))
+
+                    else:
+                        fo.write("    %s = db.Column(db.Integer)" % sc_item)
                 elif type == 'number':
                     fo.write("    %s = db.Column(db.Numeric)" % sc_item)
                 elif type == 'dictionary':
@@ -88,6 +95,7 @@ def write_model(schema, section, outfile):
                 fo.write("\n")
             except Exception as e:
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
+        fo.write("    from db._%srights import can_see, can_edit\n" % (section.lower()))
         fo.write("\n")
 
         fo.write(
@@ -111,13 +119,46 @@ def save_%s(db, object, form, new=False):
 
 
 """)
+        # Table class
 
-        fo.write("from flask_table import Table, Col\n\n")
-        fo.write('class Results(Table):\n    id = Col("id", show=False)\n')
+        fo.write("from flask_table import Table, Col, LinkCol\n\n")
+        fo.write('class %s_table(Table):\n    id = Col("id", show=False)\n' % section)
 
         for sc_item in schema[section]['properties']:
             if 'tableview' in schema[section]['properties'][sc_item]:
-                fo.write('    %s = Col("%s")\n' % (sc_item, sc_item))
+                # special for submission_id. Will need to generalise for inferences, maybe other things
+                if sc_item == 'submission_id':
+                    fo.write('    submission_id = LinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])\n')
+                else:
+                    fo.write('    %s = Col("%s")\n' % (sc_item, sc_item))
+        fo.write('\n\n')
+
+        # Results view factory
+
+        fo.write('def make_%s_table(results, private = False):\n    ret = Submission_table(results)\n' % section)
+
+        ps = ''
+        for sc_item in schema[section]['properties']:
+            if 'tableview' in schema[section]['properties'][sc_item] and 'private' in schema[section]['properties'][sc_item]:
+                ps += '       ret.%s.show = False\n' % sc_item
+        if len(ps) > 0:
+            fo.write('    if not private:\n' + ps)
+        fo.write('    return ret\n\n')
+
+        # Object view factory
+
+        fo.write('class %s_view(Table):\n    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})\n    value = Col("")\n\n\n' % section)
+
+        fo.write('def make_%s_view(sub, private = False):\n    ret = %s_view([])\n' % (section, section))
+
+        for sc_item in schema[section]['properties']:
+            if 'ignore' in schema[section]['properties'][sc_item] \
+                    or 'hide' in schema[section]['properties'][sc_item]:
+                continue
+            if 'private' in schema[section]['properties'][sc_item]:
+                fo.write('    if private:\n    ')
+            fo.write('    ret.items.append({"item": "%s", "value": sub.%s})\n' % (sc_item, sc_item))
+        fo.write('    return ret\n\n')
 
 
 
@@ -126,14 +167,15 @@ def write_flaskform(schema, section, outfile):
         fo.write("# FlaskForm class definitions for %s\n\nfrom flask_wtf import FlaskForm\nfrom wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField\nclass %sForm(FlaskForm):\n" % (section, section))
         for sc_item in schema[section]['properties']:
             try:
-                if 'ignore' in schema[section]['properties'][sc_item]:
+                if 'ignore' in schema[section]['properties'][sc_item] or 'hide' in schema[section]['properties'][sc_item]:
                     continue
                 type = schema[section]['properties'][sc_item]['type']
                 if isinstance(type, list):   # enum
-                    choices = []
-                    for item in type:
-                        choices.append((item, item))
-                    fo.write("    %s = SelectField('%s', choices=%s)" % (sc_item, sc_item, repr(choices)))
+                    if len(type) == 0:
+                        fo.write("    %s = SelectField('%s')" % (sc_item, sc_item))
+                    else:
+                        choices = [(item, item) for item in type]
+                        fo.write("    %s = SelectField('%s', choices=%s)" % (sc_item, sc_item, repr(choices)))
                 elif type == 'string':
                     fo.write("    %s = StringField('%s')" % (sc_item, sc_item))
                 elif type == 'date':
@@ -186,7 +228,7 @@ def write_inp(schema, section, outfile):
 """ % (section, section.lower()))
 
         for sc_item in schema[section]['properties']:
-            if 'ignore' in schema[section]['properties'][sc_item]:
+            if 'ignore' in schema[section]['properties'][sc_item] or 'hide' in schema[section]['properties'][sc_item]:
                 continue
 
             if 'readonly' in schema[section]['properties'][sc_item]:

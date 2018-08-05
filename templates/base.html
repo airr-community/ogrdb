@@ -6,29 +6,32 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
 {% endblock %}
 
+
+
 {% block content %}
 
     <div class="container">
         <div class="row">
             <div class="col-lg-12 col-lg-offset-0">
 
-                <div class="logo">
-                    <div>
-                        <a href="{{ url_for('index') }}">Ogre</a>
-                        <span class="tagline">...serving alleles since 2018</span>
+                    <div class="logo">
+                        <div>
+                        {%  block pagetitle %}
+                        {% endblock %}
+                        </div>
                     </div>
-                </div>
 
                 {% include "_messages.html" %}
 
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
+                    <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
                     {% if current_user.active %}
                     <a href="{{ url_for('profile') }}" class="m-item">Profile</a> |
                     {% if current_user.has_role('Admin') %}
                         <a href="{{ '/admin' }}" class="m-item">Admin</a> |
                     {%  endif %}
-                    <a href="{{ url_for_security('logout') }}" class="m-item">Logout</a>
+                    <a href="{{ url_for_security('logout') }}" class="m-item">{{ current_user.name }} - Logout</a>
                     {% else %}
                     <a href="{{ url_for_security('register') }}" class="m-item">Register</a> |
                     <a href="{{ url_for_security('login') }}" class="m-item">Login</a>
