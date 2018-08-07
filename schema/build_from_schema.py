@@ -18,7 +18,13 @@ def main(argv):
 
     write_model(schema, 'Submission', 'db/submissiondb.py')
     write_flaskform(schema, 'Submission', 'forms/submissionform.py')
-    write_inp(schema, 'Submission', 'templates/submissioninp.html')
+    write_inp(schema, 'Submission', 'templates/submission_form.html')
+    write_model(schema, 'PubId', 'db/repertoiredb.py')
+    write_model(schema, 'ForwardPrimer', 'db/repertoiredb.py', True)
+    write_model(schema, 'ReversePrimer', 'db/repertoiredb.py', True)
+    write_model(schema, 'Repertoire', 'db/repertoiredb.py', True)
+    write_flaskform(schema, 'Repertoire', 'forms/repertoireform.py')
+    write_inp(schema, 'Repertoire', 'templates/repertoire_form.html')
 
 # Merge markup properties with schema
 # In the event of a conflict, markup always wins. Otherwise properties are merged.
@@ -43,8 +49,9 @@ def merge_markup(schema, markup):
 # The db model is fairly permissive, in that a number of special types are stored as strings
 # these types are checked more stringently during form validation, but we'll keep some more
 # flexibility in the db itself
-def write_model(schema, section, outfile):
-    with open(outfile, 'w') as fo:
+def write_model(schema, section, outfile, append=False):
+    attrs = 'a' if append else 'w'
+    with open(outfile, attrs) as fo:
         fo.write("# ORM definitions for %s\n\nfrom app import db\nfrom db.userdb import User\n\nclass %s(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n" % (section, section))
         for sc_item in schema[section]['properties']:
             try:
@@ -53,6 +60,10 @@ def write_model(schema, section, outfile):
                 type = schema[section]['properties'][sc_item]['type']
                 if isinstance(type, list):   # enum
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
+                elif 'list of' in type:
+                    if 'relationship' in schema[section]['properties'][sc_item]:
+                        rel = schema[section]['properties'][sc_item]['relationship']
+                        fo.write("\n    %s = db.relationship('%s', backref = '%s')" % (rel[0], rel[1], rel[2]))
                 elif type == 'string':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'date':
@@ -78,8 +89,7 @@ def write_model(schema, section, outfile):
                         fo.write("    %s = db.Column(db.Integer, db.ForeignKey('%s'))" % (sc_item, schema[section]['properties'][sc_item]['foreign_key']))
                         if 'relationship' in schema[section]['properties'][sc_item]:
                             rel = schema[section]['properties'][sc_item]['relationship']
-                            fo.write("\n    %s = db.relationship(%s, backref = '%s')" % (rel[0], rel[1], rel[2]))
-
+                            fo.write("\n    %s = db.relationship('%s', backref = '%s')" % (rel[0], rel[1], rel[2]))
                     else:
                         fo.write("    %s = db.Column(db.Integer)" % sc_item)
                 elif type == 'number':
@@ -95,7 +105,8 @@ def write_model(schema, section, outfile):
                 fo.write("\n")
             except Exception as e:
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
-        fo.write("    from db._%srights import can_see, can_edit\n" % (section.lower()))
+        if section == 'Submission':
+            fo.write('    from db._submissionrights import can_see, can_edit\n')
         fo.write("\n")
 
         fo.write(
@@ -135,7 +146,7 @@ def save_%s(db, object, form, new=False):
 
         # Results view factory
 
-        fo.write('def make_%s_table(results, private = False):\n    ret = Submission_table(results)\n' % section)
+        fo.write('def make_%s_table(results, private = False, classes=()):\n    ret = %s_table(results, classes=classes)\n' % (section,section))
 
         ps = ''
         for sc_item in schema[section]['properties']:
@@ -215,18 +226,6 @@ def write_flaskform(schema, section, outfile):
 
 def write_inp(schema, section, outfile):
     with open(outfile, 'w') as fo:
-        fo.write(
-"""{%% extends "base.html" %%}
-{%% block title %%} %s {%% endblock %%}
-
-{%% block c_body %%}
-<div class="pageTitle"> %s </div>
-    <div class="row pad">
-
-        <form action="{{ url_for(url) }}" method="POST" name="form" class="form-horizontal">
-            {{ form.hidden_tag() }}
-""" % (section, section.lower()))
-
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] or 'hide' in schema[section]['properties'][sc_item]:
                 continue
@@ -234,24 +233,13 @@ def write_inp(schema, section, outfile):
             if 'readonly' in schema[section]['properties'][sc_item]:
                 fo.write(
 """
-            {{ render_static_field(form.%s) }}
+        {{ render_static_field(form.%s) }}
 """ % (sc_item))
             else:
                 fo.write(
 """
-            {{ render_field_with_errors(form.%s, class="form-control") }}
+        {{ render_field_with_errors(form.%s, class="form-control") }}
 """ % (sc_item))
-
-        fo.write(
-"""
-            <div class="form-group row col-sm-10">
-                <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-""")
 
 
 if __name__=="__main__":

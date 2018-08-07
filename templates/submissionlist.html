@@ -3,18 +3,20 @@
 
 {% block c_body %}
     {% if 'mine' in tables %}
-        <div class="col-md-8"><h2>My Submissions</h2></div>
-        <div class="col-md-offset-10">
-            <a href="{{ url_for('new_submission') }}" class="btn btn-default heading-btn">New Submission</a>
-        </div>
-        <div class=".table col-md-12">
-            {{ tables['mine'] }}
+        <div class="row">
+            <div class="col-md-8"><h2>My Submissions</h2></div>
+            <div class="col-md-offset-10">
+                <a href="{{ url_for('new_submission') }}" class="btn btn-default heading-btn">New Submission</a>
+            </div>
+            <div class=".table col-md-12">
+                {{ tables['mine'] }}
+            </div>
         </div>
     {%  endif %}
 
     {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
-
+            <div class="row">
                 <div class="col-md-8"><h2>Submissions for IARC {{ sp }} Committee</h2></div>
                 {% if loop.previtem is not defined %}
                     <div class="col-md-offset-10">
@@ -25,17 +27,63 @@
                     {% endif %}
                     </div>
                 {% endif %}
-
-            <div class=".table col-md-12">
-                {{ t }}
+            </div>
+            <div class="row">
+                <div class=".table col-md-12">
+                    {{ t }}
+                </div>
             </div>
         {% endfor %}
     {% endif %}
 
-
-    <div class="col-md-8"><h2>Published Submissions</h2></div>
-    <div class="col-md-8"><p>Submissions are published once on or more infereneces they contain have been affirmed by IARC.</p></div>
-    <div class=".table col-md-12">
-        {{ tables['public'] }}
+    <div class="row">
+        <div class="col-md-8"><h2>Published Submissions</h2></div>
+        <div class="col-md-8"><p>Submissions are published once on or more infereneces they contain have been affirmed by IARC.</p></div>
+    </div>
+    <div class="row">
+        <div class=".table col-md-12">
+            {{ tables['public'] }}
+        </div>
     </div>
 {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if 'mine' in tables %}
+        <script>
+            $(document).ready(function() {
+                $("#{{ tables['mine'].table_id }}").DataTable({
+                    "paging":   false,
+                    "searching": false,
+                    "info":     false
+                });
+            } );
+        </script>
+    {%  endif %}
+
+    {% if 'species' in tables %}
+        {% for sp, t in tables['species'].items() %}
+            <script>
+                $(document).ready(function() {
+                $("#{{ t.table_id }}").DataTable({
+                    "paging":   false,
+                    "searching": false,
+                    "info":     false
+                });
+                } );
+            </script>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            $("#{{ tables['public'].table_id }}").DataTable({
+                "paging":   false,
+                "searching": false,
+                "info":     false
+            });
+        } );
+    </script>
+
+{% endblock %}
+

@@ -15,7 +15,7 @@ class Submission(db.Model):
     species = db.Column(db.String(255))
     population_ethnicity = db.Column(db.String(255))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    owner = db.relationship(User, backref = 'submissions')
+    owner = db.relationship('User', backref = 'submissions')
     from db._submissionrights import can_see, can_edit
 
 
@@ -47,8 +47,8 @@ class Submission_table(Table):
     species = Col("species")
 
 
-def make_Submission_table(results, private = False):
-    ret = Submission_table(results)
+def make_Submission_table(results, private = False, classes=[]):
+    ret = Submission_table(results, classes=classes)
     return ret
 
 class Submission_view(Table):

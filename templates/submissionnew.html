@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %} New Submission {% endblock %}
+
+{% block c_body %}
+<div class="pageTitle"> New Submission </div>
+    <div class="row pad">
+
+        <form action="{{ url_for(url) }}" method="POST" name="form" class="form-horizontal">
+            {{ form.hidden_tag() }}
+
+            {% include 'submission_form.html' %}
+
+            <div class="form-group row col-sm-10">
+                <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

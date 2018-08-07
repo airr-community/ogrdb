@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %} Edit Submission {% endblock %}
+
+{% block c_body %}
+<div class="pageTitle"> Edit Submission </div>
+    <div class="row pad">
+
+        <form action="{{ url_for('edit_submission', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+            {% include 'submission_form.html' %}
+
+            {% include 'pubmed_form.html' %}
+
+            {% include 'repertoire_form.html' %}
+
+
+            <div class="form-group row col-sm-10">
+                <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -41,7 +41,7 @@ Submission:
 Repertoire:
     properties:
         pub_ids:
-            subtable: true
+            ignore: true
         repository_name:
         repository_id:
         dataset_url:
@@ -51,10 +51,15 @@ Repertoire:
         sequencing_platform:
         read_length:
         forward_primer_set:
-            subtable: true
+            ignore: true
         reverse_primer_set:
-            subtable: true
+            ignore: true
         primers_not_overlapping:
         notes:
+        submission_id:
+            type: integer
+            hide: true
+            foreign_key: submission.id
+            relationship: [submission, Submission, repertoire]
 
 

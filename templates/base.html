@@ -3,10 +3,9 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
 {% endblock %}
-
-
 
 {% block content %}
 
@@ -21,8 +20,11 @@
                         </div>
                     </div>
 
-                {% include "_messages.html" %}
 
+                {% include "_messages.html" %}
+            </div>
+        </div>
+        <div class="row">
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
                     <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
@@ -37,19 +39,25 @@
                     <a href="{{ url_for_security('login') }}" class="m-item">Login</a>
                     {% endif %}
                 </div>
-
-                {% block c_body %}{% endblock %}
-
-                <footer>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="center">
-                                Copyright &copy; 2018 AIRR Community. All rights reserved.
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            </div>
         </div>
+
+            {% block c_body %}{% endblock %}
+
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="center">
+                        Copyright &copy; 2018 AIRR Community. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 {% endblock %}
+
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+{% endblock %}
+

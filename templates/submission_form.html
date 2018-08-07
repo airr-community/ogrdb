@@ -1,0 +1,18 @@
+
+        {{ render_static_field(form.submission_id) }}
+
+        {{ render_static_field(form.submission_date) }}
+
+        {{ render_static_field(form.submission_status) }}
+
+        {{ render_static_field(form.submitter_name) }}
+
+        {{ render_static_field(form.submitter_address) }}
+
+        {{ render_static_field(form.submitter_email) }}
+
+        {{ render_static_field(form.submitter_phone) }}
+
+        {{ render_field_with_errors(form.species, class="form-control") }}
+
+        {{ render_field_with_errors(form.population_ethnicity, class="form-control") }}

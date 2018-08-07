@@ -110,7 +110,59 @@ Repertoire:
             type: text
             description: Notes relating to the dataset, for example covering details of origin or processing methods not described in publications or sequence depositions. Please provide details of cell types sequenced, or indicate clearly where this and related biosample information can be found.
             completed_by: submitter
-            
+
+# PubMed Ids
+PubId:
+    discriminator: AIRR
+    description: PubMed Id and publication details
+    type: object
+    occurrence: single
+    properties:
+        pubmed_id:
+            type: integer
+            description: PubMed ID
+            tableview: true
+        pub_title:
+            type: string
+            description: Publication Title
+            tableview: true
+        pub_authors:
+            type: string
+            description: Author list
+            tableview: true
+        repertoire_id:
+            type: integer
+            foreign_key: repertoire.id
+            relationship: [repertoire, Repertoire, pub_ids]
+
+# Primers
+ForwardPrimer:
+    discriminator: AIRR
+    description: Forward Primer Set
+    type: object
+    occurrence: single
+    properties:
+        primer_seq:
+            type: IUPAC nucleotide notation
+            description: primer sequence
+        repertoire_id:
+            type: integer
+            foreign_key: repertoire.id
+            relationship: [repertoire, Repertoire, forward_primer_set]
+
+ReversePrimer:
+    discriminator: AIRR
+    description: Reverse Primer Set
+    type: object
+    occurrence: single
+    properties:
+        primer_seq:
+            type: IUPAC nucleotide notation
+            description: primer sequence
+        repertoire_id:
+            type: integer
+            foreign_key: repertoire.id
+            relationship: [repertoire, Repertoire, reverse_primer_set]
 
 # Inference Tool Overview
 Inference_Tool_Overview:

@@ -120,9 +120,12 @@ div._panel div.info-bit > h1, div._panel div.info-bit-last > h1 {
 .forty {
     width: 40%;
 }
-table {
-    width: 100%;
+
+td {
+  white-space: normal !important;
+  word-wrap: break-word;
 }
+
 div.panel, .btn {
     border-radius: 0;
 }
