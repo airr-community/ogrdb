@@ -1,5 +1,5 @@
-# ORM definitions for Submission
 
+# ORM definitions for Submission
 from app import db
 from db.userdb import User
 
@@ -47,7 +47,7 @@ class Submission_table(Table):
     species = Col("species")
 
 
-def make_Submission_table(results, private = False, classes=[]):
+def make_Submission_table(results, private = False, classes=()):
     ret = Submission_table(results, classes=classes)
     return ret
 

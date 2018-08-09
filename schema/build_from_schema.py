@@ -22,8 +22,13 @@ def main(argv):
     write_model(schema, 'PubId', 'db/repertoiredb.py')
     write_model(schema, 'ForwardPrimer', 'db/repertoiredb.py', True)
     write_model(schema, 'ReversePrimer', 'db/repertoiredb.py', True)
+    write_model(schema, 'Acknowledgements', 'db/repertoiredb.py', True)
     write_model(schema, 'Repertoire', 'db/repertoiredb.py', True)
-    write_flaskform(schema, 'Repertoire', 'forms/repertoireform.py')
+    write_flaskform(schema, 'PubId', 'forms/repertoireform.py')
+    write_flaskform(schema, 'ForwardPrimer', 'forms/repertoireform.py', True)
+    write_flaskform(schema, 'ReversePrimer', 'forms/repertoireform.py', True)
+    write_flaskform(schema, 'Acknowledgements', 'forms/repertoireform.py', True)
+    write_flaskform(schema, 'Repertoire', 'forms/repertoireform.py', True)
     write_inp(schema, 'Repertoire', 'templates/repertoire_form.html')
 
 # Merge markup properties with schema
@@ -52,7 +57,15 @@ def merge_markup(schema, markup):
 def write_model(schema, section, outfile, append=False):
     attrs = 'a' if append else 'w'
     with open(outfile, attrs) as fo:
-        fo.write("# ORM definitions for %s\n\nfrom app import db\nfrom db.userdb import User\n\nclass %s(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n" % (section, section))
+        fo.write(
+"""
+# ORM definitions for %s
+from app import db
+from db.userdb import User
+
+class %s(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+""" % (section, section))
         for sc_item in schema[section]['properties']:
             try:
                 if 'ignore' in schema[section]['properties'][sc_item]:
@@ -100,6 +113,8 @@ def write_model(schema, section, outfile, append=False):
                     fo.write("    %s = db.Column(db.String(10000))" % sc_item)
                 elif type == 'ORCID ID':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
+                elif type == 'ambiguous nucleotide sequence':
+                    fo.write("    %s = db.Column(db.String(10000))" % sc_item)
                 else:
                     raise (ValueError('Unrecognised type: %s' % type))
                 fo.write("\n")
@@ -173,9 +188,17 @@ def save_%s(db, object, form, new=False):
 
 
 
-def write_flaskform(schema, section, outfile):
-    with open(outfile, 'w') as fo:
-        fo.write("# FlaskForm class definitions for %s\n\nfrom flask_wtf import FlaskForm\nfrom wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField\nclass %sForm(FlaskForm):\n" % (section, section))
+def write_flaskform(schema, section, outfile, append=False):
+    attrs = 'a' if append else 'w'
+    with open(outfile, attrs) as fo:
+        fo.write("""
+# FlaskForm class definitions for %s
+
+from flask_wtf import FlaskForm
+from customvalidators import *
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+class %sForm(FlaskForm):
+""" % (section, section))
         for sc_item in schema[section]['properties']:
             try:
                 if 'ignore' in schema[section]['properties'][sc_item] or 'hide' in schema[section]['properties'][sc_item]:
@@ -208,7 +231,7 @@ def write_flaskform(schema, section, outfile):
                 elif 'IUPAC' in type:
                     fo.write("    %s = StringField('%s')" % (sc_item, sc_item))
                 elif type == 'integer':
-                    fo.write("    %s = IntegerField('%s')" % (sc_item, sc_item))
+                    fo.write("    %s = IntegerField('%s', [validators.Optional()])" % (sc_item, sc_item))
                 elif type == 'number':
                     fo.write("    %s = DecimalField('%s')" % (sc_item, sc_item))
                 elif type == 'dictionary':
@@ -216,7 +239,9 @@ def write_flaskform(schema, section, outfile):
                 elif type == 'text':
                     fo.write("    %s = StringField('%s')" % (sc_item, sc_item))
                 elif type == 'ORCID ID':
-                    fo.write("    %s = StringField('%s')" % (sc_item, sc_item))
+                    fo.write("    %s = StringField('%s', [validators.Optional(), ValidOrcidID()])" % (sc_item, sc_item))
+                elif type == 'ambiguous nucleotide sequence':
+                    fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=True)])" % (sc_item, sc_item))
                 else:
                     raise (ValueError('Unrecognised type: %s' % type))
                 fo.write("\n")

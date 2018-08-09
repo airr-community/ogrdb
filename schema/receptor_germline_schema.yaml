@@ -79,7 +79,7 @@ Repertoire:
             description: doi of the sequence dataset (If any. Not all archives provide a doi, in particular the NIH SRA does not)
             completed_by: submitter
         miarr_compliant:
-            type: boolean
+            type: [Yes, No]
             description: TRUE if the repertoire dataset and associated metadata is available in MiAIRR format
             completed_by: submitter
         miairr_link:
@@ -103,7 +103,7 @@ Repertoire:
             description: sequences of reverse pcr primers used for sequence amplification
             completed_by: submitter
         primers_not_overlapping:
-            type: boolean
+            type: [Yes, No]
             description: Please confirm that primers do not overlap with the stated sequence of any inferred allele.
             completed_by: submitter
         notes:
@@ -126,14 +126,17 @@ PubId:
             type: string
             description: Publication Title
             tableview: true
+            hide: true
         pub_authors:
             type: string
             description: Author list
             tableview: true
+            hide: true
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
             relationship: [repertoire, Repertoire, pub_ids]
+            hide: true
 
 # Primers
 ForwardPrimer:
@@ -142,13 +145,19 @@ ForwardPrimer:
     type: object
     occurrence: single
     properties:
-        primer_seq:
-            type: IUPAC nucleotide notation
+        fw_primer_name:
+            type: text
+            description: Primer name or quick description
+            tableview: true
+        fw_primer_seq:
+            type: ambiguous nucleotide sequence
             description: primer sequence
+            tableview: true
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
             relationship: [repertoire, Repertoire, forward_primer_set]
+            hide: true
 
 ReversePrimer:
     discriminator: AIRR
@@ -156,13 +165,44 @@ ReversePrimer:
     type: object
     occurrence: single
     properties:
-        primer_seq:
-            type: IUPAC nucleotide notation
+        rv_primer_name:
+            type: text
+            description: Primer name or quick description
+            tableview: true
+        rv_primer_seq:
+            type: ambiguous nucleotide sequence
             description: primer sequence
+            tableview: true
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
             relationship: [repertoire, Repertoire, reverse_primer_set]
+            hide: true
+
+Acknowledgements:
+    discriminator: AIRR
+    description: List of individuals whose contribution to this work should be acknowledged
+    type: object
+    occurrence: multiple
+    properties:
+        ack_name:
+            type: text
+            description: Full name of individual
+            tableview: true
+        ack_institution_name:
+            type: string
+            description: Individual's department and institution name
+            tableview: true
+        ack_ORCID_id:
+            type: ORCID ID
+            description: Individual's ORCID Id, if available
+            tableview: true
+        submission_id:
+            type: integer
+            hide: true
+            foreign_key: submission.id
+            relationship: [submission, Submission, acknowledgements]
+
 
 # Inference Tool Overview
 Inference_Tool_Overview:
@@ -777,18 +817,3 @@ Germline_Set:
             description: 
   
 
-Acknowledgements:
-    discriminator: AIRR
-    description: List of individuals whose contribution to this work should be acknowledged
-    type: object
-    occurrence: multiple
-    properties:
-        name:
-            type: name
-            description: Full name of individual
-        institution_name:
-            type: string
-            description: Individual's department and institution name
-        ORCID_id:
-            type: ORCID ID
-            description: Individual's ORCID Id, if available

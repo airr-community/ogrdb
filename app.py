@@ -8,10 +8,12 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_required
 from flask_mail import Mail, Message
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
+from wtforms import SubmitField, IntegerField
 from flask_table import Table, Col, LinkCol
 import logging.handlers
 import datetime
 import sys
+from copy import deepcopy
 
 from get_pmid_details import get_pmid_details
 
@@ -35,7 +37,6 @@ admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
 from forms.submissionform import *
 from forms.repertoireform import *
-from forms.pubmedform import *
 from forms.security import *
 from forms.submissioneditform import *
 
@@ -124,36 +125,6 @@ def new_submission():
 
     return render_template('submissionnew.html', form=form, url='new_submission')
 
-class DelCol(Col):
-    def td_format(self, content):
-        #return '<input type="submit" value="Del" id="pmid_del_%s" name="pmid_del_%s" >' % (content, content)
-        return '<button id="pmid_del_%s" name="pmid_del_%s" type="submit" value="Del" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>'  % (content, content)
-
-def setup_sub_forms_and_tables(sub):
-    if len(sub.repertoire) == 0:
-        sub.repertoire.append(Repertoire())
-        db.session.commit()
-
-    submission_form = SubmissionForm(obj = sub)
-    species = db.session.query(Committee.species).all()
-    submission_form.species.choices = [(s[0],s[0]) for s in species]
-
-    repertoire_form = RepertoireForm(obj = sub.repertoire)
-    pubmed_form = PubMedForm()
-    form = SubEditForm(submission_form, repertoire_form, pubmed_form)
-
-    # Build a dynamic version of PubMedForm, with a delete field attribute for each id
-    # Link the fields to a column in the pubmed_table
-
-    pubmed_table = make_PubId_table(sub.repertoire[0].pub_ids, classes=['table table-bordered'])
-    pubmed_table.add_column('id', DelCol(''))
-    foo=pubmed_table.__html__()
-    dynform = PubMedForm
-    for pmid in sub.repertoire[0].pub_ids:
-        setattr(dynform, 'pmid_del_%d' % pmid.id, SubmitField('Del'))
-
-    return (pubmed_table, form)
-
 def check_sub_edit(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
     if sub is None:
@@ -164,13 +135,14 @@ def check_sub_edit(id):
         return None
     return sub
 
+
 @app.route('/edit_submission/<id>', methods=['GET', 'POST'])
 @login_required
 def edit_submission(id):
     sub = check_sub_edit(id)
     if sub is None:
         return redirect('/submissions')
-    (pubmed_table, form) = setup_sub_forms_and_tables(sub)
+    (tables, form) = setup_sub_forms_and_tables(sub, db)
 
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -183,20 +155,86 @@ def edit_submission(id):
                     p.pubmed_id = request.form['pubmed_id']
                     sub.repertoire[0].pub_ids.append(p)
                     db.session.commit()
-                    pubmed_table = make_PubId_table(sub.repertoire[0].pub_ids, classes=['table table-bordered'])
+                    tables['pubmed_table'] = make_PubId_table(sub.repertoire[0].pub_ids, classes=['table table-bordered'])
+                    form.pubmed_id.data = ''
                 except ValueError as e:
                     exc_value = sys.exc_info()[1]
-                    form.pubmed_id.errors = [exc_value.args[0]]
+                    form.pubmed_id.errors.append(exc_value.args[0])
+            elif form.add_fw_primer.data:
+                if len(form.fw_primer_name.data) < 1:
+                    form.fw_primer_name.errors.append('Name cannot be blank.')
+                if len(form.fw_primer_seq.data) < 1:
+                    form.fw_primer_seq.errors.append('Sequence cannot be blank.')
+                else:
+                    p = ForwardPrimer()
+                    p.fw_primer_name = form.fw_primer_name.data
+                    p.fw_primer_seq = form.fw_primer_seq.data
+                    sub.repertoire[0].forward_primer_set.append(p)
+                    db.session.commit()
+                    tables['fw_primer'] = make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set, classes=['table table-bordered'])
+                    form.fw_primer_name.data = ''
+                    form.fw_primer_seq.data = ''
+            elif form.add_rv_primer.data:
+                if len(form.rv_primer_name.data) < 1:
+                    form.rv_primer_name.errors.append('Name cannot be blank.')
+                if len(form.rv_primer_seq.data) < 1:
+                    form.rv_primer_seq.errors.append('Sequence cannot be blank.')
+                else:
+                    p = ReversePrimer()
+                    p.rv_primer_name = form.rv_primer_name.data
+                    p.rv_primer_seq = form.rv_primer_seq.data
+                    sub.repertoire[0].reverse_primer_set.append(p)
+                    db.session.commit()
+                    tables['rv_primer'] = make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set, classes=['table table-bordered'])
+                    form.rv_primer_name.data = ''
+                    form.rv_primer_seq.data = ''
+            elif form.add_ack.data:
+                if len(form.ack_name.data) < 1:
+                    form.ack_name.errors.append('Name cannot be blank.')
+                if len(form.ack_institution_name.data) < 1:
+                    form.ack_institution_name.errors.append('Institution cannot be blank.')
+                else:
+                    a = Acknowledgements()
+                    a.ack_name = form.ack_name.data
+                    a.ack_institution_name = form.ack_institution_name.data
+                    a.ack_ORCID_id = form.ack_ORCID_id.data
+                    sub.acknowledgements.append(a)
+                    db.session.commit()
+                    tables['ack'] = make_Acknowledgements_table(sub.acknowledgements, classes=['table table-bordered'])
+                    form.ack_name.data = ''
+                    form.ack_institution_name.data = ''
+                    form.ack_ORCID_id.data = ''
             else:
-                for field in form.pubmed_form._fields:
-                    if 'pmid_del_' in field and form.pubmed_form[field].data:
+                for field in form._fields:
+                    if 'pubmed_del_' in field and form[field].data:
                         for p in sub.repertoire[0].pub_ids:
-                            if p.id == int(field.replace('pmid_del_', '')):
+                            if p.id == int(field.replace('pubmed_del_', '')):
                                 sub.repertoire[0].pub_ids.remove(p)
                                 db.session.commit()
                                 break
+                for field in form._fields:
+                    if 'fw_primer_del_' in field and form[field].data:
+                        for p in sub.repertoire[0].forward_primer_set:
+                            if p.id == int(field.replace('fw_primer_del_', '')):
+                                sub.repertoire[0].forward_primer_set.remove(p)
+                                db.session.commit()
+                                break
+                for field in form._fields:
+                    if 'rv_primer_del_' in field and form[field].data:
+                        for p in sub.repertoire[0].reverse_primer_set:
+                            if p.id == int(field.replace('rv_primer_del_', '')):
+                                sub.repertoire[0].reverse_primer_set.remove(p)
+                                db.session.commit()
+                                break
+                for field in form._fields:
+                    if 'ack_del_' in field and form[field].data:
+                        for a in sub.acknowledgements:
+                            if a.id == int(field.replace('ack_del_', '')):
+                                sub.acknowledgements.remove(a)
+                                db.session.commit()
+                                break
 
-    return render_template('submissionedit.html', form = form, id=id, pubmed_table=pubmed_table)
+    return render_template('submissionedit.html', form = form, id=id, tables=tables)
 
 @app.route('/submission/<id>')
 def submission(id):

@@ -1,7 +1,9 @@
+
 # FlaskForm class definitions for Submission
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField
+from customvalidators import *
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
 class SubmissionForm(FlaskForm):
     submission_id = StringField('submission_id')
     submission_date = DateField('submission_date')
