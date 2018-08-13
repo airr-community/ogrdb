@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Date
@@ -32,6 +32,7 @@ db = SQLAlchemy(app)
 from db.userdb import User
 from db.submissiondb import *
 from db.repertoiredb import *
+from db.inference_tool_db import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -144,97 +145,41 @@ def edit_submission(id):
         return redirect('/submissions')
     (tables, form) = setup_sub_forms_and_tables(sub, db)
 
+    tag = ''
     if request.method == 'POST':
-        if form.validate_on_submit():
-            if form.add_pubmed.data:
-                try:
-                    res = get_pmid_details(request.form['pubmed_id'])
-                    p = PubId()
-                    p.pub_title = res['title']
-                    p.pub_authors = res['authors']
-                    p.pubmed_id = request.form['pubmed_id']
-                    sub.repertoire[0].pub_ids.append(p)
+        if form.validate():
+            valid = True
+            # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
+            # this is a little more complex than it needs to be, because there's custom validation on some of the fields
+            for table in tables.values():
+                if table.check_add_item(request):
                     db.session.commit()
-                    tables['pubmed_table'] = make_PubId_table(sub.repertoire[0].pub_ids, classes=['table table-bordered'])
-                    form.pubmed_id.data = ''
-                except ValueError as e:
-                    exc_value = sys.exc_info()[1]
-                    form.pubmed_id.errors.append(exc_value.args[0])
-            elif form.add_fw_primer.data:
-                if len(form.fw_primer_name.data) < 1:
-                    form.fw_primer_name.errors.append('Name cannot be blank.')
-                if len(form.fw_primer_seq.data) < 1:
-                    form.fw_primer_seq.errors.append('Sequence cannot be blank.')
-                else:
-                    p = ForwardPrimer()
-                    p.fw_primer_name = form.fw_primer_name.data
-                    p.fw_primer_seq = form.fw_primer_seq.data
-                    sub.repertoire[0].forward_primer_set.append(p)
+                    tag = table.name
+                if table.process_deletes(db):
                     db.session.commit()
-                    tables['fw_primer'] = make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set, classes=['table table-bordered'])
-                    form.fw_primer_name.data = ''
-                    form.fw_primer_seq.data = ''
-            elif form.add_rv_primer.data:
-                if len(form.rv_primer_name.data) < 1:
-                    form.rv_primer_name.errors.append('Name cannot be blank.')
-                if len(form.rv_primer_seq.data) < 1:
-                    form.rv_primer_seq.errors.append('Sequence cannot be blank.')
-                else:
-                    p = ReversePrimer()
-                    p.rv_primer_name = form.rv_primer_name.data
-                    p.rv_primer_seq = form.rv_primer_seq.data
-                    sub.repertoire[0].reverse_primer_set.append(p)
-                    db.session.commit()
-                    tables['rv_primer'] = make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set, classes=['table table-bordered'])
-                    form.rv_primer_name.data = ''
-                    form.rv_primer_seq.data = ''
-            elif form.add_ack.data:
-                if len(form.ack_name.data) < 1:
-                    form.ack_name.errors.append('Name cannot be blank.')
-                if len(form.ack_institution_name.data) < 1:
-                    form.ack_institution_name.errors.append('Institution cannot be blank.')
-                else:
-                    a = Acknowledgements()
-                    a.ack_name = form.ack_name.data
-                    a.ack_institution_name = form.ack_institution_name.data
-                    a.ack_ORCID_id = form.ack_ORCID_id.data
-                    sub.acknowledgements.append(a)
-                    db.session.commit()
-                    tables['ack'] = make_Acknowledgements_table(sub.acknowledgements, classes=['table table-bordered'])
-                    form.ack_name.data = ''
-                    form.ack_institution_name.data = ''
-                    form.ack_ORCID_id.data = ''
-            else:
-                for field in form._fields:
-                    if 'pubmed_del_' in field and form[field].data:
-                        for p in sub.repertoire[0].pub_ids:
-                            if p.id == int(field.replace('pubmed_del_', '')):
-                                sub.repertoire[0].pub_ids.remove(p)
-                                db.session.commit()
-                                break
-                for field in form._fields:
-                    if 'fw_primer_del_' in field and form[field].data:
-                        for p in sub.repertoire[0].forward_primer_set:
-                            if p.id == int(field.replace('fw_primer_del_', '')):
-                                sub.repertoire[0].forward_primer_set.remove(p)
-                                db.session.commit()
-                                break
-                for field in form._fields:
-                    if 'rv_primer_del_' in field and form[field].data:
-                        for p in sub.repertoire[0].reverse_primer_set:
-                            if p.id == int(field.replace('rv_primer_del_', '')):
-                                sub.repertoire[0].reverse_primer_set.remove(p)
-                                db.session.commit()
-                                break
-                for field in form._fields:
-                    if 'ack_del_' in field and form[field].data:
-                        for a in sub.acknowledgements:
-                            if a.id == int(field.replace('ack_del_', '')):
-                                sub.acknowledgements.remove(a)
-                                db.session.commit()
-                                break
+                    tag = table.name
+                for field in table.form:
+                    if len(field.errors) > 0:
+                        tag = table.name
+                        valid = False
 
-    return render_template('submissionedit.html', form = form, id=id, tables=tables)
+            save_Submission(db, sub, form, False)
+            save_Repertoire(db, sub.repertoire[0], form, False)
+            if valid:
+                return redirect(url_for('edit_submission', id=id, _anchor=tag if tag else ''))
+            else:
+                return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
+
+        # Jump to the table section wirh an error, if any
+        for table in tables.values():
+            for field in table.form:
+                if len(field.errors) > 0:
+                    tag = table.name
+    else:
+        populate_Submission(db, sub, form)
+        populate_Repertoire(db, sub.repertoire[0], form)
+
+    return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
 
 @app.route('/submission/<id>')
 def submission(id):
@@ -245,3 +190,37 @@ def submission(id):
     else:
         table = make_Submission_view(sub, sub.can_edit(current_user))
         return render_template('submissionview.html', sub=sub, table=table)
+
+
+def check_tool_edit(id):
+    try:
+        tool = db.session.query(InferenceTool).filter_by(id = id).one_or_none()
+        if tool is None:
+            flash('Record not found')
+            return None
+        elif not tool.submission.can_edit(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return tool
+
+@app.route('/edit_tool/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_tool(id):
+    tool = check_tool_edit(id)
+    if tool is None:
+        return redirect('/')
+
+    form = InferenceToolForm()
+
+    if request.method == 'POST':
+        if form.validate():
+            save_InferenceTool(db, tool, form, new=False)
+    else:
+        populate_InferenceTool(db, tool, form)
+
+    return render_template('inference_tool_edit.html', form=form, submission_id=tool.submission.submission_id, id=id)

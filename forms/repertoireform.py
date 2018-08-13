@@ -3,9 +3,9 @@
 
 from flask_wtf import FlaskForm
 from customvalidators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class PubIdForm(FlaskForm):
-    pubmed_id = IntegerField('pubmed_id', [validators.Optional()])
+    pubmed_id = StringField('pubmed_id', [validators.Length(max=255)])
 
 
 
@@ -13,9 +13,9 @@ class PubIdForm(FlaskForm):
 
 from flask_wtf import FlaskForm
 from customvalidators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ForwardPrimerForm(FlaskForm):
-    fw_primer_name = StringField('fw_primer_name')
+    fw_primer_name = TextAreaField('fw_primer_name', [validators.Length(max=10000)])
     fw_primer_seq = StringField('fw_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
 
 
@@ -24,9 +24,9 @@ class ForwardPrimerForm(FlaskForm):
 
 from flask_wtf import FlaskForm
 from customvalidators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ReversePrimerForm(FlaskForm):
-    rv_primer_name = StringField('rv_primer_name')
+    rv_primer_name = TextAreaField('rv_primer_name', [validators.Length(max=10000)])
     rv_primer_seq = StringField('rv_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
 
 
@@ -35,10 +35,10 @@ class ReversePrimerForm(FlaskForm):
 
 from flask_wtf import FlaskForm
 from customvalidators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class AcknowledgementsForm(FlaskForm):
-    ack_name = StringField('ack_name')
-    ack_institution_name = StringField('ack_institution_name')
+    ack_name = TextAreaField('ack_name', [validators.Length(max=10000)])
+    ack_institution_name = StringField('ack_institution_name', [validators.Length(max=255)])
     ack_ORCID_id = StringField('ack_ORCID_id', [validators.Optional(), ValidOrcidID()])
 
 
@@ -47,16 +47,16 @@ class AcknowledgementsForm(FlaskForm):
 
 from flask_wtf import FlaskForm
 from customvalidators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class RepertoireForm(FlaskForm):
-    repository_name = StringField('repository_name')
-    repository_id = StringField('repository_id')
-    dataset_url = StringField('dataset_url')
-    dataset_doi = StringField('dataset_doi')
-    miarr_compliant = SelectField('miarr_compliant', choices=[(True, True), (False, False)])
-    miairr_link = StringField('miairr_link')
-    sequencing_platform = StringField('sequencing_platform')
-    read_length = StringField('read_length')
-    primers_not_overlapping = SelectField('primers_not_overlapping', choices=[(True, True), (False, False)])
+    repository_name = StringField('repository_name', [validators.Length(max=255)])
+    repository_id = StringField('repository_id', [validators.Length(max=255)])
+    dataset_url = StringField('dataset_url', [validators.Length(max=255)])
+    dataset_doi = StringField('dataset_doi', [validators.Length(max=255)])
+    miarr_compliant = SelectField('miarr_compliant', choices=[('Yes', 'Yes'), ('No', 'No')])
+    miairr_link = StringField('miairr_link', [validators.Length(max=255)])
+    sequencing_platform = StringField('sequencing_platform', [validators.Length(max=255)])
+    read_length = StringField('read_length', [validators.Length(max=255)])
+    primers_overlapping = SelectField('primers_overlapping', choices=[('Yes', 'Yes'), ('No', 'No')])
 
 

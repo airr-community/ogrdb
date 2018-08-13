@@ -59,3 +59,16 @@ class ValidAASequence(object):
         except:
             raise ValidationError(self.message)
 
+# validators.DataRequired and InputRequired stop the validation chain if they fail
+# This continues, so that if Optional() has been added to the chain, it takes precedence
+# This is needed by EditableTable, which adds Optional to force validation
+class NonEmpty(object):
+    def __init__(self, message=None):
+        if not message:
+            message = 'Field cannot be blank.'
+        self.message = message
+
+    def __call__(self, form, field):
+        if not field.raw_data or not field.raw_data[0]:
+            raise ValidationError(self.message)
+

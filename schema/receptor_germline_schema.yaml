@@ -102,7 +102,7 @@ Repertoire:
             type: list of IUPAC nucleotide notation
             description: sequences of reverse pcr primers used for sequence amplification
             completed_by: submitter
-        primers_not_overlapping:
+        primers_overlapping:
             type: [Yes, No]
             description: Please confirm that primers do not overlap with the stated sequence of any inferred allele.
             completed_by: submitter
@@ -119,7 +119,7 @@ PubId:
     occurrence: single
     properties:
         pubmed_id:
-            type: integer
+            type: string
             description: PubMed ID
             tableview: true
         pub_title:
@@ -204,54 +204,37 @@ Acknowledgements:
             relationship: [submission, Submission, acknowledgements]
 
 
-# Inference Tool Overview
-Inference_Tool_Overview:
-    discriminator: AIRR
-    description: Header for submission of tool information
-    type: object
-    occurrence: single
-    properties:
-        tool_name:
-            type: string
-            description: Name of the inference tool
-            completed_by: submitter
-        tool_version:
-            type: string
-            description: Version of the inference tool for which this information was submitted
-            completed_by: submitter
-        submitter_name:
-            type: string
-            description: Name of the person submitting tool information
-            completed_by: submitter
-        submitter_address:
-            type: email address
-            description: Email address of the person submitting tool information
-            completed_by: submitter
-
-            
 # Inference Tool
-Inference_Tool:
+InferenceTool:
     discriminator: AIRR
     description: Tool used to infer the submitted sequences
     type: object
     occurrence: single
     properties:
+        tool_settings_name:
+            type: string
+            description: Descriptive name for this combination of tool and settings
+            completed_by: submitter
+            tableview: true
         tool_name:
             type: string
             description: Name of the inference tool
             completed_by: submitter
+            tableview: true
         tool_version:
             type: string
             description: Version of the inference tool
             completed_by: submitter
-        starting_database:
-            type: string
+        tool_starting_database:
+            type: text
             description: Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)
             completed_by: submitter
+            rows: 10
         tool_settings:
-            type: string
+            type: text
             description: Settings/configuration of the tool when used to provide the inferences (automatically generated)
             completed_by: submitter
+            rows: 20
 
             
 # Inferred Sequence
@@ -451,27 +434,6 @@ Genotype:
             description: The consensus sequence provided by the inference tool
             completed_by: submitter
             
-SoftwareProcessing:
-    discriminator: AIRR
-    type: object
-    properties:
-        software_name:
-            type: string
-            description: Name of the tool used to produce these inferences
-        software_version:
-            type: string
-            description: Version number and / or date
-        reference_germline_set:
-            type: string
-            description: Name or description of the germline set used by the tool
-        reference_germline_version:
-            type: string
-            description: Version number and / or date
-        software_settings:
-            type: dictionary
-            description: Dictionary of setting types and values specific to this software tool
-
-    
 Observed_Sequence:
     discriminator: AIRR
     description: Details of a directly observed or inferred sequence which contributes to the inference of a gene

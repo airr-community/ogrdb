@@ -1,13 +1,15 @@
 # Composite form for Edit Submission page - defined manually
 
-from flask import flash
-from wtforms import SubmitField, IntegerField
-from copy import deepcopy
 from db.repertoiredb import *
-from db.submissiondb import *
 from db.miscdb import *
+from db.inference_tool_db import *
 from forms.repertoireform import *
 from forms.submissionform import *
+from forms.inference_tool_form import *
+from sys import exc_info
+from db.editable_table import *
+
+from get_pmid_details import get_pmid_details
 
 class AggregateForm(FlaskForm):
     def __init__(self, *args):
@@ -24,30 +26,104 @@ class AggregateForm(FlaskForm):
             if a is not None: return a
         raise(AttributeError())
 
-# Helper functions for the route
+class EditablePubIdTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_pubmed.data:
+            try:
+                res = get_pmid_details(request.form['pubmed_id'])
+                p = PubId()
+                p.pub_title = res['title']
+                p.pub_authors = res['authors']
+                p.pubmed_id = request.form['pubmed_id']
+                self.items.append(p)
+                self.table = make_PubId_table(self.items)
+                self.form.pubmed_id.data = ''
+                return True
+            except ValueError as e:
+                exc_value = exc_info()[1]
+                self.form.pubmed_id.errors.append(exc_value.args[0])
+        return False
 
-class DelCol(Col):
-    def __init__(self, name):
-        super().__init__('')
-        self.name = name
-    def td_format(self, content):
-        return '<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>'  % (self.name, content, self.name, content)
+class EditableFwPrimerTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_fw_primer.data:
+            valid = True
+            if len(self.form.fw_primer_name.data) < 1:
+                self.form.fw_primer_name.errors.append('Name cannot be blank.')
+                valid = False
+            if len(self.form.fw_primer_seq.data) < 1:
+                self.form.fw_primer_seq.errors.append('Sequence cannot be blank.')
+                valid = False
 
+            if valid:
+                p = ForwardPrimer()
+                p.fw_primer_name = self.form.fw_primer_name.data
+                p.fw_primer_seq = self.form.fw_primer_seq.data
+                self.items.append(p)
+                self.table = make_ForwardPrimer_table(self.items)
+                return True
+        return False
 
-def prep_for_edit_form(sub, table, name, form, legend, ids):
-    # Build as much as we can dynamically, to avoid the need for extraneous files
-    # use a deepcopy of the class to avoid permanently modifying its members
-    # we still need a jinja template for each table, though
-    dynform = deepcopy(form)
-    # Add the dynamic controls to the deepcopy
-    setattr(dynform, 'add_%s' % (name), SubmitField(legend))
-    for pmid in ids:
-        setattr(dynform, '%s_del_%d' % (name, pmid.id), SubmitField('Del'))
-    form = dynform()
+class EditableRvPrimerTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_rv_primer.data:
+            valid = True
+            if len(self.form.rv_primer_name.data) < 1:
+                self.form.rv_primer_name.errors.append('Name cannot be blank.')
+                valid = False
+            if len(self.form.rv_primer_seq.data) < 1:
+                self.form.rv_primer_seq.errors.append('Sequence cannot be blank.')
+                valid = False
 
-    # Subclass the table to provide refs to the delete buttons on each row
-    table.add_column('id', DelCol(name))
-    return (table, form)
+            if valid:
+                p = ReversePrimer()
+                p.rv_primer_name = self.form.rv_primer_name.data
+                p.rv_primer_seq = self.form.rv_primer_seq.data
+                self.items.append(p)
+                self.table = make_ReversePrimer_table(self.items)
+                return True
+        return False
+
+class EditableAckTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_ack.data:
+            valid = True
+            if len(self.form.ack_name.data) < 1:
+                self.form.ack_name.errors.append('Name cannot be blank.')
+                valid = False
+            if len(self.form.ack_institution_name.data) < 1:
+                self.form.ack_institution_name.errors.append('Institution cannot be blank.')
+                valid = False
+
+            if valid:
+                a = Acknowledgements()
+                a.ack_name = self.form.ack_name.data
+                a.ack_institution_name = self.form.ack_institution_name.data
+                a.ack_ORCID_id = self.form.ack_ORCID_id.data
+                self.items.append(a)
+                self.table = make_Acknowledgements_table(self.items)
+                return True
+        return False
+
+class EditableInferenceToolTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_tools.data:
+            valid = True
+            if len(self.form.tool_settings_name.data) < 1:
+                self.form.tool_settings_name.errors.append('Settings name cannot be blank.')
+                valid = False
+            if len(self.form.tool_name.data) < 1:
+                self.form.tool_name.errors.append('Tool name cannot be blank.')
+                valid = False
+
+            if valid:
+                t = InferenceTool()
+                t.tool_name = self.form.tool_name.data
+                t.tool_settings_name = self.form.tool_settings_name.data
+                self.items.append(t)
+                self.table = make_Acknowledgements_table(self.items)
+                return True
+        return False
 
 def setup_sub_forms_and_tables(sub, db):
     tables = {}
@@ -62,12 +138,13 @@ def setup_sub_forms_and_tables(sub, db):
 
     repertoire_form = RepertoireForm(obj = sub.repertoire)
 
-    (tables['pubmed_table'], pubmed_form) = prep_for_edit_form(sub, make_PubId_table(sub.repertoire[0].pub_ids, classes=['table table-bordered']), 'pubmed', PubIdForm, 'Add Publication', sub.repertoire[0].pub_ids)
-    (tables['fw_primer'], fw_primer_form) = prep_for_edit_form(sub, make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set, classes=['table table-bordered']), 'fw_primer', ForwardPrimerForm, 'Add Primer', sub.repertoire[0].forward_primer_set)
-    (tables['rv_primer'], rv_primer_form) = prep_for_edit_form(sub, make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set, classes=['table table-bordered']), 'rv_primer', ReversePrimerForm, 'Add Primer', sub.repertoire[0].reverse_primer_set)
-    (tables['ack'], ack_form) = prep_for_edit_form(sub, make_Acknowledgements_table(sub.acknowledgements, classes=['table table-bordered']), 'ack', AcknowledgementsForm, 'Add Acknowledgement', sub.acknowledgements)
+    tables['pubmed_table'] = EditablePubIdTable(make_PubId_table(sub.repertoire[0].pub_ids), 'pubmed', PubIdForm, sub.repertoire[0].pub_ids, legend='Add Publication')
+    tables['fw_primer'] = EditableFwPrimerTable(make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set), 'fw_primer', ForwardPrimerForm, sub.repertoire[0].forward_primer_set, legend='Add Primer')
+    tables['rv_primer'] = EditableRvPrimerTable(make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set), 'rv_primer', ReversePrimerForm, sub.repertoire[0].reverse_primer_set, legend='Add Primer')
+    tables['ack'] = EditableAckTable(make_Acknowledgements_table(sub.acknowledgements), 'ack', AcknowledgementsForm, sub.acknowledgements, legend='Add Acknowledgement')
+    tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool')
 
-    form = AggregateForm(submission_form, repertoire_form, pubmed_form, fw_primer_form, rv_primer_form, ack_form)
+    form = AggregateForm(submission_form, repertoire_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form)
     return (tables, form)
 
 

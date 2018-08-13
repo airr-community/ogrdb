@@ -1,35 +1,38 @@
 {% macro render_field(field) %}
-    <div class="form-group col-sm-10">
-        {{ field.label(class="col-sm-3 control-label") }}
+    <div class="form-group">
+        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
         <div class="col-sm-6">
             {{ field(**kwargs)|safe }}
         </div>
     </div>
 {% endmacro %}
 
+
 {% macro render_static_field(field) %}
-    <div class="form-group col-sm-10">
-        {{ field.label(class="col-sm-3 control-label") }}
+    <div class="form-group">
+        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
         <div class="col-sm-6">
-            <p class="form-control-static">{{ field.data }}</p>
+                <p class="form-control-static">{{ field.data }}</p>
         </div>
     </div>
 {% endmacro %}
 
 
 {% macro render_field_with_errors(field) %}
-    <div class="form-group col-sm-10">
-        {{ field.label(class="col-sm-3 control-label") }}
-        <div class="col-sm-6">
-            {{ field(**kwargs)|safe }}
+    <div class="form-group">
+        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+            <div class="col-sm-6">
+                {{ field(**kwargs)|safe }}
+            </div>
             {% if field.errors %}
-              <ul>
-              {% for error in field.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-              </ul>
+            <div class="col-sm-6 col-sm-offset-3 red">
+                <ul>
+                {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
             {% endif %}
-        </div>
     </div>
 {% endmacro %}
 

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Inference Tool / Settings {% endblock %}
+
+{% block c_body %}
+
+<h3>Submission: <a href="{{ url_for('edit_submission', id=submission_id) }}"> {{ submission_id }} </a> </h3>
+
+<form action="{{ url_for('edit_tool', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+
+            {% include 'inference_tool_form.html' %}
+
+            <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+</form>
+
+{% endblock %}

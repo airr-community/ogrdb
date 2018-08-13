@@ -2,6 +2,8 @@
 # ORM definitions for Submission
 from app import db
 from db.userdb import User
+from db.styled_table import *
+from flask_table import Table, Col, LinkCol
 
 class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,15 +38,27 @@ def save_Submission(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class Submission_table(Table):
+def populate_Submission(db, object, form):   
+    form.submission_id.data = object.submission_id
+    form.submission_date.data = object.submission_date
+    form.submission_status.data = object.submission_status
+    form.submitter_name.data = object.submitter_name
+    form.submitter_address.data = object.submitter_address
+    form.submitter_email.data = object.submitter_email
+    form.submitter_phone.data = object.submitter_phone
+    form.species.data = object.species
+    form.population_ethnicity.data = object.population_ethnicity
+
+
+
+class Submission_table(StyledTable):
     id = Col("id", show=False)
-    submission_id = LinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])
-    submission_date = Col("submission_date")
-    submission_status = Col("submission_status")
-    submitter_name = Col("submitter_name")
-    species = Col("species")
+    submission_id = StyledLinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])
+    submission_date = StyledCol("submission_date")
+    submission_status = StyledCol("submission_status")
+    submitter_name = StyledCol("submitter_name")
+    species = StyledCol("species")
 
 
 def make_Submission_table(results, private = False, classes=()):

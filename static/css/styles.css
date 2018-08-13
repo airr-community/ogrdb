@@ -30,6 +30,11 @@ a, a:hover, a:active, a:focus, a:visited {
     color: white !important;
 }
 
+.red {
+    color: red !important;
+}
+
+
 section#wrapper {
     width: 70%;
     margin-left: auto;
@@ -224,3 +229,19 @@ div.menu {
 .heading-btn {
     margin-top: 20px;
 }
+
+.editable {
+    margin-bottom: 15px;
+}
+
+.table_back {
+    background-color: white;
+    width: 96%;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.th_back {
+    border-bottom: 1px solid black !important;
+}
+

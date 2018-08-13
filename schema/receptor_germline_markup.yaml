@@ -63,4 +63,21 @@ Repertoire:
             foreign_key: submission.id
             relationship: [submission, Submission, repertoire]
 
+InferenceTool:
+    properties:
+        tool_settings_name:
+            nonblank: true
+        tool_name:
+            nonblank: true
+        tool_version:
+            nonblank: true
+        tool_starting_database:
+            nonblank: true
+        tool_settings:
+            nonblank: true
+        submission_id:
+            type: integer
+            hide: true
+            foreign_key: submission.id
+            relationship: [submission, Submission, inference_tools]
 

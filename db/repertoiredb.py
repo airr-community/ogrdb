@@ -2,10 +2,12 @@
 # ORM definitions for PubId
 from app import db
 from db.userdb import User
+from db.styled_table import *
+from flask_table import Table, Col, LinkCol
 
 class PubId(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    pubmed_id = db.Column(db.Integer)
+    pubmed_id = db.Column(db.String(255))
     pub_title = db.Column(db.String(255))
     pub_authors = db.Column(db.String(255))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
@@ -21,13 +23,17 @@ def save_PubId(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class PubId_table(Table):
+def populate_PubId(db, object, form):   
+    form.pubmed_id.data = object.pubmed_id
+
+
+
+class PubId_table(StyledTable):
     id = Col("id", show=False)
-    pubmed_id = Col("pubmed_id")
-    pub_title = Col("pub_title")
-    pub_authors = Col("pub_authors")
+    pubmed_id = StyledCol("pubmed_id")
+    pub_title = StyledCol("pub_title")
+    pub_authors = StyledCol("pub_authors")
 
 
 def make_PubId_table(results, private = False, classes=()):
@@ -45,14 +51,10 @@ def make_PubId_view(sub, private = False):
     return ret
 
 
-# ORM definitions for ForwardPrimer
-from app import db
-from db.userdb import User
-
 class ForwardPrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fw_primer_name = db.Column(db.String(10000))
-    fw_primer_seq = db.Column(db.String(10000))
+    fw_primer_name = db.Column(db.Text())
+    fw_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'forward_primer_set')
 
@@ -67,12 +69,17 @@ def save_ForwardPrimer(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class ForwardPrimer_table(Table):
+def populate_ForwardPrimer(db, object, form):   
+    form.fw_primer_name.data = object.fw_primer_name
+    form.fw_primer_seq.data = object.fw_primer_seq
+
+
+
+class ForwardPrimer_table(StyledTable):
     id = Col("id", show=False)
-    fw_primer_name = Col("fw_primer_name")
-    fw_primer_seq = Col("fw_primer_seq")
+    fw_primer_name = StyledCol("fw_primer_name")
+    fw_primer_seq = StyledCol("fw_primer_seq")
 
 
 def make_ForwardPrimer_table(results, private = False, classes=()):
@@ -91,14 +98,10 @@ def make_ForwardPrimer_view(sub, private = False):
     return ret
 
 
-# ORM definitions for ReversePrimer
-from app import db
-from db.userdb import User
-
 class ReversePrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rv_primer_name = db.Column(db.String(10000))
-    rv_primer_seq = db.Column(db.String(10000))
+    rv_primer_name = db.Column(db.Text())
+    rv_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'reverse_primer_set')
 
@@ -113,12 +116,17 @@ def save_ReversePrimer(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class ReversePrimer_table(Table):
+def populate_ReversePrimer(db, object, form):   
+    form.rv_primer_name.data = object.rv_primer_name
+    form.rv_primer_seq.data = object.rv_primer_seq
+
+
+
+class ReversePrimer_table(StyledTable):
     id = Col("id", show=False)
-    rv_primer_name = Col("rv_primer_name")
-    rv_primer_seq = Col("rv_primer_seq")
+    rv_primer_name = StyledCol("rv_primer_name")
+    rv_primer_seq = StyledCol("rv_primer_seq")
 
 
 def make_ReversePrimer_table(results, private = False, classes=()):
@@ -137,13 +145,9 @@ def make_ReversePrimer_view(sub, private = False):
     return ret
 
 
-# ORM definitions for Acknowledgements
-from app import db
-from db.userdb import User
-
 class Acknowledgements(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ack_name = db.Column(db.String(10000))
+    ack_name = db.Column(db.Text())
     ack_institution_name = db.Column(db.String(255))
     ack_ORCID_id = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
@@ -161,13 +165,19 @@ def save_Acknowledgements(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class Acknowledgements_table(Table):
+def populate_Acknowledgements(db, object, form):   
+    form.ack_name.data = object.ack_name
+    form.ack_institution_name.data = object.ack_institution_name
+    form.ack_ORCID_id.data = object.ack_ORCID_id
+
+
+
+class Acknowledgements_table(StyledTable):
     id = Col("id", show=False)
-    ack_name = Col("ack_name")
-    ack_institution_name = Col("ack_institution_name")
-    ack_ORCID_id = Col("ack_ORCID_id")
+    ack_name = StyledCol("ack_name")
+    ack_institution_name = StyledCol("ack_institution_name")
+    ack_ORCID_id = StyledCol("ack_ORCID_id")
 
 
 def make_Acknowledgements_table(results, private = False, classes=()):
@@ -187,10 +197,6 @@ def make_Acknowledgements_view(sub, private = False):
     return ret
 
 
-# ORM definitions for Repertoire
-from app import db
-from db.userdb import User
-
 class Repertoire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     repository_name = db.Column(db.String(255))
@@ -201,7 +207,7 @@ class Repertoire(db.Model):
     miairr_link = db.Column(db.String(255))
     sequencing_platform = db.Column(db.String(255))
     read_length = db.Column(db.String(255))
-    primers_not_overlapping = db.Column(db.String(255))
+    primers_overlapping = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'repertoire')
 
@@ -215,7 +221,7 @@ def save_Repertoire(db, object, form, new=False):
     object.miairr_link = form.miairr_link.data
     object.sequencing_platform = form.sequencing_platform.data
     object.read_length = form.read_length.data
-    object.primers_not_overlapping = form.primers_not_overlapping.data
+    object.primers_overlapping = form.primers_overlapping.data
 
     if new:
         db.session.add(object)
@@ -223,9 +229,21 @@ def save_Repertoire(db, object, form, new=False):
     db.session.commit()   
 
 
-from flask_table import Table, Col, LinkCol
 
-class Repertoire_table(Table):
+def populate_Repertoire(db, object, form):   
+    form.repository_name.data = object.repository_name
+    form.repository_id.data = object.repository_id
+    form.dataset_url.data = object.dataset_url
+    form.dataset_doi.data = object.dataset_doi
+    form.miarr_compliant.data = object.miarr_compliant
+    form.miairr_link.data = object.miairr_link
+    form.sequencing_platform.data = object.sequencing_platform
+    form.read_length.data = object.read_length
+    form.primers_overlapping.data = object.primers_overlapping
+
+
+
+class Repertoire_table(StyledTable):
     id = Col("id", show=False)
 
 
@@ -248,6 +266,6 @@ def make_Repertoire_view(sub, private = False):
     ret.items.append({"item": "miairr_link", "value": sub.miairr_link})
     ret.items.append({"item": "sequencing_platform", "value": sub.sequencing_platform})
     ret.items.append({"item": "read_length", "value": sub.read_length})
-    ret.items.append({"item": "primers_not_overlapping", "value": sub.primers_not_overlapping})
+    ret.items.append({"item": "primers_overlapping", "value": sub.primers_overlapping})
     return ret
 

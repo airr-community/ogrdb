@@ -4,28 +4,44 @@
 {% block c_body %}
 
 <form action="{{ url_for('edit_submission', id=id) }}" method="POST" name="form" class="form-horizontal">
-    <div class="row pad">
 
             {{ form.hidden_tag() }}
+
+    <h3>Submission Details</h3>
             {% include 'submission_form.html' %}
 
-            {% include 'acknowledgement_form.html' %}
-    </div>
-    <div class="row pad">
-            <h2>Repertoire Details</h2>
-
-            {% include 'pubmed_form.html' %}
+    <h3>Repertoire Details</h3>
 
             {% include 'repertoire_form.html' %}
 
+             <a name="pubmed"> </a>
+    <h4>Repertoire Publications</h4>
+            {% include 'pubmed_form.html' %}
+
+             <a name="fw_primer"> </a>
+    <h4>Forward Primers</h4>
             {% include 'fw_primer_form.html' %}
 
+             <a name="rv_primer"> </a>
+    <h4>Reverse Primers</h4>
             {% include 'rv_primer_form.html' %}
 
-            <div class="form-group row col-sm-10">
-                <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
-            </div>
-    </div>
+             <a name="tools"> </a>
+    <h4>Inference Tools and Settings</h4>
+            {% include 'inference_tool_table.html' %}
+
+             <a name="ack"> </a>
+    <h3>Acknowledgements</h3>
+            {% include 'acknowledgement_form.html' %}
+
+            <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
 </form>
 
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if jump %}
+        <script> $(function(){ window.location.hash = "{{ jump }}"; }); </script>
+    {% endif %}
 {% endblock %}
