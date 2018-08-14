@@ -53,7 +53,7 @@ def make_PubId_view(sub, private = False):
 
 class ForwardPrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fw_primer_name = db.Column(db.Text())
+    fw_primer_name = db.Column(db.String(255))
     fw_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'forward_primer_set')
@@ -100,7 +100,7 @@ def make_ForwardPrimer_view(sub, private = False):
 
 class ReversePrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rv_primer_name = db.Column(db.Text())
+    rv_primer_name = db.Column(db.String(255))
     rv_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'reverse_primer_set')
@@ -147,7 +147,7 @@ def make_ReversePrimer_view(sub, private = False):
 
 class Acknowledgements(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ack_name = db.Column(db.Text())
+    ack_name = db.Column(db.String(255))
     ack_institution_name = db.Column(db.String(255))
     ack_ORCID_id = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))

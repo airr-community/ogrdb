@@ -15,7 +15,7 @@ from flask_wtf import FlaskForm
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ForwardPrimerForm(FlaskForm):
-    fw_primer_name = TextAreaField('fw_primer_name', [validators.Length(max=10000)])
+    fw_primer_name = StringField('fw_primer_name', [validators.Length(max=255)])
     fw_primer_seq = StringField('fw_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
 
 
@@ -26,7 +26,7 @@ from flask_wtf import FlaskForm
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ReversePrimerForm(FlaskForm):
-    rv_primer_name = TextAreaField('rv_primer_name', [validators.Length(max=10000)])
+    rv_primer_name = StringField('rv_primer_name', [validators.Length(max=255)])
     rv_primer_seq = StringField('rv_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
 
 
@@ -37,7 +37,7 @@ from flask_wtf import FlaskForm
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class AcknowledgementsForm(FlaskForm):
-    ack_name = TextAreaField('ack_name', [validators.Length(max=10000)])
+    ack_name = StringField('ack_name', [validators.Length(max=255)])
     ack_institution_name = StringField('ack_institution_name', [validators.Length(max=255)])
     ack_ORCID_id = StringField('ack_ORCID_id', [validators.Optional(), ValidOrcidID()])
 

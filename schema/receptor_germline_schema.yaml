@@ -146,7 +146,7 @@ ForwardPrimer:
     occurrence: single
     properties:
         fw_primer_name:
-            type: text
+            type: string
             description: Primer name or quick description
             tableview: true
         fw_primer_seq:
@@ -166,7 +166,7 @@ ReversePrimer:
     occurrence: single
     properties:
         rv_primer_name:
-            type: text
+            type: string
             description: Primer name or quick description
             tableview: true
         rv_primer_seq:
@@ -186,7 +186,7 @@ Acknowledgements:
     occurrence: multiple
     properties:
         ack_name:
-            type: text
+            type: string
             description: Full name of individual
             tableview: true
         ack_institution_name:
@@ -347,19 +347,48 @@ Inferred_Sequence:
             completed_by: IARC
        
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
+GenotypeDescription:
+    discriminator: AIRR
+    description: Summary details of the genotype
+    type: object
+    occurrence: multiple
+    properties:
+        genotype_name:
+            type: string
+            description: Descriptive name for this genotype
+            completed_by: submitter
+            tableview: true
+            nonblank: true
+        genotype_subject_id:
+            type: string
+            description: Identifier of the subject from which this genotype was inferred
+            completed_by: submitter
+            tableview: true
+        genotype_filename:
+            type: string
+            description: Name of the uploaded file from which the genotype was read
+            tableview: true
+            readonly: true
+        genotype_file:
+            type: blob
+            description: Contents of the uploaded file from which the genotype was read
+            hide: true
+        submission_id:
+            type: integer
+            hide: true
+            foreign_key: submission.id
+            relationship: [submission, Submission, genotype_descriptions]
+        inference_tool_id:
+            type: integer
+            foreign_key: inference_tool.id
+            relationship: [inference_tool, InferenceTool, genotype_descriptions]
+
+
 Genotype:
     discriminator: AIRR
     description: Details of the complete genotype from which inferred sequences were drawn
     type: object
     occurrence: multiple
-    genotyope_id: 
-        type: string
-        description: Identifier of this genotype
-        completed_by: submitter
-    subject_id: 
-        type: string
-        description: Identifier of the subject from which this genotype was inferred
-        completed_by: submitter
     properties:
         sequence_id:
             type: string
@@ -433,6 +462,12 @@ Genotype:
             type: IUPAC nucleotide notation
             description: The consensus sequence provided by the inference tool
             completed_by: submitter
+        description_id:
+            type: integer
+            hide: true
+            foreign_key: genotype_description.id
+            relationship: [genotype_description, GenotypeDescription, genotypes]
+
             
 Observed_Sequence:
     discriminator: AIRR

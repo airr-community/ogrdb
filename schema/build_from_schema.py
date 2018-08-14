@@ -33,6 +33,10 @@ def main(argv):
     write_model(schema, 'InferenceTool', 'db/inference_tool_db.py')
     write_flaskform(schema, 'InferenceTool', 'forms/inference_tool_form.py')
     write_inp(schema, 'InferenceTool', 'templates/inference_tool_form.html')
+    write_model(schema, 'Genotype', 'db/genotype_db.py')
+    write_model(schema, 'GenotypeDescription', 'db/genotype_description_db.py')
+    write_flaskform(schema, 'GenotypeDescription', 'forms/genotype_description_form.py')
+    write_inp(schema, 'GenotypeDescription', 'templates/genotype_description_form.html')
 
 
 # Merge markup properties with schema
@@ -106,7 +110,7 @@ class %s(db.Model):
                 elif type == 'boolean':
                     fo.write("    %s = db.Column(db.Boolean)" % sc_item)
                 elif 'IUPAC' in type:
-                    fo.write("    %s = db.Column(db.String(1000)]))" % sc_item)
+                    fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'integer':
                     if 'foreign_key' in schema[section]['properties'][sc_item]:
                         fo.write("    %s = db.Column(db.Integer, db.ForeignKey('%s'))" % (sc_item, schema[section]['properties'][sc_item]['foreign_key']))
@@ -121,6 +125,8 @@ class %s(db.Model):
                     fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'text':
                     fo.write("    %s = db.Column(db.Text())" % sc_item)
+                elif type == 'blob':
+                    fo.write("    %s = db.Column(db.LargeBinary())" % sc_item)
                 elif type == 'ORCID ID':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'ambiguous nucleotide sequence':
@@ -166,7 +172,8 @@ def populate_%s(db, object, form):
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
-                    or 'hide' in schema[section]['properties'][sc_item]:
+                    or 'hide' in schema[section]['properties'][sc_item] \
+                    or 'relationship' in schema[section]['properties'][sc_item]:   # relationship selectors are too complex to auto-generate
                 continue
 
             fo.write("    form.%s.data = object.%s\n" % (sc_item, sc_item))
@@ -269,7 +276,10 @@ class %sForm(FlaskForm):
                 elif 'IUPAC' in type:
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
                 elif type == 'integer':
-                    fo.write("    %s = IntegerField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
+                    if 'relationship' in schema[section]['properties'][sc_item]:
+                        fo.write("    %s = SelectField('%s', choices=[])" % (sc_item, sc_item))
+                    else:
+                        fo.write("    %s = IntegerField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
                 elif type == 'number':
                     fo.write("    %s = DecimalField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
                 elif type == 'dictionary':

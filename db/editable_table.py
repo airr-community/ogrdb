@@ -34,6 +34,8 @@ class EditableTable():
         self.formclass = form
         self.added_fields = []
 
+        self.prep_table()
+
         # Add the dynamic controls to the form
         field_name = 'add_%s' % (name)
         setattr(self.formclass, field_name, SubmitField(legend))
@@ -86,4 +88,8 @@ class EditableTable():
     # deleted or not.
     def delete_if_unrefd(self, db, obj):
         db.session.delete(obj)
+
+    # Subclass to modify the table, for example to add columns
+    def prep_table(self):
+        return
 

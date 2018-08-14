@@ -33,6 +33,8 @@ from db.userdb import User
 from db.submissiondb import *
 from db.repertoiredb import *
 from db.inference_tool_db import *
+from db.genotype_db import *
+from db.genotype_description_db import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -220,7 +222,54 @@ def edit_tool(id):
     if request.method == 'POST':
         if form.validate():
             save_InferenceTool(db, tool, form, new=False)
+            return redirect(url_for('edit_submission', id=tool.submission.submission_id, _anchor='tools'))
     else:
         populate_InferenceTool(db, tool, form)
 
     return render_template('inference_tool_edit.html', form=form, submission_id=tool.submission.submission_id, id=id)
+
+def check_genotype_description_edit(id):
+    try:
+        desc = db.session.query(GenotypeDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+        elif not desc.submission.can_edit(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return desc
+
+
+@app.route('/edit_genotype_description/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_genotype_description(id):
+    desc = check_genotype_description_edit(id)
+    if desc is None:
+        return redirect('/')
+
+    if len(desc.submission.inference_tools) < 1:
+        flash('Please create at least one Inference Tool entry before editing a Genotype.')
+        return redirect(url_for('edit_submission', id=desc.submission.submission_id))
+
+    form = GenotypeDescriptionForm()
+    setting_names = []
+    for tool in desc.submission.inference_tools:
+        setting_names.append(( str(tool.id), tool.tool_settings_name))
+    form.inference_tool_id.choices = setting_names
+
+    if request.method == 'POST':
+        if form.validate():
+            save_GenotypeDescription(db, desc, form, new=False)
+            return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
+    else:
+        populate_GenotypeDescription(db, desc, form)
+
+        if desc.inference_tool is not None:
+            form.inference_tool_id.data = desc.inference_tool_id
+
+    return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)

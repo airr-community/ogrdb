@@ -3,9 +3,11 @@
 from db.repertoiredb import *
 from db.miscdb import *
 from db.inference_tool_db import *
+from db.genotype_description_db import *
 from forms.repertoireform import *
 from forms.submissionform import *
 from forms.inference_tool_form import *
+from forms.genotype_description_form import *
 from sys import exc_info
 from db.editable_table import *
 
@@ -125,6 +127,31 @@ class EditableInferenceToolTable(EditableTable):
                 return True
         return False
 
+
+class ToolNameCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        return self.td_format(item.inference_tool.tool_settings_name if item.inference_tool else '')
+
+class EditableGenotypeDescriptionTable(EditableTable):
+    def check_add_item(self, request):
+        if self.form.add_genotype_description.data:
+            valid = True
+            if len(self.form.genotype_name.data) < 1:
+                self.form.genotype_name.errors.append('Settings name cannot be blank.')
+                valid = False
+
+            if valid:
+                d = GenotypeDescription()
+                d.genotype_name = self.form.genotype_name.data
+                self.items.append(d)
+                self.table = make_GenotypeDescription_table(self.items)
+                return True
+        return False
+
+    def prep_table(self):
+        self.table.add_column('Tool Setting', ToolNameCol('tool_settings'))
+        return
+
 def setup_sub_forms_and_tables(sub, db):
     tables = {}
 
@@ -143,8 +170,9 @@ def setup_sub_forms_and_tables(sub, db):
     tables['rv_primer'] = EditableRvPrimerTable(make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set), 'rv_primer', ReversePrimerForm, sub.repertoire[0].reverse_primer_set, legend='Add Primer')
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(sub.acknowledgements), 'ack', AcknowledgementsForm, sub.acknowledgements, legend='Add Acknowledgement')
     tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool')
+    tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description')
 
-    form = AggregateForm(submission_form, repertoire_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form)
+    form = AggregateForm(submission_form, repertoire_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form)
     return (tables, form)
 
 
