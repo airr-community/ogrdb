@@ -245,3 +245,23 @@ div.menu {
     border-bottom: 1px solid black !important;
 }
 
+th.rotate {
+  /* Something you can count on */
+  height: 200px;
+  white-space: nowrap;
+  vertical-align: middle !important;
+  text-align: right !important;
+}
+
+th.rotate > div {
+  transform:
+    /* Magic Numbers */
+    translate(0px, 70px)
+    /* 45 is really 360 - 45 */
+    rotate(270deg);
+  width: 20px;
+}
+
+th.rotate > div > span {
+  padding: 5px 10px;
+}

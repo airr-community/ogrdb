@@ -80,6 +80,23 @@ def populate_Genotype(db, object, form):
 
 class Genotype_table(StyledTable):
     id = Col("id", show=False)
+    sequence_id = StyledCol("sequence_id")
+    sequences = StyledCol("sequences")
+    closest_reference = StyledCol("closest_reference")
+    closest_host = StyledCol("closest_host")
+    nt_diff = StyledCol("nt_diff")
+    nt_substitutions = StyledCol("nt_substitutions")
+    aa_diff = StyledCol("aa_diff")
+    aa_substitutions = StyledCol("aa_substitutions")
+    unmutated_frequency = StyledCol("unmutated_frequency")
+    unmutated_sequences = StyledCol("unmutated_sequences")
+    unmutated_umis = StyledCol("unmutated_umis")
+    allelic_percentage = StyledCol("allelic_percentage")
+    unique_ds = StyledCol("unique_ds")
+    unique_js = StyledCol("unique_js")
+    unique_cdr3s = StyledCol("unique_cdr3s")
+    haplotyping_locus = StyledCol("haplotyping_locus")
+    haplotyping_ratio = StyledCol("haplotyping_ratio")
 
 
 def make_Genotype_table(results, private = False, classes=()):

@@ -2,6 +2,7 @@
 # FlaskForm class definitions for PubId
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class PubIdForm(FlaskForm):
@@ -12,6 +13,7 @@ class PubIdForm(FlaskForm):
 # FlaskForm class definitions for ForwardPrimer
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ForwardPrimerForm(FlaskForm):
@@ -23,6 +25,7 @@ class ForwardPrimerForm(FlaskForm):
 # FlaskForm class definitions for ReversePrimer
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ReversePrimerForm(FlaskForm):
@@ -34,6 +37,7 @@ class ReversePrimerForm(FlaskForm):
 # FlaskForm class definitions for Acknowledgements
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class AcknowledgementsForm(FlaskForm):
@@ -46,6 +50,7 @@ class AcknowledgementsForm(FlaskForm):
 # FlaskForm class definitions for Repertoire
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class RepertoireForm(FlaskForm):

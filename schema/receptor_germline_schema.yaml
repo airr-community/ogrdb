@@ -372,7 +372,6 @@ GenotypeDescription:
         genotype_file:
             type: blob
             description: Contents of the uploaded file from which the genotype was read
-            hide: true
         submission_id:
             type: integer
             hide: true
@@ -394,70 +393,87 @@ Genotype:
             type: string
             description: Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)
             completed_by: submitter
+            tableview: true
         sequences:
             type: integer
             description: Overall number of sequences assigned to this allele
             completed_by: submitter
+            tableview: true
         closest_reference:
             type: string
             description: For inferred alleles, the closest reference gene and allele, as inferred by the tool
             completed_by: submitter
+            tableview: true
         closest_host:
             type: string
             description: For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool
             completed_by: submitter
+            tableview: true
         nt_diff:
             type: integer
             description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
+            tableview: true
         nt_substitutions:
             type: string
             description: List of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
             completed_by: submitter            
+            tableview: true
         aa_diff:
             type: integer
             description: For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
+            tableview: true
         aa_substitutions:
             type: string
             description: List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
+            tableview: true
         unmutated_frequency:
             type: number
             description: The proportion of unmutated sequences in the dataset represented by this sequence.
             completed_by: submitter
+            tableview: true
         unmutated_sequences:
             type: integer
             description: The number of records in the sequence dataset exactly matching this unmutated sequence
             completed_by: submitter
+            tableview: true
         unmutated_umis:
             type: integer
             description: The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
             completed_by: submitter
+            tableview: true
         allelic_percentage:
             type: number
             description: The percentage at which this allele was observed in the sequence dataset, compared to other alleles
             completed_by: submitter
+            tableview: true
         unique_ds:
             type: integer
             description: Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
             completed_by: submitter
+            tableview: true
         unique_js:
             type: integer
             description: Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
             completed_by: submitter
+            tableview: true
         unique_cdr3s:
             type: integer
             description: Number of unique CDR3s found associated with an inferred V sequence
             completed_by: submitter
+            tableview: true
         haplotyping_locus:
             type: string
             description: Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
             completed_by: submitter
+            tableview: true
         haplotyping_ratio:
             type: string
             description: Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
             completed_by: submitter
+            tableview: true
         nt_sequence:
             type: IUPAC nucleotide notation
             description: The consensus sequence provided by the inference tool

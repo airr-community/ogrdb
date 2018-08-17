@@ -152,7 +152,10 @@ def save_%s(db, object, form, new=False):
                     or 'hide' in schema[section]['properties'][sc_item]:
                 continue
 
-            fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
+            if schema[section]['properties'][sc_item]['type'] == 'blob':
+                fo.write("    object.%s = form.%s.data.read()\n" % (sc_item, sc_item))
+            else:
+                fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
 
         fo.write(
 """
@@ -232,6 +235,7 @@ def write_flaskform(schema, section, outfile, append=False):
 # FlaskForm class definitions for %s
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class %sForm(FlaskForm):
@@ -290,6 +294,8 @@ class %sForm(FlaskForm):
                     fo.write("    %s = StringField('%s', [validators.Optional(), ValidOrcidID()%s])" % (sc_item, sc_item, nonblank))
                 elif type == 'ambiguous nucleotide sequence':
                     fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=True)%s])" % (sc_item, sc_item, nonblank))
+                elif type == 'blob':
+                    fo.write("    %s = FileField('%s')" % (sc_item, sc_item))
                 else:
                     raise (ValueError('Unrecognised type: %s' % type))
                 fo.write("\n")

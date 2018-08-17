@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block pagetitle %} Genotype {% endblock %}
+
+{% block c_body %}
+        <div class=".table">
+            {{ tables['desc'] }}
+        </div>
+        <div class=".table">
+            {% autoescape off %}{{ tables['genotype'] }}{% endautoescape %}
+        </div>
+{% endblock %}

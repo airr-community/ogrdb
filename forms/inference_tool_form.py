@@ -2,6 +2,7 @@
 # FlaskForm class definitions for InferenceTool
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class InferenceToolForm(FlaskForm):

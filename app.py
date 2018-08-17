@@ -35,6 +35,7 @@ from db.repertoiredb import *
 from db.inference_tool_db import *
 from db.genotype_db import *
 from db.genotype_description_db import *
+from db.genotype_upload import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -264,8 +265,20 @@ def edit_genotype_description(id):
 
     if request.method == 'POST':
         if form.validate():
-            save_GenotypeDescription(db, desc, form, new=False)
-            return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
+            try:
+                # Get the right data in place in the form before saving - depending on whether there was a file upload or not
+                if form.genotype_file.data:
+                    form.genotype_filename.data = form.genotype_file.data.filename
+                    save_GenotypeDescription(db, desc, form, new=False)
+                    blob_to_genotype(desc, db)
+                else:
+                    form.genotype_file.data = desc.genotype_file
+                    save_GenotypeDescription(db, desc, form, new=False)
+
+                save_GenotypeDescription(db, desc, form, new=False)
+                return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
+            except ValidationError as e:
+                return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)
     else:
         populate_GenotypeDescription(db, desc, form)
 
@@ -273,3 +286,34 @@ def edit_genotype_description(id):
             form.inference_tool_id.data = desc.inference_tool_id
 
     return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)
+
+
+def check_genotype_description_view(id):
+    try:
+        desc = db.session.query(GenotypeDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+        elif not desc.submission.can_see(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return desc
+
+
+@app.route('/genotype/<id>')
+def genotype(id):
+    desc = check_genotype_description_view(id)
+    if desc is None:
+        return redirect('/')
+
+    tables = {}
+    tables['desc'] = make_GenotypeDescription_view(desc, False)
+    tables['genotype'] = make_Genotype_table(desc.genotypes, False, classes = ['table-bordered']).rotate_header()
+    return render_template('genotype_view.html', desc=desc, tables=tables)
+
+

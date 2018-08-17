@@ -5,7 +5,7 @@
 
 <h3>Submission: <a href="{{ url_for('edit_submission', id=submission_id) }}"> {{ submission_id }} </a> </h3>
 
-<form action="{{ url_for('edit_genotype_description', id=id) }}" method="POST" name="form" class="form-horizontal">
+<form action="{{ url_for('edit_genotype_description', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
 
             {{ form.hidden_tag() }}
 
