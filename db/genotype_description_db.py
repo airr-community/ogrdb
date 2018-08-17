@@ -21,8 +21,6 @@ def save_GenotypeDescription(db, object, form, new=False):
     object.genotype_name = form.genotype_name.data
     object.genotype_subject_id = form.genotype_subject_id.data
     object.genotype_filename = form.genotype_filename.data
-    object.genotype_file = form.genotype_file.data.read()
-    object.inference_tool_id = form.inference_tool_id.data
 
     if new:
         db.session.add(object)
@@ -35,7 +33,6 @@ def populate_GenotypeDescription(db, object, form):
     form.genotype_name.data = object.genotype_name
     form.genotype_subject_id.data = object.genotype_subject_id
     form.genotype_filename.data = object.genotype_filename
-    form.genotype_file.data = object.genotype_file
 
 
 
@@ -60,7 +57,5 @@ def make_GenotypeDescription_view(sub, private = False):
     ret.items.append({"item": "genotype_name", "value": sub.genotype_name})
     ret.items.append({"item": "genotype_subject_id", "value": sub.genotype_subject_id})
     ret.items.append({"item": "genotype_filename", "value": sub.genotype_filename})
-    ret.items.append({"item": "genotype_file", "value": sub.genotype_file})
-    ret.items.append({"item": "inference_tool_id", "value": sub.inference_tool_id})
     return ret
 

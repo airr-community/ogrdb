@@ -266,16 +266,15 @@ def edit_genotype_description(id):
     if request.method == 'POST':
         if form.validate():
             try:
-                # Get the right data in place in the form before saving - depending on whether there was a file upload or not
                 if form.genotype_file.data:
                     form.genotype_filename.data = form.genotype_file.data.filename
                     save_GenotypeDescription(db, desc, form, new=False)
+                    desc.genotype_file = form.genotype_file.data.read()
+                    db.session.commit()
                     blob_to_genotype(desc, db)
                 else:
-                    form.genotype_file.data = desc.genotype_file
                     save_GenotypeDescription(db, desc, form, new=False)
 
-                save_GenotypeDescription(db, desc, form, new=False)
                 return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
             except ValidationError as e:
                 return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)

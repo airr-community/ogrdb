@@ -9,7 +9,5 @@ class GenotypeDescriptionForm(FlaskForm):
     genotype_name = StringField('genotype_name', [validators.Length(max=255), NonEmpty()])
     genotype_subject_id = StringField('genotype_subject_id', [validators.Length(max=255)])
     genotype_filename = StringField('genotype_filename', [validators.Length(max=255)])
-    genotype_file = FileField('genotype_file')
-    inference_tool_id = SelectField('inference_tool_id', choices=[])
 
 

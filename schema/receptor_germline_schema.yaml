@@ -371,6 +371,7 @@ GenotypeDescription:
             readonly: true
         genotype_file:
             type: blob
+            hide: true
             description: Contents of the uploaded file from which the genotype was read
         submission_id:
             type: integer
@@ -379,6 +380,7 @@ GenotypeDescription:
             relationship: [submission, Submission, genotype_descriptions]
         inference_tool_id:
             type: integer
+            hide: true
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
 

@@ -152,9 +152,8 @@ def save_%s(db, object, form, new=False):
                     or 'hide' in schema[section]['properties'][sc_item]:
                 continue
 
-            if schema[section]['properties'][sc_item]['type'] == 'blob':
-                fo.write("    object.%s = form.%s.data.read()\n" % (sc_item, sc_item))
-            else:
+            # write blobs by outside this function using read() - should only do this at download time
+            if schema[section]['properties'][sc_item]['type'] != 'blob':
                 fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
 
         fo.write(
