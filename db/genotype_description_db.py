@@ -9,6 +9,7 @@ class GenotypeDescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     genotype_name = db.Column(db.String(255))
     genotype_subject_id = db.Column(db.String(255))
+    genotype_biosample_ids = db.Column(db.String(255))
     genotype_filename = db.Column(db.String(255))
     genotype_file = db.Column(db.LargeBinary())
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
@@ -20,7 +21,9 @@ class GenotypeDescription(db.Model):
 def save_GenotypeDescription(db, object, form, new=False):   
     object.genotype_name = form.genotype_name.data
     object.genotype_subject_id = form.genotype_subject_id.data
+    object.genotype_biosample_ids = form.genotype_biosample_ids.data
     object.genotype_filename = form.genotype_filename.data
+    object.inference_tool_id = form.inference_tool_id.data
 
     if new:
         db.session.add(object)
@@ -32,7 +35,9 @@ def save_GenotypeDescription(db, object, form, new=False):
 def populate_GenotypeDescription(db, object, form):   
     form.genotype_name.data = object.genotype_name
     form.genotype_subject_id.data = object.genotype_subject_id
+    form.genotype_biosample_ids.data = object.genotype_biosample_ids
     form.genotype_filename.data = object.genotype_filename
+    form.genotype_file.data = object.genotype_file
 
 
 
@@ -56,6 +61,8 @@ def make_GenotypeDescription_view(sub, private = False):
     ret = GenotypeDescription_view([])
     ret.items.append({"item": "genotype_name", "value": sub.genotype_name})
     ret.items.append({"item": "genotype_subject_id", "value": sub.genotype_subject_id})
+    ret.items.append({"item": "genotype_biosample_ids", "value": sub.genotype_biosample_ids})
     ret.items.append({"item": "genotype_filename", "value": sub.genotype_filename})
+    ret.items.append({"item": "inference_tool_id", "value": sub.inference_tool_id})
     return ret
 

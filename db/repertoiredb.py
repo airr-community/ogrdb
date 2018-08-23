@@ -202,7 +202,6 @@ class Repertoire(db.Model):
     repository_name = db.Column(db.String(255))
     repository_id = db.Column(db.String(255))
     dataset_url = db.Column(db.String(255))
-    dataset_doi = db.Column(db.String(255))
     miarr_compliant = db.Column(db.String(255))
     miairr_link = db.Column(db.String(255))
     sequencing_platform = db.Column(db.String(255))
@@ -216,7 +215,6 @@ def save_Repertoire(db, object, form, new=False):
     object.repository_name = form.repository_name.data
     object.repository_id = form.repository_id.data
     object.dataset_url = form.dataset_url.data
-    object.dataset_doi = form.dataset_doi.data
     object.miarr_compliant = form.miarr_compliant.data
     object.miairr_link = form.miairr_link.data
     object.sequencing_platform = form.sequencing_platform.data
@@ -234,7 +232,6 @@ def populate_Repertoire(db, object, form):
     form.repository_name.data = object.repository_name
     form.repository_id.data = object.repository_id
     form.dataset_url.data = object.dataset_url
-    form.dataset_doi.data = object.dataset_doi
     form.miarr_compliant.data = object.miarr_compliant
     form.miairr_link.data = object.miairr_link
     form.sequencing_platform.data = object.sequencing_platform
@@ -261,7 +258,6 @@ def make_Repertoire_view(sub, private = False):
     ret.items.append({"item": "repository_name", "value": sub.repository_name})
     ret.items.append({"item": "repository_id", "value": sub.repository_id})
     ret.items.append({"item": "dataset_url", "value": sub.dataset_url})
-    ret.items.append({"item": "dataset_doi", "value": sub.dataset_doi})
     ret.items.append({"item": "miarr_compliant", "value": sub.miarr_compliant})
     ret.items.append({"item": "miairr_link", "value": sub.miairr_link})
     ret.items.append({"item": "sequencing_platform", "value": sub.sequencing_platform})

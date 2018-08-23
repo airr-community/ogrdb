@@ -8,6 +8,11 @@ body {
         border-radius: 20px;
         background-color: #eee !important;
     }
+    div.container_wide {
+        width: 100%;
+        border-radius: 20px;
+        background-color: #eee !important;
+    }
     div.container_login {
         width: auto;
     }
@@ -264,4 +269,8 @@ th.rotate > div {
 
 th.rotate > div > span {
   padding: 5px 10px;
+}
+
+pre.lead {
+    font-size: 18px;
 }

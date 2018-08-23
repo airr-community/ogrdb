@@ -37,6 +37,9 @@ def main(argv):
     write_model(schema, 'GenotypeDescription', 'db/genotype_description_db.py')
     write_flaskform(schema, 'GenotypeDescription', 'forms/genotype_description_form.py')
     write_inp(schema, 'GenotypeDescription', 'templates/genotype_description_form.html')
+    write_model(schema, 'InferredSequence', 'db/inferred_sequence_db.py')
+    write_flaskform(schema, 'InferredSequence', 'forms/inferred_sequence_form.py')
+    write_inp(schema, 'InferredSequence', 'templates/inferred_sequence_form.html')
 
 
 # Merge markup properties with schema
@@ -218,7 +221,8 @@ def populate_%s(db, object, form):
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
-                    or 'hide' in schema[section]['properties'][sc_item]:
+                    or 'hide' in schema[section]['properties'][sc_item]\
+                    or schema[section]['properties'][sc_item]['type'] == 'blob':        # don't put blobs in the view
                 continue
             if 'private' in schema[section]['properties'][sc_item]:
                 fo.write('    if private:\n    ')
@@ -269,7 +273,7 @@ class %sForm(FlaskForm):
                 elif 'species' in type:
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
                 elif 'list' in type:
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])=" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
                 elif type == 'url':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
                 elif type == 'doi':
@@ -280,7 +284,7 @@ class %sForm(FlaskForm):
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
                 elif type == 'integer':
                     if 'relationship' in schema[section]['properties'][sc_item]:
-                        fo.write("    %s = SelectField('%s', choices=[])" % (sc_item, sc_item))
+                        fo.write("    %s = SelectField('%s', [validators.Optional()], choices=[])" % (sc_item, sc_item))
                     else:
                         fo.write("    %s = IntegerField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
                 elif type == 'number':

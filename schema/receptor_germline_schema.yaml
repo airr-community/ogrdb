@@ -64,19 +64,15 @@ Repertoire:
             completed_by: submitter
         repository_name:
             type: string
-            description: Name of the repository holding the sequence dataset (e.g. NIH SRA)
+            description: Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)
             completed_by: submitter
         repository_id:
             type: string
-            description: Id or serial number of the sequence dataset within the repository
+            description: Accession number or serial number within the repository (e.g. NIH Project or ENA Study)
             completed_by: submitter
         dataset_url:
             type: url
-            description: URL of the sequence dataset (in the case of the NIH SRA, please provide the URL to the Project)
-            completed_by: submitter
-        dataset_doi:
-            type: doi
-            description: doi of the sequence dataset (If any. Not all archives provide a doi, in particular the NIH SRA does not)
+            description: URL of the study or project within the repository
             completed_by: submitter
         miarr_compliant:
             type: [Yes, No]
@@ -238,114 +234,42 @@ InferenceTool:
 
             
 # Inferred Sequence
-Inferred_Sequence:
+InferredSequence:
     discriminator: AIRR
     description: Details of inferred sequences submitted for IARC approval
     type: object
     occurrence: multiple
-    subject_id: 
-        type: string
-        description: Identifier of the subject from which these sequences were inferred
-        completed_by: submitter
-    genotyope_id: 
-        type: string
-        description: Identifier of the genotype from which these sequences were inferred
-        completed_by: submitter
     properties:
         sequence_id:
-            type: string
-            description: Identifier of the allele, issued by the submitter (need not follow any particular format)
-            completed_by: submitter
-        sequences:
             type: integer
-            description: Overall number of sequences assigned to this allele
-            completed_by: submitter
-        domain:
-            type: [V,D,J,C]
-            description: Sequence domain (V, D, J or Constant)
-        closest_reference:
-            type: string
-            description: The closest reference gene and allele, as inferred by the tool
-            completed_by: submitter
-        closest_host:
-            type: string
-            description: The closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool
-            completed_by: submitter
-        nt_diff:
+            description: Identifier of the sequence within the genotype
+            foreign_key: genotype.id
+            relationship: [sequence_details, Genotype, inferred_sequences]
+        submission_id:
             type: integer
-            description: Number of nucleotides that differ between this sequence and the closest reference gene and allele
-            completed_by: submitter
-        nt_substitutions:
-            type: string
-            description: List of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. 
-            completed_by: submitter
-        aa_diff:
+            hide: true
+            description: Identifier of the submission in which these sequences are listed
+            foreign_key: submission.id
+            relationship: [submission, Submission, inferred_sequences]
+        genotype_id:
             type: integer
-            description: Number of amino acids that differ between this sequence and the closest reference gene and allele
-            completed_by: submitter
-        aa_substitutions:
-            type: string
-            description: List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
-            completed_by: submitter
-        unmutated_frequency:
-            type: number
-            description: The proportion of unmutated sequences in the dataset represented by this sequence.
-            completed_by: submitter
-        unmutated_sequences:
-            type: integer
-            description: The number of records in the sequence dataset exactly matching this unmutated sequence
-        unmutated_umis:
-            type: integer
-            description: The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
-            completed_by: submitter
-        allelic_percentage:
-            type: number
-            description: The percentage at which this allele was observed in the sequence dataset, compared to other alleles
-            completed_by: submitter
-        unique_ds:
-            type: integer
-            description: Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
-            completed_by: submitter
-        unique_js:
-            type: integer
-            description: Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
-            completed_by: submitter
-        unique_cdr3s:
-            type: integer
-            description: Number of unique CDR3s found associated with the inferred V sequence
-            completed_by: submitter
-        haplotyping_locus:
-            type: string
-            description: Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
-            completed_by: submitter
-        haplotyping_ratio:
-            type: string
-            description: Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
-            completed_by: submitter
-        nt_sequence:
-            type: IUPAC nucleotide notation
-            description: The consensus sequence provided by the inference tool
-            completed_by: submitter
-        phred_score:
-            type: string (phred format)
-            description: phred string (FASTQ format) for the consensus contig from which this nt sequence was inferred
-        repository_name:
-            type: string
-            description: Name of the repository in which the sequence has been deposited
-            completed_by: submitter
+            description: Identifier of the genotype from which these sequences were inferred
+            foreign_key: genotype_description.id
+            relationship: [genotype_description, GenotypeDescription, inferred_sequences]
         repository_id:
             type: string
-            description: Id or serial number of the sequence within the repository
+            description: Accession number of the inferred allele within the repository
             completed_by: submitter        
         deposited_version:
             type: string
             description: Version number of the sequence within the repository
             completed_by: submitter
-        IARC_tracking:
-            type: list of timestamped strings
-            description: Notes from IARC tracking overall progress of this submission, eg additional info requested, when reviewed, etc
-            completed_by: IARC
-       
+        run_ids:
+            type: string
+            description: Accession number(s) of the run(s) listing the raw sequences from which this inference was made
+            completed_by: submitter
+
+
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
 GenotypeDescription:
     discriminator: AIRR
@@ -361,9 +285,13 @@ GenotypeDescription:
             nonblank: true
         genotype_subject_id:
             type: string
-            description: Identifier of the subject from which this genotype was inferred
+            description: Identifier of the subject from which this genotype was inferred (assigned by the submitter)
             completed_by: submitter
             tableview: true
+        genotype_biosample_ids:
+            type: list
+            description: Accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)
+            completed_by: submitter
         genotype_filename:
             type: string
             description: Name of the uploaded file from which the genotype was read
@@ -371,7 +299,6 @@ GenotypeDescription:
             readonly: true
         genotype_file:
             type: blob
-            hide: true
             description: Contents of the uploaded file from which the genotype was read
         submission_id:
             type: integer
@@ -380,7 +307,6 @@ GenotypeDescription:
             relationship: [submission, Submission, genotype_descriptions]
         inference_tool_id:
             type: integer
-            hide: true
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
 
@@ -433,12 +359,12 @@ Genotype:
             tableview: true
         unmutated_frequency:
             type: number
-            description: The proportion of unmutated sequences in the dataset represented by this sequence.
+            description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
             completed_by: submitter
             tableview: true
         unmutated_sequences:
             type: integer
-            description: The number of records in the sequence dataset exactly matching this unmutated sequence
+            description: he number of sequences exactly matching this unmutated sequence
             completed_by: submitter
             tableview: true
         unmutated_umis:
@@ -448,7 +374,7 @@ Genotype:
             tableview: true
         allelic_percentage:
             type: number
-            description: The percentage at which this allele was observed in the sequence dataset, compared to other alleles
+            description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100
             completed_by: submitter
             tableview: true
         unique_ds:

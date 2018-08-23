@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Date
 from sqlalchemy.sql import func
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, login_required
@@ -12,8 +11,7 @@ from wtforms import SubmitField, IntegerField
 from flask_table import Table, Col, LinkCol
 import logging.handlers
 import datetime
-import sys
-from copy import deepcopy
+import json
 
 from get_pmid_details import get_pmid_details
 
@@ -36,6 +34,8 @@ from db.inference_tool_db import *
 from db.genotype_db import *
 from db.genotype_description_db import *
 from db.genotype_upload import *
+from db.genotype_view_table import *
+from db.inferred_sequence_db import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -43,6 +43,8 @@ from forms.submissionform import *
 from forms.repertoireform import *
 from forms.security import *
 from forms.submissioneditform import *
+from forms.aggregate_form import *
+from forms.cancel_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -152,12 +154,15 @@ def edit_submission(id):
     if request.method == 'POST':
         if form.validate():
             valid = True
+            route = None
+            added_id = None
             # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
             # this is a little more complex than it needs to be, because there's custom validation on some of the fields
             for table in tables.values():
-                if table.check_add_item(request):
-                    db.session.commit()
+                (added, route, added_id) = table.check_add_item(request, db)
+                if added:
                     tag = table.name
+                    break
                 if table.process_deletes(db):
                     db.session.commit()
                     tag = table.name
@@ -169,6 +174,8 @@ def edit_submission(id):
             save_Submission(db, sub, form, False)
             save_Repertoire(db, sub.repertoire[0], form, False)
             if valid:
+                if route:
+                    return redirect(url_for(route, id = added_id))
                 return redirect(url_for('edit_submission', id=id, _anchor=tag if tag else ''))
             else:
                 return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
@@ -218,9 +225,12 @@ def edit_tool(id):
     if tool is None:
         return redirect('/')
 
-    form = InferenceToolForm()
+    form = AggregateForm(InferenceToolForm(), CancelForm())
 
     if request.method == 'POST':
+        if form.cancel.data:
+            return redirect(url_for('edit_submission', id=id, _anchor= 'genotype_description'))
+
         if form.validate():
             save_InferenceTool(db, tool, form, new=False)
             return redirect(url_for('edit_submission', id=tool.submission.submission_id, _anchor='tools'))
@@ -257,13 +267,16 @@ def edit_genotype_description(id):
         flash('Please create at least one Inference Tool entry before editing a Genotype.')
         return redirect(url_for('edit_submission', id=desc.submission.submission_id))
 
-    form = GenotypeDescriptionForm()
+    form = AggregateForm(GenotypeDescriptionForm(), CancelForm())
     setting_names = []
     for tool in desc.submission.inference_tools:
         setting_names.append(( str(tool.id), tool.tool_settings_name))
     form.inference_tool_id.choices = setting_names
 
     if request.method == 'POST':
+        if form.cancel.data:
+            return redirect(url_for('edit_submission', id=id, _anchor= 'genotype_description'))
+
         if form.validate():
             try:
                 if form.genotype_file.data:
@@ -312,7 +325,89 @@ def genotype(id):
 
     tables = {}
     tables['desc'] = make_GenotypeDescription_view(desc, False)
-    tables['genotype'] = make_Genotype_table(desc.genotypes, False, classes = ['table-bordered']).rotate_header()
+    tables['genotype'] = setup_gv_table(desc).rotate_header()
     return render_template('genotype_view.html', desc=desc, tables=tables)
+
+
+# AJAX - Return JSON structure listing sequence names and Genotype ids, given a GenotypeDesc id
+@app.route('/get_genotype_seqnames/<id>', methods=['POST'])
+@login_required
+def get_genotype_seqnames(id):
+    desc = check_genotype_description_edit(id)
+    if desc is None:
+        return []
+
+    ret = []
+    for g in desc.genotypes:
+        ret.append({"id": g.id, "name": g.sequence_id})
+
+    return json.dumps(ret)
+
+
+def check_inferred_sequence_edit(id):
+    try:
+        desc = db.session.query(InferredSequence).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+        elif not desc.submission.can_edit(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return desc
+
+@app.route('/edit_inferred_sequence/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_inferred_sequence(id):
+    seq = check_inferred_sequence_edit(id)
+    if seq is None:
+        return redirect('/')
+
+    if len(seq.submission.genotype_descriptions) < 1:
+        flash('Please create at least one Genotype before editing inferred sequences.')
+        return redirect(url_for('edit_submission', id=seq.submission.submission_id))
+
+    form = AggregateForm(InferredSequenceForm(), CancelForm())
+    form.genotype_id.choices = [(str(desc.id), desc.genotype_name) for desc in seq.submission.genotype_descriptions]
+    if seq.genotype_description is not None:
+        form.sequence_id.choices = [('', 'Select a sequence')] + [(str(genotype.id), genotype.sequence_id) for genotype in seq.genotype_description.genotypes]
+    else:
+        form.sequence_id.choices = [('', 'Select a sequence')] + [(str(genotype.id), genotype.sequence_id) for genotype in seq.submission.genotype_descriptions[0].genotypes]
+
+    if request.method == 'POST':
+        if form.cancel.data:
+            return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor='genotype_description'))
+
+        # Update choices for sequence_id to reflect the selected genotype, provided we have a valid genotype
+        # if anything goes wrong, field validation will sort it out
+
+        try:
+            for desc in seq.submission.genotype_descriptions:
+                if int(form.genotype_id.data) == desc.id:
+                    form.sequence_id.choices = [(str(genotype.id), genotype.sequence_id) for genotype in desc.genotypes]
+        except:
+            pass
+
+        if form.validate():
+            try:
+                if form.sequence_id.data == '':
+                    form.sequence_id.errors.append('Please select a sequence from the genotype. Upload data to the genotype if no sequences are listed.')
+                    raise ValidationError()
+                save_InferredSequence(db, seq, form, new=False)
+                return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
+            except ValidationError as e:
+                return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id)
+    else:
+        populate_InferredSequence(db, seq, form)
+        form.genotype_id.data = str(seq.genotype_id) if seq.genotype_id else ''
+        form.sequence_id.data = str(seq.sequence_id) if seq.sequence_id else ''
+
+
+    return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id)
+
 
 

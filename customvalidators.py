@@ -72,3 +72,6 @@ class NonEmpty(object):
         if not field.raw_data or not field.raw_data[0]:
             raise ValidationError(self.message)
 
+class NullValidator(object):
+    def __call__(self, form, field):
+        return

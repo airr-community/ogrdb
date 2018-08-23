@@ -7,12 +7,13 @@ from wtforms.meta import DefaultMeta
 from db.styled_table import *
 
 class ActionCol(StyledCol):
-    def __init__(self, name, delete=True, edit_route=None, view_route=None):
+    def __init__(self, name, delete=True, edit_route=None, view_route=None, sequence_route=None):
         super().__init__('')
         self.cname = name
         self.delete = delete
         self.edit_route = edit_route
         self.view_route = view_route
+        self.sequence_route = sequence_route
 
     def td_format(self, content):
         fmt_string = []

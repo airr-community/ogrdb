@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Inferred Sequence {% endblock %}
+
+{% block c_body %}
+
+<h3>Submission: <a href="{{ url_for('edit_submission', id=submission_id) }}"> {{ submission_id }} </a> </h3>
+
+<form action="{{ url_for('edit_inferred_sequence', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+
+            {{ form.hidden_tag() }}
+
+            {% include 'inferred_sequence_form.html' %}
+
+            <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+            {{ form.cancel(class="btn btn-cancel") }}
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+    <script>
+    function load_seqs() {
+        $.ajax({
+            type: "POST",
+            url: "/get_genotype_seqnames/" + $("#genotype_id").val(),
+            success: function(data)
+            {
+                helpers.buildDropdown(
+                    jQuery.parseJSON(data),
+                    $('#sequence_id'),
+                    'Select a sequence'
+                );
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        $("#genotype_id").change(function() {
+            load_seqs()
+        });
+    });
+    </script>
+
+
+{% endblock %}

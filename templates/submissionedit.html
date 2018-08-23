@@ -26,17 +26,21 @@
     <h4>Reverse Primers</h4>
             {% include 'rv_primer_form.html' %}
 
-             <a name="tools"> </a>
-    <h4>Inference Tools and Settings</h4>
-            {% include 'inference_tool_table.html' %}
-
              <a name="ack"> </a>
     <h3>Acknowledgements</h3>
             {% include 'acknowledgement_form.html' %}
 
+             <a name="tools"> </a>
+    <h4>Inference Tools and Settings</h4>
+            {% include 'inference_tool_table.html' %}
+
              <a name="genotype_description"> </a>
     <h3>Genotypes</h3>
             {% include 'genotype_description_table.html' %}
+
+             <a name="inferred_sequence"> </a>
+    <h3>Inferred Sequences</h3>
+            {% include 'inferred_sequence_table.html' %}
 
             <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
 </form>

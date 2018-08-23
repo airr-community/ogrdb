@@ -57,7 +57,6 @@ class RepertoireForm(FlaskForm):
     repository_name = StringField('repository_name', [validators.Length(max=255)])
     repository_id = StringField('repository_id', [validators.Length(max=255)])
     dataset_url = StringField('dataset_url', [validators.Length(max=255)])
-    dataset_doi = StringField('dataset_doi', [validators.Length(max=255)])
     miarr_compliant = SelectField('miarr_compliant', choices=[('Yes', 'Yes'), ('No', 'No')])
     miairr_link = StringField('miairr_link', [validators.Length(max=255)])
     sequencing_platform = StringField('sequencing_platform', [validators.Length(max=255)])
