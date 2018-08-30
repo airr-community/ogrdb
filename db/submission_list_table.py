@@ -2,7 +2,7 @@ from flask import url_for
 from copy import deepcopy
 
 from db.styled_table import *
-from db.submissiondb import *
+from db.submission_db import *
 
 class SubmissionListActionCol(StyledCol):
     def td_contents(self, item, attr_list):

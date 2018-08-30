@@ -92,38 +92,44 @@
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
         window.location.hash = e.target.hash;
-    })
+    });
 
     // Javascript to enable link to tab
     var url = document.location.toString();
-    var jump = ''
-    if (url.match('#')) {
-        anchor = url.split('#')[1];
+    var jump = '';
 
+
+    skip_to_anchor = function(anchor) {
         if(anchor == "pubmed") {
-            jump = anchor
-            anchor = "rep"
+            jump = anchor;
+            anchor = "rep";
         }
         else if(anchor == "fw_primer" || anchor == "rv_primer") {
-            jump = anchor
-            anchor = "primers"
+            jump = anchor;
+            anchor = "primers";
         }
 
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
-    }
+    };
+
+    {% if jump %}
+        skip_to_anchor("{{ jump }}");
+    {% else %}
+        if (url.match('#')) {
+            anchor = url.split('#')[1];
+            skip_to_anchor(anchor)
+        }
+    {% endif %}
 
     $(document).ready(function ()
     {
         if(jump != '') {
-            window.location.hash = ""
+            window.location.hash = "";
             window.location.hash = "#" + jump
         }
     });
 
     </script>
 
-    {% if jump %}
-        <script> $(function(){ window.location.hash = "{{ jump }}"; }) </script>
-    {% endif %}
     {% include 'sequence_popup_script.html' %}
 {% endblock %}

@@ -28,9 +28,9 @@ mail = Mail(app)
 
 db = SQLAlchemy(app)
 from db.userdb import User
-from db.submissiondb import *
+from db.submission_db import *
 from db.submission_list_table import *
-from db.repertoiredb import *
+from db.repertoire_db import *
 from db.inference_tool_db import *
 from db.genotype_db import *
 from db.genotype_description_db import *
@@ -40,10 +40,10 @@ from db.inferred_sequence_db import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
-from forms.submissionform import *
-from forms.repertoireform import *
+from forms.submission_form import *
+from forms.repertoire_form import *
 from forms.security import *
-from forms.submissioneditform import *
+from forms.submission_edit_form import *
 from forms.aggregate_form import *
 from forms.cancel_form import *
 from forms.submission_view_form import *
@@ -78,9 +78,8 @@ def submissions():
     if current_user.is_authenticated:
         q = db.session.query(Submission).join(Submission.owner).filter(User.email==current_user.email)
         results = q.all()
-        if len(results) > 0:
-            tables['mine'] = setup_submission_list_table(results, current_user)
-            tables['mine'].table_id = 'mine'
+        tables['mine'] = setup_submission_list_table(results, current_user)
+        tables['mine'].table_id = 'mine'
 
         species = [s[0] for s in db.session.query(Committee.species).all()]
         for sp in species:
@@ -103,7 +102,7 @@ def submissions():
     tables['public'] = setup_submission_list_table(results, current_user)
     tables['public'].table_id = 'public'
 
-    return render_template('submissionlist.html', tables=tables, show_completed=show_completed)
+    return render_template('submission_list.html', tables=tables, show_completed=show_completed)
 
 @app.route('/new_submission', methods=['GET', 'POST'])
 @login_required
@@ -111,11 +110,6 @@ def new_submission():
     form = SubmissionForm()
     species = db.session.query(Committee.species).all()
     form.species.choices = [(s[0],s[0]) for s in species]
-    r = db.session.query(func.max(Submission.id)).one_or_none()
-    if r is not None:
-        form.submission_id.data = "S%05d" % (r[0] + 1)
-    else:
-        form.submission_id.data = 1
     form.submission_status.data = 'draft'
     form.submission_date.data = datetime.date.today()
     form.population_ethnicity.data = 'UN'
@@ -129,14 +123,11 @@ def new_submission():
             sub = Submission()
             sub.owner = current_user
             save_Submission(db, sub, form, True)
-            # to avoid a race condition, make sure the submission_id reflects the value of the record id, now that we have one
-            sub_id = (int)(sub.submission_id[1:])
-            if sub_id != sub.id:
-                sub.submission_id = "S%05d" % sub_id
-                db.session.commit()
+            sub.submission_id = "S%05d" % sub.id
+            db.session.commit()
             return redirect(url_for('edit_submission', id=sub.submission_id))
 
-    return render_template('submissionnew.html', form=form, url='new_submission')
+    return render_template('submission_new.html', form=form, url='new_submission')
 
 def check_sub_edit(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
@@ -180,6 +171,7 @@ def edit_submission(id):
 
             save_Submission(db, sub, form, False)
             save_Repertoire(db, sub.repertoire[0], form, False)
+
             if valid:
                 if route:
                     return redirect(url_for(route, id = added_id))
@@ -187,7 +179,7 @@ def edit_submission(id):
                     return redirect(url_for('edit_submission', id=id, _anchor=tag))
                 return redirect(url_for('submissions'))
             else:
-                return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
+                return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = tag if tag else None)
 
         # Jump to the table section wirh an error, if any
         for table in tables.values():
@@ -198,13 +190,14 @@ def edit_submission(id):
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
 
-    return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
+    return render_template('submission_edit.html', form = form, id=id, tables=tables, jump ='#' + tag if tag else None)
 
 @app.route('/delete_submission/<id>', methods=['GET', 'POST'])
 @login_required
 def delete_submission(id):
     sub = check_sub_edit(id)
     if sub is not None:
+        sub.delete_dependencies(db)
         db.session.delete(sub)
         db.session.commit()
     return ''
@@ -218,7 +211,7 @@ def submission(id):
         return redirect('/submissions')
     else:
         tables = setup_submission_view_forms_and_tables(sub, db, sub.can_edit(current_user))
-        return render_template('submissionview.html', sub=sub, tables=tables)
+        return render_template('submission_view.html', sub=sub, tables=tables)
 
 
 def check_tool_edit(id):
@@ -314,10 +307,7 @@ def edit_genotype_description(id):
         return redirect(url_for('edit_submission', id=desc.submission.submission_id))
 
     form = AggregateForm(GenotypeDescriptionForm(), CancelForm())
-    setting_names = []
-    for tool in desc.submission.inference_tools:
-        setting_names.append(( str(tool.id), tool.tool_settings_name))
-    form.inference_tool_id.choices = setting_names
+    form.inference_tool_id.choices = [( str(tool.id), tool.tool_settings_name) for tool in desc.submission.inference_tools]
 
     if request.method == 'POST':
         if form.cancel.data:
@@ -325,6 +315,9 @@ def edit_genotype_description(id):
 
         if form.validate():
             try:
+                if form.genotype_name.data != desc.genotype_name and form.genotype_name.data in [d.genotype_name for d in desc.submission.genotype_descriptions]:
+                    form.genotype_name.errors.append('There is already a genotype description with that name.')
+                    raise ValidationError()
                 if form.genotype_file.data:
                     form.genotype_filename.data = form.genotype_file.data.filename
                     save_GenotypeDescription(db, desc, form, new=False)
@@ -444,6 +437,10 @@ def edit_inferred_sequence(id):
                 if form.sequence_id.data == '':
                     form.sequence_id.errors.append('Please select a sequence from the genotype. Upload data to the genotype if no sequences are listed.')
                     raise ValidationError()
+                for seq in seq.submission.inferred_sequences:
+                    if str(seq.sequence_id) == form.sequence_id.data and str(seq.genotype_id) == form.genotype_id.data:
+                        form.sequence_id.errors.append('That inferred sequence is already listed in the submission.')
+                        raise ValidationError()
                 save_InferredSequence(db, seq, form, new=False)
                 return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
             except ValidationError as e:

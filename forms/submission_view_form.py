@@ -1,12 +1,12 @@
 # Composite tables for View Submission page - defined manually
 
-from db.submissiondb import *
-from db.repertoiredb import *
+from db.submission_db import *
+from db.repertoire_db import *
 from db.editable_table import *
 from db.genotype_description_db import *
 from db.inference_tool_db import *
 from db.inferred_sequence_db import *
-from forms.submissioneditform import ToolNameCol, SeqNameCol, GenNameCol
+from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol
 
 def setup_submission_view_forms_and_tables(sub, db, private):
     tables = {}

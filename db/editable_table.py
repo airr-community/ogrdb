@@ -82,17 +82,11 @@ class EditableTable():
             if tag in field and self.form[field].data:
                 for p in self.items:
                     if p.id == int(field.replace(tag, '')):
-                        self.items.remove(p)
-                        if isinstance(p, db.Model):
-                            self.delete_if_unrefd(db, p)
+                        if callable(getattr(p, "delete_dependencies", None)):
+                            p.delete_dependencies(db)
+                        db.session.delete(p)
                         return True
         return False
-
-    # Subclass if there can be multiple references to an object
-    # - in which case you'll need to decide whether it can be
-    # deleted or not.
-    def delete_if_unrefd(self, db, obj):
-        db.session.delete(obj)
 
     # Subclass to modify the table, for example to add columns
     def prep_table(self):

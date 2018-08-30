@@ -1,13 +1,13 @@
 # Composite form for Edit Submission page - defined manually
 
-from db.repertoiredb import *
-from db.miscdb import *
+from db.repertoire_db import *
+from db.misc_db import *
 from db.inference_tool_db import *
 from db.genotype_description_db import *
 from db.editable_table import *
 from db.inferred_sequence_db import *
-from forms.repertoireform import *
-from forms.submissionform import *
+from forms.repertoire_form import *
+from forms.submission_form import *
 from forms.inference_tool_form import *
 from forms.genotype_description_form import *
 from forms.aggregate_form import *
@@ -32,9 +32,13 @@ class AggregateForm(FlaskForm):
 
 class EditablePubIdTable(EditableTable):
     def check_add_item(self, request, db):
+        added = False
         if self.form.add_pubmed.data:
+            tagged = True
             try:
-                res = get_pmid_details(request.form['pubmed_id'])
+                if self.form.pubmed_id.data in [i.pubmed_id for i in self.items]:
+                    raise ValueError('That publication is already in the table')
+                res = get_pmid_details( self.form.pubmed_id.data)
                 p = PubId()
                 p.pub_title = res['title']
                 p.pub_authors = res['authors']
@@ -43,66 +47,71 @@ class EditablePubIdTable(EditableTable):
                 self.table = make_PubId_table(self.items)
                 self.form.pubmed_id.data = ''
                 db.session.commit()
-                return (True, None, None)
+                added = True
             except ValueError as e:
-                exc_value = exc_info()[1]
-                self.form.pubmed_id.errors.append(exc_value.args[0])
-        return (False, None, None)
+                self.form.pubmed_id.errors.append(e[0])
+        return (added, None, None)
 
 class EditableFwPrimerTable(EditableTable):
     def check_add_item(self, request, db):
+        added = False
         if self.form.add_fw_primer.data:
-            valid = True
-            if len(self.form.fw_primer_name.data) < 1:
-                self.form.fw_primer_name.errors.append('Name cannot be blank.')
-                valid = False
-            if len(self.form.fw_primer_seq.data) < 1:
-                self.form.fw_primer_seq.errors.append('Sequence cannot be blank.')
-                valid = False
+            try:
+                if len(self.form.fw_primer_name.data) < 1:
+                    raise ValueError('Name cannot be blank.', self.form.fw_primer_name.errors)
+                if self.form.fw_primer_name.data in [i.fw_primer_name for i in self.items]:
+                    raise ValueError('A primer with that name is already in the table', self.form.fw_primer_name.errors)
+                if len(self.form.fw_primer_seq.data) < 1:
+                    raise ValueError('Sequence cannot be blank.', self.form.fw_primer_seq.errors)
 
-            if valid:
                 p = ForwardPrimer()
                 p.fw_primer_name = self.form.fw_primer_name.data
                 p.fw_primer_seq = self.form.fw_primer_seq.data
                 self.items.append(p)
                 self.table = make_ForwardPrimer_table(self.items)
                 db.session.commit()
-                return (True, None, None)
-        return (False, None, None)
+                added = True
+            except ValueError as e:
+                e.args[1].append(e.args[0])
+
+        return (added, None, None)
 
 class EditableRvPrimerTable(EditableTable):
     def check_add_item(self, request, db):
+        added = False
         if self.form.add_rv_primer.data:
-            valid = True
-            if len(self.form.rv_primer_name.data) < 1:
-                self.form.rv_primer_name.errors.append('Name cannot be blank.')
-                valid = False
-            if len(self.form.rv_primer_seq.data) < 1:
-                self.form.rv_primer_seq.errors.append('Sequence cannot be blank.')
-                valid = False
+            try:
+                if len(self.form.rv_primer_name.data) < 1:
+                    raise ValueError('Name cannot be blank.', self.form.rv_primer_name.errors)
+                if self.form.rv_primer_name.data in [i.rv_primer_name for i in self.items]:
+                    raise ValueError('A primer with that name is already in the table', self.form.rv_primer_name.errors)
+                if len(self.form.rv_primer_seq.data) < 1:
+                    raise ValueError('Sequence cannot be blank.', self.form.rv_primer_seq.errors)
 
-            if valid:
                 p = ReversePrimer()
                 p.rv_primer_name = self.form.rv_primer_name.data
                 p.rv_primer_seq = self.form.rv_primer_seq.data
                 self.items.append(p)
                 self.table = make_ReversePrimer_table(self.items)
                 db.session.commit()
-                return (True, None, None)
-        return (False, None, None)
+                added = True
+            except ValueError as e:
+                e.args[1].append(e.args[0])
+
+        return (added, None, None)
 
 class EditableAckTable(EditableTable):
     def check_add_item(self, request, db):
+        added = False
         if self.form.add_ack.data:
-            valid = True
-            if len(self.form.ack_name.data) < 1:
-                self.form.ack_name.errors.append('Name cannot be blank.')
-                valid = False
-            if len(self.form.ack_institution_name.data) < 1:
-                self.form.ack_institution_name.errors.append('Institution cannot be blank.')
-                valid = False
+            try:
+                if len(self.form.ack_name.data) < 1:
+                    raise ValueError('Name cannot be blank.', self.form.ack_name.errors)
+                if self.form.ack_name.data in [i.ack_name for i in self.items]:
+                    raise ValueError('That name is already in the table.', self.form.ack_name.errors)
+                if len(self.form.ack_institution_name.data) < 1:
+                    raise ValueError('Institution cannot be blank.', self.form.ack_institution_name.errors)
 
-            if valid:
                 a = Acknowledgements()
                 a.ack_name = self.form.ack_name.data
                 a.ack_institution_name = self.form.ack_institution_name.data
@@ -110,8 +119,11 @@ class EditableAckTable(EditableTable):
                 self.items.append(a)
                 self.table = make_Acknowledgements_table(self.items)
                 db.session.commit()
-                return (True, None, None)
-        return (False, None, None)
+                added = True
+            except ValueError as e:
+                e.args[1].append(e.args[0])
+
+        return (added, None, None)
 
 class EditableInferenceToolTable(EditableTable):
     def check_add_item(self, request, db):

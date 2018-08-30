@@ -4,8 +4,8 @@ from flask_security import current_user
 from flask_admin.contrib.sqla import ModelView
 from app import admin, db
 from db.userdb import User, Role
-from db.submissiondb import Submission
-from db.miscdb import *
+from db.submission_db import Submission
+from db.misc_db import *
 
 
 class AdminView(ModelView):
