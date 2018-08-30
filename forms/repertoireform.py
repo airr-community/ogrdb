@@ -6,7 +6,7 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class PubIdForm(FlaskForm):
-    pubmed_id = StringField('pubmed_id', [validators.Length(max=255)])
+    pubmed_id = StringField('PubMed ID', [validators.Length(max=255)], description="PubMed ID (e.g. 26543)")
 
 
 
@@ -17,8 +17,8 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ForwardPrimerForm(FlaskForm):
-    fw_primer_name = StringField('fw_primer_name', [validators.Length(max=255)])
-    fw_primer_seq = StringField('fw_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
+    fw_primer_name = StringField('Primer Name', [validators.Length(max=255)], description="Primer name or quick description")
+    fw_primer_seq = StringField('Primer Sequence', [ValidNucleotideSequence(ambiguous=True)], description="primer sequence (may contain ambiguous characters)")
 
 
 
@@ -29,8 +29,8 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class ReversePrimerForm(FlaskForm):
-    rv_primer_name = StringField('rv_primer_name', [validators.Length(max=255)])
-    rv_primer_seq = StringField('rv_primer_seq', [ValidNucleotideSequence(ambiguous=True)])
+    rv_primer_name = StringField('Primer Name', [validators.Length(max=255)], description="Primer name or quick description")
+    rv_primer_seq = StringField('Primer Sequence', [ValidNucleotideSequence(ambiguous=True)], description="primer sequence (may contain ambiguous characters)")
 
 
 
@@ -41,9 +41,9 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class AcknowledgementsForm(FlaskForm):
-    ack_name = StringField('ack_name', [validators.Length(max=255)])
-    ack_institution_name = StringField('ack_institution_name', [validators.Length(max=255)])
-    ack_ORCID_id = StringField('ack_ORCID_id', [validators.Optional(), ValidOrcidID()])
+    ack_name = StringField('Name', [validators.Length(max=255)], description="Name of individual to be acknowledged as contributing to this work")
+    ack_institution_name = StringField('Institution', [validators.Length(max=255)], description="Individual's department and institution name")
+    ack_ORCID_id = StringField('ORCID ID', [validators.Optional(), ValidOrcidID()], description="Individual's ORCID Id, if available")
 
 
 
@@ -54,13 +54,13 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class RepertoireForm(FlaskForm):
-    repository_name = StringField('repository_name', [validators.Length(max=255)])
-    repository_id = StringField('repository_id', [validators.Length(max=255)])
-    dataset_url = StringField('dataset_url', [validators.Length(max=255)])
-    miarr_compliant = SelectField('miarr_compliant', choices=[('Yes', 'Yes'), ('No', 'No')])
-    miairr_link = StringField('miairr_link', [validators.Length(max=255)])
-    sequencing_platform = StringField('sequencing_platform', [validators.Length(max=255)])
-    read_length = StringField('read_length', [validators.Length(max=255)])
-    primers_overlapping = SelectField('primers_overlapping', choices=[('Yes', 'Yes'), ('No', 'No')])
+    repository_name = StringField('Repository', [validators.Length(max=255)], description="Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)")
+    repository_id = StringField('Accession Number', [validators.Length(max=255)], description="Accession number or serial number within the repository (e.g. NIH Project or ENA Study)")
+    dataset_url = StringField('Dataset URL', [validators.Length(max=255)], description="URL of the study or project within the repository")
+    miarr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the repertoire dataset and associated metadata is available in MiAIRR format")
+    miairr_link = StringField('MiAIRR URL', [validators.Length(max=255)], description="Link to MiAIRR metadata, if available")
+    sequencing_platform = StringField('Sequencing Platform', [validators.Length(max=255)], description="Designation of sequencing instrument used")
+    read_length = StringField('Read Length', [validators.Length(max=255)], description="Read length in bases for each direction")
+    primers_overlapping = SelectField('Primers Overlapping?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Do primers overlap with the stated sequence of any inferred allele?")
 
 

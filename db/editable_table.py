@@ -1,9 +1,9 @@
 # Editable Table base class
+# This is used to handle the tables in edit_submission, which can grow, delete items etc
 
 from flask import url_for
 from copy import deepcopy
 from wtforms import SubmitField, validators, IntegerField
-from wtforms.meta import DefaultMeta
 from db.styled_table import *
 
 class ActionCol(StyledCol):
@@ -19,11 +19,11 @@ class ActionCol(StyledCol):
         fmt_string = []
 
         if self.view_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs btn-info"><span class="glyphicon glyphicon-sunglasses"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><span class="glyphicon glyphicon-sunglasses"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
         if self.edit_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs btn-warning"><span class="glyphicon glyphicon-pencil"></span>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil"></span>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
         if self.delete:
-            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>'  % (self.cname, content, self.cname, content))
+            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs text-danger icon_back"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>'  % (self.cname, content, self.cname, content))
 
         return '&nbsp'.join(fmt_string)
 

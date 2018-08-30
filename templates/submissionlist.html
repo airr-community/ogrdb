@@ -38,7 +38,7 @@
 
     <div class="row">
         <div class="col-md-8"><h2>Published Submissions</h2></div>
-        <div class="col-md-8"><p>Submissions are published once on or more infereneces they contain have been affirmed by IARC.</p></div>
+        <div class="col-md-8"><p>Submissions are published once one or more infereneces they contain have been affirmed by IARC.</p></div>
     </div>
     <div class="row">
         <div class=".table col-md-12">
@@ -83,7 +83,29 @@
                 "info":     false
             });
         } );
+
+        function sub_delete(id) {
+            BootstrapDialog.confirm({
+                title: 'Delete Submission?',
+                message: 'This draft submission will be removed. You will not be able to recover it later.',
+                type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+                btnOKLabel: 'Delete',
+                btnOKClass: 'btn-warning',
+                callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/delete_submission/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            })
+        }
     </script>
 
 {% endblock %}
+
 

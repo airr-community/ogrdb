@@ -29,6 +29,7 @@ mail = Mail(app)
 db = SQLAlchemy(app)
 from db.userdb import User
 from db.submissiondb import *
+from db.submission_list_table import *
 from db.repertoiredb import *
 from db.inference_tool_db import *
 from db.genotype_db import *
@@ -45,6 +46,7 @@ from forms.security import *
 from forms.submissioneditform import *
 from forms.aggregate_form import *
 from forms.cancel_form import *
+from forms.submission_view_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -77,7 +79,7 @@ def submissions():
         q = db.session.query(Submission).join(Submission.owner).filter(User.email==current_user.email)
         results = q.all()
         if len(results) > 0:
-            tables['mine'] = make_Submission_table(results)
+            tables['mine'] = setup_submission_list_table(results, current_user)
             tables['mine'].table_id = 'mine'
 
         species = [s[0] for s in db.session.query(Committee.species).all()]
@@ -93,12 +95,12 @@ def submissions():
                 if len(results) > 0:
                     if 'species' not in tables:
                         tables['species'] = {}
-                    tables['species'][sp] = make_Submission_table(results)
+                    tables['species'][sp] = setup_submission_list_table(results, current_user)
                     tables['species'][sp].table_id = sp
 
     q = db.session.query(Submission).filter_by(submission_status='published')
     results = q.all()
-    tables['public'] = make_Submission_table(results)
+    tables['public'] = setup_submission_list_table(results, current_user)
     tables['public'].table_id = 'public'
 
     return render_template('submissionlist.html', tables=tables, show_completed=show_completed)
@@ -109,9 +111,9 @@ def new_submission():
     form = SubmissionForm()
     species = db.session.query(Committee.species).all()
     form.species.choices = [(s[0],s[0]) for s in species]
-    r = db.session.query(func.max(Submission.submission_id)).one_or_none()
+    r = db.session.query(func.max(Submission.id)).one_or_none()
     if r is not None:
-        form.submission_id.data = "S%05d" % (int(r[0][1:]) + 1)
+        form.submission_id.data = "S%05d" % (r[0] + 1)
     else:
         form.submission_id.data = 1
     form.submission_status.data = 'draft'
@@ -127,7 +129,12 @@ def new_submission():
             sub = Submission()
             sub.owner = current_user
             save_Submission(db, sub, form, True)
-            return redirect('/')
+            # to avoid a race condition, make sure the submission_id reflects the value of the record id, now that we have one
+            sub_id = (int)(sub.submission_id[1:])
+            if sub_id != sub.id:
+                sub.submission_id = "S%05d" % sub_id
+                db.session.commit()
+            return redirect(url_for('edit_submission', id=sub.submission_id))
 
     return render_template('submissionnew.html', form=form, url='new_submission')
 
@@ -148,7 +155,7 @@ def edit_submission(id):
     sub = check_sub_edit(id)
     if sub is None:
         return redirect('/submissions')
-    (tables, form) = setup_sub_forms_and_tables(sub, db)
+    (tables, form) = setup_submission_edit_forms_and_tables(sub, db)
 
     tag = ''
     if request.method == 'POST':
@@ -176,7 +183,9 @@ def edit_submission(id):
             if valid:
                 if route:
                     return redirect(url_for(route, id = added_id))
-                return redirect(url_for('edit_submission', id=id, _anchor=tag if tag else ''))
+                if tag:
+                    return redirect(url_for('edit_submission', id=id, _anchor=tag))
+                return redirect(url_for('submissions'))
             else:
                 return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
 
@@ -191,6 +200,16 @@ def edit_submission(id):
 
     return render_template('submissionedit.html', form = form, id=id, tables=tables, jump = '#' + tag if tag else None)
 
+@app.route('/delete_submission/<id>', methods=['GET', 'POST'])
+@login_required
+def delete_submission(id):
+    sub = check_sub_edit(id)
+    if sub is not None:
+        db.session.delete(sub)
+        db.session.commit()
+    return ''
+
+
 @app.route('/submission/<id>')
 def submission(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
@@ -198,8 +217,8 @@ def submission(id):
         flash('Submission not found')
         return redirect('/submissions')
     else:
-        table = make_Submission_view(sub, sub.can_edit(current_user))
-        return render_template('submissionview.html', sub=sub, table=table)
+        tables = setup_submission_view_forms_and_tables(sub, db, sub.can_edit(current_user))
+        return render_template('submissionview.html', sub=sub, tables=tables)
 
 
 def check_tool_edit(id):
@@ -229,7 +248,7 @@ def edit_tool(id):
 
     if request.method == 'POST':
         if form.cancel.data:
-            return redirect(url_for('edit_submission', id=id, _anchor= 'genotype_description'))
+            return redirect(url_for('edit_submission', id=tool.submission.submission_id, _anchor= 'tools'))
 
         if form.validate():
             save_InferenceTool(db, tool, form, new=False)
@@ -238,6 +257,33 @@ def edit_tool(id):
         populate_InferenceTool(db, tool, form)
 
     return render_template('inference_tool_edit.html', form=form, submission_id=tool.submission.submission_id, id=id)
+
+def check_tool_view(id):
+    try:
+        tool = db.session.query(InferenceTool).filter_by(id = id).one_or_none()
+        if tool is None:
+            flash('Record not found')
+            return None
+        elif not tool.submission.can_see(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return tool
+
+
+@app.route('/inference_tool/<id>', methods=['GET'])
+def inference_tool(id):
+    tool = check_tool_view(id)
+    if tool is None:
+        return redirect('/')
+
+    table = make_InferenceTool_view(tool, tool.submission.can_edit(current_user))
+    return render_template('inference_tool_view.html', table=table)
+
 
 def check_genotype_description_edit(id):
     try:
@@ -275,7 +321,7 @@ def edit_genotype_description(id):
 
     if request.method == 'POST':
         if form.cancel.data:
-            return redirect(url_for('edit_submission', id=id, _anchor= 'genotype_description'))
+            return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
 
         if form.validate():
             try:
@@ -325,7 +371,8 @@ def genotype(id):
 
     tables = {}
     tables['desc'] = make_GenotypeDescription_view(desc, False)
-    tables['genotype'] = setup_gv_table(desc).rotate_header()
+    tables['desc'].items.append({"item": "Tool/Settings", "value": desc.inference_tool.tool_settings_name, "tooltip": ""})
+    tables['genotype'] = setup_gv_table(desc)
     return render_template('genotype_view.html', desc=desc, tables=tables)
 
 

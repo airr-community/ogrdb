@@ -10,7 +10,11 @@
 
 {% macro render_static_field(field) %}
     <div class="form-group">
-        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {% if field.description %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+        {% else %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {% endif %}
         <div class="col-sm-6">
                 <p class="form-control-static">{{ field.data }}</p>
         </div>
@@ -20,7 +24,11 @@
 
 {% macro render_field_with_errors(field) %}
     <div class="form-group">
-        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {% if field.description %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+        {% else %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {% endif %}
             <div class="col-sm-6">
                 {{ field(**kwargs)|safe }}
             </div>

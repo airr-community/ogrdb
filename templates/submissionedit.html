@@ -1,55 +1,129 @@
 {% extends "base.html" %}
 {% block pagetitle %} Edit Submission {% endblock %}
 
+{% block content %}
+    {% include 'sequence_popup.html' %}
+    {{ super() }}
+{% endblock %}
+
 {% block c_body %}
 
 <form action="{{ url_for('edit_submission', id=id) }}" method="POST" name="form" class="form-horizontal">
 
-            {{ form.hidden_tag() }}
+<div>
 
-    <h3>Submission Details</h3>
-            {% include 'submission_form.html' %}
+<ul class="nav nav-tabs" role="tablist" id="myTab">
+    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab">Submission Details</a></li>
+    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab">Acknowledgements</a></li>
+    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab">Repertoire</a></li>
+    <li role="presentation"><a href="#primers" aria-controls="rep" role="tab" data-toggle="tab">Primers</a></li>
+    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab">Inference Tools</a></li>
+    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab">Genotypes</a></li>
+    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab">Inferred Seqs</a></li>
+</ul>
 
-    <h3>Repertoire Details</h3>
+                    {{ form.hidden_tag() }}
 
-            {% include 'repertoire_form.html' %}
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="sub">
+        <h3>Submission Details</h3>
+        {% include 'submission_form.html' %}
+    </div>
 
-             <a name="pubmed"> </a>
-    <h4>Repertoire Publications</h4>
-            {% include 'pubmed_form.html' %}
+    <div role="tabpanel" class="tab-pane" id="ack">
+        <h3>Acknowledgements</h3>
+        <p>Please list those individuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
+        {% include 'acknowledgement_form.html' %}
+    </div>
 
-             <a name="fw_primer"> </a>
-    <h4>Forward Primers</h4>
-            {% include 'fw_primer_form.html' %}
+    <div role="tabpanel" class="tab-pane" id="rep">
+        <h3>Repertoire Details</h3>
+        <p>Please provide details of the repertoire from which the inferences are based. This should correspond, for example, to an NIH Project or an ENA study. It must be deposited in a public repository.</p>
+        {% include 'repertoire_form.html' %}
 
-             <a name="rv_primer"> </a>
-    <h4>Reverse Primers</h4>
-            {% include 'rv_primer_form.html' %}
+        <h4>Repertoire Publications</h4>
+        <p>Please list publications associated with this study.</p>
+        {% include 'pubmed_form.html' %}
+    </div>
 
-             <a name="ack"> </a>
-    <h3>Acknowledgements</h3>
-            {% include 'acknowledgement_form.html' %}
+    <div role="tabpanel" class="tab-pane" id="primers">
+        <p>Please provide sequences of the PCR primers used in the study.</p>
+        <a name="fw_primer"> </a>
+        <h4>Forward Primers</h4>
+        {% include 'fw_primer_form.html' %}
 
-             <a name="tools"> </a>
-    <h4>Inference Tools and Settings</h4>
-            {% include 'inference_tool_table.html' %}
+        <a name="rv_primer"> </a>
+        <h4>Reverse Primers</h4>
+        {% include 'rv_primer_form.html' %}
+    </div>
 
-             <a name="genotype_description"> </a>
-    <h3>Genotypes</h3>
-            {% include 'genotype_description_table.html' %}
+    <div role="tabpanel" class="tab-pane" id="tools">
+        <h3>Inference Tools and Settings</h3>
+        <p>Please provide details of the inference tools and settings used to infer novel alleles. You may have used multiple tools, and more than one setting for a tool. Each combination
+        of tool and setting should be defined separately here, and provided with a descriptive name so that you can refer to it later</p>
+        {% include 'inference_tool_table.html' %}
+    </div>
 
-             <a name="inferred_sequence"> </a>
-    <h3>Inferred Sequences</h3>
-            {% include 'inferred_sequence_table.html' %}
+    <div role="tabpanel" class="tab-pane" id="genotype_description">
+        <h3>Genotypes</h3>
+        <p>Please provide each genotype that has been inferred. You will be asked for the tool and setting used to infer each one: please make sure that you have entered these in the
+        Inference Tools tab before entering details of the genotype.</p>
+        {% include 'genotype_description_table.html' %}
+    </div>
 
-            <input type="submit" value="Submit" class="btn btn-primary  col-sm-offset-1">
+    <div role="tabpanel" class="tab-pane" id="inferred_sequence">
+        <h3>Inferred Sequences</h3>
+        <p>Please highlight the novel alleles from each genotype that you wish to submit for review. </p>
+        {% include 'inferred_sequence_table.html' %}
+    </div>
+
+
+    <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-1">
+</div>
+</div>
 </form>
 
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
+
+    <script>
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+    })
+
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    var jump = ''
+    if (url.match('#')) {
+        anchor = url.split('#')[1];
+
+        if(anchor == "pubmed") {
+            jump = anchor
+            anchor = "rep"
+        }
+        else if(anchor == "fw_primer" || anchor == "rv_primer") {
+            jump = anchor
+            anchor = "primers"
+        }
+
+        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+    }
+
+    $(document).ready(function ()
+    {
+        if(jump != '') {
+            window.location.hash = ""
+            window.location.hash = "#" + jump
+        }
+    });
+
+    </script>
+
     {% if jump %}
-        <script> $(function(){ window.location.hash = "{{ jump }}"; }); </script>
+        <script> $(function(){ window.location.hash = "{{ jump }}"; }) </script>
     {% endif %}
+    {% include 'sequence_popup_script.html' %}
 {% endblock %}

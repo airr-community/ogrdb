@@ -75,7 +75,8 @@ def write_model(schema, section, outfile, append=False):
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 """ % section)
 
         fo.write(
@@ -194,16 +195,14 @@ def populate_%s(db, object, form):
 
         for sc_item in schema[section]['properties']:
             if 'tableview' in schema[section]['properties'][sc_item]:
-                # special for submission_id. Will need to generalise for inferences, maybe other things
-                if sc_item == 'submission_id':
-                    fo.write('    submission_id = StyledLinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])\n')
-                else:
-                    fo.write('    %s = StyledCol("%s")\n' % (sc_item, sc_item))
+                label = schema[section]['properties'][sc_item].get('label', sc_item)
+                tooltip = ', tooltip="%s"' % schema[section]['properties'][sc_item].get('description', '')
+                fo.write('    %s = StyledCol("%s"%s)\n' % (sc_item, label, tooltip))
         fo.write('\n\n')
 
         # Results view
 
-        fo.write('def make_%s_table(results, private = False, classes=()):\n    ret = %s_table(results, classes=classes)\n' % (section,section))
+        fo.write('def make_%s_table(results, private = False, classes=()):\n    t=create_table(base=%s_table)\n    ret = t(results, classes=classes)\n' % (section,section))
 
         ps = ''
         for sc_item in schema[section]['properties']:
@@ -215,18 +214,20 @@ def populate_%s(db, object, form):
 
         # Object view
 
-        fo.write('class %s_view(Table):\n    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})\n    value = Col("")\n\n\n' % section)
+        fo.write('class %s_view(Table):\n    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})\n    value = Col("")\n\n\n' % section)
 
         fo.write('def make_%s_view(sub, private = False):\n    ret = %s_view([])\n' % (section, section))
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
                     or 'hide' in schema[section]['properties'][sc_item]\
+                    or 'foreign_key' in schema[section]['properties'][sc_item]\
                     or schema[section]['properties'][sc_item]['type'] == 'blob':        # don't put blobs in the view
                 continue
             if 'private' in schema[section]['properties'][sc_item]:
                 fo.write('    if private:\n    ')
-            fo.write('    ret.items.append({"item": "%s", "value": sub.%s})\n' % (sc_item, sc_item))
+            tooltip = (', "tooltip": "' + schema[section]['properties'][sc_item]['description'] + '"') if 'description' in schema[section]['properties'][sc_item] else ''
+            fo.write('    ret.items.append({"item": "%s", "value": sub.%s%s})\n' % (schema[section]['properties'][sc_item].get('label', sc_item), sc_item, tooltip))
         fo.write('    return ret\n\n')
 
 
@@ -248,57 +249,58 @@ class %sForm(FlaskForm):
                 if 'ignore' in schema[section]['properties'][sc_item] or 'hide' in schema[section]['properties'][sc_item]:
                     continue
                 type = schema[section]['properties'][sc_item]['type']
-
+                description = (', description="%s"' % schema[section]['properties'][sc_item]['description']) if 'description' in schema[section]['properties'][sc_item] else ''
+                label = schema[section]['properties'][sc_item]['label'] if 'label' in schema[section]['properties'][sc_item] else sc_item
                 nonblank = ''
                 if 'nonblank' in schema[section]['properties'][sc_item] and schema[section]['properties'][sc_item]['nonblank']:
                    nonblank = ', NonEmpty()'
 
                 if isinstance(type, list):   # enum
                     if len(type) == 0:
-                        fo.write("    %s = SelectField('%s')" % (sc_item, sc_item))
+                        fo.write("    %s = SelectField('%s')" % (sc_item, label))
                     else:
-                        # yamal processor turns Yes, No into bool
+                        # yaml processor turns Yes, No into bool
                         if len(type) == 2 and type[0] == True and type[1] == False:
                             type = ['Yes', 'No']
                         choices = [(item, item) for item in type]
-                        fo.write("    %s = SelectField('%s', choices=%s)" % (sc_item, sc_item, repr(choices)))
+                        fo.write("    %s = SelectField('%s', choices=%s%s)" % (sc_item, label, repr(choices), description))
                 elif type == 'string':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'date':
-                    fo.write("    %s = DateField('%s')" % (sc_item, sc_item))
+                    fo.write("    %s = DateField('%s'%s)" % (sc_item, label, description))
                 elif type == 'email_address':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'phone_number':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=40)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=40)%s]%s)" % (sc_item, label, nonblank, description))
                 elif 'species' in type:
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif 'list' in type:
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'url':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'doi':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'boolean':
-                    fo.write("    %s = BooleanField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = BooleanField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif 'IUPAC' in type:
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'integer':
                     if 'relationship' in schema[section]['properties'][sc_item]:
-                        fo.write("    %s = SelectField('%s', [validators.Optional()], choices=[])" % (sc_item, sc_item))
+                        fo.write("    %s = SelectField('%s', [validators.Optional()], choices=[]%s)" % (sc_item, label, description))
                     else:
-                        fo.write("    %s = IntegerField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
+                        fo.write("    %s = IntegerField('%s', [%s]%s)" % (sc_item, label, nonblank[2:], description))
                 elif type == 'number':
-                    fo.write("    %s = DecimalField('%s', [%s])" % (sc_item, sc_item, nonblank[2:]))
+                    fo.write("    %s = DecimalField('%s', [%s]%s)" % (sc_item, label, nonblank[2:], description))
                 elif type == 'dictionary':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'text':
-                    fo.write("    %s = TextAreaField('%s', [validators.Length(max=10000)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = TextAreaField('%s', [validators.Length(max=10000)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'ORCID ID':
-                    fo.write("    %s = StringField('%s', [validators.Optional(), ValidOrcidID()%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [validators.Optional(), ValidOrcidID()%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'ambiguous nucleotide sequence':
-                    fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=True)%s])" % (sc_item, sc_item, nonblank))
+                    fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=True)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'blob':
-                    fo.write("    %s = FileField('%s')" % (sc_item, sc_item))
+                    fo.write("    %s = FileField('%s'%s)" % (sc_item, label, description))
                 else:
                     raise (ValueError('Unrecognised type: %s' % type))
                 fo.write("\n")

@@ -3,7 +3,8 @@
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 
 class Genotype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -80,53 +81,54 @@ def populate_Genotype(db, object, form):
 
 class Genotype_table(StyledTable):
     id = Col("id", show=False)
-    sequence_id = StyledCol("sequence_id")
-    sequences = StyledCol("sequences")
-    closest_reference = StyledCol("closest_reference")
-    closest_host = StyledCol("closest_host")
-    nt_diff = StyledCol("nt_diff")
-    nt_substitutions = StyledCol("nt_substitutions")
-    aa_diff = StyledCol("aa_diff")
-    aa_substitutions = StyledCol("aa_substitutions")
-    unmutated_frequency = StyledCol("unmutated_frequency")
-    unmutated_sequences = StyledCol("unmutated_sequences")
-    unmutated_umis = StyledCol("unmutated_umis")
-    allelic_percentage = StyledCol("allelic_percentage")
-    unique_ds = StyledCol("unique_ds")
-    unique_js = StyledCol("unique_js")
-    unique_cdr3s = StyledCol("unique_cdr3s")
-    haplotyping_locus = StyledCol("haplotyping_locus")
-    haplotyping_ratio = StyledCol("haplotyping_ratio")
+    sequence_id = StyledCol("Allele name", tooltip="Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)")
+    sequences = StyledCol("Sequences", tooltip="Overall number of sequences assigned to this allele")
+    closest_reference = StyledCol("Closest Reference", tooltip="For inferred alleles, the closest reference gene and allele, as inferred by the tool")
+    closest_host = StyledCol("Closest in Host", tooltip="For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool")
+    nt_diff = StyledCol("NT Diffs", tooltip="For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele")
+    nt_substitutions = StyledCol("NT Substs", tooltip="Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele")
+    aa_diff = StyledCol("AA Diffs", tooltip="For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele")
+    aa_substitutions = StyledCol("AA Substs", tooltip="List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.")
+    unmutated_frequency = StyledCol("Unmutated Freq", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100")
+    unmutated_sequences = StyledCol("Unmutated Seqs", tooltip="he number of sequences exactly matching this unmutated sequence")
+    unmutated_umis = StyledCol("Unmutated UMIs", tooltip="The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)")
+    allelic_percentage = StyledCol("Allelic %", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100")
+    unique_ds = StyledCol("Unique Ds", tooltip="Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence")
+    unique_js = StyledCol("Unique Js", tooltip="Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence")
+    unique_cdr3s = StyledCol("Unique CDR3s", tooltip="Number of unique CDR3s found associated with an inferred V sequence")
+    haplotyping_locus = StyledCol("Haplotyping Locus", tooltip="Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)")
+    haplotyping_ratio = StyledCol("Haplotyping Ratio", tooltip="Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)")
 
 
 def make_Genotype_table(results, private = False, classes=()):
-    ret = Genotype_table(results, classes=classes)
+    t=create_table(base=Genotype_table)
+    ret = t(results, classes=classes)
     return ret
 
 class Genotype_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_Genotype_view(sub, private = False):
     ret = Genotype_view([])
-    ret.items.append({"item": "sequence_id", "value": sub.sequence_id})
-    ret.items.append({"item": "sequences", "value": sub.sequences})
-    ret.items.append({"item": "closest_reference", "value": sub.closest_reference})
-    ret.items.append({"item": "closest_host", "value": sub.closest_host})
-    ret.items.append({"item": "nt_diff", "value": sub.nt_diff})
-    ret.items.append({"item": "nt_substitutions", "value": sub.nt_substitutions})
-    ret.items.append({"item": "aa_diff", "value": sub.aa_diff})
-    ret.items.append({"item": "aa_substitutions", "value": sub.aa_substitutions})
-    ret.items.append({"item": "unmutated_frequency", "value": sub.unmutated_frequency})
-    ret.items.append({"item": "unmutated_sequences", "value": sub.unmutated_sequences})
-    ret.items.append({"item": "unmutated_umis", "value": sub.unmutated_umis})
-    ret.items.append({"item": "allelic_percentage", "value": sub.allelic_percentage})
-    ret.items.append({"item": "unique_ds", "value": sub.unique_ds})
-    ret.items.append({"item": "unique_js", "value": sub.unique_js})
-    ret.items.append({"item": "unique_cdr3s", "value": sub.unique_cdr3s})
-    ret.items.append({"item": "haplotyping_locus", "value": sub.haplotyping_locus})
-    ret.items.append({"item": "haplotyping_ratio", "value": sub.haplotyping_ratio})
-    ret.items.append({"item": "nt_sequence", "value": sub.nt_sequence})
+    ret.items.append({"item": "Allele name", "value": sub.sequence_id, "tooltip": "Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)"})
+    ret.items.append({"item": "Sequences", "value": sub.sequences, "tooltip": "Overall number of sequences assigned to this allele"})
+    ret.items.append({"item": "Closest Reference", "value": sub.closest_reference, "tooltip": "For inferred alleles, the closest reference gene and allele, as inferred by the tool"})
+    ret.items.append({"item": "Closest in Host", "value": sub.closest_host, "tooltip": "For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool"})
+    ret.items.append({"item": "NT Diffs", "value": sub.nt_diff, "tooltip": "For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele"})
+    ret.items.append({"item": "NT Substs", "value": sub.nt_substitutions, "tooltip": "Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele"})
+    ret.items.append({"item": "AA Diffs", "value": sub.aa_diff, "tooltip": "For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele"})
+    ret.items.append({"item": "AA Substs", "value": sub.aa_substitutions, "tooltip": "List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes."})
+    ret.items.append({"item": "Unmutated Freq", "value": sub.unmutated_frequency, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100"})
+    ret.items.append({"item": "Unmutated Seqs", "value": sub.unmutated_sequences, "tooltip": "he number of sequences exactly matching this unmutated sequence"})
+    ret.items.append({"item": "Unmutated UMIs", "value": sub.unmutated_umis, "tooltip": "The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)"})
+    ret.items.append({"item": "Allelic %", "value": sub.allelic_percentage, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100"})
+    ret.items.append({"item": "Unique Ds", "value": sub.unique_ds, "tooltip": "Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence"})
+    ret.items.append({"item": "Unique Js", "value": sub.unique_js, "tooltip": "Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence"})
+    ret.items.append({"item": "Unique CDR3s", "value": sub.unique_cdr3s, "tooltip": "Number of unique CDR3s found associated with an inferred V sequence"})
+    ret.items.append({"item": "Haplotyping Locus", "value": sub.haplotyping_locus, "tooltip": "Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)"})
+    ret.items.append({"item": "Haplotyping Ratio", "value": sub.haplotyping_ratio, "tooltip": "Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)"})
+    ret.items.append({"item": "NT Sequence", "value": sub.nt_sequence, "tooltip": "The consensus sequence provided by the inference tool"})
     return ret
 

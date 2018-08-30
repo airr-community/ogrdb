@@ -3,7 +3,8 @@
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 
 class GenotypeDescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,26 +44,26 @@ def populate_GenotypeDescription(db, object, form):
 
 class GenotypeDescription_table(StyledTable):
     id = Col("id", show=False)
-    genotype_name = StyledCol("genotype_name")
-    genotype_subject_id = StyledCol("genotype_subject_id")
-    genotype_filename = StyledCol("genotype_filename")
+    genotype_name = StyledCol("Genotype Name", tooltip="Descriptive name for this genotype")
+    genotype_subject_id = StyledCol("Subject ID", tooltip="Identifier of the subject from which this genotype was inferred")
+    genotype_filename = StyledCol("Genotype Filename", tooltip="Name of the uploaded file from which the genotype was read")
 
 
 def make_GenotypeDescription_table(results, private = False, classes=()):
-    ret = GenotypeDescription_table(results, classes=classes)
+    t=create_table(base=GenotypeDescription_table)
+    ret = t(results, classes=classes)
     return ret
 
 class GenotypeDescription_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_GenotypeDescription_view(sub, private = False):
     ret = GenotypeDescription_view([])
-    ret.items.append({"item": "genotype_name", "value": sub.genotype_name})
-    ret.items.append({"item": "genotype_subject_id", "value": sub.genotype_subject_id})
-    ret.items.append({"item": "genotype_biosample_ids", "value": sub.genotype_biosample_ids})
-    ret.items.append({"item": "genotype_filename", "value": sub.genotype_filename})
-    ret.items.append({"item": "inference_tool_id", "value": sub.inference_tool_id})
+    ret.items.append({"item": "Genotype Name", "value": sub.genotype_name, "tooltip": "Descriptive name for this genotype"})
+    ret.items.append({"item": "Subject ID", "value": sub.genotype_subject_id, "tooltip": "Identifier of the subject from which this genotype was inferred"})
+    ret.items.append({"item": "Sample IDs", "value": sub.genotype_biosample_ids, "tooltip": "Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)"})
+    ret.items.append({"item": "Genotype Filename", "value": sub.genotype_filename, "tooltip": "Name of the uploaded file from which the genotype was read"})
     return ret
 

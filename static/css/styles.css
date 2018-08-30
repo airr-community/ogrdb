@@ -274,3 +274,7 @@ th.rotate > div > span {
 pre.lead {
     font-size: 18px;
 }
+
+.icon_back {
+    background-color: white;
+}

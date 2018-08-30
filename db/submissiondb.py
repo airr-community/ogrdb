@@ -3,7 +3,8 @@
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 
 class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,34 +55,35 @@ def populate_Submission(db, object, form):
 
 class Submission_table(StyledTable):
     id = Col("id", show=False)
-    submission_id = StyledLinkCol("submission_id", "submission", url_kwargs={"id": "submission_id"}, attr_list=["submission_id"])
-    submission_date = StyledCol("submission_date")
-    submission_status = StyledCol("submission_status")
-    submitter_name = StyledCol("submitter_name")
-    species = StyledCol("species")
+    submission_id = StyledCol("Submission ID", tooltip="Unique ID assigned by IARC on recipt of submission")
+    submission_date = StyledCol("Submission Date", tooltip="Date submission received")
+    submission_status = StyledCol("Submission Status", tooltip="Status of submission")
+    submitter_name = StyledCol("Submitter", tooltip="Full contact information of the submitter, i.e. the person depositing the data")
+    species = StyledCol("Species", tooltip="Binomial designation of subject's species")
 
 
 def make_Submission_table(results, private = False, classes=()):
-    ret = Submission_table(results, classes=classes)
+    t=create_table(base=Submission_table)
+    ret = t(results, classes=classes)
     return ret
 
 class Submission_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_Submission_view(sub, private = False):
     ret = Submission_view([])
-    ret.items.append({"item": "submission_id", "value": sub.submission_id})
-    ret.items.append({"item": "submission_date", "value": sub.submission_date})
-    ret.items.append({"item": "submission_status", "value": sub.submission_status})
-    ret.items.append({"item": "submitter_name", "value": sub.submitter_name})
-    ret.items.append({"item": "submitter_address", "value": sub.submitter_address})
+    ret.items.append({"item": "Submission ID", "value": sub.submission_id, "tooltip": "Unique ID assigned by IARC on recipt of submission"})
+    ret.items.append({"item": "Submission Date", "value": sub.submission_date, "tooltip": "Date submission received"})
+    ret.items.append({"item": "Submission Status", "value": sub.submission_status, "tooltip": "Status of submission"})
+    ret.items.append({"item": "Submitter", "value": sub.submitter_name, "tooltip": "Full contact information of the submitter, i.e. the person depositing the data"})
+    ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institutional address of submitter"})
     if private:
-        ret.items.append({"item": "submitter_email", "value": sub.submitter_email})
+        ret.items.append({"item": "Submitter Email", "value": sub.submitter_email, "tooltip": "Preferred email address of submitter"})
     if private:
-        ret.items.append({"item": "submitter_phone", "value": sub.submitter_phone})
-    ret.items.append({"item": "species", "value": sub.species})
-    ret.items.append({"item": "population_ethnicity", "value": sub.population_ethnicity})
+        ret.items.append({"item": "Submitter Phone", "value": sub.submitter_phone, "tooltip": "Preferred phone number of submitter"})
+    ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species"})
+    ret.items.append({"item": "Ethnicity", "value": sub.population_ethnicity, "tooltip": "Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)"})
     return ret
 

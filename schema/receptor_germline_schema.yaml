@@ -13,38 +13,47 @@ Submission:
             type: string
             description: Unique ID assigned by IARC on recipt of submission
             completed_by: IARC
+            label: Submission ID
         submission_date:
             type: date
             description: Date submission received
             completed_by: IARC
+            label: Submission Date
         submission_status:
             type: [draft,reviewing,published,complete]
             description: Status of submission
             completed_by: IARC
+            label: Submission Status
         submitter_name:
             type: string
             description: Full contact information of the submitter, i.e. the person depositing the data
             completed_by: submitter
+            label: Submitter
         submitter_address:
             type: string
             description: Institutional address of submitter
             completed_by: submitter
+            label: Submitter Address
         submitter_email:
             type: email_address
             description: Preferred email address of submitter
             completed_by: submitter
+            label: Submitter Email
         submitter_phone:
             type: phone_number
             description: Preferred phone number of submitter
             completed_by: submitter
+            label: Submitter Phone
         species:
             type: species for which the gene is inferred
             description: Binomial designation of subject's species
             completed_by: submitter
+            label: Species
         population_ethnicity:
             type: string
-            description: Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use "UN")
+            description: Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)
             completed_by: submitter
+            label: Ethnicity
         IARC_tracking:
             type: list of timestamped strings
             description: Notes from IARC tracking overall progress of this submission, eg additional info requested, when reviewed, etc
@@ -60,36 +69,44 @@ Repertoire:
     properties:
         pub_ids:
             type: list of PubMed ids
-            description: PubMed ids of peer-reviewed publications describing this dataset
+            description: Comma-separated list of PubMed IDs of peer-reviewed publications describing this dataset
             completed_by: submitter
+            label: PubMed IDs
         repository_name:
             type: string
             description: Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)
             completed_by: submitter
+            label: Repository
         repository_id:
             type: string
             description: Accession number or serial number within the repository (e.g. NIH Project or ENA Study)
             completed_by: submitter
+            label: Accession Number
         dataset_url:
             type: url
             description: URL of the study or project within the repository
             completed_by: submitter
+            label: Dataset URL
         miarr_compliant:
             type: [Yes, No]
-            description: TRUE if the repertoire dataset and associated metadata is available in MiAIRR format
+            description: Yes if the repertoire dataset and associated metadata is available in MiAIRR format
             completed_by: submitter
+            label: MiAIRR Compliant?
         miairr_link:
             type: url
             description: Link to MiAIRR metadata, if available
             completed_by: submitter
+            label: MiAIRR URL
         sequencing_platform:
             type: string
             description: Designation of sequencing instrument used
             completed_by: submitter
+            label: Sequencing Platform
         read_length:
             type: string
             description: Read length in bases for each direction
             completed_by: submitter
+            label: Read Length
         forward_primer_set:
             type: list of IUPAC nucleotide notation
             description: sequences of forward pcr primers used for sequence amplification
@@ -100,8 +117,9 @@ Repertoire:
             completed_by: submitter
         primers_overlapping:
             type: [Yes, No]
-            description: Please confirm that primers do not overlap with the stated sequence of any inferred allele.
+            description: Do primers overlap with the stated sequence of any inferred allele?
             completed_by: submitter
+            label: Primers Overlapping?
         notes:
             type: text
             description: Notes relating to the dataset, for example covering details of origin or processing methods not described in publications or sequence depositions. Please provide details of cell types sequenced, or indicate clearly where this and related biosample information can be found.
@@ -116,18 +134,21 @@ PubId:
     properties:
         pubmed_id:
             type: string
-            description: PubMed ID
+            description: PubMed ID (e.g. 26543)
             tableview: true
+            label: PubMed ID
         pub_title:
             type: string
             description: Publication Title
             tableview: true
             hide: true
+            label: Title
         pub_authors:
             type: string
             description: Author list
             tableview: true
             hide: true
+            label: Authors
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
@@ -145,10 +166,12 @@ ForwardPrimer:
             type: string
             description: Primer name or quick description
             tableview: true
+            label: Primer Name
         fw_primer_seq:
             type: ambiguous nucleotide sequence
-            description: primer sequence
+            description: primer sequence (may contain ambiguous characters)
             tableview: true
+            label: Primer Sequence
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
@@ -165,10 +188,12 @@ ReversePrimer:
             type: string
             description: Primer name or quick description
             tableview: true
+            label: Primer Name
         rv_primer_seq:
             type: ambiguous nucleotide sequence
-            description: primer sequence
+            description: primer sequence (may contain ambiguous characters)
             tableview: true
+            label: Primer Sequence
         repertoire_id:
             type: integer
             foreign_key: repertoire.id
@@ -183,16 +208,19 @@ Acknowledgements:
     properties:
         ack_name:
             type: string
-            description: Full name of individual
+            description: Name of individual to be acknowledged as contributing to this work
             tableview: true
+            label: Name
         ack_institution_name:
             type: string
             description: Individual's department and institution name
             tableview: true
+            label: Institution
         ack_ORCID_id:
             type: ORCID ID
             description: Individual's ORCID Id, if available
             tableview: true
+            label: ORCID ID
         submission_id:
             type: integer
             hide: true
@@ -212,25 +240,31 @@ InferenceTool:
             description: Descriptive name for this combination of tool and settings
             completed_by: submitter
             tableview: true
+            label: Tool/Settings Name
         tool_name:
             type: string
             description: Name of the inference tool
             completed_by: submitter
             tableview: true
+            label: Tool Name
         tool_version:
             type: string
             description: Version of the inference tool
             completed_by: submitter
+            tableview: true
+            label: Tool Version
         tool_starting_database:
             type: text
             description: Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)
             completed_by: submitter
             rows: 10
+            label: Starting Database
         tool_settings:
             type: text
-            description: Settings/configuration of the tool when used to provide the inferences (automatically generated)
+            description: Settings/configuration of the tool when used to provide the inferences
             completed_by: submitter
             rows: 20
+            label: Settings
 
             
 # Inferred Sequence
@@ -259,15 +293,18 @@ InferredSequence:
         repository_id:
             type: string
             description: Accession number of the inferred allele within the repository
-            completed_by: submitter        
+            completed_by: submitter
+            label: Accession Number
         deposited_version:
             type: string
             description: Version number of the sequence within the repository
             completed_by: submitter
+            label: Version
         run_ids:
             type: string
-            description: Accession number(s) of the run(s) listing the raw sequences from which this inference was made
+            description: Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made
             completed_by: submitter
+            label: Run Accession Numbers
 
 
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
@@ -283,23 +320,28 @@ GenotypeDescription:
             completed_by: submitter
             tableview: true
             nonblank: true
+            label: Genotype Name
         genotype_subject_id:
             type: string
-            description: Identifier of the subject from which this genotype was inferred (assigned by the submitter)
+            description: Identifier of the subject from which this genotype was inferred
             completed_by: submitter
             tableview: true
+            label: Subject ID
         genotype_biosample_ids:
             type: list
-            description: Accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)
+            description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)
             completed_by: submitter
+            label: Sample IDs
         genotype_filename:
             type: string
             description: Name of the uploaded file from which the genotype was read
             tableview: true
             readonly: true
+            label: Genotype Filename
         genotype_file:
             type: blob
             description: Contents of the uploaded file from which the genotype was read
+            label: Genotype File
         submission_id:
             type: integer
             hide: true
@@ -309,6 +351,7 @@ GenotypeDescription:
             type: integer
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
+            label: Inference Tool
 
 
 Genotype:
@@ -322,90 +365,108 @@ Genotype:
             description: Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)
             completed_by: submitter
             tableview: true
+            label: Allele name
         sequences:
             type: integer
             description: Overall number of sequences assigned to this allele
             completed_by: submitter
             tableview: true
+            label: Sequences
         closest_reference:
             type: string
             description: For inferred alleles, the closest reference gene and allele, as inferred by the tool
             completed_by: submitter
             tableview: true
+            label: Closest Reference
         closest_host:
             type: string
             description: For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool
             completed_by: submitter
             tableview: true
+            label: Closest in Host
         nt_diff:
             type: integer
             description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
             tableview: true
+            label: NT Diffs
         nt_substitutions:
             type: string
-            description: List of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
+            description: Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
             completed_by: submitter            
             tableview: true
+            label: NT Substs
         aa_diff:
             type: integer
             description: For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
             tableview: true
+            label: AA Diffs
         aa_substitutions:
             type: string
             description: List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
+            label: AA Substs
         unmutated_frequency:
             type: number
             description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
             completed_by: submitter
             tableview: true
+            label: Unmutated Freq
         unmutated_sequences:
             type: integer
             description: he number of sequences exactly matching this unmutated sequence
             completed_by: submitter
             tableview: true
+            label: Unmutated Seqs
         unmutated_umis:
             type: integer
             description: The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
             completed_by: submitter
             tableview: true
+            label: Unmutated UMIs
         allelic_percentage:
             type: number
             description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100
             completed_by: submitter
             tableview: true
+            label: Allelic %
         unique_ds:
             type: integer
             description: Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
             completed_by: submitter
             tableview: true
+            label: Unique Ds
         unique_js:
             type: integer
             description: Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
             completed_by: submitter
             tableview: true
+            label: Unique Js
         unique_cdr3s:
             type: integer
             description: Number of unique CDR3s found associated with an inferred V sequence
             completed_by: submitter
             tableview: true
+            label: Unique CDR3s
         haplotyping_locus:
             type: string
             description: Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
             completed_by: submitter
             tableview: true
+            label: Haplotyping Locus
         haplotyping_ratio:
             type: string
             description: Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
             completed_by: submitter
             tableview: true
+            label: Haplotyping Ratio
         nt_sequence:
             type: IUPAC nucleotide notation
             description: The consensus sequence provided by the inference tool
             completed_by: submitter
+            label: NT Sequence
         description_id:
             type: integer
             hide: true
@@ -422,34 +483,40 @@ Observed_Sequence:
         sequence_id:
             type: string
             description: IARC unique reference for this sequence observation
+            label: Allele Name
         sequence:
             type: IUPAC nucleotide notation
             description: Sequence of interest described in this record
+            label: Sequence
         derivation: 
             type: [DNA, mRNA]
             description: Material from which the sequence was derived
+            label: Derivation
         observation_type:
             type: string
             description: e.g. direct sequencing, inference from repertoire
-        notes:
-            type: text
-            description: Notes added by IARC
+            label: Observation Type
         repository_name:
             type: string
             description: Name of the repository in which the sequence has been deposited
+            label: Repository
         repository_id:
             type: string
             description: Id or serial number of the sequence within the repository
+            label: Accession Number
         deposited_version:
             type: string
             description: Version number of the sequence within the repository
+            label: Version Number
         seq_start:
             type: integer
-            description: Start co-ordinate of the sequence of interest described in this record, within the sequence deposited
+            description: Start co-ordinate of the sequence of interest described in this record, within the sequence deposited (1 based, closed interval)
+            label: Start Co-ord
         seq_end:
             type: integer
-            description: End co-ordinate of the sequence of interest described in this record, within the sequence deposited
-        
+            description: End co-ordinate of the sequence of interest described in this record, within the sequence deposited (1 based, closed interval)
+            label: End Co-ord
+
 Genomic_Sequence:
     discriminator: AIRR
     description: Details of a genomic sequence which contributes to the inference of a gene

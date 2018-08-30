@@ -147,7 +147,13 @@ class EditableGenotypeDescriptionTable(EditableTable):
 
 class SeqNameCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return self.td_format(item.sequence_details.sequence_id if item.sequence_details else '')
+        ret = ''
+        if item.sequence_details:
+            ret += '<button type="button" class="btn btn-xs btn-info" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>&nbsp;' \
+                    % (format_nuc_sequence(item.sequence_details.nt_sequence, 50), item.sequence_details.sequence_id, format_fasta_sequence(item.sequence_details.sequence_id, item.sequence_details.nt_sequence, 50))
+            ret += item.sequence_details.sequence_id
+
+        return ret
 
 class GenNameCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -167,10 +173,9 @@ class EditableInferredSequenceTable(EditableTable):
     def prep_table(self):
         self.table.add_column('Sequence', SeqNameCol('Sequence'))
         self.table.add_column('Genotype', GenNameCol('Genotype'))
-        return
 
 
-def setup_sub_forms_and_tables(sub, db):
+def setup_submission_edit_forms_and_tables(sub, db):
     tables = {}
 
     if len(sub.repertoire) == 0:

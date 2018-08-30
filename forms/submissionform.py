@@ -6,14 +6,14 @@ from flask_wtf.file import FileField
 from customvalidators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class SubmissionForm(FlaskForm):
-    submission_id = StringField('submission_id', [validators.Length(max=255)])
-    submission_date = DateField('submission_date')
-    submission_status = SelectField('submission_status', choices=[('draft', 'draft'), ('reviewing', 'reviewing'), ('published', 'published'), ('complete', 'complete')])
-    submitter_name = StringField('submitter_name', [validators.Length(max=255)])
-    submitter_address = StringField('submitter_address', [validators.Length(max=255)])
-    submitter_email = StringField('submitter_email', [validators.Length(max=255)])
-    submitter_phone = StringField('submitter_phone', [validators.Length(max=40)])
-    species = SelectField('species')
-    population_ethnicity = StringField('population_ethnicity', [validators.Length(max=255)])
+    submission_id = StringField('Submission ID', [validators.Length(max=255)], description="Unique ID assigned by IARC on recipt of submission")
+    submission_date = DateField('Submission Date', description="Date submission received")
+    submission_status = SelectField('Submission Status', choices=[('draft', 'draft'), ('reviewing', 'reviewing'), ('published', 'published'), ('complete', 'complete')], description="Status of submission")
+    submitter_name = StringField('Submitter', [validators.Length(max=255)], description="Full contact information of the submitter, i.e. the person depositing the data")
+    submitter_address = StringField('Submitter Address', [validators.Length(max=255)], description="Institutional address of submitter")
+    submitter_email = StringField('Submitter Email', [validators.Length(max=255)], description="Preferred email address of submitter")
+    submitter_phone = StringField('Submitter Phone', [validators.Length(max=40)], description="Preferred phone number of submitter")
+    species = SelectField('Species')
+    population_ethnicity = StringField('Ethnicity', [validators.Length(max=255)], description="Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)")
 
 

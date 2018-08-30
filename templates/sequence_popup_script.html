@@ -1,0 +1,12 @@
+<script>
+    $('#seqModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget); // Button that triggered the modal
+      var sequence = button.data('sequence'); // Extract info from data-* attributes
+      var name = button.data('name'); // Extract info from data-* attributes
+      var fa_href = "data:application/octet-stream;charset=utf-8," + button.data('fa')
+      var modal = $(this);
+      document.querySelector('#modal-sequence').textContent = sequence
+      modal.find('.modal-title').text(name)
+      document.getElementById('modal-fa').href = fa_href
+    })
+</script>

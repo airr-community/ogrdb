@@ -3,7 +3,8 @@
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 
 class PubId(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,23 +32,24 @@ def populate_PubId(db, object, form):
 
 class PubId_table(StyledTable):
     id = Col("id", show=False)
-    pubmed_id = StyledCol("pubmed_id")
-    pub_title = StyledCol("pub_title")
-    pub_authors = StyledCol("pub_authors")
+    pubmed_id = StyledCol("PubMed ID", tooltip="PubMed ID (e.g. 26543)")
+    pub_title = StyledCol("Title", tooltip="Publication Title")
+    pub_authors = StyledCol("Authors", tooltip="Author list")
 
 
 def make_PubId_table(results, private = False, classes=()):
-    ret = PubId_table(results, classes=classes)
+    t=create_table(base=PubId_table)
+    ret = t(results, classes=classes)
     return ret
 
 class PubId_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_PubId_view(sub, private = False):
     ret = PubId_view([])
-    ret.items.append({"item": "pubmed_id", "value": sub.pubmed_id})
+    ret.items.append({"item": "PubMed ID", "value": sub.pubmed_id, "tooltip": "PubMed ID (e.g. 26543)"})
     return ret
 
 
@@ -78,23 +80,24 @@ def populate_ForwardPrimer(db, object, form):
 
 class ForwardPrimer_table(StyledTable):
     id = Col("id", show=False)
-    fw_primer_name = StyledCol("fw_primer_name")
-    fw_primer_seq = StyledCol("fw_primer_seq")
+    fw_primer_name = StyledCol("Primer Name", tooltip="Primer name or quick description")
+    fw_primer_seq = StyledCol("Primer Sequence", tooltip="primer sequence (may contain ambiguous characters)")
 
 
 def make_ForwardPrimer_table(results, private = False, classes=()):
-    ret = ForwardPrimer_table(results, classes=classes)
+    t=create_table(base=ForwardPrimer_table)
+    ret = t(results, classes=classes)
     return ret
 
 class ForwardPrimer_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_ForwardPrimer_view(sub, private = False):
     ret = ForwardPrimer_view([])
-    ret.items.append({"item": "fw_primer_name", "value": sub.fw_primer_name})
-    ret.items.append({"item": "fw_primer_seq", "value": sub.fw_primer_seq})
+    ret.items.append({"item": "Primer Name", "value": sub.fw_primer_name, "tooltip": "Primer name or quick description"})
+    ret.items.append({"item": "Primer Sequence", "value": sub.fw_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)"})
     return ret
 
 
@@ -125,23 +128,24 @@ def populate_ReversePrimer(db, object, form):
 
 class ReversePrimer_table(StyledTable):
     id = Col("id", show=False)
-    rv_primer_name = StyledCol("rv_primer_name")
-    rv_primer_seq = StyledCol("rv_primer_seq")
+    rv_primer_name = StyledCol("Primer Name", tooltip="Primer name or quick description")
+    rv_primer_seq = StyledCol("Primer Sequence", tooltip="primer sequence (may contain ambiguous characters)")
 
 
 def make_ReversePrimer_table(results, private = False, classes=()):
-    ret = ReversePrimer_table(results, classes=classes)
+    t=create_table(base=ReversePrimer_table)
+    ret = t(results, classes=classes)
     return ret
 
 class ReversePrimer_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_ReversePrimer_view(sub, private = False):
     ret = ReversePrimer_view([])
-    ret.items.append({"item": "rv_primer_name", "value": sub.rv_primer_name})
-    ret.items.append({"item": "rv_primer_seq", "value": sub.rv_primer_seq})
+    ret.items.append({"item": "Primer Name", "value": sub.rv_primer_name, "tooltip": "Primer name or quick description"})
+    ret.items.append({"item": "Primer Sequence", "value": sub.rv_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)"})
     return ret
 
 
@@ -175,25 +179,26 @@ def populate_Acknowledgements(db, object, form):
 
 class Acknowledgements_table(StyledTable):
     id = Col("id", show=False)
-    ack_name = StyledCol("ack_name")
-    ack_institution_name = StyledCol("ack_institution_name")
-    ack_ORCID_id = StyledCol("ack_ORCID_id")
+    ack_name = StyledCol("Name", tooltip="Name of individual to be acknowledged as contributing to this work")
+    ack_institution_name = StyledCol("Institution", tooltip="Individual's department and institution name")
+    ack_ORCID_id = StyledCol("ORCID ID", tooltip="Individual's ORCID Id, if available")
 
 
 def make_Acknowledgements_table(results, private = False, classes=()):
-    ret = Acknowledgements_table(results, classes=classes)
+    t=create_table(base=Acknowledgements_table)
+    ret = t(results, classes=classes)
     return ret
 
 class Acknowledgements_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_Acknowledgements_view(sub, private = False):
     ret = Acknowledgements_view([])
-    ret.items.append({"item": "ack_name", "value": sub.ack_name})
-    ret.items.append({"item": "ack_institution_name", "value": sub.ack_institution_name})
-    ret.items.append({"item": "ack_ORCID_id", "value": sub.ack_ORCID_id})
+    ret.items.append({"item": "Name", "value": sub.ack_name, "tooltip": "Name of individual to be acknowledged as contributing to this work"})
+    ret.items.append({"item": "Institution", "value": sub.ack_institution_name, "tooltip": "Individual's department and institution name"})
+    ret.items.append({"item": "ORCID ID", "value": sub.ack_ORCID_id, "tooltip": "Individual's ORCID Id, if available"})
     return ret
 
 
@@ -245,23 +250,24 @@ class Repertoire_table(StyledTable):
 
 
 def make_Repertoire_table(results, private = False, classes=()):
-    ret = Repertoire_table(results, classes=classes)
+    t=create_table(base=Repertoire_table)
+    ret = t(results, classes=classes)
     return ret
 
 class Repertoire_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_Repertoire_view(sub, private = False):
     ret = Repertoire_view([])
-    ret.items.append({"item": "repository_name", "value": sub.repository_name})
-    ret.items.append({"item": "repository_id", "value": sub.repository_id})
-    ret.items.append({"item": "dataset_url", "value": sub.dataset_url})
-    ret.items.append({"item": "miarr_compliant", "value": sub.miarr_compliant})
-    ret.items.append({"item": "miairr_link", "value": sub.miairr_link})
-    ret.items.append({"item": "sequencing_platform", "value": sub.sequencing_platform})
-    ret.items.append({"item": "read_length", "value": sub.read_length})
-    ret.items.append({"item": "primers_overlapping", "value": sub.primers_overlapping})
+    ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)"})
+    ret.items.append({"item": "Accession Number", "value": sub.repository_id, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)"})
+    ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository"})
+    ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format"})
+    ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available"})
+    ret.items.append({"item": "Sequencing Platform", "value": sub.sequencing_platform, "tooltip": "Designation of sequencing instrument used"})
+    ret.items.append({"item": "Read Length", "value": sub.read_length, "tooltip": "Read length in bases for each direction"})
+    ret.items.append({"item": "Primers Overlapping?", "value": sub.primers_overlapping, "tooltip": "Do primers overlap with the stated sequence of any inferred allele?"})
     return ret
 

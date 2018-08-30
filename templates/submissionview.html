@@ -1,8 +1,117 @@
 {% extends "base.html" %}
 {% block pagetitle %} Submission {{ sub.submission_id }} ({{ sub.owner.name }})  {% endblock %}
 
+{% block content %}
+    {% include 'sequence_popup.html' %}
+    {{ super() }}
+{% endblock %}
+
+
 {% block c_body %}
-        <div class=".table">
-            {{ table }}
-        </div>
+<div>
+
+<ul class="nav nav-tabs" role="tablist" id="myTab">
+    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab">Submission Details</a></li>
+    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab">Acknowledgements</a></li>
+    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab">Repertoire</a></li>
+    <li role="presentation"><a href="#primers" aria-controls="rep" role="tab" data-toggle="tab">Primers</a></li>
+    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab">Inference Tools</a></li>
+    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab">Genotypes</a></li>
+    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab">Inferred Seqs</a></li>
+</ul>
+
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="sub">
+        <h3>Submission Details</h3>
+        {{ tables['submission'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="ack">
+        <h3>Acknowledgements</h3>
+        <p>Iindividuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
+        {{ tables['ack'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="rep">
+        <h3>Repertoire Details</h3>
+        <p>Details of the repertoire from which the inferences are based. This corresponds, for example, to an NIH Project or an ENA study.</p>
+        {{ tables['repertoire'] }}
+
+        <h4>Repertoire Publications</h4>
+        <p>Publications associated with this study.</p>
+        {{ tables['pub'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="primers">
+        <p>Sequences of the PCR primers used in the study.</p>
+        <a name="fw_primer"> </a>
+        <h4>Forward Primers</h4>
+        {{ tables['fw_primer'] }}
+
+        <a name="rv_primer"> </a>
+        <h4>Reverse Primers</h4>
+        {{ tables['rv_primer'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="tools">
+        <h3>Inference Tools and Settings</h3>
+        <p>Details of the inference tools and settings used to infer novel alleles.  Each combination
+        of tool and setting is listed here, and provided with a descriptive name.</p>
+        {{ tables['inference_tool'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="genotype_description">
+        <h3>Genotypes</h3>
+        <p>Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.</p>
+        {{ tables['genotype_description'] }}
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="inferred_sequence">
+        <h3>Inferred Sequences</h3>
+        <p>The novel alleles from each genotype that are submitted for review. </p>
+        {{ tables['inferred_sequence'] }}
+
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+    })
+
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    var jump = ''
+    if (url.match('#')) {
+        anchor = url.split('#')[1];
+
+        if(anchor == "pubmed") {
+            jump = anchor
+            anchor = "rep"
+        }
+        else if(anchor == "fw_primer" || anchor == "rv_primer") {
+            jump = anchor
+            anchor = "primers"
+        }
+
+        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+    }
+
+    $(document).ready(function ()
+    {
+        if(jump != '') {
+            window.location.hash = ""
+            window.location.hash = "#" + jump
+        }
+    });
+
+    </script>
+
+    {% include 'sequence_popup_script.html' %}
 {% endblock %}

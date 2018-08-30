@@ -3,7 +3,8 @@
 from app import db
 from db.userdb import User
 from db.styled_table import *
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, create_table
+from db.view_table import ViewCol
 
 class InferredSequence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,20 +45,19 @@ class InferredSequence_table(StyledTable):
 
 
 def make_InferredSequence_table(results, private = False, classes=()):
-    ret = InferredSequence_table(results, classes=classes)
+    t=create_table(base=InferredSequence_table)
+    ret = t(results, classes=classes)
     return ret
 
 class InferredSequence_view(Table):
-    item = Col("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
     value = Col("")
 
 
 def make_InferredSequence_view(sub, private = False):
     ret = InferredSequence_view([])
-    ret.items.append({"item": "sequence_id", "value": sub.sequence_id})
-    ret.items.append({"item": "genotype_id", "value": sub.genotype_id})
-    ret.items.append({"item": "repository_id", "value": sub.repository_id})
-    ret.items.append({"item": "deposited_version", "value": sub.deposited_version})
-    ret.items.append({"item": "run_ids", "value": sub.run_ids})
+    ret.items.append({"item": "Accession Number", "value": sub.repository_id, "tooltip": "Accession number of the inferred allele within the repository"})
+    ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository"})
+    ret.items.append({"item": "Run Accession Numbers", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made"})
     return ret
 
