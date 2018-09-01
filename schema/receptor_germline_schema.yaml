@@ -77,11 +77,13 @@ Repertoire:
             description: Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)
             completed_by: submitter
             label: Repository
-        repository_id:
+            nonblank: true
+        rep_accession_no:
             type: string
             description: Accession number or serial number within the repository (e.g. NIH Project or ENA Study)
             completed_by: submitter
             label: Accession Number
+            nonblank: true
         dataset_url:
             type: url
             description: URL of the study or project within the repository
@@ -102,11 +104,13 @@ Repertoire:
             description: Designation of sequencing instrument used
             completed_by: submitter
             label: Sequencing Platform
+            nonblank: true
         read_length:
             type: string
             description: Read length in bases for each direction
             completed_by: submitter
             label: Read Length
+            nonblank: true
         forward_primer_set:
             type: list of IUPAC nucleotide notation
             description: sequences of forward pcr primers used for sequence amplification
@@ -290,11 +294,12 @@ InferredSequence:
             description: Identifier of the genotype from which these sequences were inferred
             foreign_key: genotype_description.id
             relationship: [genotype_description, GenotypeDescription, inferred_sequences]
-        repository_id:
+        seq_accession_no:
             type: string
             description: Accession number of the inferred allele within the repository
             completed_by: submitter
             label: Accession Number
+            nonblank: true
         deposited_version:
             type: string
             description: Version number of the sequence within the repository
@@ -305,6 +310,7 @@ InferredSequence:
             description: Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made
             completed_by: submitter
             label: Run Accession Numbers
+            nonblank: true
 
 
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
@@ -327,11 +333,13 @@ GenotypeDescription:
             completed_by: submitter
             tableview: true
             label: Subject ID
+            nonblank: true
         genotype_biosample_ids:
             type: list
             description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)
             completed_by: submitter
             label: Sample IDs
+            nonblank: true
         genotype_filename:
             type: string
             description: Name of the uploaded file from which the genotype was read

@@ -1,6 +1,14 @@
 # Custom validators for WTF
 
 from wtforms import ValidationError
+from collections import namedtuple
+
+class ValidationResult:
+    def __init__(self, valid=True, tag=None, route=None, id=None):
+        self.valid = valid
+        self.tag = tag
+        self.route = route
+        self.id = id
 
 class ValidOrcidID(object):
     def __init__(self, message=None):

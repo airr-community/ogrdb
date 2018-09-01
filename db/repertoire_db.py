@@ -209,7 +209,7 @@ from db._repertoire_db import *
 class Repertoire(db.Model, RepertoireMixin):
     id = db.Column(db.Integer, primary_key=True)
     repository_name = db.Column(db.String(255))
-    repository_id = db.Column(db.String(255))
+    rep_accession_no = db.Column(db.String(255))
     dataset_url = db.Column(db.String(255))
     miarr_compliant = db.Column(db.String(255))
     miairr_link = db.Column(db.String(255))
@@ -222,7 +222,7 @@ class Repertoire(db.Model, RepertoireMixin):
 
 def save_Repertoire(db, object, form, new=False):   
     object.repository_name = form.repository_name.data
-    object.repository_id = form.repository_id.data
+    object.rep_accession_no = form.rep_accession_no.data
     object.dataset_url = form.dataset_url.data
     object.miarr_compliant = form.miarr_compliant.data
     object.miairr_link = form.miairr_link.data
@@ -239,7 +239,7 @@ def save_Repertoire(db, object, form, new=False):
 
 def populate_Repertoire(db, object, form):   
     form.repository_name.data = object.repository_name
-    form.repository_id.data = object.repository_id
+    form.rep_accession_no.data = object.rep_accession_no
     form.dataset_url.data = object.dataset_url
     form.miarr_compliant.data = object.miarr_compliant
     form.miairr_link.data = object.miairr_link
@@ -266,7 +266,7 @@ class Repertoire_view(Table):
 def make_Repertoire_view(sub, private = False):
     ret = Repertoire_view([])
     ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)"})
-    ret.items.append({"item": "Accession Number", "value": sub.repository_id, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)"})
+    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)"})
     ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository"})
     ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format"})
     ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available"})

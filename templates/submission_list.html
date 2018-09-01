@@ -85,13 +85,13 @@
         } );
 
         function sub_delete(id) {
-            BootstrapDialog.confirm({
+            foo = BootstrapDialog.confirm({
                 title: 'Delete Submission?',
                 message: 'This draft submission and all associated data will be removed. You will not be able to recover it later.',
                 type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
                 btnOKLabel: 'Delete',
                 btnOKClass: 'btn-warning',
-                callback: function(result) {
+                  callback: function(result) {
                     if(result) {
                         $.ajax({
                             type: "POST",
@@ -102,7 +102,7 @@
                         })
                     }
                 }
-            })
+            });
         }
     </script>
 

@@ -12,6 +12,7 @@ from flask_table import Table, Col, LinkCol
 import logging.handlers
 import datetime
 import json
+from collections import namedtuple
 
 from get_pmid_details import get_pmid_details
 
@@ -148,49 +149,64 @@ def edit_submission(id):
         return redirect('/submissions')
     (tables, form) = setup_submission_edit_forms_and_tables(sub, db)
 
-    tag = ''
-    if request.method == 'POST':
-        if form.validate():
-            valid = True
-            route = None
-            added_id = None
-            # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
-            # this is a little more complex than it needs to be, because there's custom validation on some of the fields
-            for table in tables.values():
-                (added, route, added_id) = table.check_add_item(request, db)
-                if added:
-                    tag = table.name
-                    break
-                if table.process_deletes(db):
-                    db.session.commit()
-                    tag = table.name
-                for field in table.form:
-                    if len(field.errors) > 0:
-                        tag = table.name
-                        valid = False
-
-            save_Submission(db, sub, form, False)
-            save_Repertoire(db, sub.repertoire[0], form, False)
-
-            if valid:
-                if route:
-                    return redirect(url_for(route, id = added_id))
-                if tag:
-                    return redirect(url_for('edit_submission', id=id, _anchor=tag))
-                return redirect(url_for('submissions'))
-            else:
-                return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = tag if tag else None)
-
-        # Jump to the table section wirh an error, if any
-        for table in tables.values():
-            for field in table.form:
-                if len(field.errors) > 0:
-                    tag = table.name
-    else:
+    if request.method == 'GET':
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
+        return render_template('submission_edit.html', form = form, id=id, tables=tables)
 
-    return render_template('submission_edit.html', form = form, id=id, tables=tables, jump ='#' + tag if tag else None)
+    missing_sequence_error = False
+    validation_result = ValidationResult()
+    try:
+        if not form.validate():
+            raise ValidationError()
+
+        # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
+        validation_result = process_table_updates(tables, request, db)
+        if not validation_result.valid:
+            raise ValidationError()
+
+        if 'submit_btn' in request.form:
+            # Check we have at least one inferred sequence
+            if len(sub.inferred_sequences) == 0:
+                missing_sequence_error = True
+                validation_result.tag = 'inferred_sequence'
+                raise ValidationError()
+
+            sub.submission_status = 'reviewing'
+            db.session.commit()
+            flash('Submission %s has been submitted to IARC for review.' % id)
+            return redirect(url_for('submissions'))
+
+        save_Submission(db, sub, form, False)
+        save_Repertoire(db, sub.repertoire[0], form, False)
+
+        if validation_result.route:
+            return redirect(url_for(validation_result.route, id = validation_result.id))
+        if validation_result.tag:
+            return redirect(url_for('edit_submission', id=id, _anchor=validation_result.tag))
+        return redirect(url_for('submissions'))
+
+    except ValidationError as e:
+        # If we don't have a tag, find an error to jump to
+        if not validation_result.tag:
+            repform = type(RepertoireForm())
+            for subform in form.subforms:
+                if type(subform) is repform:
+                    for field in subform:
+                        if len(field.errors) > 0:
+                            validation_result.tag = 'rep'
+                            break
+                    break
+
+        if not validation_result.tag:
+            for table in tables.values():
+                for field in table.form:
+                    if len(field.errors) > 0:
+                        validation_result.tag = table.name
+                        break
+
+        return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
+
 
 @app.route('/delete_submission/<id>', methods=['GET', 'POST'])
 @login_required
@@ -250,6 +266,20 @@ def edit_tool(id):
         populate_InferenceTool(db, tool, form)
 
     return render_template('inference_tool_edit.html', form=form, submission_id=tool.submission.submission_id, id=id)
+
+
+# AJAX - delete tool and associated data
+@app.route('/delete_genotype/<id>', methods=['POST'])
+@login_required
+def delete_tool(id):
+    tool = check_tool_edit(id)
+    if tool is not None:
+        tool.delete_dependencies(db)
+        db.session.delete(tool)
+        db.session.commit()
+    return ''
+
+
 
 def check_tool_view(id):
     try:
@@ -383,6 +413,17 @@ def get_genotype_seqnames(id):
 
     return json.dumps(ret)
 
+# AJAX - delete genotype and associated data
+@app.route('/delete_genotype/<id>', methods=['POST'])
+@login_required
+def delete_genotype(id):
+    desc = check_genotype_description_edit(id)
+    if desc is not None:
+        desc.delete_dependencies(db)
+        db.session.delete(desc)
+        db.session.commit()
+    return ''
+
 
 def check_inferred_sequence_edit(id):
     try:
@@ -437,8 +478,8 @@ def edit_inferred_sequence(id):
                 if form.sequence_id.data == '':
                     form.sequence_id.errors.append('Please select a sequence from the genotype. Upload data to the genotype if no sequences are listed.')
                     raise ValidationError()
-                for seq in seq.submission.inferred_sequences:
-                    if str(seq.sequence_id) == form.sequence_id.data and str(seq.genotype_id) == form.genotype_id.data:
+                for sequence in seq.submission.inferred_sequences:
+                    if sequence is not seq and str(sequence.sequence_id) == form.sequence_id.data and str(sequence.genotype_id) == form.genotype_id.data:
                         form.sequence_id.errors.append('That inferred sequence is already listed in the submission.')
                         raise ValidationError()
                 save_InferredSequence(db, seq, form, new=False)

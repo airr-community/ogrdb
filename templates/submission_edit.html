@@ -73,12 +73,15 @@
 
     <div role="tabpanel" class="tab-pane" id="inferred_sequence">
         <h3>Inferred Sequences</h3>
-        <p>Please highlight the novel alleles from each genotype that you wish to submit for review. </p>
+        <p>Please select the novel alleles from each genotype that you wish to submit for review. </p>
         {% include 'inferred_sequence_table.html' %}
+
     </div>
 
 
-    <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-1">
+    <input type="submit" value="Save Draft" class="btn btn-primary  col-sm-offset-1" name="save_btn">
+    <button type="button" class="btn btn-danger" onclick="submit_warn()">Submit to IARC</button>
+    <input type="submit" value="Submit to IARC" class="hidden" name="submit_btn" id="submit_btn">
 </div>
 </div>
 </form>
@@ -128,6 +131,43 @@
             window.location.hash = "#" + jump
         }
     });
+
+    function delete_warn(route, message) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete Submission?',
+            message: message,
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Delete',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: route,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function submit_warn() {
+        foo = BootstrapDialog.confirm({
+            title: 'Submit to IARC?',
+            message: 'This will submit the inferences for review. You will no longer be able to make changes to the submission.',
+            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Submit',
+            btnOKClass: 'btn-warning',
+              callback: function(result) {
+                if(result) {
+                    var submit_button = document.getElementById("submit_btn");
+                    submit_button.click()
+                }
+            }
+        });
+    }
 
     </script>
 

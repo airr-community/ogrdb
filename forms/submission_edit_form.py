@@ -14,6 +14,7 @@ from forms.aggregate_form import *
 from forms.inferred_sequence_form import *
 from sys import exc_info
 from get_pmid_details import get_pmid_details
+from collections import namedtuple
 
 class AggregateForm(FlaskForm):
     def __init__(self, *args):
@@ -21,6 +22,9 @@ class AggregateForm(FlaskForm):
         self.subforms = []
 
         for form in args:
+            for field in form._fields:
+                if field in self._fields and field != 'csrf_token':
+                    raise(AttributeError('Field %s is present in multiple child forms.' % field))
             self.subforms.append(form)
             self._fields.update(form._fields)
 
@@ -186,6 +190,23 @@ class EditableInferredSequenceTable(EditableTable):
         self.table.add_column('Sequence', SeqNameCol('Sequence'))
         self.table.add_column('Genotype', GenNameCol('Genotype'))
 
+def process_table_updates(tables, request, db):
+    validation_result = ValidationResult()
+    for table in tables.values():
+        validation_result.tag = table.name
+        (validation_result.added, validation_result.route, validation_result.id) = table.check_add_item(request, db)
+        if validation_result.added:
+            break
+        if table.process_deletes(db):
+            break
+        for field in table.form:
+            if len(field.errors) > 0:
+                validation_result.valid = False
+                break
+        validation_result.tag = None
+
+    return validation_result
+
 
 def setup_submission_edit_forms_and_tables(sub, db):
     tables = {}
@@ -221,8 +242,8 @@ def setup_submission_edit_forms_and_tables(sub, db):
     tables['fw_primer'] = EditableFwPrimerTable(make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set), 'fw_primer', ForwardPrimerForm, sub.repertoire[0].forward_primer_set, legend='Add Primer')
     tables['rv_primer'] = EditableRvPrimerTable(make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set), 'rv_primer', ReversePrimerForm, sub.repertoire[0].reverse_primer_set, legend='Add Primer')
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(sub.acknowledgements), 'ack', AcknowledgementsForm, sub.acknowledgements, legend='Add Acknowledgement')
-    tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool')
-    tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype')
+    tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool', delete_route='delete_tool', delete_message='Are you sure you wish to delete the tool settings and any associated genotypes?')
+    tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
 
     form = AggregateForm(submission_form, repertoire_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)

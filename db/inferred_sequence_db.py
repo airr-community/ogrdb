@@ -16,7 +16,7 @@ class InferredSequence(db.Model):
     submission = db.relationship('Submission', backref = 'inferred_sequences')
     genotype_id = db.Column(db.Integer, db.ForeignKey('genotype_description.id'))
     genotype_description = db.relationship('GenotypeDescription', backref = 'inferred_sequences')
-    repository_id = db.Column(db.String(255))
+    seq_accession_no = db.Column(db.String(255))
     deposited_version = db.Column(db.String(255))
     run_ids = db.Column(db.String(255))
 
@@ -24,7 +24,7 @@ class InferredSequence(db.Model):
 def save_InferredSequence(db, object, form, new=False):   
     object.sequence_id = form.sequence_id.data
     object.genotype_id = form.genotype_id.data
-    object.repository_id = form.repository_id.data
+    object.seq_accession_no = form.seq_accession_no.data
     object.deposited_version = form.deposited_version.data
     object.run_ids = form.run_ids.data
 
@@ -36,7 +36,7 @@ def save_InferredSequence(db, object, form, new=False):
 
 
 def populate_InferredSequence(db, object, form):   
-    form.repository_id.data = object.repository_id
+    form.seq_accession_no.data = object.seq_accession_no
     form.deposited_version.data = object.deposited_version
     form.run_ids.data = object.run_ids
 
@@ -58,7 +58,7 @@ class InferredSequence_view(Table):
 
 def make_InferredSequence_view(sub, private = False):
     ret = InferredSequence_view([])
-    ret.items.append({"item": "Accession Number", "value": sub.repository_id, "tooltip": "Accession number of the inferred allele within the repository"})
+    ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository"})
     ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository"})
     ret.items.append({"item": "Run Accession Numbers", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made"})
     return ret

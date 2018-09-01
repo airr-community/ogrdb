@@ -278,3 +278,7 @@ pre.lead {
 .icon_back {
     background-color: white;
 }
+
+.hidden {
+    display: none;
+}
