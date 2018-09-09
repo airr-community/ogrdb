@@ -11,3 +11,7 @@ class SubmissionMixin:
         for a in self.acknowledgements:
             db.session.delete(a)
 
+        # journal entries
+        for j in self.journal_entries:
+            db.session.delete(j)
+

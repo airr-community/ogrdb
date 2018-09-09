@@ -7,6 +7,7 @@ from db.userdb import User
 from db.styled_table import *
 from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
+from sqlalchemy.orm import backref
 
 class InferredSequence(db.Model):
     id = db.Column(db.Integer, primary_key=True)

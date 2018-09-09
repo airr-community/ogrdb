@@ -6,6 +6,9 @@ class AggregateForm(FlaskForm):
         self.subforms = []
 
         for form in args:
+            for field in form._fields:
+                if field in self._fields and field != 'csrf_token':
+                    raise(AttributeError('Field %s is present in multiple child forms.' % field))
             self.subforms.append(form)
             self._fields.update(form._fields)
 
@@ -14,4 +17,3 @@ class AggregateForm(FlaskForm):
             a = getattr(form, attr, None)
             if a is not None: return a
         raise(AttributeError())
-

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash, url_for, Response
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
@@ -12,7 +12,9 @@ from flask_table import Table, Col, LinkCol
 import logging.handlers
 import datetime
 import json
-from collections import namedtuple
+from copy import deepcopy
+from Bio import SeqIO
+import io
 
 from get_pmid_details import get_pmid_details
 
@@ -27,7 +29,12 @@ app.logger.addHandler(handler)
 
 mail = Mail(app)
 
+
 db = SQLAlchemy(app)
+
+from journal import *
+
+
 from db.userdb import User
 from db.submission_db import *
 from db.submission_list_table import *
@@ -38,6 +45,7 @@ from db.genotype_description_db import *
 from db.genotype_upload import *
 from db.genotype_view_table import *
 from db.inferred_sequence_db import *
+from db.journal_entry_db import *
 
 admin = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -48,6 +56,7 @@ from forms.submission_edit_form import *
 from forms.aggregate_form import *
 from forms.cancel_form import *
 from forms.submission_view_form import *
+from forms.journal_entry_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -92,11 +101,11 @@ def submissions():
                     q = db.session.query(Submission).filter(Submission.species==sp).filter(Submission.submission_status.in_(['reviewing']))
                     show_completed = False
                 results = q.all()
-                if len(results) > 0:
-                    if 'species' not in tables:
-                        tables['species'] = {}
-                    tables['species'][sp] = setup_submission_list_table(results, current_user)
-                    tables['species'][sp].table_id = sp
+
+                if 'species' not in tables:
+                    tables['species'] = {}
+                tables['species'][sp] = setup_submission_list_table(results, current_user)
+                tables['species'][sp].table_id = sp
 
     q = db.session.query(Submission).filter_by(submission_status='published')
     results = q.all()
@@ -117,7 +126,6 @@ def new_submission():
     form.submitter_email.data = current_user.email
     form.submitter_name.data = current_user.name
     form.submitter_address.data = current_user.address
-    form.submitter_phone.data = current_user.phone
 
     if request.method == 'POST':
         if form.validate():
@@ -157,7 +165,7 @@ def edit_submission(id):
     missing_sequence_error = False
     validation_result = ValidationResult()
     try:
-        if not form.validate():
+        if ('save_btn' in request.form or 'submit_btn' in request.form) and not form.validate():
             raise ValidationError()
 
         # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
@@ -173,6 +181,7 @@ def edit_submission(id):
                 raise ValidationError()
 
             sub.submission_status = 'reviewing'
+            add_history(current_user, 'Submission submitted to IARC %s Committee for review' % sub.species, sub, db)
             db.session.commit()
             flash('Submission %s has been submitted to IARC for review.' % id)
             return redirect(url_for('submissions'))
@@ -219,15 +228,105 @@ def delete_submission(id):
     return ''
 
 
-@app.route('/submission/<id>')
+@app.route('/submission/<id>', methods=['GET', 'POST'])
 def submission(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
     if sub is None or not sub.can_see(current_user):
         flash('Submission not found')
         return redirect('/submissions')
+
+    (form, tables) = setup_submission_view_forms_and_tables(sub, db, sub.can_see_private(current_user))
+
+    if request.method == 'GET':
+        return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=(current_user.has_role(sub.species) and sub.submission_status != 'draft'), id=id, jump="", status=sub.submission_status)
     else:
-        tables = setup_submission_view_forms_and_tables(sub, db, sub.can_edit(current_user))
-        return render_template('submission_view.html', sub=sub, tables=tables)
+        if not current_user.has_role(sub.species):
+            flash('Submission not found')
+            return redirect('/submissions')
+        if form.validate():
+            if form.action.data == 'draft':
+                add_note(current_user, form.title.data, 'Submission returned to Submitter with the following message:\n\n' + form.body.data, sub, db)
+                add_history(current_user, 'Submission returned to Submitter', sub, db)
+                sub.submission_status = 'draft'
+                db.session.commit()
+                flash('Submission returned to Submitter')
+                return redirect('/submissions')
+            elif form.action.data == 'published':
+                add_note(current_user, form.title.data, 'Submission published with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_history(current_user, 'Submission published', sub, db)
+                sub.submission_status = 'published'
+                db.session.commit()
+                flash('Submission published')
+                return redirect('/submissions')
+            elif form.action.data == 'complete':
+                add_note(current_user, form.title.data, 'Submission completed with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_history(current_user, 'Submission completed', sub, db)
+                sub.submission_status = 'complete'
+                db.session.commit()
+                flash('Submission marked as complete')
+                return redirect('/submissions')
+            elif form.action.data == 'review':
+                add_note(current_user, form.title.data, 'Submission returned to Review with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_history(current_user, 'Submission returned to Review', sub, db)
+                sub.submission_status = 'reviewing'
+                db.session.commit()
+                flash('Submission returned to Review')
+                return redirect('/submissions')
+            elif form.action.data == 'note':
+                add_note(current_user, form.title.data, form.body.data, sub, db)
+                db.session.commit()
+                flash('Note Added')
+                return redirect(url_for('submission', id=id, _anchor='review'))
+            elif form.type.data == 'note':      #reply to thread
+                head = db.session.query(JournalEntry).filter_by(submission_id = sub.id, type = 'note', id = int(form.action.data)).one_or_none()
+                add_note(current_user, head.title, form.body.data, sub, db, parent_id=int(form.action.data))
+                db.session.commit()
+                flash('Note Added')
+                return redirect(url_for('submission', id=id, _anchor='review'))
+            else:
+                return redirect('/submissions')
+
+        else:
+           return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=(current_user.has_role(sub.species) and sub.submission_status != 'draft'), id=id, jump='modal', button='#'+form.action.data, status=sub.submission_status)
+
+
+@app.route('/upload_primers/<id>/<primer_type>', methods=['POST'])
+@login_required
+def upload_primer(id, primer_type):
+    sub = check_sub_edit(id)
+    rep_id = sub.repertoire[0].id
+    if sub is None:
+        return redirect('/submissions')
+
+    if 'file' not in request.files:
+        flash('Nothing uploaded.')
+    else:
+        content = io.StringIO(request.files['file'].read().decode("utf-8"))
+        seq_count = 0
+
+        for seq_record in SeqIO.parse(content, 'fasta'):
+            seq_count += 1
+
+            if primer_type == 'forward':
+                p = ForwardPrimer()
+                p.repertoire_id = rep_id
+                p.fw_primer_name = seq_record.id
+                p.fw_primer_seq = str(seq_record.seq)
+            else:
+                p = ReversePrimer()
+                p.repertoire_id = rep_id
+                p.rv_primer_name = seq_record.id
+                p.rv_primer_seq = str(seq_record.seq)
+
+            db.session.add(p)
+
+        if seq_count > 0:
+            flash('Added %d %s primer records' % (seq_count, primer_type))
+            db.session.commit()
+        else:
+            flash('No valid FASTA records found in file.')
+
+        return ''
 
 
 def check_tool_edit(id):
@@ -269,7 +368,7 @@ def edit_tool(id):
 
 
 # AJAX - delete tool and associated data
-@app.route('/delete_genotype/<id>', methods=['POST'])
+@app.route('/delete_tool/<id>', methods=['POST'])
 @login_required
 def delete_tool(id):
     tool = check_tool_edit(id)
@@ -396,8 +495,16 @@ def genotype(id):
     tables['desc'] = make_GenotypeDescription_view(desc, False)
     tables['desc'].items.append({"item": "Tool/Settings", "value": desc.inference_tool.tool_settings_name, "tooltip": ""})
     tables['genotype'] = setup_gv_table(desc)
-    return render_template('genotype_view.html', desc=desc, tables=tables)
+    return render_template('genotype_view.html', desc=desc, tables=tables, id=id)
 
+@app.route('/download_genotype/<id>')
+def download_genotype(id):
+    desc = check_genotype_description_view(id)
+    if desc is None:
+        return redirect('/')
+
+    foo = desc.genotype_file.decode("utf-8")
+    return Response(desc.genotype_file.decode("utf-8"), mimetype="text/csv", headers={"Content-disposition": "attachment; filename=%s" % desc.genotype_filename})
 
 # AJAX - Return JSON structure listing sequence names and Genotype ids, given a GenotypeDesc id
 @app.route('/get_genotype_seqnames/<id>', methods=['POST'])
@@ -461,7 +568,7 @@ def edit_inferred_sequence(id):
 
     if request.method == 'POST':
         if form.cancel.data:
-            return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor='genotype_description'))
+            return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor='inferred_sequence'))
 
         # Update choices for sequence_id to reflect the selected genotype, provided we have a valid genotype
         # if anything goes wrong, field validation will sort it out

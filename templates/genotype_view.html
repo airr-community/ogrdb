@@ -9,10 +9,13 @@
 
 {% block c_body %}
 
-        <div class=".table">
+        <div class="table">
             {{ tables['desc'] }}
         </div>
-        <div class=".table">
+
+                <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-info" role="button" id="download_genotype">Download</a>
+
+        <div class="table pad">
             {{ tables['genotype'] | safe}}
         </div>
 {% endblock %}

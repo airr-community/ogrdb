@@ -22,7 +22,6 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255))
     name = db.Column(db.String(255))
     address = db.Column(db.String(250), unique=True)
-    phone = db.Column(db.String(80), unique=True)
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))

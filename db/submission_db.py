@@ -7,23 +7,23 @@ from db.userdb import User
 from db.styled_table import *
 from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
+from sqlalchemy.orm import backref
 
 from db._submission_db import *
 
 class Submission(db.Model, SubmissionMixin):
     id = db.Column(db.Integer, primary_key=True)
     submission_id = db.Column(db.String(255))
-    submission_date = db.Column(db.Date)
+    submission_date = db.Column(db.DateTime)
     submission_status = db.Column(db.String(255))
     submitter_name = db.Column(db.String(255))
     submitter_address = db.Column(db.String(255))
     submitter_email = db.Column(db.String(255))
-    submitter_phone = db.Column(db.String(255))
     species = db.Column(db.String(255))
     population_ethnicity = db.Column(db.String(255))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner = db.relationship('User', backref = 'submissions')
-    from db._submission_rights import can_see, can_edit
+    from db._submission_rights import can_see, can_edit, can_see_private
 
 
 def save_Submission(db, object, form, new=False):   
@@ -33,7 +33,6 @@ def save_Submission(db, object, form, new=False):
     object.submitter_name = form.submitter_name.data
     object.submitter_address = form.submitter_address.data
     object.submitter_email = form.submitter_email.data
-    object.submitter_phone = form.submitter_phone.data
     object.species = form.species.data
     object.population_ethnicity = form.population_ethnicity.data
 
@@ -51,7 +50,6 @@ def populate_Submission(db, object, form):
     form.submitter_name.data = object.submitter_name
     form.submitter_address.data = object.submitter_address
     form.submitter_email.data = object.submitter_email
-    form.submitter_phone.data = object.submitter_phone
     form.species.data = object.species
     form.population_ethnicity.data = object.population_ethnicity
 
@@ -85,8 +83,6 @@ def make_Submission_view(sub, private = False):
     ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institutional address of submitter"})
     if private:
         ret.items.append({"item": "Submitter Email", "value": sub.submitter_email, "tooltip": "Preferred email address of submitter"})
-    if private:
-        ret.items.append({"item": "Submitter Phone", "value": sub.submitter_phone, "tooltip": "Preferred phone number of submitter"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species"})
     ret.items.append({"item": "Ethnicity", "value": sub.population_ethnicity, "tooltip": "Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)"})
     return ret

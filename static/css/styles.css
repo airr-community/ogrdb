@@ -282,3 +282,21 @@ pre.lead {
 .hidden {
     display: none;
 }
+
+.tablebutton {
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.tablefixed {
+    table-layout: fixed;
+    white-space: nowrap;
+}
+
+.row-20 {
+    width: 20%;
+}
+
+.row-80 {
+    width: 80%;
+}

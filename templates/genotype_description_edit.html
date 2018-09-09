@@ -11,7 +11,14 @@
 
             {% include 'genotype_description_form.html' %}
 
-            <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-1">
+            <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-3">
+                    <a href="/static/templates/genotype_template.csv">Download Genotype File Template</a>
+                </div>
+            </div>
+
+
+            <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" id="save_genotype">
             {{ form.cancel(class="btn btn-cancel") }}
 </form>
 

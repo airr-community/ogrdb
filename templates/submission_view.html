@@ -11,13 +11,16 @@
 <div>
 
 <ul class="nav nav-tabs" role="tablist" id="myTab">
-    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab">Submission Details</a></li>
-    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab">Acknowledgements</a></li>
-    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab">Repertoire</a></li>
-    <li role="presentation"><a href="#primers" aria-controls="rep" role="tab" data-toggle="tab">Primers</a></li>
-    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab">Inference Tools</a></li>
-    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab">Genotypes</a></li>
-    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab">Inferred Seqs</a></li>
+    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
+    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
+    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
+    <li role="presentation"><a href="#primers" aria-controls="primers" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
+    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
+    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
+    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
+    {% if reviewer %}
+    <li role="presentation"><a href="#review" aria-controls="review" role="tab" data-toggle="tab" id="tab-rev">Review</a></li>
+    {% endif %}
 </ul>
 
 <div class="tab-content">
@@ -72,6 +75,72 @@
         {{ tables['inferred_sequence'] }}
 
     </div>
+
+    {% if reviewer %}
+    <div role="tabpanel" class="tab-pane" id="review">
+        <h3>History</h3>
+        {{ tables['history']}}
+        <h3>Notes</h3>
+        <div class="form-group">
+            <button type="button" class="btn tablebutton pull-right" data-toggle="modal" data-target="#messageModal" data-type="note" data-action="note"
+                data-header="New Thread" data-instr=""
+                data-title="" id="note">New Thread</button>
+        </div>
+
+        {% for (id, table) in tables['notes'] %}
+            <div class="form-group">
+            {{ table }}
+            <button type="button" class="btn btn-sm tablebutton pull-right" data-toggle="modal" data-target="#messageModal" data-type="note" data-action="{{ id }}"
+                    data-header="New Thread" data-instr=""
+                    data-title="" id="note">Reply to Thread <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
+            </div>
+        {% endfor %}
+
+        <h3>Actions</h3>
+        <form action="{{ url_for('submission', id=id) }}" method="POST" name="form" class="form-horizontal">
+            {{ form.hidden_tag() }}
+            <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="messageModallLabel">New message</h4>
+                  </div>
+                  <div class="modal-body">
+                      <div class="modal-instructions">
+                      </div>
+                      <br>
+                      {% include 'journal_entry_form.html' %}
+
+                      {{ form.type(class="hidden") }}
+                      {{ form.action(class="hidden") }}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <input type="submit" value="Save" class="btn" name="save_btn" id="save_btn">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        </form>
+        {% if status == 'reviewing' %}
+            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="draft"
+                    data-header="Return Submission to Submitter" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Returned to Submitter" id="draft">Return to Submitter</button>
+            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
+                    data-header="Publish Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Published" id="published">Publish</button>
+            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="complete"
+                    data-header="Complete Submission without publication" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Completed" id="complete">Complete</button>
+        {% elif (status == 'complete' or status == 'published') %}
+            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
+                    data-header="Un-Publish Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Returned to Review" id="draft">Un-Publish Submission</button>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 </div>
 {% endblock %}
@@ -83,21 +152,32 @@
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
         window.location.hash = e.target.hash;
-    })
+    });
 
     // Javascript to enable link to tab
     var url = document.location.toString();
-    var jump = ''
+    var jump = '';
+    var anchor = '';
+
     if (url.match('#')) {
         anchor = url.split('#')[1];
+    }
+    {% if jump %}
+        anchor = "{{ jump }}"
+    {% endif %}
 
+    if(anchor != '') {
         if(anchor == "pubmed") {
-            jump = anchor
+            jump = anchor;
             anchor = "rep"
         }
         else if(anchor == "fw_primer" || anchor == "rv_primer") {
             jump = anchor
             anchor = "primers"
+        }
+        else if(anchor == "modal") {
+            jump = 'modal';
+            anchor = 'review'
         }
 
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
@@ -105,11 +185,46 @@
 
     $(document).ready(function ()
     {
-        if(jump != '') {
-            window.location.hash = ""
+        if(jump == 'modal') {
+            $("{{ button }}").click()
+        }
+        else if(jump != '') {
+            window.location.hash = "";
             window.location.hash = "#" + jump
         }
     });
+
+    $('#messageModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var type = button.data('type');
+        var action = button.data('action');
+        var header = button.data('header');
+        var title = button.data('title');
+        var instructions = button.data('instr');
+        var modal = $(this);
+        modal.find('#type').val(type);
+        modal.find('#action').val(action);
+        modal.find('#title').val(title);
+        modal.find('.modal-title').text(header);
+        modal.find('.modal-instructions').text(instructions);
+
+        if(type == 'note' && action != 'note') {
+            modal.find('#title').hide();
+            modal.find('#title').val('Title');
+            modal.find('[for=title]').hide()
+        }
+
+        diag_class = '';
+        if(button.hasClass("btn-warning")) {
+            modal.addClass("bootstrap-dialog type-warning");
+            modal.find('#save_btn').addClass("btn-warning")
+        } else if(button.hasClass("btn-danger")) {
+            modal.addClass("bootstrap-dialog type-danger");
+            modal.find('#save_btn').addClass("btn-danger")
+        } else {
+            modal.find('#save_btn').addClass("btn-primary")
+        }
+    })
 
     </script>
 

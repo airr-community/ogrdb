@@ -16,24 +16,6 @@ from sys import exc_info
 from get_pmid_details import get_pmid_details
 from collections import namedtuple
 
-class AggregateForm(FlaskForm):
-    def __init__(self, *args):
-        super().__init__()
-        self.subforms = []
-
-        for form in args:
-            for field in form._fields:
-                if field in self._fields and field != 'csrf_token':
-                    raise(AttributeError('Field %s is present in multiple child forms.' % field))
-            self.subforms.append(form)
-            self._fields.update(form._fields)
-
-    def __getattr__(self, attr):
-        for form in self.subforms:
-            a = getattr(form, attr, None)
-            if a is not None: return a
-        raise(AttributeError())
-
 class EditablePubIdTable(EditableTable):
     def check_add_item(self, request, db):
         added = False
@@ -53,7 +35,7 @@ class EditablePubIdTable(EditableTable):
                 db.session.commit()
                 added = True
             except ValueError as e:
-                self.form.pubmed_id.errors.append(e[0])
+                self.form.pubmed_id.errors = list(self.form.pubmed_id.errors) + [e]
         return (added, None, None)
 
 class EditableFwPrimerTable(EditableTable):

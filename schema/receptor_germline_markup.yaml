@@ -21,9 +21,6 @@ Submission:
         submitter_email:
             readonly: true
             private: true
-        submitter_phone:
-            readonly: true
-            private: true
         species:
             type: []
             tableview: true

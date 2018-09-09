@@ -39,11 +39,6 @@ Submission:
             description: Preferred email address of submitter
             completed_by: submitter
             label: Submitter Email
-        submitter_phone:
-            type: phone_number
-            description: Preferred phone number of submitter
-            completed_by: submitter
-            label: Submitter Phone
         species:
             type: species for which the gene is inferred
             description: Binomial designation of subject's species
@@ -54,10 +49,52 @@ Submission:
             description: Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)
             completed_by: submitter
             label: Ethnicity
-        IARC_tracking:
-            type: list of timestamped strings
-            description: Notes from IARC tracking overall progress of this submission, eg additional info requested, when reviewed, etc
-            completed_by: IARC
+
+#Journal Entries
+JournalEntry:
+    discriminator: AIRR
+    description: Message-style item used for history and notes
+    type: object
+    occurrence: single
+    properties:
+        date:
+            type: date
+            description: Date submission received
+            tableview: true
+            hide: true
+        author:
+            type: email_address
+            description: email address of author
+            tableview: true
+            hide: true
+        type:
+            type: [history, note]
+            description: Type of entry
+            hide: true
+        title:
+            type: string
+            description: title of entry
+            label: Note title
+            tableview: true
+            nonblank: true
+        body:
+            type: text
+            description: body text of entry
+            label: Note
+            rows: 15
+            nonblank: true
+        submission_id:
+            type: integer
+            foreign_key: submission.id
+            relationship: [submission, Submission, journal_entries]
+            hide: true
+        parent_id:
+            type: integer
+            foreign_key: journal_entry.id
+            self-relationship: [children, parent, id]
+            hide: true
+
+
 
 
 # Repertoire Dataset
@@ -340,16 +377,6 @@ GenotypeDescription:
             completed_by: submitter
             label: Sample IDs
             nonblank: true
-        genotype_filename:
-            type: string
-            description: Name of the uploaded file from which the genotype was read
-            tableview: true
-            readonly: true
-            label: Genotype Filename
-        genotype_file:
-            type: blob
-            description: Contents of the uploaded file from which the genotype was read
-            label: Genotype File
         submission_id:
             type: integer
             hide: true
@@ -360,6 +387,16 @@ GenotypeDescription:
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
             label: Inference Tool
+        genotype_file:
+            type: blob
+            description: Contents of the uploaded file from which the genotype was read
+            label: Genotype File
+        genotype_filename:
+            type: string
+            description: Name of the uploaded file from which the genotype was read
+            tableview: true
+            readonly: true
+            label: Genotype Filename
 
 
 Genotype:

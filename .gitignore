@@ -5,3 +5,5 @@ __pycache__
 secret.cfg
 secret*.cfg
 app.log
+/migrations
+Selenium/*.log

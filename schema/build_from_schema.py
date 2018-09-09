@@ -41,6 +41,9 @@ def main(argv):
     write_model(schema, 'InferredSequence', 'db/inferred_sequence_db.py')
     write_flaskform(schema, 'InferredSequence', 'forms/inferred_sequence_form.py')
     write_inp(schema, 'InferredSequence', 'templates/inferred_sequence_form.html')
+    write_model(schema, 'JournalEntry', 'db/journal_entry_db.py')
+    write_flaskform(schema, 'JournalEntry', 'forms/journal_entry_form.py')
+    write_inp(schema, 'JournalEntry', 'templates/journal_entry_form.html')
 
 
 # Merge markup properties with schema
@@ -80,6 +83,7 @@ from db.userdb import User
 from db.styled_table import *
 from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
+from sqlalchemy.orm import backref
 """ % section)
 
 # If there is a _ file corresponding to this file, check it for a mixin
@@ -122,10 +126,13 @@ class %s(db.Model):
                     if 'relationship' in schema[section]['properties'][sc_item]:
                         rel = schema[section]['properties'][sc_item]['relationship']
                         fo.write("\n    %s = db.relationship('%s', backref = '%s')" % (rel[0], rel[1], rel[2]))
+                    elif 'self-relationship' in schema[section]['properties'][sc_item]:
+                        rel = schema[section]['properties'][sc_item]['relationship']
+                        fo.write("\n    %s = db.relationship('%s', backref = backref('%s', remote_side = [%s]))" % (rel[0], sc_item, rel[1], rel[2]))
                 elif type == 'string':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'date':
-                    fo.write("    %s = db.Column(db.Date)" % sc_item)
+                    fo.write("    %s = db.Column(db.DateTime)" % sc_item)
                 elif type == 'email_address':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'phone_number':
@@ -148,6 +155,9 @@ class %s(db.Model):
                         if 'relationship' in schema[section]['properties'][sc_item]:
                             rel = schema[section]['properties'][sc_item]['relationship']
                             fo.write("\n    %s = db.relationship('%s', backref = '%s')" % (rel[0], rel[1], rel[2]))
+                        elif 'self-relationship' in schema[section]['properties'][sc_item]:
+                            rel = schema[section]['properties'][sc_item]['self-relationship']
+                            fo.write("\n    %s = db.relationship('%s', backref = backref('%s', remote_side = [%s]))" % (rel[0], section, rel[1], rel[2]))
                     else:
                         fo.write("    %s = db.Column(db.Integer)" % sc_item)
                 elif type == 'number':
@@ -168,7 +178,7 @@ class %s(db.Model):
             except Exception as e:
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
         if section == 'Submission':
-            fo.write('    from db._submission_rights import can_see, can_edit\n')
+            fo.write('    from db._submission_rights import can_see, can_edit, can_see_private\n')
         fo.write("\n")
 
 # Save details from form
