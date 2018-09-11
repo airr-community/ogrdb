@@ -1,0 +1,5 @@
+Dear IARC {{ submission.species }} Committee Member,
+
+The submission {{  url_for('submission', id=submission.submission_id, _external=True) }} has been returned to review by {{ reviewer.name }}, with the following message:
+
+{{ comment }}

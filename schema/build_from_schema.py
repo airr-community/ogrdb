@@ -51,17 +51,18 @@ def main(argv):
 def merge_markup(schema, markup):
     res = schema
 
-    for section in markup:
-        if section in schema:
-            for prop in markup[section]['properties']:
-                if markup[section]['properties'][prop] is not None:
-                    for att in markup[section]['properties'][prop]:
-                        if prop not in schema[section]['properties']:
-                            res[section]['properties'][prop] = {}
-                        res[section]['properties'][prop][att] = markup[section]['properties'][prop][att]
-        else:
-            print('Error: section %s not found in schema file.')
-            quit()
+    if markup is not None:
+        for section in markup:
+            if section in schema:
+                for prop in markup[section]['properties']:
+                    if markup[section]['properties'][prop] is not None:
+                        for att in markup[section]['properties'][prop]:
+                            if prop not in schema[section]['properties']:
+                                res[section]['properties'][prop] = {}
+                            res[section]['properties'][prop][att] = markup[section]['properties'][prop][att]
+            else:
+                print('Error: section %s not found in schema file.')
+                quit()
 
     return res
 

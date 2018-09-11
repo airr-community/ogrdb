@@ -1,0 +1,7 @@
+<p>Dear {{ user_name }},</p>
+
+<p><a href="{{  url_for('submission', id=submission.submission_id, _external=True) }}">Submission {{ submission.submission_id }}</a> has been moved from 'published' to 're-review' by the IARC {{ submission.species }} Committee, who have sent you the following message:</p>
+
+{{ comment | nl2br }}
+
+<p>This mail is automatically generated, please do not reply. If you need to contact the Committee, please mail iarc-{{ submission.species }}@airr-community.org.</p>

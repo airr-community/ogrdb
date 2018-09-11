@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, login_required
-from flask_mail import Mail, Message
+from flask_mail import Mail, email_dispatched
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 from wtforms import SubmitField, IntegerField
@@ -15,6 +15,7 @@ import json
 from copy import deepcopy
 from Bio import SeqIO
 import io
+
 
 from get_pmid_details import get_pmid_details
 
@@ -27,10 +28,13 @@ handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
 handler.setLevel(logging.INFO)
 app.logger.addHandler(handler)
 
-mail = Mail(app)
-
-
 db = SQLAlchemy(app)
+
+from nl2br import *
+
+mail = Mail(app)
+from mail import log_mail, send_mail
+email_dispatched.connect(log_mail)
 
 from journal import *
 
@@ -182,6 +186,8 @@ def edit_submission(id):
 
             sub.submission_status = 'reviewing'
             add_history(current_user, 'Submission submitted to IARC %s Committee for review' % sub.species, sub, db)
+            send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [current_user.email], 'user_submission_submitted', user=current_user, submission=sub)
+            send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_received', user=current_user, submission=sub)
             db.session.commit()
             flash('Submission %s has been submitted to IARC for review.' % id)
             return redirect(url_for('submissions'))
@@ -245,29 +251,37 @@ def submission(id):
             return redirect('/submissions')
         if form.validate():
             if form.action.data == 'draft':
-                add_note(current_user, form.title.data, 'Submission returned to Submitter with the following message:\n\n' + form.body.data, sub, db)
+                add_note(current_user, form.title.data, nl2br_txt('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Submitter', sub, db)
+                send_mail('Submission %s returned to you from the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s returned to Submitter by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'draft'
                 db.session.commit()
                 flash('Submission returned to Submitter')
                 return redirect('/submissions')
             elif form.action.data == 'published':
-                add_note(current_user, form.title.data, 'Submission published with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_note(current_user, form.title.data, nl2br_txt('Submission published with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission published', sub, db)
+                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'published'
                 db.session.commit()
                 flash('Submission published')
                 return redirect('/submissions')
             elif form.action.data == 'complete':
-                add_note(current_user, form.title.data, 'Submission completed with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_note(current_user, form.title.data, nl2br_txt('Submission completed with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission completed', sub, db)
+                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'complete'
                 db.session.commit()
                 flash('Submission marked as complete')
                 return redirect('/submissions')
             elif form.action.data == 'review':
-                add_note(current_user, form.title.data, 'Submission returned to Review with the following message to the Submitter:\n\n' + form.body.data, sub, db)
+                add_note(current_user, form.title.data, nl2br_txt('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Review', sub, db)
+                send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'reviewing'
                 db.session.commit()
                 flash('Submission returned to Review')

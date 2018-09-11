@@ -1,0 +1,7 @@
+Dear {{ user_name }},
+
+The submission {{  url_for('submission', id=submission.submission_id, _external=True) }} has been published by the IARC {{ submission.species }} Committee, who have sent you the following message:
+
+{{ comment }}
+
+This mail is automatically generated, please do not reply. If you need to contact the Committee, please mail iarc-{{ submission.species }}@airr-community.org.

@@ -1,0 +1,7 @@
+<p>Dear {{ user.name }},</p>
+
+<p>This is to confirm that your submission <a href="{{  url_for('submission', id=submission.submission_id, _external=True) }}">{{ submission.submission_id }}</a> has been forwarded to the IARC {{ submission.species }} Committee for review, at your request.</p>
+
+<p>The Committee will respond in due course.</p>
+
+<p>This mail is automatically generated, please do not reply. If you need to contact the Committee, please mail iarc-{{ submission.species }}@airr-community.org.</p>

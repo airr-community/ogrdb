@@ -1,0 +1,4 @@
+Dear IARC {{ submission.species }} Committee Member,
+
+{{ user.name}} has submitted {{  url_for('submission', id=submission.submission_id, _external=True) }} to you for consideration.
+
