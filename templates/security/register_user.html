@@ -34,9 +34,25 @@
             </div>
 
             <div class="form-group">
+                <div class="col-sm-1">
+                {{ register_user_form.accepted_terms()|safe }}
+                </div>
+                {{ register_user_form.accepted_terms.label(class="col-sm-11 control-label") }}
+                {% if register_user_form.accepted_terms.errors %}
+                    <div class="col-sm-9 col-sm-offset-3 red">
+                        <ul>
+                            {% for error in register_user_form.accepted_terms.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
                 {{ render_field(register_user_form.submit,  class="btn btn-primary") }}
             </div>
-        <div>
+        </div>
     </div>
 
     <div class="row">
@@ -46,4 +62,21 @@
     </div>
 
 </form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function ()
+        {
+            $("#submit").prop('disabled', true);
+        });
+
+
+        $("#accepted_terms").change( function()
+        {
+            $("#submit").prop('disabled', !$("#accepted_terms:checked").val());
+        });
+    </script>
 {% endblock %}

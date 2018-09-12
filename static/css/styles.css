@@ -158,9 +158,11 @@ td {
   word-wrap: break-word;
 }
 
+/*
 div.panel, .btn {
     border-radius: 0;
 }
+*/
 
 footer {
     margin-top: 40px;

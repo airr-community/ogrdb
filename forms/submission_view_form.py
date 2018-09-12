@@ -59,7 +59,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['notes'] = []
     threads = db.session.query(JournalEntry).filter_by(submission_id = sub.id, type = 'note', parent_id = None).order_by(JournalEntry.date.desc()).all()
     for thread in threads:
-        replies = db.session.query(JournalEntry).filter_by(submission_id = sub.id, type = 'note', parent_id = thread.id).order_by(JournalEntry.date.desc()).all()
+        replies = db.session.query(JournalEntry).filter_by(submission_id = sub.id, type = 'note', parent_id = thread.id).order_by(JournalEntry.date.asc()).all()
         replies= [thread] + replies
         t = StyledTable(replies, classes=['tablefixed'])
         t.add_column('header', MessageHeaderCol("", tooltip=""))

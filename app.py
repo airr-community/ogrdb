@@ -15,6 +15,7 @@ import json
 from copy import deepcopy
 from Bio import SeqIO
 import io
+import textile
 
 
 from get_pmid_details import get_pmid_details
@@ -30,7 +31,7 @@ app.logger.addHandler(handler)
 
 db = SQLAlchemy(app)
 
-from nl2br import *
+from textile_filter import *
 
 mail = Mail(app)
 from mail import log_mail, send_mail
@@ -251,7 +252,7 @@ def submission(id):
             return redirect('/submissions')
         if form.validate():
             if form.action.data == 'draft':
-                add_note(current_user, form.title.data, nl2br_txt('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile.textile('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Submitter', sub, db)
                 send_mail('Submission %s returned to you from the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s returned to Submitter by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -260,7 +261,7 @@ def submission(id):
                 flash('Submission returned to Submitter')
                 return redirect('/submissions')
             elif form.action.data == 'published':
-                add_note(current_user, form.title.data, nl2br_txt('Submission published with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile.textile('Submission published with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission published', sub, db)
                 send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -269,7 +270,7 @@ def submission(id):
                 flash('Submission published')
                 return redirect('/submissions')
             elif form.action.data == 'complete':
-                add_note(current_user, form.title.data, nl2br_txt('Submission completed with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile.textile('Submission completed with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission completed', sub, db)
                 send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -278,7 +279,7 @@ def submission(id):
                 flash('Submission marked as complete')
                 return redirect('/submissions')
             elif form.action.data == 'review':
-                add_note(current_user, form.title.data, nl2br_txt('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile.textile('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Review', sub, db)
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -616,4 +617,7 @@ def edit_inferred_sequence(id):
     return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id)
 
 
+@app.route('/render_page/<page>')
+def render_page(page):
+    return render_template('static/%s' % page)
 

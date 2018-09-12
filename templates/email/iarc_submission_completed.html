@@ -2,4 +2,4 @@
 
 <p><a href="{{  url_for('submission', id=submission.submission_id, _external=True) }}">Submission {{ submission.submission_id }}</a> has been marked as 'review completed' by {{ reviewer.name }}, with the following message to the submitter:</p>
 
-{{ comment | nl2br }}
+{{ comment | textile_filter }}
