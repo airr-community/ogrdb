@@ -27,6 +27,8 @@ bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
+db = SQLAlchemy(app)
+
 mail = Mail(app)
 from mail import log_mail, send_mail
 email_dispatched.connect(log_mail)
@@ -53,7 +55,6 @@ else:
 
 app.logger.addHandler(handler)
 
-db = SQLAlchemy(app)
 
 from textile_filter import *
 from journal import *
