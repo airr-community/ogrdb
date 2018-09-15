@@ -10,6 +10,7 @@ from flask_admin import Admin
 from wtforms import SubmitField, IntegerField
 from flask_table import Table, Col, LinkCol
 import logging.handlers
+from mail_log_handler import FlaskMailLogHandler
 import datetime
 import json
 from copy import deepcopy
@@ -26,33 +27,36 @@ bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
+mail = Mail(app)
+from mail import log_mail, send_mail
+email_dispatched.connect(log_mail)
+
 if 'SHREK' in app.config:
     if app.config['PYCHARM_DEBUG']:
         sys.path.append("pycharm-debug-py3k.egg")
         import pydevd
         pydevd.settrace('127.0.0.1', port=30000, stdoutToServer=True, stderrToServer=True)
 
+    if not app.config['PYCHARM_DEBUG']:
+        mail_handler = FlaskMailLogHandler(mail, 'wlees@mail.cryst.bbk.ac.uk', ['william@lees.org.uk'], 'Error from Shrek')
+        app.logger.addHandler(mail_handler)
+
     if app.config['PYCHARM_DEBUG'] or app.config['DEBUG']:
         handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/ogre/app.log', maxBytes=1024 * 1024)
+        handler.setLevel(logging.DEBUG)
     else:
         handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/logs/app.log', maxBytes=1024 * 1024)
+        handler.setLevel(logging.INFO)
 else:
     handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
+    handler.setLevel(logging.DEBUG)
 
-handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 
 db = SQLAlchemy(app)
 
 from textile_filter import *
-
-mail = Mail(app)
-from mail import log_mail, send_mail
-email_dispatched.connect(log_mail)
-
 from journal import *
-
-
 from db.userdb import User
 from db.submission_db import *
 from db.submission_list_table import *
