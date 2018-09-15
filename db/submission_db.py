@@ -13,14 +13,14 @@ from db._submission_db import *
 
 class Submission(db.Model, SubmissionMixin):
     id = db.Column(db.Integer, primary_key=True)
-    submission_id = db.Column(db.String(255))
+    submission_id = db.Column(db.String(1000))
     submission_date = db.Column(db.DateTime)
     submission_status = db.Column(db.String(255))
-    submitter_name = db.Column(db.String(255))
-    submitter_address = db.Column(db.String(255))
+    submitter_name = db.Column(db.String(1000))
+    submitter_address = db.Column(db.String(1000))
     submitter_email = db.Column(db.String(255))
     species = db.Column(db.String(255))
-    population_ethnicity = db.Column(db.String(255))
+    population_ethnicity = db.Column(db.String(1000))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner = db.relationship('User', backref = 'submissions')
     from db._submission_rights import can_see, can_edit, can_see_private

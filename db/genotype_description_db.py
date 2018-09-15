@@ -13,15 +13,15 @@ from db._genotype_description_db import *
 
 class GenotypeDescription(db.Model, GenotypeDescriptionMixin):
     id = db.Column(db.Integer, primary_key=True)
-    genotype_name = db.Column(db.String(255))
-    genotype_subject_id = db.Column(db.String(255))
+    genotype_name = db.Column(db.String(1000))
+    genotype_subject_id = db.Column(db.String(1000))
     genotype_biosample_ids = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'genotype_descriptions')
     inference_tool_id = db.Column(db.Integer, db.ForeignKey('inference_tool.id'))
     inference_tool = db.relationship('InferenceTool', backref = 'genotype_descriptions')
     genotype_file = db.Column(db.LargeBinary())
-    genotype_filename = db.Column(db.String(255))
+    genotype_filename = db.Column(db.String(1000))
 
 
 def save_GenotypeDescription(db, object, form, new=False):   

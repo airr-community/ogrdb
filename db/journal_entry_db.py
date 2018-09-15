@@ -14,7 +14,7 @@ class JournalEntry(db.Model):
     date = db.Column(db.DateTime)
     author = db.Column(db.String(255))
     type = db.Column(db.String(255))
-    title = db.Column(db.String(255))
+    title = db.Column(db.String(1000))
     body = db.Column(db.Text())
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'journal_entries')

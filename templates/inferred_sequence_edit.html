@@ -42,6 +42,36 @@
             load_seqs()
         });
     });
+
+    function ext_display() {
+        if($("#inferred_extension:checked").val()) {
+            $("label[for='ext_3prime']").parent().show();
+            $("label[for='start_3prime_ext']").parent().show();
+            $("label[for='end_3prime_ext']").parent().show();
+            $("label[for='ext_5prime']").parent().show();
+            $("label[for='start_5prime_ext']").parent().show();
+            $("label[for='end_5prime_ext']").parent().show();
+        } else {
+            $("label[for='ext_3prime']").parent().hide();
+            $("label[for='start_3prime_ext']").parent().hide();
+            $("label[for='end_3prime_ext']").parent().hide();
+            $("label[for='ext_5prime']").parent().hide();
+            $("label[for='start_5prime_ext']").parent().hide();
+            $("label[for='end_5prime_ext']").parent().hide();
+        }
+    }
+
+    $(document).ready(function ()
+    {
+        ext_display()
+    });
+
+
+    $("#inferred_extension").change( function()
+    {
+        ext_display()
+    });
+
     </script>
 
 

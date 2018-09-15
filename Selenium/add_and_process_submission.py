@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import Select
 import random
 import string
 import time
+import sys
 
 
 # random strings
@@ -22,12 +23,18 @@ def random_proper():
 driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
 
+host_address = "http://localhost:5000/"
+
 def init():
+    global host_address
     # Create a new instance of the Firefox driver
     #driver.implicitly_wait(5)
 
     # go to the home page
-    driver.get("http://localhost:5000/")
+    if len(sys.argv) > 1:
+        host_address = sys.argv[1]
+
+    driver.get(host_address)
 
     # make sure we are logged out
     try:
@@ -128,7 +135,7 @@ def sub_edit_rep(sub_id):
     driver.find_element_by_id("read_length").send_keys('250x250bp')
 
     driver.find_element_by_name("save_btn").click()
-    driver.get("http://localhost:5000/edit_submission/" + sub_id)
+    driver.get(host_address + "edit_submission/" + sub_id)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 
 
@@ -290,6 +297,14 @@ def sub_edit_seq():
 
         opt.click()
         time.sleep(2)
+
+        if random.randint(0,2) > 0:
+            driver.find_element_by_id('inferred_extension').click()
+            wait.until(EC.element_to_be_clickable((By.ID,'ext_3prime')))
+            driver.find_element_by_id('ext_3prime').send_keys('acgt')
+            driver.find_element_by_id('start_3prime_ext').send_keys('20')
+            driver.find_element_by_id('end_3prime_ext').send_keys('23')
+
         wait.until(EC.element_to_be_clickable((By.ID,'sequence_id')))
         driver.find_element_by_id('save_sequence').click()
         wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))

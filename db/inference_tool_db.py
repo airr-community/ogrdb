@@ -13,9 +13,9 @@ from db._inference_tool_db import *
 
 class InferenceTool(db.Model, InferenceToolMixin):
     id = db.Column(db.Integer, primary_key=True)
-    tool_settings_name = db.Column(db.String(255))
-    tool_name = db.Column(db.String(255))
-    tool_version = db.Column(db.String(255))
+    tool_settings_name = db.Column(db.String(1000))
+    tool_name = db.Column(db.String(1000))
+    tool_version = db.Column(db.String(1000))
     tool_starting_database = db.Column(db.Text())
     tool_settings = db.Column(db.Text())
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))

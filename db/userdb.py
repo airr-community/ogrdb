@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     name = db.Column(db.String(255))
-    address = db.Column(db.String(250), unique=True)
+    address = db.Column(db.String(250))
     accepted_terms = db.Column(db.Boolean)
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())

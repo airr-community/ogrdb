@@ -201,13 +201,13 @@ PubId:
             tableview: true
             label: PubMed ID
         pub_title:
-            type: string
+            type: text
             description: Publication Title
             tableview: true
             hide: true
             label: Title
         pub_authors:
-            type: string
+            type: text
             description: Author list
             tableview: true
             hide: true
@@ -363,6 +363,40 @@ InferredSequence:
             description: Identifier of the genotype from which these sequences were inferred
             foreign_key: genotype_description.id
             relationship: [genotype_description, GenotypeDescription, inferred_sequences]
+        inferred_extension:
+            type: boolean
+            label: Extension?
+            description: Checked if the inference reports an extension to a known sequence
+        ext_3prime:
+            type: IUPAC_GAPPED
+            label: 3\'  Extension
+            description: Extending sequence at 3\' end (IMGT gapped)
+            nonblank: false
+        start_3prime_ext:
+            type: integer
+            label: 3\' start
+            description: Start co-ordinate of 3\' extension (if any) in IMGT numbering
+            nonblank: false
+        end_3prime_ext:
+            type: integer
+            label: 3\' end
+            description: End co-ordinate of 3\' extension (if any) in IMGT numbering
+            nonblank: false
+        ext_5prime:
+            type: IUPAC_GAPPED
+            label: 5\' Extension
+            description: Extending sequence at 5\' end (IMGT gapped)
+            nonblank: false
+        start_5prime_ext:
+            type: integer
+            label: 5\' start
+            description: Start co-ordinate of 5\' extension (if any) in IMGT numbering
+            nonblank: false
+        end_5prime_ext:
+            type: integer
+            label: 5\' end
+            description: End co-ordinate of 5\' extension (if any) in IMGT numbering
+            nonblank: false
         seq_accession_no:
             type: string
             description: Accession number of the inferred allele within the repository

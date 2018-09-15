@@ -16,6 +16,7 @@ from copy import deepcopy
 from Bio import SeqIO
 import io
 import textile
+import sys
 
 
 from get_pmid_details import get_pmid_details
@@ -25,8 +26,20 @@ bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
-handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
-handler.setLevel(logging.INFO)
+if 'SHREK' in app.config:
+    if app.config['PYCHARM_DEBUG']:
+        sys.path.append("pycharm-debug-py3k.egg")
+        import pydevd
+        pydevd.settrace('127.0.0.1', port=30000, stdoutToServer=True, stderrToServer=True)
+
+    if app.config['PYCHARM_DEBUG'] or app.config['DEBUG']:
+        handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/ogre/app.log', maxBytes=1024 * 1024)
+    else:
+        handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/logs/app.log', maxBytes=1024 * 1024)
+else:
+    handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
+
+handler.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 
 db = SQLAlchemy(app)
@@ -193,8 +206,17 @@ def edit_submission(id):
             flash('Submission %s has been submitted to IARC for review.' % id)
             return redirect(url_for('submissions'))
 
-        save_Submission(db, sub, form, False)
-        save_Repertoire(db, sub.repertoire[0], form, False)
+        # We've gone too far off-piste to use form initialisation or process() to push field values into the object
+        # The main problem is that not all object attributes are represented in the form, for example submission_id
+        # if these were present as hidden fields, maybe we could use process()
+
+        if ('save_btn' in request.form or 'submit_btn' in request.form):
+            for (k, v) in request.form.items():
+                if hasattr(sub, k):
+                    setattr(sub, k, v)
+                elif hasattr(sub.repertoire[0], k):
+                    setattr(sub.repertoire[0], k, v)
+            db.session.commit()
 
         if validation_result.route:
             return redirect(url_for(validation_result.route, id = validation_result.id))
@@ -595,15 +617,46 @@ def edit_inferred_sequence(id):
         except:
             pass
 
+        # Clean out the extension fields if we are not using them, so they can't fail validation
+        if not form.inferred_extension.data:
+            for control in [form.ext_3prime, form.start_3prime_ext, form.end_3prime_ext, form.ext_5prime, form.start_5prime_ext, form.end_5prime_ext]:
+                control.data = None
+
         if form.validate():
             try:
                 if form.sequence_id.data == '':
                     form.sequence_id.errors.append('Please select a sequence from the genotype. Upload data to the genotype if no sequences are listed.')
                     raise ValidationError()
+
                 for sequence in seq.submission.inferred_sequences:
                     if sequence is not seq and str(sequence.sequence_id) == form.sequence_id.data and str(sequence.genotype_id) == form.genotype_id.data:
                         form.sequence_id.errors.append('That inferred sequence is already listed in the submission.')
                         raise ValidationError()
+
+                def validate_ext(c_seq, c_start, c_end):
+                    if c_seq.data or c_start.data or c_end.data:
+                        for control in [c_seq, c_start, c_end]:
+                            if control.data is None:
+                                control.errors.append('Field cannot be empty.')
+                                raise ValidationError()
+                        for control in [c_start, c_end]:
+                            if int(control.data) < 1 or int(control.data) > 1100:
+                                control.errors.append('co-ordinate is implausible.')
+                                raise ValidationError()
+                        if int(c_start.data) > int(c_end.data):
+                            c_end.errors.append('End co-ordinate must be greater than or equal to start co-ordinate')
+                            raise ValidationError()
+                        if len(c_seq.data) != int(c_end.data) - int(c_start.data) + 1:
+                            c_seq.errors.append('Co-ordinates do not match sequence length.')
+                            raise ValidationError()
+
+                if form.inferred_extension.data:
+                    validate_ext(form.ext_3prime, form.start_3prime_ext, form.end_3prime_ext)
+                    validate_ext(form.ext_5prime, form.start_5prime_ext, form.end_5prime_ext)
+                    if not(form.ext_3prime.data or form.ext_5prime.data):
+                        form.inferred_extension.errors.append('Please specify an extension at at least one end')
+                        raise ValidationError()
+
                 save_InferredSequence(db, seq, form, new=False)
                 return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
             except ValidationError as e:

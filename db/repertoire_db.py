@@ -11,9 +11,9 @@ from sqlalchemy.orm import backref
 
 class PubId(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    pubmed_id = db.Column(db.String(255))
-    pub_title = db.Column(db.String(255))
-    pub_authors = db.Column(db.String(255))
+    pubmed_id = db.Column(db.String(1000))
+    pub_title = db.Column(db.Text())
+    pub_authors = db.Column(db.Text())
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'pub_ids')
 
@@ -58,7 +58,7 @@ def make_PubId_view(sub, private = False):
 
 class ForwardPrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fw_primer_name = db.Column(db.String(255))
+    fw_primer_name = db.Column(db.String(1000))
     fw_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'forward_primer_set')
@@ -106,7 +106,7 @@ def make_ForwardPrimer_view(sub, private = False):
 
 class ReversePrimer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rv_primer_name = db.Column(db.String(255))
+    rv_primer_name = db.Column(db.String(1000))
     rv_primer_seq = db.Column(db.String(1000))
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'reverse_primer_set')
@@ -154,8 +154,8 @@ def make_ReversePrimer_view(sub, private = False):
 
 class Acknowledgements(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ack_name = db.Column(db.String(255))
-    ack_institution_name = db.Column(db.String(255))
+    ack_name = db.Column(db.String(1000))
+    ack_institution_name = db.Column(db.String(1000))
     ack_ORCID_id = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'acknowledgements')
@@ -209,13 +209,13 @@ from db._repertoire_db import *
 
 class Repertoire(db.Model, RepertoireMixin):
     id = db.Column(db.Integer, primary_key=True)
-    repository_name = db.Column(db.String(255))
-    rep_accession_no = db.Column(db.String(255))
-    dataset_url = db.Column(db.String(255))
+    repository_name = db.Column(db.String(1000))
+    rep_accession_no = db.Column(db.String(1000))
+    dataset_url = db.Column(db.String(500))
     miarr_compliant = db.Column(db.String(255))
-    miairr_link = db.Column(db.String(255))
-    sequencing_platform = db.Column(db.String(255))
-    read_length = db.Column(db.String(255))
+    miairr_link = db.Column(db.String(500))
+    sequencing_platform = db.Column(db.String(1000))
+    read_length = db.Column(db.String(1000))
     primers_overlapping = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'repertoire')

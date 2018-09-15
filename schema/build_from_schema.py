@@ -131,7 +131,7 @@ class %s(db.Model):
                         rel = schema[section]['properties'][sc_item]['relationship']
                         fo.write("\n    %s = db.relationship('%s', backref = backref('%s', remote_side = [%s]))" % (rel[0], sc_item, rel[1], rel[2]))
                 elif type == 'string':
-                    fo.write("    %s = db.Column(db.String(255))" % sc_item)
+                    fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'date':
                     fo.write("    %s = db.Column(db.DateTime)" % sc_item)
                 elif type == 'email_address':
@@ -143,13 +143,13 @@ class %s(db.Model):
                 elif 'list' in type:
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'url':
-                    fo.write("    %s = db.Column(db.String(255))" % sc_item)
+                    fo.write("    %s = db.Column(db.String(500))" % sc_item)
                 elif type == 'doi':
-                    fo.write("    %s = db.Column(db.String(255))" % sc_item)
+                    fo.write("    %s = db.Column(db.String(500))" % sc_item)
                 elif type == 'boolean':
                     fo.write("    %s = db.Column(db.Boolean)" % sc_item)
                 elif 'IUPAC' in type:
-                    fo.write("    %s = db.Column(db.String(1000))" % sc_item)
+                    fo.write("    %s = db.Column(db.Text())" % sc_item)
                 elif type == 'integer':
                     if 'foreign_key' in schema[section]['properties'][sc_item]:
                         fo.write("    %s = db.Column(db.Integer, db.ForeignKey('%s'))" % (sc_item, schema[section]['properties'][sc_item]['foreign_key']))
@@ -291,8 +291,11 @@ class %sForm(FlaskForm):
                 description = (', description="%s"' % schema[section]['properties'][sc_item]['description']) if 'description' in schema[section]['properties'][sc_item] else ''
                 label = schema[section]['properties'][sc_item]['label'] if 'label' in schema[section]['properties'][sc_item] else sc_item
                 nonblank = ''
-                if 'nonblank' in schema[section]['properties'][sc_item] and schema[section]['properties'][sc_item]['nonblank']:
-                   nonblank = ', NonEmpty()'
+                if 'nonblank' in schema[section]['properties'][sc_item]:
+                    if schema[section]['properties'][sc_item]['nonblank']:
+                        nonblank = ', NonEmpty()'
+                    else:
+                        nonblank = ', validators.Optional()'
 
                 if isinstance(type, list):   # enum
                     if len(type) == 0:
@@ -320,9 +323,12 @@ class %sForm(FlaskForm):
                 elif type == 'doi':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'boolean':
-                    fo.write("    %s = BooleanField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
+                    fo.write("    %s = BooleanField('%s', []%s)" % (sc_item, label, description))
                 elif 'IUPAC' in type:
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
+                    if 'GAPPED' in type:
+                        fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=False, gapped=True)%s]%s)" % (sc_item, label, nonblank, description))
+                    else:
+                        fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=False)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'integer':
                     if 'relationship' in schema[section]['properties'][sc_item]:
                         fo.write("    %s = SelectField('%s', [validators.Optional()], choices=[]%s)" % (sc_item, label, description))
@@ -362,10 +368,11 @@ def write_inp(schema, section, outfile):
 """ % (sc_item))
             else:
                 rows = ', rows="%s"' % schema[section]['properties'][sc_item]['rows'] if 'rows' in schema[section]['properties'][sc_item] else ''
+                css_class = 'checkbox' if schema[section]['properties'][sc_item]['type'] == 'boolean' else 'form-control'
                 fo.write(
 """
-        {{ render_field_with_errors(form.%s, class="form-control"%s) }}
-""" % (sc_item, rows))
+        {{ render_field_with_errors(form.%s, class="%s"%s) }}
+""" % (sc_item, css_class, rows))
 
 
 if __name__=="__main__":
