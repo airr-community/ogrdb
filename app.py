@@ -96,7 +96,7 @@ if 'SHREK' in app.config:
         mail_handler = FlaskMailLogHandler(mail, 'wlees@mail.cryst.bbk.ac.uk', ['william@lees.org.uk'], 'Error from Shrek')
         mail_handler.setLevel(logging.ERROR)
         mail_handler.setFormatter(formatter)
-#        root.addHandler(mail_handler)
+        root.addHandler(mail_handler)
 
     if app.config['PYCHARM_DEBUG'] or app.config['DEBUG']:
         handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/ogre/app.log', maxBytes=1024 * 1024)
