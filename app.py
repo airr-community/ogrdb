@@ -45,13 +45,13 @@ if 'SHREK' in app.config:
 
     if app.config['PYCHARM_DEBUG'] or app.config['DEBUG']:
         handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/ogre/app.log', maxBytes=1024 * 1024)
-        handler.setLevel(logging.DEBUG)
+        handler.setLevel(logging.INFO)
     else:
         handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/logs/app.log', maxBytes=1024 * 1024)
         handler.setLevel(logging.INFO)
 else:
     handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
 
 app.logger.addHandler(handler)
 
