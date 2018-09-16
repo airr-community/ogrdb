@@ -80,7 +80,10 @@ class RequestFormatter(logging.Formatter):
 
 
 formatter = RequestFormatter(
-    '[%(asctime)s] %(remote_addr)s : %(url)s %(levelname)s in %(module)s: %(message)s'
+    '--------------------------------'
+    '[%(asctime)s] %(remote_addr)s :\n'
+    ' %(url)s %(levelname)s in %(module)s: %(message)s'
+    '--------------------------------'
 )
 
 if 'SHREK' in app.config:
