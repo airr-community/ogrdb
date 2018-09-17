@@ -6,7 +6,6 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_required
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
-from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import json
 from Bio import SeqIO
