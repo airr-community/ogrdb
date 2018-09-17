@@ -1,23 +1,17 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, Response, has_request_context
+from flask import Flask, render_template, request, redirect, flash, url_for, Response
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, login_required
-from flask_mail import Mail, email_dispatched
+from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
-from wtforms import SubmitField, IntegerField
-from flask_table import Table, Col, LinkCol
-import logging.handlers
-from mail_log_handler import FlaskMailLogHandler
-import datetime
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import json
-from copy import deepcopy
 from Bio import SeqIO
 import io
-import textile
-import sys
+
 
 
 from get_pmid_details import get_pmid_details
@@ -30,7 +24,7 @@ app.config.from_pyfile('secret.cfg')
 db = SQLAlchemy(app)
 
 mail = Mail(app)
-from mail import log_mail, send_mail
+from mail import send_mail
 
 
 from textile_filter import *
@@ -47,7 +41,7 @@ from db.genotype_view_table import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
 
-admin = Admin(app, template_mode='bootstrap3')
+admin_obj = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
 from forms.submission_form import *
 from forms.repertoire_form import *
@@ -57,61 +51,15 @@ from forms.aggregate_form import *
 from forms.cancel_form import *
 from forms.submission_view_form import *
 from forms.journal_entry_form import *
+from custom_logging import init_logging
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
-
 migrate = Migrate(app, db)
 
-root = logging.getLogger()
-root.setLevel(logging.INFO)
+security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
 
-class RequestFormatter(logging.Formatter):
-    def format(self, record):
-        if has_request_context():
-            record.url = request.url
-            record.remote_addr = request.remote_addr
-            return super().format(record)
-        else:
-            record.url = '(None)'
-            record.remote_addr = '(None)'
-            return super().format(record)
-
-
-formatter = RequestFormatter(
-    '--------------------------------\n'
-    '[%(asctime)s] %(remote_addr)s :\n'
-    ' %(url)s %(levelname)s in %(module)s: %(message)s\n'
-    '--------------------------------\n'
-)
-
-if 'SHREK' in app.config:
-    if app.config['PYCHARM_DEBUG']:
-        sys.path.append("pycharm-debug-py3k.egg")
-        import pydevd
-        pydevd.settrace('127.0.0.1', port=30000, stdoutToServer=True, stderrToServer=True)
-
-    if not app.config['PYCHARM_DEBUG']:
-        mail_handler = FlaskMailLogHandler(mail, 'wlees@mail.cryst.bbk.ac.uk', ['william@lees.org.uk'], 'Error from Shrek')
-        mail_handler.setLevel(logging.ERROR)
-        mail_handler.setFormatter(formatter)
-        root.addHandler(mail_handler)
-
-    if app.config['PYCHARM_DEBUG'] or app.config['DEBUG']:
-        handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/ogre/app.log', maxBytes=1024 * 1024)
-        handler.setLevel(logging.INFO)
-    else:
-        handler = logging.handlers.RotatingFileHandler('/l_mnt/as14/d/website/shrek.cryst.bbk.ac.uk/logs/app.log', maxBytes=1024 * 1024)
-        handler.setLevel(logging.INFO)
-else:
-    handler = logging.handlers.RotatingFileHandler('app.log', maxBytes=1024 * 1024)
-    handler.setLevel(logging.INFO)
-
-handler.setFormatter(formatter)
-app.logger.addHandler(handler)
-email_dispatched.connect(log_mail)
-app.logger.info('Application started.')
+init_logging(app, mail)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

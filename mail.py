@@ -8,12 +8,17 @@ import time
 from flask import current_app, render_template
 
 def log_mail(message, app):
-    app.logger.info("Sending Mail: %s" % message.subject)
-    app.logger.info("To: %s" % ', '.join(message.recipients))
+    log_message = ""
+    log_message += "Sending Mail:\nSubject: %s\n" % message.subject
+    log_message += "To: %s" % ', '.join(message.recipients) + "\n"
     if message.cc and len(message.cc) > 0:
-        app.logger.info("To: %s" % ', '.join(message.recipients))
-    app.logger.info(message.body)
-    app.logger.info(message.html)
+        log_message += "Cc: %s" % ', '.join(message.recipients) + "\n"
+
+    if app.config['MAIL_LOG_BODY']:
+        log_message += message.body + "\n"
+        log_message += message.html + "\n"
+
+    app.logger.info(log_message)
 
 
 # send mail - modelled after the same function in flask_security
