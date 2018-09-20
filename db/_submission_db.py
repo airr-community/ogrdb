@@ -7,6 +7,9 @@ class SubmissionMixin:
             r.delete_dependencies(db)
             db.session.delete(r)
 
+        for n in self.notes_entries:
+            db.session.delete(n)
+
         # acknowledgements
         for a in self.acknowledgements:
             db.session.delete(a)

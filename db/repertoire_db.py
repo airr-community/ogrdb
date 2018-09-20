@@ -16,6 +16,8 @@ class PubId(db.Model):
     pub_authors = db.Column(db.Text())
     repertoire_id = db.Column(db.Integer, db.ForeignKey('repertoire.id'))
     repertoire = db.relationship('Repertoire', backref = 'pub_ids')
+    sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
+    gene_description = db.relationship('GeneDescription', backref = 'pub_ids')
 
 
 def save_PubId(db, object, form, new=False):   

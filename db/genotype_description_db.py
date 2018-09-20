@@ -20,7 +20,7 @@ class GenotypeDescription(db.Model, GenotypeDescriptionMixin):
     submission = db.relationship('Submission', backref = 'genotype_descriptions')
     inference_tool_id = db.Column(db.Integer, db.ForeignKey('inference_tool.id'))
     inference_tool = db.relationship('InferenceTool', backref = 'genotype_descriptions')
-    genotype_file = db.Column(db.LargeBinary())
+    genotype_file = db.Column(db.LargeBinary(length=(2**32)-1))
     genotype_filename = db.Column(db.String(1000))
 
 

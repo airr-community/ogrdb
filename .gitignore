@@ -7,3 +7,5 @@ secret*.cfg
 app.log
 migrations
 Selenium/*.log
+docs/_build/
+docs/_downloads/

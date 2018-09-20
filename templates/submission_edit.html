@@ -8,18 +8,19 @@
 
 {% block c_body %}
 
-<form action="{{ url_for('edit_submission', id=id) }}" method="POST" name="form" class="form-horizontal">
+<form action="{{ url_for('edit_submission', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
 
 <div>
 
 <ul class="nav nav-tabs" role="tablist" id="myTab">
     <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
-    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
     <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
+    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
     <li role="presentation"><a href="#primers" aria-controls="rep" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
     <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
     <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
+    <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
 </ul>
 
                     {{ form.hidden_tag() }}
@@ -31,6 +32,10 @@
     </div>
 
     <div role="tabpanel" class="tab-pane" id="ack">
+        <h3>Repertoire Publications</h3>
+        <p>Please list publications associated with the repertoire.</p>
+        {% include 'pubmed_form.html' %}
+
         <h3>Acknowledgements</h3>
         <p>Please list those individuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
         {% include 'acknowledgement_form.html' %}
@@ -40,10 +45,6 @@
         <h3>Repertoire Details</h3>
         <p>Please provide details of the repertoire from which the inferences are based. This should correspond, for example, to an NIH Project or an ENA study. It must be deposited in a public repository.</p>
         {% include 'repertoire_form.html' %}
-
-        <h4>Repertoire Publications</h4>
-        <p>Please list publications associated with this study.</p>
-        {% include 'pubmed_form.html' %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="primers">
@@ -77,6 +78,25 @@
         <h3>Inferred Sequences</h3>
         <p>Please select the novel alleles from each genotype that you wish to submit for review. </p>
         {% include 'inferred_sequence_table.html' %}
+
+    </div>
+
+    <div role="notes" class="tab-pane" id="notes">
+        <h3>Notes</h3>
+        <p>Please provide any notes that will help IARC understand the specifics of your submission. You may also attach a file to
+        the submission. If you would like to attach multiple files, please put them in a zip or other archive.</p>
+        {% include 'notes_entry_form.html' %}
+
+        {% if attachment %}
+            <div class="form-group">
+                <div class="form-control-label col-sm-2 col-sm-offset-3">
+                    <a class="btn btn-default" role="button" href="{{ url_for('download_submission_attachment', id=id) }}">Download Attachment</a>
+                </div>
+                <div class="form-control-label col-sm-2">
+                    <button type="button" class="btn btn-warning" onclick="delete_attachment()" name="del_att_btn">Delete Attachment</button>
+                </div>
+            </div>
+        {% endif %}
 
     </div>
 
@@ -124,7 +144,7 @@
     skip_to_anchor = function(anchor) {
         if(anchor == "pubmed") {
             jump = anchor;
-            anchor = "rep";
+            anchor = "ack";
         }
         else if(anchor == "fw_primer" || anchor == "rv_primer") {
             jump = anchor;
@@ -186,6 +206,16 @@
                 }
             }
         });
+    }
+
+    function delete_attachment() {
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('delete_submission_attachment', id=id) }}",
+            success: function(data) {
+                window.location.reload(true);
+            }
+        })
     }
 
     $('#uploadModal').on('show.bs.modal', function (event) {

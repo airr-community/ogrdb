@@ -61,9 +61,9 @@ from wtforms import StringField, SelectField, DateField, BooleanField, IntegerFi
 class RepertoireForm(FlaskForm):
     repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)")
     rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository (e.g. NIH Project or ENA Study)")
-    dataset_url = StringField('Dataset URL', [validators.Length(max=255)], description="URL of the study or project within the repository")
+    dataset_url = StringField('Dataset URL', [validators.Length(max=255), validators.URL()], description="URL of the study or project within the repository")
     miarr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the repertoire dataset and associated metadata is available in MiAIRR format")
-    miairr_link = StringField('MiAIRR URL', [validators.Length(max=255)], description="Link to MiAIRR metadata, if available")
+    miairr_link = StringField('MiAIRR URL', [validators.Length(max=255), validators.Optional(), validators.URL()], description="Link to MiAIRR metadata, if available")
     sequencing_platform = StringField('Sequencing Platform', [validators.Length(max=255), NonEmpty()], description="Designation of sequencing instrument used")
     read_length = StringField('Read Length', [validators.Length(max=255), NonEmpty()], description="Read length in bases for each direction")
     primers_overlapping = SelectField('Primers Overlapping?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Do primers overlap with the stated sequence of any inferred allele?")

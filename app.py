@@ -6,6 +6,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_required
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
+
 import json
 from Bio import SeqIO
 import io
@@ -20,6 +21,8 @@ app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
 db = SQLAlchemy(app)
+# At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
+db.session.execute('SET @@GLOBAL.max_allowed_packet=100000000')
 
 mail = Mail(app)
 from mail import send_mail
@@ -38,6 +41,7 @@ from db.genotype_upload import *
 from db.genotype_view_table import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
+from db.notes_entry_db import *
 
 admin_obj = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -86,9 +90,13 @@ def submissions():
         tables['mine'] = setup_submission_list_table(results, current_user)
         tables['mine'].table_id = 'mine'
 
+        delegated_species = {}
+        for sub in current_user.delegated_submissions:
+            delegated_species[sub.species] = True
+
         species = [s[0] for s in db.session.query(Committee.species).all()]
         for sp in species:
-            if current_user.has_role(sp):
+            if current_user.has_role(sp) or sp in delegated_species:
                 if 'completed' in request.args and request.args['completed'] == 'yes':
                     q = db.session.query(Submission).filter(Submission.species==sp).filter(Submission.submission_status.in_(['reviewing', 'complete']))
                     show_completed = True
@@ -143,6 +151,15 @@ def check_sub_edit(id):
         return None
     return sub
 
+def check_sub_view(id):
+    sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
+    if sub is None:
+        flash('Submission not found')
+        return None
+    elif not sub.can_see(current_user):
+        flash('You do not have rights to view that submission')
+        return None
+    return sub
 
 @app.route('/edit_submission/<id>', methods=['GET', 'POST'])
 @login_required
@@ -155,13 +172,26 @@ def edit_submission(id):
     if request.method == 'GET':
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
-        return render_template('submission_edit.html', form = form, id=id, tables=tables)
+        return render_template('submission_edit.html', form = form, id=id, tables=tables, attachment=sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0)
 
     missing_sequence_error = False
     validation_result = ValidationResult()
     try:
         if ('save_btn' in request.form or 'submit_btn' in request.form) and not form.validate():
-            raise ValidationError()
+            if 'submit_btn' in request.form:
+                raise ValidationError()
+
+            # Overlook empty field errors when saving to draft
+            nonblank_errors = False
+            for field in form._fields:
+                if len(form._fields[field].errors) > 0:
+                    if len(form._fields[field].data) == 0:
+                        form._fields[field].errors = []
+                    else:
+                        nonblank_errors = True
+            if nonblank_errors:
+                raise ValidationError()
+
 
         # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
         validation_result = process_table_updates(tables, request, db)
@@ -193,6 +223,17 @@ def edit_submission(id):
                     setattr(sub, k, v)
                 elif hasattr(sub.repertoire[0], k):
                     setattr(sub.repertoire[0], k, v)
+
+            db.session.commit()
+
+            if 'notes_attachment' in request.files:
+                sub.notes_entries[0].notes_attachment = request.files['notes_attachment'].read()
+                db.session.commit()
+                sub.notes_entries[0].notes_attachment_filename = request.files['notes_attachment'].filename
+
+            if 'notes' in request.form:
+                sub.notes_entries[0].notes = request.form['notes'].encode('utf-8')
+
             db.session.commit()
 
         if validation_result.route:
@@ -222,6 +263,28 @@ def edit_submission(id):
 
         return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
 
+@app.route('/download_submission_attachment/<id>')
+def download_submission_attachment(id):
+    sub = check_sub_view(id)
+    if sub is None:
+        return redirect('/')
+
+    if len(sub.notes_entries[0].notes_attachment) > 0:
+        return Response(sub.notes_entries[0].notes_attachment, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
+    else:
+        return redirect('/')
+
+@app.route('/delete_submission_attachment/<id>', methods=['POST'])
+def delete_submission_attachment(id):
+    sub = check_sub_edit(id)
+    if sub is None:
+        return redirect('/')
+
+    sub.notes_entries[0].notes_attachment = ''.encode('utf-8')
+    sub.notes_entries[0].notes_attachment_filename = ''
+    db.session.commit()
+    return ''
+
 
 @app.route('/delete_submission/<id>', methods=['GET', 'POST'])
 @login_required
@@ -237,6 +300,7 @@ def delete_submission(id):
 @app.route('/submission/<id>', methods=['GET', 'POST'])
 def submission(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
+    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
     if sub is None or not sub.can_see(current_user):
         flash('Submission not found')
         return redirect('/submissions')
@@ -244,11 +308,20 @@ def submission(id):
     (form, tables) = setup_submission_view_forms_and_tables(sub, db, sub.can_see_private(current_user))
 
     if request.method == 'GET':
-        return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=(current_user.has_role(sub.species) and sub.submission_status != 'draft'), id=id, jump="", status=sub.submission_status)
+        return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump="", status=sub.submission_status, attachment=sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0)
     else:
-        if not current_user.has_role(sub.species):
+        if not reviewer:
             flash('Submission not found')
             return redirect('/submissions')
+
+        # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
+        editable_tables = {'delegate_table': tables['delegate_table']}
+        validation_result = process_table_updates(editable_tables, request, db)
+        if validation_result.tag:
+            if validation_result.valid:     # rebuild tables if something has changed
+                (form, tables) = setup_submission_view_forms_and_tables(sub, db, sub.can_see_private(current_user))
+            return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
+
         if form.validate():
             if form.action.data == 'draft':
                 add_note(current_user, form.title.data, textile.textile('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
@@ -301,7 +374,7 @@ def submission(id):
                 return redirect('/submissions')
 
         else:
-           return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=(current_user.has_role(sub.species) and sub.submission_status != 'draft'), id=id, jump='modal', button='#'+form.action.data, status=sub.submission_status)
+           return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
 
 
 @app.route('/upload_primers/<id>/<primer_type>', methods=['POST'])

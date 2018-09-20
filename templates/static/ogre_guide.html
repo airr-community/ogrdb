@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Submitting Inferred Sequences with Ogre {% endblock %}
+
+{% block c_body %}
+    <div class="row">
+        {% include '/static/doclinks.html' %}
+    <div class="big col-sm-8">
+    <h3>This is a test website, provided to the AIRR GLDB WG for feedback</h3>
+
+    <p>The site is not live. Please explore it and provide feedback - but don't submit your sequences yet!<p>
+
+    <p><i>The text below is not final. Please comment.</i></p>
+
+    <h3>Pre-Requisites</h3>
+
+    <p>Before submitting inferred sequences with Ogre, you should have completed the Genbank/ENA Workflow. From this
+    workflow, you should have accession numbers for the folowing:</p>
+
+        <ul>
+            <li>The Project, or Study from which the read sets were taken</li>
+            <li>The Runs of relevant sequences, from the NGS data</li>
+            <li>The Inferred Sequences themselves</li>
+        </ul>
+
+        <p>You will also need to <a href="/register">register</a> for an account with Ogre. Please note that the institution that you
+        provide at registration will be used in the submission. You can change this in your <a href="/profile">profile</a> after
+        registration if necessary.</p>
+
+    <h3>Submission Overview</h3>
+
+    <p>A submission is based around a single <i>Repertoire</i>. A Repertoire, in Ogre, is loosely equivalent to a BioProject in Genbank or a Study in ENA.
+    It can contain multiple sequence sets (for example multiple timepoints) from multiple individuals of the same species. The same PCR primers must have been used
+    in preparing each sequence set. The sequence sets must have been the subject of a published study (the publication does not need to relate
+    to germline inference; but provides documentation and peer review of the methods used).</p>
+
+    <p>Germline Inferences may have been made with one or more inference tools. Each of these may have been used with one or more settings. For
+    example, it is possible - although by no means mandatory - that an inference was confirmed by the use of two tools, and that each tool was
+    run more than once, with different sensitivity parameters or other adjustments. Each combination of a tool and the settings used is entered into
+    Ogre - hence if two different tools were each used with two settings each, there will be four tool/settings combinations.</p>
+
+    <p>When a tool is run against a sequence set from the repertoire, it will generate a genotype. The genotype may contain both known germline sequences
+    (from the starting database provided to the tool) and inferred sequences. Each inferred genotype is uploaded to Ogre.</p>
+
+    <p>Finally, the inferred sequences to be submitted to IARC are selected from the uploaded genotypes. Note that the same sequence may have been inferred
+    in multiple genotypes (providing increased support). Each occurrence should be identified as an Inferred sequence, selected from the genotype in which
+    it was found.</p>
+
+    <p>It is best to complete the submission in the order listed above, as later parts of the submission depend upon information entered earlier. It is not
+    necessary to complete submission in one setting, however - it can be saved as a draft, and any part can be updated after initial entry.</p>
+
+    <h3>Submission Workflow</h3>
+
+        <h4>New Submission</h4>
+
+    <p>To create a new submission, log in and select Submissions from the top menu. You will see a list of submissions that you have already created
+    under My Submissions, as well as a list of Published Submissions. Pressing the New Submission button will initiate a new submission. Once you
+    press Create, you will be taken to the Submission Details tab of the submission entry screen.</p>
+
+    <p>Please note, as you use Ogre, that you can obtain help on the fields by hovering over them. For example, if you hover over Ethnicity on the Submission
+    Details tab, you will see an explanation of its meaning.</p>
+
+    <p>The submission entry tabs are set out in the order listed in the overivew, and it is best to work through them in order, starting with the Submission Details
+    and Repertoire tabs. <p>
+
+        <h4>Repertoire Tab</h4>
+        <p>Certain fields on the Repertoire tab are mandatory. Once these are completed, you can press Save Draft to save the updates to the submission. If you need to leave the
+        draft submission before doing so, you can select an item (such as Logout or Submissions) from the main menu. The draft submission will be retained, but updates to the
+        Repertoire tab will not be saved until the required fields are completed and you press Save Draft, This is also the case in subsequent sections - each section or
+        added item will be saved, once any errors indicated in red are corrected.<p>
+
+        <h4>Acknowledgements Tab</h4>
+        <p>The Acknowledgements Tab is used to enter the details of anyone who should be acknowledged alongside you as contributing to the inference of the identified sequences.
+        Please provide ORCID IDs if the individuals are listed on ORCID, as this avoids ambiguity.</p>
+
+        <h4>Primers Tab</h4>
+        <p>Please enter the forward and reverse primers used. For convenience, you may upload FASTA files containing the primer names and sequences, rather than entering them individually.</p>
+
+        <h4>Inference Tools</h4>
+        <p>As described in the Overview, each combination of tool and associated settings that was used in the study should be entered here. Please provide each combination with a descriptive
+            name (the Tool/Settings Name), for example 'Tigger - with full IMGT germline library'. </p>
+
+        <h4>Genotypes</h4>
+        <p>Please provide each genotype inferred with the tool(s). IARC requests a full listing of all genes determined by the tool - both those inferred, and those drawn from the starting
+            database. Details of the genotype should be provided in a CSV file. A template is available for download once you press Add Genotype. We are working with inference tool
+            providers to streamline generation of this information but at the moment it may require some manual work. It is appreciated that not all the information will be provided by every tool</p>
+        <p>Please note that you will need to provide details of the tool and settings used with each inferred genotype - so it is best to enter these first. You will not be able to enter genotypes
+        until you have entered details of at least one tool.<p>
+
+        <h4>Inferred Sequences</h4>
+        <p>Finally, please identify those sequences from each inferred genotype which you wish to submit for consideration.</p>
+
+    <h3>Submission and Review</h3>
+        <p>All your submissions are listed under My Submissions on the Submissions page. You can resume editing of any draft submission by clicking the pencil icon, or delete it and start over
+            by clicking the trash icon. You can review it in read-only mode by clicking its submission ID. Once you are happy to submit, edit the submission and press Submit to IARC. Once you
+            confirm, the submission will no longer be editable but can still be seen under My Submissions. You will receive a confirming email, and IARC will keep you updated of progress and
+            raise any questions via email.</p>
+    </p>
+    </div>
+    </div>
+{% endblock %}

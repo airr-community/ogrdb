@@ -6,12 +6,14 @@ from db.inference_tool_db import *
 from db.genotype_description_db import *
 from db.editable_table import *
 from db.inferred_sequence_db import *
+from db.notes_entry_db import *
 from forms.repertoire_form import *
 from forms.submission_form import *
 from forms.inference_tool_form import *
 from forms.genotype_description_form import *
 from forms.aggregate_form import *
 from forms.inferred_sequence_form import *
+from forms.notes_entry_form import *
 from sys import exc_info
 from get_pmid_details import get_pmid_details
 from collections import namedtuple
@@ -185,6 +187,9 @@ def process_table_updates(tables, request, db):
             if len(field.errors) > 0:
                 validation_result.valid = False
                 break
+        if not validation_result.valid:
+            break
+
         validation_result.tag = None
 
     return validation_result
@@ -197,11 +202,16 @@ def setup_submission_edit_forms_and_tables(sub, db):
         sub.repertoire.append(Repertoire())
         db.session.commit()
 
+    if len(sub.notes_entries) == 0:
+        sub.notes_entries.append(NotesEntry())
+        db.session.commit()
+
     submission_form = SubmissionForm(obj = sub)
     species = db.session.query(Committee.species).all()
     submission_form.species.choices = [(s[0],s[0]) for s in species]
 
-    repertoire_form = RepertoireForm(obj = sub.repertoire)
+    repertoire_form = RepertoireForm(obj = sub.repertoire[0])
+    notes_entry_form = NotesEntryForm(obj = sub.notes_entries[0])
 
     # Remove tool, genotype and inferred sequence entries that have no names. These are new entries that the user backed out of,
     # either by pressing cancel or by navigating away from the edit page.
@@ -228,7 +238,7 @@ def setup_submission_edit_forms_and_tables(sub, db):
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
 
-    form = AggregateForm(submission_form, repertoire_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)
+    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)
     return (tables, form)
 
 

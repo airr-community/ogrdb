@@ -202,7 +202,8 @@ div.panel-body {
 */
 
 .big {
-    font-size: 20px;
+    font-size: 16px;
+    margin-bottom: 16px;
 }
 .reply-msg {
     padding-top: 10px;
@@ -214,10 +215,14 @@ div.panel-body {
     border-left: 1px groove rgba(51, 122, 183, .2);
     padding-left: 10px;
 }
+
+/*
 p {
     padding-bottom: 0px;
     margin-bottom: 5px;
 }
+*/
+
 #loginBlock {
     background-color: white;
     margin-top: 30px;

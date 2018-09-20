@@ -18,6 +18,7 @@
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
     <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
     <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
+    <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
     {% if reviewer %}
     <li role="presentation"><a href="#review" aria-controls="review" role="tab" data-toggle="tab" id="tab-rev">Review</a></li>
     {% endif %}
@@ -31,7 +32,7 @@
 
     <div role="tabpanel" class="tab-pane" id="ack">
         <h3>Acknowledgements</h3>
-        <p>Iindividuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
+        <p>Individuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
         {{ tables['ack'] }}
     </div>
 
@@ -76,6 +77,18 @@
 
     </div>
 
+    <div role="tabpanel" class="tab-pane" id="notes">
+        <h3>Notes</h3>
+        {{ tables['submission_notes'] }}
+        {% if attachment %}
+            <div class="form-group">
+                <div class="form-control-label col-sm-4 col-sm-offset-2">
+                    <a class="btn btn-default" role="button" href="{{ url_for('download_submission_attachment', id=id) }}">Download Attachment</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
     {% if reviewer %}
     <div role="tabpanel" class="tab-pane" id="review">
         <h3>History</h3>
@@ -96,8 +109,13 @@
             </div>
         {% endfor %}
 
-        <h3>Actions</h3>
         <form action="{{ url_for('submission', id=id) }}" method="POST" name="form" class="form-horizontal">
+        <h3>Review Delegates</h3>
+        <div class="row">
+            <a name="delegates"> </a>
+            {% include 'delegate_edit.html' %}
+        </div>
+        <h3>Actions</h3>
             {{ form.hidden_tag() }}
             <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
               <div class="modal-dialog modal-lg" role="document">
@@ -167,17 +185,9 @@
     {% endif %}
 
     if(anchor != '') {
-        if(anchor == "pubmed") {
+        if(anchor == "delegates") {
             jump = anchor;
-            anchor = "rep"
-        }
-        else if(anchor == "fw_primer" || anchor == "rv_primer") {
-            jump = anchor
-            anchor = "primers"
-        }
-        else if(anchor == "modal") {
-            jump = 'modal';
-            anchor = 'review'
+            anchor = "review"
         }
 
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
@@ -185,10 +195,7 @@
 
     $(document).ready(function ()
     {
-        if(jump == 'modal') {
-            $("{{ button }}").click()
-        }
-        else if(jump != '') {
+        if(jump != '') {
             window.location.hash = "";
             window.location.hash = "#" + jump
         }

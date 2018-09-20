@@ -3,7 +3,43 @@
 {% block pagetitle %} Ogre {% endblock %}
 
 {% block c_body %}
+    <div class="row">
+        {% include '/static/doclinks.html' %}
+    <div class="big col-sm-8">
+    <h3>This is a test website, provided to the AIRR GLDB WG for feedback</h3>
 
+    <p>The site is not live. Please explore it and provide feedback - but don't submit your sequences yet!<p>
 
+    <p><i>The text below is not final. Please comment.</i></p>
 
+    <h3>Welcome to Ogre - the Online Germline REceptor database!</h3>
+
+    <p>In recent years it has become possible to sequence immune receptor repertoires at great depth. The accurate analysis of these
+    repertoires requires a comprehensive understanding of the germline genes that underpin them. </p>
+
+    <p>Even for well-studied species such as humans, mice and rats, our knowledge of these 'germline libraries' is incomplete.
+    Determining the library from the genome using traditional methods is technically challenging, because of the
+    presence of many similar sequences and repeats. More recently, methods have been developed
+    to infer novel sequences and alleles from sequenced repertoires.</p>
+
+    <p>The <a href="https://www.antibodysociety.org/airrc/">Adaptive Immune Receptor Repertoire (AIRR) Community</a> was formed
+    to promote and share good practice in adaptive immune repertoire sequencing.  It has formed an Inferred Allele Review Committee (IARC) to evaluate inferred
+    alleles for inclusion in the relevant germline libraries. IARC's work is outlined in more detail in a <a href="/static/docs/IARC_Surrey.pdf">recent poster</a>,
+    which was presented at a Systems Immunology Workshop at the University of Surrey, England, in March 2018.
+    IARC has worked, together with colleagues at IMGT and the US National Institute of Health, to agree a review process. Ogre
+    supports that process, and will also provide a record of affirmed sequences. Affirmed sequences will be listed under Ogre's Submission
+    tab as Published Sequences.</p>
+
+    <p>As a first step, IARC is now ready to review submissions of inferred human V-genes and alleles. These sequences may be novel, or may
+    extend incomplete sequences currently in the IMGT set. Researchers interested in submitting sequences should:</p>
+
+    <ul>
+    <li>Review the <i>Inference Guidelines</i> and verify that their methods and datasets are in conformance.</li>
+    <li>Submit sequence and data to Genbank or ENA, following the <i>defined workflow</i>.</li>
+    <li>Submit the inferred sequences to IARC via Ogre, following <a href="/render_page/ogre_guide.html">this guide</a></li>.
+    </ul>
+
+    <p>It is hoped to open the review process to a wider range of segments and species shortly.</p>
+    </div>
+    </div>
 {% endblock %}

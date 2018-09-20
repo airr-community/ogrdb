@@ -51,7 +51,11 @@ class EditableTable():
         self.added_fields.append(field_name)
 
         for item in items:
-            field_name = '%s_del_%d' % (name, item.id)
+            if hasattr(item, 'id'):
+                field_name = '%s_del_%d' % (name, item.id)
+            else:
+                field_name = '%s_del_%d' % (name, item['id'])
+
             setattr(self.formclass, field_name, SubmitField('Del'))
             self.added_fields.append(field_name)
 

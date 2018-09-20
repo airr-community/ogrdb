@@ -44,6 +44,12 @@ def main(argv):
     write_model(schema, 'JournalEntry', 'db/journal_entry_db.py')
     write_flaskform(schema, 'JournalEntry', 'forms/journal_entry_form.py')
     write_inp(schema, 'JournalEntry', 'templates/journal_entry_form.html')
+    write_model(schema, 'NotesEntry', 'db/notes_entry_db.py')
+    write_flaskform(schema, 'NotesEntry', 'forms/notes_entry_form.py')
+    write_inp(schema, 'NotesEntry', 'templates/notes_entry_form.html')
+    write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
+    write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
+    write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
 
 
 # Merge markup properties with schema
@@ -168,7 +174,7 @@ class %s(db.Model):
                 elif type == 'text':
                     fo.write("    %s = db.Column(db.Text())" % sc_item)
                 elif type == 'blob':
-                    fo.write("    %s = db.Column(db.LargeBinary())" % sc_item)
+                    fo.write("    %s = db.Column(db.LargeBinary(length=(2**32)-1))" % sc_item)
                 elif type == 'ORCID ID':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'ambiguous nucleotide sequence':
@@ -319,7 +325,7 @@ class %sForm(FlaskForm):
                 elif 'list' in type:
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'url':
-                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s, validators.URL()]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'doi':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'boolean':
