@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block pagetitle %} Sequences {% endblock %}
+
+{% block c_body %}
+    {% if 'species' in tables %}
+        {% for sp, t in tables['species'].items() %}
+            <div class="row">
+                <div class="col-md-8"><h2>Draft Sequences for IARC {{ sp }} Committee</h2></div>
+                {% if loop.previtem is not defined %}
+                    <div class="col-md-offset-10">
+                    <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-default heading-btn">New Sequence</a>
+                   {% if show_withdrawn %}
+                        <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Withdrawn</a>
+                    {% else %}
+                        <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Withdrawn</a>
+                    {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class=".table col-md-12">
+                    {{ t }}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8"><h2>Affirmed Sequences</h2></div>
+    </div>
+    <div class="row">
+        <div class=".table col-md-12">
+            {{ tables['affirmed'] }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if 'species' in tables %}
+        {% for sp, t in tables['species'].items() %}
+            <script>
+                $(document).ready(function() {
+                $("#{{ t.table_id }}").DataTable({
+                    "paging":   false,
+                    "searching": false,
+                    "info":     false
+                });
+                } );
+            </script>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            $("#{{ tables['affirmed'].table_id }}").DataTable({
+                "paging":   false,
+                "searching": false,
+                "info":     false
+            });
+        } );
+
+        function seq_delete(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Delete Sequence?',
+                message: 'This draft will be removed. You will not be able to recover it later.',
+                type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+                btnOKLabel: 'Delete',
+                btnOKClass: 'btn-danger',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/delete_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
+
+        function seq_new_draft(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Create New Draft?',
+                message: 'This will create a new draft of the sequence, which can then be updated and published.',
+                type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+                btnOKLabel: 'New Draft',
+                btnOKClass: 'btn-warning',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/draft_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
+
+        function seq_withdraw(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Withdraw Sequence?',
+                message: 'This will withdraw the sequence from publication.',
+                type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+                btnOKLabel: 'Withdraw',
+                btnOKClass: 'btn-danger',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/withdraw_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
+    </script>
+
+{% endblock %}
+
+

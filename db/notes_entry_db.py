@@ -36,6 +36,14 @@ def populate_NotesEntry(db, object, form):
 
 
 
+
+def copy_NotesEntry(c_from, c_to):   
+    c_to.notes_text = c_from.notes_text
+    c_to.notes_attachment = c_from.notes_attachment
+    c_to.notes_attachment_filename = c_from.notes_attachment_filename
+
+
+
 class NotesEntry_table(StyledTable):
     id = Col("id", show=False)
 

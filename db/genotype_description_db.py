@@ -47,6 +47,16 @@ def populate_GenotypeDescription(db, object, form):
 
 
 
+
+def copy_GenotypeDescription(c_from, c_to):   
+    c_to.genotype_name = c_from.genotype_name
+    c_to.genotype_subject_id = c_from.genotype_subject_id
+    c_to.genotype_biosample_ids = c_from.genotype_biosample_ids
+    c_to.genotype_file = c_from.genotype_file
+    c_to.genotype_filename = c_from.genotype_filename
+
+
+
 class GenotypeDescription_table(StyledTable):
     id = Col("id", show=False)
     genotype_name = StyledCol("Genotype Name", tooltip="Descriptive name for this genotype")

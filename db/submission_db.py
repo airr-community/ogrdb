@@ -23,7 +23,6 @@ class Submission(db.Model, SubmissionMixin):
     population_ethnicity = db.Column(db.String(1000))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner = db.relationship('User', backref = 'submissions')
-    from db._submission_rights import can_see, can_edit, can_see_private
 
 
 def save_Submission(db, object, form, new=False):   
@@ -52,6 +51,19 @@ def populate_Submission(db, object, form):
     form.submitter_email.data = object.submitter_email
     form.species.data = object.species
     form.population_ethnicity.data = object.population_ethnicity
+
+
+
+
+def copy_Submission(c_from, c_to):   
+    c_to.submission_id = c_from.submission_id
+    c_to.submission_date = c_from.submission_date
+    c_to.submission_status = c_from.submission_status
+    c_to.submitter_name = c_from.submitter_name
+    c_to.submitter_address = c_from.submitter_address
+    c_to.submitter_email = c_from.submitter_email
+    c_to.species = c_from.species
+    c_to.population_ethnicity = c_from.population_ethnicity
 
 
 

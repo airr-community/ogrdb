@@ -35,6 +35,14 @@ def populate_PubId(db, object, form):
 
 
 
+
+def copy_PubId(c_from, c_to):   
+    c_to.pubmed_id = c_from.pubmed_id
+    c_to.pub_title = c_from.pub_title
+    c_to.pub_authors = c_from.pub_authors
+
+
+
 class PubId_table(StyledTable):
     id = Col("id", show=False)
     pubmed_id = StyledCol("PubMed ID", tooltip="PubMed ID (e.g. 26543)")
@@ -80,6 +88,13 @@ def save_ForwardPrimer(db, object, form, new=False):
 def populate_ForwardPrimer(db, object, form):   
     form.fw_primer_name.data = object.fw_primer_name
     form.fw_primer_seq.data = object.fw_primer_seq
+
+
+
+
+def copy_ForwardPrimer(c_from, c_to):   
+    c_to.fw_primer_name = c_from.fw_primer_name
+    c_to.fw_primer_seq = c_from.fw_primer_seq
 
 
 
@@ -131,6 +146,13 @@ def populate_ReversePrimer(db, object, form):
 
 
 
+
+def copy_ReversePrimer(c_from, c_to):   
+    c_to.rv_primer_name = c_from.rv_primer_name
+    c_to.rv_primer_seq = c_from.rv_primer_seq
+
+
+
 class ReversePrimer_table(StyledTable):
     id = Col("id", show=False)
     rv_primer_name = StyledCol("Primer Name", tooltip="Primer name or quick description")
@@ -161,6 +183,8 @@ class Acknowledgements(db.Model):
     ack_ORCID_id = db.Column(db.String(255))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'acknowledgements')
+    description_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
+    gene_description = db.relationship('GeneDescription', backref = 'acknowledgements')
 
 
 def save_Acknowledgements(db, object, form, new=False):   
@@ -179,6 +203,14 @@ def populate_Acknowledgements(db, object, form):
     form.ack_name.data = object.ack_name
     form.ack_institution_name.data = object.ack_institution_name
     form.ack_ORCID_id.data = object.ack_ORCID_id
+
+
+
+
+def copy_Acknowledgements(c_from, c_to):   
+    c_to.ack_name = c_from.ack_name
+    c_to.ack_institution_name = c_from.ack_institution_name
+    c_to.ack_ORCID_id = c_from.ack_ORCID_id
 
 
 
@@ -249,6 +281,19 @@ def populate_Repertoire(db, object, form):
     form.sequencing_platform.data = object.sequencing_platform
     form.read_length.data = object.read_length
     form.primers_overlapping.data = object.primers_overlapping
+
+
+
+
+def copy_Repertoire(c_from, c_to):   
+    c_to.repository_name = c_from.repository_name
+    c_to.rep_accession_no = c_from.rep_accession_no
+    c_to.dataset_url = c_from.dataset_url
+    c_to.miarr_compliant = c_from.miarr_compliant
+    c_to.miairr_link = c_from.miairr_link
+    c_to.sequencing_platform = c_from.sequencing_platform
+    c_to.read_length = c_from.read_length
+    c_to.primers_overlapping = c_from.primers_overlapping
 
 
 

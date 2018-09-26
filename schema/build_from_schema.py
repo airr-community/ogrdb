@@ -106,6 +106,27 @@ from sqlalchemy.orm import backref
                         found_mixin = True
                         break
 
+
+        # first pass to create any necessary link tables
+
+        for sc_item in schema[section]['properties']:
+            if 'ignore' in schema[section]['properties'][sc_item]:
+                continue
+            type = schema[section]['properties'][sc_item]['type']
+            if 'many-relationship' in schema[section]['properties'][sc_item]:
+                rel = schema[section]['properties'][sc_item]['many-relationship']
+                fo.write("""
+                        
+%s = db.Table('%s',
+    db.Column('%s_id', db.Integer(), db.ForeignKey('%s.id')),
+    db.Column('%s_id', db.Integer(), db.ForeignKey('%s.id')))
+    
+""" % (sc_item+'_'+rel[1], sc_item+'_'+rel[1], sc_item, sc_item[:-1], rel[1], rel[1][:-1]))
+
+        # second pass for everything else
+
+
+
         if found_mixin:
             fo.write(
 """
@@ -121,7 +142,6 @@ class %s(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 """ % section)
 
-
         for sc_item in schema[section]['properties']:
             try:
                 if 'ignore' in schema[section]['properties'][sc_item]:
@@ -134,8 +154,11 @@ class %s(db.Model):
                         rel = schema[section]['properties'][sc_item]['relationship']
                         fo.write("\n    %s = db.relationship('%s', backref = '%s')" % (rel[0], rel[1], rel[2]))
                     elif 'self-relationship' in schema[section]['properties'][sc_item]:
-                        rel = schema[section]['properties'][sc_item]['relationship']
+                        rel = schema[section]['properties'][sc_item]['self-relationship']
                         fo.write("\n    %s = db.relationship('%s', backref = backref('%s', remote_side = [%s]))" % (rel[0], sc_item, rel[1], rel[2]))
+                    elif 'many-relationship' in schema[section]['properties'][sc_item]:
+                        rel = schema[section]['properties'][sc_item]['many-relationship']
+                        fo.write("\n    %s = db.relationship('%s', secondary = %s, backref = db.backref('%s', lazy='dynamic'))" % (sc_item, rel[0], sc_item +'_'+ rel[1], rel[1]))
                 elif type == 'string':
                     fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'date':
@@ -184,8 +207,6 @@ class %s(db.Model):
                 fo.write("\n")
             except Exception as e:
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
-        if section == 'Submission':
-            fo.write('    from db._submission_rights import can_see, can_edit, can_see_private\n')
         fo.write("\n")
 
 # Save details from form
@@ -227,6 +248,28 @@ def populate_%s(db, object, form):
                 continue
 
             fo.write("    form.%s.data = object.%s\n" % (sc_item, sc_item))
+
+        fo.write(
+"""
+
+
+""")
+# Copy to another instance
+
+        fo.write(
+"""
+def copy_%s(c_from, c_to):   
+""" % (section))
+
+        for sc_item in schema[section]['properties']:
+            if 'ignore' in schema[section]['properties'][sc_item] \
+                    or 'nocopy' in schema[section]['properties'][sc_item] \
+                    or 'many-relationship' in schema[section]['properties'][sc_item] \
+                    or 'self-relationship' in schema[section]['properties'][sc_item] \
+                    or 'relationship' in schema[section]['properties'][sc_item]:
+                continue
+
+            fo.write("    c_to.%s = c_from.%s\n" % (sc_item, sc_item))
 
         fo.write(
 """
@@ -310,7 +353,7 @@ class %sForm(FlaskForm):
                         # yaml processor turns Yes, No into bool
                         if len(type) == 2 and type[0] == True and type[1] == False:
                             type = ['Yes', 'No']
-                        choices = [(item, item) for item in type]
+                        choices = [(str(item), str(item)) for item in type]
                         fo.write("    %s = SelectField('%s', choices=%s%s)" % (sc_item, label, repr(choices), description))
                 elif type == 'string':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
@@ -332,9 +375,9 @@ class %sForm(FlaskForm):
                     fo.write("    %s = BooleanField('%s', []%s)" % (sc_item, label, description))
                 elif 'IUPAC' in type:
                     if 'GAPPED' in type:
-                        fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=False, gapped=True)%s]%s)" % (sc_item, label, nonblank, description))
+                        fo.write("    %s = TextAreaField('%s', [ValidNucleotideSequence(ambiguous=False, gapped=True)%s]%s)" % (sc_item, label, nonblank, description))
                     else:
-                        fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=False)%s]%s)" % (sc_item, label, nonblank, description))
+                        fo.write("    %s = TextAreaField('%s', [ValidNucleotideSequence(ambiguous=False)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'integer':
                     if 'relationship' in schema[section]['properties'][sc_item]:
                         fo.write("    %s = SelectField('%s', [validators.Optional()], choices=[]%s)" % (sc_item, label, description))
@@ -359,8 +402,9 @@ class %sForm(FlaskForm):
                 print("Error in section %s item %s: %s" % (section, sc_item, e))
         fo.write("\n\n")
 
-def write_inp(schema, section, outfile):
-    with open(outfile, 'w') as fo:
+def write_inp(schema, section, outfile, append=False):
+    attrs = 'a' if append else 'w'
+    with open(outfile, attrs) as fo:
         fo.write("{# This file is automatically generated from the schema by schema/build_from_schema.py #}\n\n")
 
         for sc_item in schema[section]['properties']:
@@ -375,10 +419,11 @@ def write_inp(schema, section, outfile):
             else:
                 rows = ', rows="%s"' % schema[section]['properties'][sc_item]['rows'] if 'rows' in schema[section]['properties'][sc_item] else ''
                 css_class = 'checkbox' if schema[section]['properties'][sc_item]['type'] == 'boolean' else 'form-control'
+                width = schema[section]['properties'][sc_item]['width'] + '_' if 'width' in schema[section]['properties'][sc_item] else ''
                 fo.write(
 """
-        {{ render_field_with_errors(form.%s, class="%s"%s) }}
-""" % (sc_item, css_class, rows))
+        {{ render_%sfield_with_errors(form.%s, class="%s"%s) }}
+""" % (width, sc_item, css_class, rows))
 
 
 if __name__=="__main__":

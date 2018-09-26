@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Sequence - {{ sequence_name }}{% endblock %}
+
+{% block c_body %}
+
+<form action="{{ url_for('edit_sequence', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+    <div>
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation" class="active"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
+            <li role="presentation"><a href="#inf" aria-controls="inf" role="tab" data-toggle="tab" id="tab-inf">Inferences</a></li>
+            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
+            <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
+            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
+        </ul>
+
+        {{ form.hidden_tag() }}
+
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="det">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    {% include 'gene_description_form.html' %}
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="inf">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Inferences</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Inferences on which the sequence is based:</p>
+                    <div class="col-sm-6 col-sm-offset-3">
+                        <div class="form-group">
+                            {{ tables['inferred_sequence'] }}
+                            <a class="btn btn-default" role="button" href="{{ url_for('seq_add_inference', id=id) }}">Add Inference</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="ack">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Please list those individuals who should be acknowledged as contributing to this sequence.</p>
+                        <a name="ack"> </a>
+                        <div class="col-sm-9 col-sm-offset-1">
+                            {% include 'acknowledgement_form.html' %}
+                        </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="notes">
+                <div class="row">
+                    {% include 'gene_description_notes_form.html' %}
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="history">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        {% for t in tables['history'] %}
+                            {{ t }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="messageModallLabel">New message</h4>
+              </div>
+              <div class="modal-body">
+                  <div class="modal-instructions">
+                  </div>
+                  <br>
+                  {% include 'journal_entry_form.html' %}
+
+                  {{ form.type(class="hidden") }}
+                  {{ form.action(class="hidden") }}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <input type="submit" value="Save" class="btn" name="history_btn" id="history_btn">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <input type="submit" value="Save Draft" class="btn btn-primary col-sm-offset-1" id="save_draft_btn" name="save_draft_btn">
+        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
+                data-header="Publish Submission" data-instr="Please provide brief notes on this version"
+                data-title="Submission {{ id }} Version {{ version }} - Published" id="published">Publish</button>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+    <script>
+
+    $('.delbutton').on('click', function(event) {
+        var button = this;
+        var id = $(this).data('id');
+        var inf = $(this).data('inf');
+        $.ajax({
+            type: "POST",
+            url: '/delete_inferred_sequence',
+            data: {
+                'id': id,
+                'inf': inf
+            },
+            success: function() {
+                window.location.reload(true);
+            },
+            error: function() {
+                console.log("failure");
+            }
+        })
+    });
+
+    function utr_display() {
+        if($("#inference_type").val() != 'Rearranged Only') {
+            $("label[for='l_region_start']").parent().show();
+            $("label[for='l_region_end']").parent().show();
+            $("label[for='utr_5_prime_start']").parent().show();
+            $("label[for='utr_5_prime_end']").parent().show();
+            if($("#domain").val() == 'V') {
+                $("label[for='v_rs_start']").parent().show();
+                $("label[for='v_rs_end']").parent().show();
+            } else {
+                $("label[for='v_rs_start']").parent().hide();
+                $("label[for='v_rs_end']").parent().hide();
+            }
+            if($("#domain").val() == 'D') {
+                $("label[for='d_rs_3_prime_start']").parent().show();
+                $("label[for='d_rs_3_prime_end']").parent().show();
+                $("label[for='d_rs_5_prime_start']").parent().show();
+                $("label[for='d_rs_5_prime_end']").parent().show();
+            } else {
+                $("label[for='d_rs_3_prime_start']").parent().hide();
+                $("label[for='d_rs_3_prime_end']").parent().hide();
+                $("label[for='d_rs_5_prime_start']").parent().hide();
+                $("label[for='d_rs_5_prime_end']").parent().hide();
+            }
+            if($("#domain").val() == 'J') {
+                $("label[for='j_rs_start']").parent().show();
+                $("label[for='j_rs_end']").parent().show();
+            } else {
+                $("label[for='j_rs_start']").parent().hide();
+                $("label[for='j_rs_end']").parent().hide();
+            }
+        } else {
+            $("label[for='l_region_start']").parent().hide();
+            $("label[for='l_region_end']").parent().hide();
+            $("label[for='utr_5_prime_start']").parent().hide();
+            $("label[for='utr_5_prime_end']").parent().hide();
+            $("label[for='start_5prime_ext']").parent().hide();
+            $("label[for='end_5prime_ext']").parent().hide();
+            $("label[for='v_rs_start']").parent().hide();
+            $("label[for='v_rs_end']").parent().hide();
+            $("label[for='d_rs_3_prime_start']").parent().hide();
+            $("label[for='d_rs_3_prime_end']").parent().hide();
+            $("label[for='d_rs_5_prime_start']").parent().hide();
+            $("label[for='d_rs_5_prime_end']").parent().hide();
+            $("label[for='j_rs_start']").parent().hide();
+            $("label[for='j_rs_end']").parent().hide();
+        }
+    }
+
+    function j_display() {
+        if($("#domain").val() == 'J') {
+            $("label[for='j_cdr3_end']").parent().show();
+            $("label[for='codon_frame']").parent().show();
+        } else {
+            $("label[for='j_cdr3_end']").parent().hide();
+            $("label[for='codon_frame']").parent().hide();
+        }
+    }
+
+    $(document).ready(function ()
+    {
+        utr_display();
+        j_display();
+
+        {% if form.title.errors or form.body.errors %}
+           $('#publish_btn').trigger('click');
+        {% endif %}
+    });
+
+
+    $("#inference_type").change( function()
+    {
+        utr_display();
+        j_display()
+    });
+
+    $("#domain").change( function()
+    {
+        utr_display();
+        j_display()
+    });
+
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+    });
+
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    var jump = '';
+
+    skip_to_anchor = function(anchor) {
+        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+    };
+
+    {% if jump %}
+        skip_to_anchor("{{ jump }}");
+    {% else %}
+        if (url.match('#')) {
+            anchor = url.split('#')[1];
+            skip_to_anchor(anchor)
+        }
+    {% endif %}
+
+    $(document).ready(function ()
+    {
+        if(jump != '') {
+            window.location.hash = "";
+            window.location.hash = "#" + jump
+        }
+    });
+
+    $('#messageModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var type = button.data('type');
+        var action = button.data('action');
+        var header = button.data('header');
+        var title = button.data('title');
+        var instructions = button.data('instr');
+        var modal = $(this);
+        modal.find('#type').val(type);
+        modal.find('#action').val(action);
+        modal.find('#title').val(title);
+        modal.find('.modal-title').text(header);
+        modal.find('.modal-instructions').text(instructions);
+
+        if(type == 'note' && action != 'note') {
+            modal.find('#title').hide();
+            modal.find('#title').val('Title');
+            modal.find('[for=title]').hide()
+        }
+
+        diag_class = '';
+        if(button.hasClass("btn-warning")) {
+            modal.addClass("bootstrap-dialog type-warning");
+            modal.find('#save_btn').addClass("btn-warning")
+        } else if(button.hasClass("btn-danger")) {
+            modal.addClass("bootstrap-dialog type-danger");
+            modal.find('#save_btn').addClass("btn-danger")
+        } else {
+            modal.find('#save_btn').addClass("btn-primary")
+        }
+    })
+
+    </script>
+
+
+{% endblock %}

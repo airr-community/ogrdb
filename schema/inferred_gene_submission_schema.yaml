@@ -133,6 +133,11 @@ JournalEntry:
             foreign_key: submission.id
             relationship: [submission, Submission, journal_entries]
             hide: true
+        gene_description_id:
+            type: integer
+            foreign_key: gene_description.id
+            relationship: [gene_description, GeneDescription, journal_entries]
+            hide: true
         parent_id:
             type: integer
             foreign_key: journal_entry.id
@@ -324,6 +329,11 @@ Acknowledgements:
             hide: true
             foreign_key: submission.id
             relationship: [submission, Submission, acknowledgements]
+        description_id:
+            type: integer
+            hide: true
+            foreign_key: gene_description.id
+            relationship: [gene_description, GeneDescription, acknowledgements]
 
 
 # Inference Tool
@@ -626,10 +636,17 @@ GeneDescription:
     type: object
     occurrence: multiple
     properties:
+        sequence_name:
+            type: string
+            description: The canonical name of this sequence (i.e., the name which the curators determine should be used by preference)
+            label: Sequence Name
+            hide: true
         description_id:
             type: string
             description: Unique identifier of this gene sequence
             label: Sequence ID
+            hide: true
+            nocopy: true
         author:
             type: string
             description: Corresponding author
@@ -642,122 +659,170 @@ GeneDescription:
             type: integer
             description: Version number of this record, updated whenever a revised version is published or released
             label: Version
+            hide: true
         release_date:
             type: date
             description: Date of this release
             label: Release Date
+            hide: true
         release_description:
             type: text
             description: Brief descriptive notes of the reason for this release and the changes embodied
-            label: release notes
+            label: Release Notes
+            hide: true
             rows: 10
         organism:
             type: string
             description: Binomial designation of subject's species
             label: Organism
-        sequence_name:
-            type: string
-            description: The canonical name of this sequence (i.e., the name which the curators determine should be used by preference)
-            label: Sequence Name
+            hide: true
         alt_names:
-            type: list of strings
+            type: string
             description: Alternative names for this sequence
             label: Alternative names
         locus:
-            type: [Heavy, Light-Kappa, Light-Lambda, Alpha, Beta, Gamma]
+            type: [Heavy, Light-Kappa, Light-Lambda, Alpha, Beta, Gamma, Delta]
             description: Gene locus
             label: Locus
+            tableview: true
+            width: narrow
         domain:
             type: [V,D,J,C]
             description: Sequence domain (V, D, J or Constant)
             label: Domain
+            tableview: true
+            width: narrow
         functional:
             type: boolean
             description: Functional
+            width: narrow
         inference_type:
             type: [Genomic and Rearranged, Genomic Only, Rearranged Only]
             description: Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)
         affirmation_level:
-            type: [1,2,3]
+            type: [0,1,2,3]
             description: Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)
             label: Affirmation Level
+            tableview: true
+            width: narrow
         status:
             type: [published,draft,retired,withdrawn]
             description: Status of record
             label: status
+            width: narrow
         gene_subgroup:
             type: string
             description: Gene subgroup (family), as (and if) identified for this species and gene
             label: Gene Subgroup
+            width: narrow
         subgroup_designation:
             type: string
             description: Gene designation within this subgroup
             label: Gene Designation
+            width: narrow
         allele_designation:
             type: string
             description: Allele designation
             label: Allele Designation
+            width: narrow
         sequence:
             type: IUPAC
             description: nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences
             label: Full Sequence
+            rows: 8
         coding_seq_imgt:
             type: IUPAC GAPPED
             description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
             label: Coding Sequence
+            rows: 12
         codon_frame:
             type: [1,2,3]
             description: Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)
             label: Codon Frame
+            width: narrow
         j_cdr3_end:
             type: integer
             description: In the case of a J-gene, the co-ordinate in the Coding Sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)
             label: J CDR3 End
+            nonblank: false
+            width: narrow
         utr_5_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 5 prime UTR
-            label: UTR 5' Start
+            label: UTR 5\' Start
+            nonblank: false
+            width: narrow
         utr_5_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 5 prime UTR
-            label: UTR 5' End
+            label: UTR 5\' End
+            nonblank: false
+            width: narrow
         l_region_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of L region
             label: L Region Start
+            nonblank: false
+            width: narrow
         l_region_end:
             type: integer
             description: End co-ordinate in the Full Sequence of L region
             label: L Region End
+            nonblank: false
+            width: narrow
         v_rs_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of V recombination site (V genes only)
+            nonblank: false
+            width: narrow
         v_rs_end:
             type: integer
             description: End co-ordinate in the Full Sequence of V recombination site (V-genes only)
+            nonblank: false
+            width: narrow
         d_rs_3_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
         d_rs_3_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
         d_rs_5_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
         d_rs_5_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
         j_rs_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of J recombination site (J-genes only)
+            nonblank: false
+            width: narrow
         j_rs_end:
             type: integer
             description: End co-ordinate in the Full Sequence of J recombination site (J-genes only)
+            nonblank: false
+            width: narrow
         paralogs:
-            type: list of strings
+            type: string
             description: Canonical names of 0 or more paralogs
         notes:
             type: text
             description: Notes
             label: Notes
             rows: 20
+            hide: true
+        inferred_sequences:
+            type: list of inferred sequences
+            many-relationship: [InferredSequence, gene_descriptions]
+            hide: true
+
+
+

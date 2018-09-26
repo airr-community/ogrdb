@@ -18,6 +18,8 @@ class JournalEntry(db.Model):
     body = db.Column(db.Text())
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'journal_entries')
+    gene_description_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
+    gene_description = db.relationship('GeneDescription', backref = 'journal_entries')
     parent_id = db.Column(db.Integer, db.ForeignKey('journal_entry.id'))
     children = db.relationship('JournalEntry', backref = backref('parent', remote_side = [id]))
 
@@ -36,6 +38,16 @@ def save_JournalEntry(db, object, form, new=False):
 def populate_JournalEntry(db, object, form):   
     form.title.data = object.title
     form.body.data = object.body
+
+
+
+
+def copy_JournalEntry(c_from, c_to):   
+    c_to.date = c_from.date
+    c_to.author = c_from.author
+    c_to.type = c_from.type
+    c_to.title = c_from.title
+    c_to.body = c_from.body
 
 
 

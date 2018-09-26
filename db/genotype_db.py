@@ -82,6 +82,29 @@ def populate_Genotype(db, object, form):
 
 
 
+
+def copy_Genotype(c_from, c_to):   
+    c_to.sequence_id = c_from.sequence_id
+    c_to.sequences = c_from.sequences
+    c_to.closest_reference = c_from.closest_reference
+    c_to.closest_host = c_from.closest_host
+    c_to.nt_diff = c_from.nt_diff
+    c_to.nt_substitutions = c_from.nt_substitutions
+    c_to.aa_diff = c_from.aa_diff
+    c_to.aa_substitutions = c_from.aa_substitutions
+    c_to.unmutated_frequency = c_from.unmutated_frequency
+    c_to.unmutated_sequences = c_from.unmutated_sequences
+    c_to.unmutated_umis = c_from.unmutated_umis
+    c_to.allelic_percentage = c_from.allelic_percentage
+    c_to.unique_ds = c_from.unique_ds
+    c_to.unique_js = c_from.unique_js
+    c_to.unique_cdr3s = c_from.unique_cdr3s
+    c_to.haplotyping_locus = c_from.haplotyping_locus
+    c_to.haplotyping_ratio = c_from.haplotyping_ratio
+    c_to.nt_sequence = c_from.nt_sequence
+
+
+
 class Genotype_table(StyledTable):
     id = Col("id", show=False)
     sequence_id = StyledCol("Allele name", tooltip="Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)")

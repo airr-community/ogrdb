@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} New Sequence - {{ species }}{% endblock %}
+
+{% block c_body %}
+
+    <div class="row pad">
+
+        <form action="{{ url_for('new_sequence', species=species) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+
+            {{ render_field_with_errors(form.new_name, class="form-control") }}
+
+            <p class="col-sm-offset-1">Please select the submission and inferred sequence on which this affirmation should be based.</p>
+            {{ render_field_with_errors(form.submission_id, class="form-control") }}
+
+            {{ render_field_with_errors(form.sequence_name, class="form-control") }}
+
+            <div class="form-group row col-sm-10">
+                {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
+                {{ form.create(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    $("#submission_id").change(function(e) {
+        $("#sequence_name").empty()
+        var submission_id = $(this).find("option:selected").val();
+
+        if(submission_id != '') {
+            $.ajax({
+                type: "GET",
+                url: '{{ url_for("get_sequences", id="xxx") }}'.replace("xxx", submission_id),
+                success: function (data) {
+                    var opts = $.parseJSON(data);
+                    $.each(opts, function (i, d) {
+                        $("#sequence_name").append('<option value="' + d[0] + '">' + d[1] + '</option>');
+                    });
+                }
+            })
+        }
+    });
+    </script>
+{% endblock %}

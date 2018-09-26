@@ -27,7 +27,7 @@ class MessageHeaderCol(StyledCol):
 
 class MessageBodyCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return item.body if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, item.body)
+        return Markup(textile.textile(item.body)) if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, Markup(textile.textile(item.body)))
 
 class DelegateForm(FlaskForm):
     delegate = SelectField('Delegate', coerce=int)

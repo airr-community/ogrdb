@@ -95,10 +95,12 @@ class EditableAckTable(EditableTable):
             try:
                 if len(self.form.ack_name.data) < 1:
                     raise ValueError('Name cannot be blank.', self.form.ack_name.errors)
-                if self.form.ack_name.data in [i.ack_name for i in self.items]:
-                    raise ValueError('That name is already in the table.', self.form.ack_name.errors)
                 if len(self.form.ack_institution_name.data) < 1:
                     raise ValueError('Institution cannot be blank.', self.form.ack_institution_name.errors)
+
+                for item in self.items:
+                    if self.form.ack_name.data == item.ack_name and self.form.ack_institution_name.data == item.ack_institution_name:
+                        raise ValueError('That row is already in the table..', self.form.ack_institution_name.errors)
 
                 a = Acknowledgements()
                 a.ack_name = self.form.ack_name.data

@@ -7,6 +7,7 @@ from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 
+
 import json
 from Bio import SeqIO
 import io
@@ -22,7 +23,7 @@ app.config.from_pyfile('secret.cfg')
 
 db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
-db.session.execute('SET @@GLOBAL.max_allowed_packet=100000000')
+db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
 
 mail = Mail(app)
 from mail import send_mail
@@ -33,6 +34,7 @@ from journal import *
 from db.userdb import User
 from db.submission_db import *
 from db.submission_list_table import *
+from db.sequence_list_table import *
 from db.repertoire_db import *
 from db.inference_tool_db import *
 from db.genotype_db import *
@@ -42,6 +44,8 @@ from db.genotype_view_table import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
 from db.notes_entry_db import *
+from db.gene_description_db import *
+from db.inferred_sequence_table import *
 
 admin_obj = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
@@ -53,13 +57,17 @@ from forms.aggregate_form import *
 from forms.cancel_form import *
 from forms.submission_view_form import *
 from forms.journal_entry_form import *
-from custom_logging import init_logging
+from forms.sequence_new_form import *
+from forms.gene_description_form import *
+from forms.gene_description_notes_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 migrate = Migrate(app, db)
 
 security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
+
+from custom_logging import init_logging
 
 init_logging(app, mail)
 
@@ -116,6 +124,7 @@ def submissions():
     tables['public'].table_id = 'public'
 
     return render_template('submission_list.html', tables=tables, show_completed=show_completed)
+
 
 @app.route('/new_submission', methods=['GET', 'POST'])
 @login_required
@@ -572,6 +581,7 @@ def check_genotype_description_view(id):
     return desc
 
 
+
 @app.route('/genotype/<id>')
 def genotype(id):
     desc = check_genotype_description_view(id)
@@ -723,4 +733,382 @@ def edit_inferred_sequence(id):
 @app.route('/render_page/<page>')
 def render_page(page):
     return render_template('static/%s' % page)
+
+def check_seq_view(id):
+    try:
+        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+
+        if not desc.can_see(current_user):
+            flash('You do not have rights to view that sequence.')
+
+        return desc
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+def check_seq_edit(id):
+    try:
+        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+
+        if not desc.can_edit(current_user):
+            flash('You do not have rights to edit that sequence.')
+            return None
+
+        return desc
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+def check_seq_draft(id):
+    try:
+        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+
+        if desc.status != 'published':
+            flash('Only published sequences can be cloned.')
+            return None
+
+        clones = db.session.query(GeneDescription).filter_by(sequence_name = desc.sequence_name).all()
+        for clone in clones:
+            if clone.status == 'draft':
+                flash('There is already a draft of that sequence')
+                return None
+
+        if not desc.can_draft(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return desc
+
+
+@app.route('/sequences', methods=['GET', 'POST'])
+def sequences():
+    tables = {}
+    show_withdrawn = False
+
+    if current_user.is_authenticated:
+        species = [s[0] for s in db.session.query(Committee.species).all()]
+        for sp in species:
+            if current_user.has_role(sp):
+                if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
+                    q = db.session.query(GeneDescription).filter(GeneDescription.organism==sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
+                    show_withdrawn = True
+                else:
+                    q = db.session.query(GeneDescription).filter(GeneDescription.organism==sp).filter(GeneDescription.status.in_(['draft']))
+                    show_withdrawn = False
+                results = q.all()
+
+                if 'species' not in tables:
+                    tables['species'] = {}
+                tables['species'][sp] = setup_sequence_list_table(results, current_user)
+                tables['species'][sp].table_id = sp
+
+    q = db.session.query(GeneDescription).filter_by(status='published')
+    results = q.all()
+    tables['affirmed'] = setup_sequence_list_table(results, current_user)
+    tables['affirmed'].table_id = 'affirmed'
+
+    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn)
+
+@app.route('/new_sequence/<species>', methods=['GET', 'POST'])
+def new_sequence(species):
+    if not current_user.has_role(species):
+        return redirect('/')
+
+    form = NewSequenceForm()
+    subs = db.session.query(Submission).filter(Submission.species==species).filter(Submission.submission_status.in_(['reviewing', 'complete', 'published'])).all()
+    form.submission_id.choices = [('', 'Select Submission')] +  [(s.submission_id, '%s (%s)' % (s.submission_id, s.submitter_name)) for s in subs]
+    form.sequence_name.choices = [(0, 'Select Sequence')]
+
+    if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
+        if form.cancel.data:
+            return redirect('/sequences')
+
+        try:
+            if form.new_name.data is None or len(form.new_name.data) < 1:
+                form.new_name.errors = ['Name cannot be blank.']
+                raise ValidationError()
+
+            if db.session.query(GeneDescription).filter_by(organism = species).filter_by(sequence_name = form.new_name.data).count() > 0:
+                form.new_name.errors = ['A sequence already exists with that name.']
+                raise ValidationError()
+
+            if form.submission_id.data == 0:
+                form.submission_id.errors = ['Please select a submission.']
+                raise ValidationError()
+
+            if form.sequence_name.data == 0:
+                form.sequence_name.errors = ['Please select a sequence.']
+                raise ValidationError()
+
+            sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
+            if sub.species != species or sub.submission_status == 'draft':
+                return redirect('/sequences')
+
+            seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
+
+            if seq is None or seq not in sub.inferred_sequences:
+                return redirect('/sequences')
+
+            gene_description = GeneDescription()
+            gene_description.sequence_name = form.new_name.data
+            gene_description.inferred_sequences.append(seq)
+            gene_description.sequence = seq.sequence_details.nt_sequence
+            gene_description.organism = species
+            gene_description.status = 'draft'
+            gene_description.author = current_user.name
+            gene_description.lab_address = current_user.address
+            gene_description.functional = True
+            gene_description.inference_type = 'Rearranged Only'
+            gene_description.release_version = 1
+            gene_description.affirmation_level = 0
+
+            # Parse the name, if it's tractable
+
+            try:
+                sn = gene_description.sequence_name
+                if sn[:2] == 'IG' or sn[:2] == 'TR':
+                    ld = {'H': 'Heavy', 'K': 'Light-Kappa', 'L': 'Light-Lambda', 'A': 'Alpha', 'B': 'Beta', 'G': 'Gamma', 'D': 'Delta'}
+                    gene_description.locus = ld[sn[2]]
+                    gene_description.domain = sn[3]
+                    if '-' in sn:
+                        snp = sn.split('-')
+                        gene_description.gene_subgroup = snp[0][4:]
+                        if '*' in snp[1]:
+                            snq = snp[1].split('*')
+                            gene_description.subgroup_designation = snq[0]
+                            gene_description.allele_designation = snq[1]
+                        else:
+                            gene_description.subgroup_designation = snp[1]
+                    elif '*' in sn:
+                        snq = sn.split('*')
+                        gene_description.gene_subgroup = snq[0][4:]
+                        gene_description.allele_designation = snq[1]
+                    else:
+                        gene_description.gene_subgroup = sn[4:]
+            except:
+                pass
+
+            db.session.add(gene_description)
+            db.session.commit()
+            gene_description.description_id = "A%05d" % gene_description.id
+            db.session.commit()
+            return redirect('/sequences')
+
+        except ValidationError as e:
+            return render_template('sequence_new.html', form=form, species=species)
+
+
+    return render_template('sequence_new.html', form=form, species=species)
+
+@app.route('/get_sequences/<id>', methods=['GET'])
+def get_sequences(id):
+    sub = check_sub_view(id)
+    if sub is None:
+        return ('')
+
+    seqs = []
+    for seq in sub.inferred_sequences:
+        if seq.gene_descriptions.count() == 0:
+            seqs.append((seq.id, seq.sequence_details.sequence_id))
+        else:
+            add = True
+            for desc in seq.gene_descriptions:
+                if desc.status in ['published', 'draft']:
+                    add = False
+                    break
+
+            if add:
+                seqs.append((seq.id, seq.sequence_details.sequence_id))
+
+    return json.dumps(seqs)
+
+@app.route('/seq_add_inference/<id>', methods=['GET', 'POST'])
+def seq_add_inference(id):
+    seq = check_seq_edit(id)
+    if seq is None:
+        return redirect('/sequences')
+
+    form = NewSequenceForm()
+    subs = db.session.query(Submission).filter(Submission.species==seq.organism).filter(Submission.submission_status.in_(['reviewing', 'complete', 'published'])).all()
+    form.create.label.text = "Add"
+    form.submission_id.choices = [('', 'Select Submission')] +  [(s.submission_id, '%s (%s)' % (s.submission_id, s.submitter_name)) for s in subs]
+    form.sequence_name.choices = [(0, 'Select Sequence')]
+
+    if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
+        if form.cancel.data:
+            return redirect('/sequences')
+
+        try:
+            if form.submission_id.data == 0:
+                form.submission_id.errors = ['Please select a submission.']
+                raise ValidationError()
+
+            if form.sequence_name.data == 0:
+                form.sequence_name.errors = ['Please select a sequence.']
+                raise ValidationError()
+        except ValidationError as e:
+            return render_template('sequence_add.html', name=seq.sequence_name, id=id)
+
+        sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
+        if sub.species != seq.organism or sub.submission_status == 'draft':
+            flash('Submission is for the wrong species, or still in draft.')
+            return redirect(url_for(sequences, id=id))
+
+        inferred_seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
+
+        if inferred_seq is None or inferred_seq not in sub.inferred_sequences:
+            flash('Inferred sequence cannot be found in that submission.')
+            return redirect(url_for(sequences, id=id))
+
+        seq.inferred_sequences.append(inferred_seq)
+        db.session.commit()
+        return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
+
+    return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
+
+
+@app.route('/sequence/<id>', methods=['GET'])
+def sequence(id):
+    seq = check_seq_view(id)
+    if seq is None:
+        return redirect('/sequences')
+
+    form = GeneDescriptionForm()
+    return render_template('sequence_view.html', form=form)
+
+@app.route('/edit_sequence/<id>', methods=['GET', 'POST'])
+def edit_sequence(id):
+    seq = check_seq_edit(id)
+    if seq is None:
+        return redirect('/sequences')
+
+    tables = setup_sequence_edit_tables(seq)
+    desc_form = GeneDescriptionForm(obj=seq)
+    notes_form = GeneDescriptionNotesForm(obj=seq)
+    hidden_return_form = HiddenReturnForm()
+    history_form = JournalEntryForm()
+    form = AggregateForm(desc_form, notes_form, history_form, hidden_return_form, tables['ack'].form)
+
+    if request.method == 'POST':
+        form.sequence.data = "".join(form.sequence.data.split())
+        form.coding_seq_imgt.data = "".join(form.coding_seq_imgt.data.split())
+
+        # Ignore journal validators, unless we are saving a journal entry
+
+        form.validate()
+        valid = True
+
+        for field in form._fields:
+            if len(form[field].errors) > 0:
+                if field in history_form._fields and 'history_btn' not in request.form:
+                    form[field].errors = []
+                else:
+                    valid = False
+
+        if valid:
+            try:
+                validation_result = process_table_updates({'ack': tables['ack']}, request, db)
+                if not validation_result.valid:
+                    raise ValidationError()
+
+                seq.notes = form.notes.data      # this was left out of the form definition in yaml so it could go on its own tab
+                save_GeneDescription(db, seq, form)
+
+                if form.action.data == 'published':
+                    old_seq = db.session.query(GeneDescription).filter_by(description_id = seq.description_id, status='published').one_or_none()
+                    if old_seq:
+                        old_seq.status = 'superceded'
+                        seq.release_version = old_seq.release_version + 1
+                    else:
+                        seq.release_version = 1
+
+                    seq.release_date = datetime.date.today()
+                    add_history(current_user, 'Version %s published' % seq.release_version, seq, db, body = form.body.data)
+                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_released', reviewer=current_user, user_name=seq.author, sequence=seq, comment=form.body.data)
+                    seq.status = 'published'
+                    db.session.commit()
+                    flash('Sequence published')
+                    return redirect('/sequences')
+
+            except ValidationError:
+                return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version+1)
+
+            if validation_result.tag:
+                return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
+            else:
+                return redirect(url_for('sequences'))
+
+    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version+1)
+
+
+@app.route('/delete_sequence/<id>', methods=['POST'])
+def delete_sequence(id):
+    seq = check_seq_edit(id)
+    if seq is not None:
+        seq.delete_dependencies(db)
+        db.session.delete(seq)
+        db.session.commit()
+    return ''
+
+
+@app.route('/delete_inferred_sequence', methods=['POST'])
+def delete_inferred_sequence():
+    seq = check_seq_edit(request.form['id'])
+    if seq is not None:
+        inferred_seq = db.session.query(InferredSequence).filter(InferredSequence.id==request.form['inf']).one_or_none()
+        if inferred_seq is not None and inferred_seq in seq.inferred_sequences:
+            seq.inferred_sequences.remove(inferred_seq)
+            db.session.commit()
+    return ''
+
+
+@app.route('/draft_sequence/<id>', methods=['POST'])
+def draft_sequence(id):
+    seq = check_seq_draft(id)
+    if seq is not None:
+        new_seq = GeneDescription()
+        db.session.add(new_seq)
+        db.session.commit()
+        copy_GeneDescription(seq, new_seq)
+        new_seq.description_id = seq.description_id
+        new_seq.status = 'draft'
+
+        for inferred_sequence in seq.inferred_sequences:
+            new_seq.inferred_sequences.append(inferred_sequence)
+
+        for journal_entry in seq.journal_entries:
+            new_entry = JournalEntry()
+            copy_JournalEntry(journal_entry, new_entry)
+            new_seq.journal_entries.append(new_entry)
+
+        db.session.commit()
+    return ''
+
+
+@app.route('/withdraw_sequence/<id>', methods=['POST'])
+def withdraw_sequence(id):
+    seq = check_seq_draft(id)
+    if seq is not None:
+        seq.status = 'withdrawn'
+        db.session.commit()
+        flash('Sequence %s withdrawn' % seq.sequence_name)
+    return ''
 

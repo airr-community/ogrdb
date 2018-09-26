@@ -27,6 +27,8 @@ class ValidOrcidID(object):
                 if len(f) != 4:
                     raise ValidationError(self.message)
                 i = int(f)
+        except ValidationError as e:
+            raise ValidationError(e)
         except:
             raise ValidationError(self.message)
 
@@ -43,9 +45,13 @@ class ValidNucleotideSequence(object):
 
     def __call__(self, form, field):
         try:
-            for c in list(field.data.upper()):
-                if c not in self.permitted:
-                    raise ValidationError(self.message)
+            for c in list(field.data):
+                if c.upper() not in self.permitted:
+                    message = self.message
+                    message = message + " ('%s' is not allowed)" % c
+                    raise ValidationError(message)
+        except ValidationError as e:
+            raise ValidationError(e)
         except:
             raise ValidationError(self.message)
 

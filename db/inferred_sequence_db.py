@@ -64,6 +64,21 @@ def populate_InferredSequence(db, object, form):
 
 
 
+
+def copy_InferredSequence(c_from, c_to):   
+    c_to.inferred_extension = c_from.inferred_extension
+    c_to.ext_3prime = c_from.ext_3prime
+    c_to.start_3prime_ext = c_from.start_3prime_ext
+    c_to.end_3prime_ext = c_from.end_3prime_ext
+    c_to.ext_5prime = c_from.ext_5prime
+    c_to.start_5prime_ext = c_from.start_5prime_ext
+    c_to.end_5prime_ext = c_from.end_5prime_ext
+    c_to.seq_accession_no = c_from.seq_accession_no
+    c_to.deposited_version = c_from.deposited_version
+    c_to.run_ids = c_from.run_ids
+
+
+
 class InferredSequence_table(StyledTable):
     id = Col("id", show=False)
 

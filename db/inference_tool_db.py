@@ -45,6 +45,16 @@ def populate_InferenceTool(db, object, form):
 
 
 
+
+def copy_InferenceTool(c_from, c_to):   
+    c_to.tool_settings_name = c_from.tool_settings_name
+    c_to.tool_name = c_from.tool_name
+    c_to.tool_version = c_from.tool_version
+    c_to.tool_starting_database = c_from.tool_starting_database
+    c_to.tool_settings = c_from.tool_settings
+
+
+
 class InferenceTool_table(StyledTable):
     id = Col("id", show=False)
     tool_settings_name = StyledCol("Tool/Settings Name", tooltip="Descriptive name for this combination of tool and settings")

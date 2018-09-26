@@ -44,3 +44,47 @@
     </div>
 {% endmacro %}
 
+{% macro render_narrow_field_with_errors(field) %}
+    <div class="form-group">
+        {% if field.description %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+        {% else %}
+            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {% endif %}
+            <div class="col-sm-2">
+                {{ field(**kwargs)|safe }}
+            </div>
+            {% if field.errors %}
+            <div class="col-sm-2 col-sm-offset-3 red">
+                <ul>
+                {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro render_wide_field_with_errors(field) %}
+    <div class="form-group">
+        {% if field.description %}
+            {{ field.label(class="col-sm-2 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+        {% else %}
+            {{ field.label(class="col-sm-2 control-label") }}
+        {% endif %}
+            <div class="col-sm-9">
+                {{ field(**kwargs)|safe }}
+            </div>
+            {% if field.errors %}
+            <div class="col-sm-9 col-sm-offset-2 red">
+                <ul>
+                {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+    </div>
+{% endmacro %}
+
