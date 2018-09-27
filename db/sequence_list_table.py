@@ -14,12 +14,12 @@ class SequenceListActionCol(StyledCol):
             fmt_string.append(item.submission_id)
 
         if item.editable:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil"></span>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
-            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item.id))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
+            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (item.id))
 
         if item.draftable:
-            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-duplicate"></span>&nbsp;</button>' % (item.id))
-            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item.id))
+            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-warning icon_back" id="%s"><span class="glyphicon glyphicon-duplicate data-toggle="tooltip" title="Create Draft""></span>&nbsp;</button>' % (item.id))
+            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (item.id))
 
 
         return ''.join(fmt_string)

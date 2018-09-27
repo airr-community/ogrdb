@@ -30,6 +30,11 @@ Submission:
             label: Submission Status
             readonly: true
             tableview: true
+        public:
+            type: boolean
+            description: True if one or more inferences have been affirmed
+            readonly: true
+            hide: true
         submitter_name:
             type: string
             description: Full contact information of the submitter, i.e. the person depositing the data
@@ -641,12 +646,14 @@ GeneDescription:
             description: The canonical name of this sequence (i.e., the name which the curators determine should be used by preference)
             label: Sequence Name
             hide: true
+            inview: true
         description_id:
             type: string
             description: Unique identifier of this gene sequence
             label: Sequence ID
             hide: true
             nocopy: true
+            inview: true
         author:
             type: string
             description: Corresponding author
@@ -659,23 +666,29 @@ GeneDescription:
             type: integer
             description: Version number of this record, updated whenever a revised version is published or released
             label: Version
+            tableview: true
             hide: true
+            inview: true
         release_date:
             type: date
             description: Date of this release
             label: Release Date
             hide: true
+            inview: true
         release_description:
             type: text
             description: Brief descriptive notes of the reason for this release and the changes embodied
             label: Release Notes
             hide: true
             rows: 10
+            inview: true
         organism:
             type: string
             description: Binomial designation of subject's species
             label: Organism
             hide: true
+            tableview: true
+            inview: true
         alt_names:
             type: string
             description: Alternative names for this sequence
@@ -696,8 +709,10 @@ GeneDescription:
             type: boolean
             description: Functional
             width: narrow
+            label: Functional
         inference_type:
             type: [Genomic and Rearranged, Genomic Only, Rearranged Only]
+            label: Inference Type
             description: Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)
         affirmation_level:
             type: [0,1,2,3]
@@ -708,7 +723,7 @@ GeneDescription:
         status:
             type: [published,draft,retired,withdrawn]
             description: Status of record
-            label: status
+            label: Status
             width: narrow
         gene_subgroup:
             type: string
@@ -812,6 +827,7 @@ GeneDescription:
             width: narrow
         paralogs:
             type: string
+            label: Paralogs
             description: Canonical names of 0 or more paralogs
         notes:
             type: text

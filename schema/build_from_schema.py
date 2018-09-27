@@ -307,14 +307,14 @@ def copy_%s(c_from, c_to):
 
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
-                    or 'hide' in schema[section]['properties'][sc_item]\
+                    or ('hide' in schema[section]['properties'][sc_item] and not 'inview' in schema[section]['properties'][sc_item])\
                     or 'foreign_key' in schema[section]['properties'][sc_item]\
                     or schema[section]['properties'][sc_item]['type'] == 'blob':        # don't put blobs in the view
                 continue
             if 'private' in schema[section]['properties'][sc_item]:
                 fo.write('    if private:\n    ')
             tooltip = (', "tooltip": "' + schema[section]['properties'][sc_item]['description'] + '"') if 'description' in schema[section]['properties'][sc_item] else ''
-            fo.write('    ret.items.append({"item": "%s", "value": sub.%s%s})\n' % (schema[section]['properties'][sc_item].get('label', sc_item), sc_item, tooltip))
+            fo.write('    ret.items.append({"item": "%s", "value": sub.%s%s, "field": "%s"})\n' % (schema[section]['properties'][sc_item].get('label', sc_item), sc_item, tooltip, sc_item))
         fo.write('    return ret\n\n')
 
 

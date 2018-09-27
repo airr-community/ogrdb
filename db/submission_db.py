@@ -16,6 +16,7 @@ class Submission(db.Model, SubmissionMixin):
     submission_id = db.Column(db.String(1000))
     submission_date = db.Column(db.DateTime)
     submission_status = db.Column(db.String(255))
+    public = db.Column(db.Boolean)
     submitter_name = db.Column(db.String(1000))
     submitter_address = db.Column(db.String(1000))
     submitter_email = db.Column(db.String(255))
@@ -59,6 +60,7 @@ def copy_Submission(c_from, c_to):
     c_to.submission_id = c_from.submission_id
     c_to.submission_date = c_from.submission_date
     c_to.submission_status = c_from.submission_status
+    c_to.public = c_from.public
     c_to.submitter_name = c_from.submitter_name
     c_to.submitter_address = c_from.submitter_address
     c_to.submitter_email = c_from.submitter_email
@@ -88,14 +90,14 @@ class Submission_view(Table):
 
 def make_Submission_view(sub, private = False):
     ret = Submission_view([])
-    ret.items.append({"item": "Submission ID", "value": sub.submission_id, "tooltip": "Unique ID assigned by IARC on recipt of submission"})
-    ret.items.append({"item": "Submission Date", "value": sub.submission_date, "tooltip": "Date submission received"})
-    ret.items.append({"item": "Submission Status", "value": sub.submission_status, "tooltip": "Status of submission"})
-    ret.items.append({"item": "Submitter", "value": sub.submitter_name, "tooltip": "Full contact information of the submitter, i.e. the person depositing the data"})
-    ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institutional address of submitter"})
+    ret.items.append({"item": "Submission ID", "value": sub.submission_id, "tooltip": "Unique ID assigned by IARC on recipt of submission", "field": "submission_id"})
+    ret.items.append({"item": "Submission Date", "value": sub.submission_date, "tooltip": "Date submission received", "field": "submission_date"})
+    ret.items.append({"item": "Submission Status", "value": sub.submission_status, "tooltip": "Status of submission", "field": "submission_status"})
+    ret.items.append({"item": "Submitter", "value": sub.submitter_name, "tooltip": "Full contact information of the submitter, i.e. the person depositing the data", "field": "submitter_name"})
+    ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institutional address of submitter", "field": "submitter_address"})
     if private:
-        ret.items.append({"item": "Submitter Email", "value": sub.submitter_email, "tooltip": "Preferred email address of submitter"})
-    ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species"})
-    ret.items.append({"item": "Ethnicity", "value": sub.population_ethnicity, "tooltip": "Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)"})
+        ret.items.append({"item": "Submitter Email", "value": sub.submitter_email, "tooltip": "Preferred email address of submitter", "field": "submitter_email"})
+    ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})
+    ret.items.append({"item": "Ethnicity", "value": sub.population_ethnicity, "tooltip": "Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)", "field": "population_ethnicity"})
     return ret
 

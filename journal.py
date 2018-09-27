@@ -14,9 +14,9 @@ def add_note(user, title, body, obj, db, parent_id=None):
     journal_entry.date = datetime.datetime.now()
     journal_entry.title = title
     journal_entry.body = textile.textile(body)
-    if type(obj) is type(Submission):
+    if hasattr(obj, 'submission_id'):
         journal_entry.submission = obj
-    elif type(obj) is type(GeneDescription):
+    elif hasattr(obj, 'description_id'):
         journal_entry.gene_description = obj
     if parent_id:
         journal_entry.parent_id = parent_id

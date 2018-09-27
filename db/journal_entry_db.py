@@ -70,7 +70,7 @@ class JournalEntry_view(Table):
 
 def make_JournalEntry_view(sub, private = False):
     ret = JournalEntry_view([])
-    ret.items.append({"item": "Note title", "value": sub.title, "tooltip": "title of entry"})
-    ret.items.append({"item": "Note", "value": sub.body, "tooltip": "body text of entry"})
+    ret.items.append({"item": "Note title", "value": sub.title, "tooltip": "title of entry", "field": "title"})
+    ret.items.append({"item": "Note", "value": sub.body, "tooltip": "body text of entry", "field": "body"})
     return ret
 

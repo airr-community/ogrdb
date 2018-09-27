@@ -143,19 +143,19 @@
 
         </form>
         {% if status == 'reviewing' %}
+            {% if not sub.public %}
             <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="draft"
                     data-header="Return Submission to Submitter" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Submitter" id="draft">Return to Submitter</button>
-            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
-                    data-header="Publish Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
-                    data-title="Submission {{ id }} - Published" id="published">Publish</button>
+            {% endif %}
+
             <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="complete"
-                    data-header="Complete Submission without publication" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-header="Complete Review" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Completed" id="complete">Complete</button>
-        {% elif (status == 'complete' or status == 'published') %}
-            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
-                    data-header="Un-Publish Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
-                    data-title="Submission {{ id }} - Returned to Review" id="draft">Un-Publish Submission</button>
+        {% elif (status == 'complete') %}
+            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
+                    data-header="Un-Complete Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Returned to Review" id="draft">Un-Complete Submission</button>
         {% endif %}
     </div>
     {% endif %}
@@ -215,10 +215,25 @@
         modal.find('.modal-title').text(header);
         modal.find('.modal-instructions').text(instructions);
 
-        if(type == 'note' && action != 'note') {
-            modal.find('#title').hide();
-            modal.find('#title').val('Title');
-            modal.find('[for=title]').hide()
+        if(type == 'note') {
+            if(action != 'note') {
+                modal.find('#title').hide();
+                modal.find('#title').val('Title');  // dummy value for validation
+                modal.find('[for=title]').hide();
+
+                modal.on('shown.bs.modal', function () {
+                    $('#body').focus()
+                })
+            }
+            else {
+                modal.find('#title').show();
+                modal.find('#title').val('');
+                modal.find('[for=title]').show();
+
+                modal.on('shown.bs.modal', function () {
+                    $('#title').focus()
+                })
+            }
         }
 
         diag_class = '';
@@ -231,6 +246,8 @@
         } else {
             modal.find('#save_btn').addClass("btn-primary")
         }
+
+
     })
 
     </script>

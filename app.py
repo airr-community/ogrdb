@@ -20,6 +20,7 @@ app = Flask(__name__)
 bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
+admin_obj = Admin(app, template_mode='bootstrap3')
 
 db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
@@ -47,7 +48,6 @@ from db.notes_entry_db import *
 from db.gene_description_db import *
 from db.inferred_sequence_table import *
 
-admin_obj = Admin(app, template_mode='bootstrap3')
 from forms.useradmin import *
 from forms.submission_form import *
 from forms.repertoire_form import *
@@ -60,6 +60,7 @@ from forms.journal_entry_form import *
 from forms.sequence_new_form import *
 from forms.gene_description_form import *
 from forms.gene_description_notes_form import *
+from forms.sequence_view_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -118,7 +119,7 @@ def submissions():
                 tables['species'][sp] = setup_submission_list_table(results, current_user)
                 tables['species'][sp].table_id = sp
 
-    q = db.session.query(Submission).filter_by(submission_status='published')
+    q = db.session.query(Submission).filter_by(public=1)
     results = q.all()
     tables['public'] = setup_submission_list_table(results, current_user)
     tables['public'].table_id = 'public'
@@ -240,8 +241,8 @@ def edit_submission(id):
                 db.session.commit()
                 sub.notes_entries[0].notes_attachment_filename = request.files['notes_attachment'].filename
 
-            if 'notes' in request.form:
-                sub.notes_entries[0].notes = request.form['notes'].encode('utf-8')
+            if 'notes_text' in request.form:
+                sub.notes_entries[0].notes_text = request.form['notes_text'].encode('utf-8')
 
             db.session.commit()
 
@@ -333,7 +334,7 @@ def submission(id):
 
         if form.validate():
             if form.action.data == 'draft':
-                add_note(current_user, form.title.data, textile.textile('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile('Submission returned to Submitter with the following message:\r\n\r\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Submitter', sub, db)
                 send_mail('Submission %s returned to you from the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s returned to Submitter by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -341,26 +342,17 @@ def submission(id):
                 db.session.commit()
                 flash('Submission returned to Submitter')
                 return redirect('/submissions')
-            elif form.action.data == 'published':
-                add_note(current_user, form.title.data, textile.textile('Submission published with the following message to the Submitter:\n\n' + form.body.data), sub, db)
-                add_history(current_user, 'Submission published', sub, db)
-                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
-                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
-                sub.submission_status = 'published'
-                db.session.commit()
-                flash('Submission published')
-                return redirect('/submissions')
             elif form.action.data == 'complete':
-                add_note(current_user, form.title.data, textile.textile('Submission completed with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile('Submission completed with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission completed', sub, db)
-                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
-                send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s completed review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s completed review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'complete'
                 db.session.commit()
                 flash('Submission marked as complete')
                 return redirect('/submissions')
             elif form.action.data == 'review':
-                add_note(current_user, form.title.data, textile.textile('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_note(current_user, form.title.data, textile('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
                 add_history(current_user, 'Submission returned to Review', sub, db)
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
@@ -828,6 +820,7 @@ def sequences():
     return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn)
 
 @app.route('/new_sequence/<species>', methods=['GET', 'POST'])
+@login_required
 def new_sequence(species):
     if not current_user.has_role(species):
         return redirect('/')
@@ -919,6 +912,7 @@ def new_sequence(species):
     return render_template('sequence_new.html', form=form, species=species)
 
 @app.route('/get_sequences/<id>', methods=['GET'])
+@login_required
 def get_sequences(id):
     sub = check_sub_view(id)
     if sub is None:
@@ -927,7 +921,7 @@ def get_sequences(id):
     seqs = []
     for seq in sub.inferred_sequences:
         if seq.gene_descriptions.count() == 0:
-            seqs.append((seq.id, seq.sequence_details.sequence_id))
+            seqs.append((seq.id, "Gen: %s  |  Subj: %s  |  Seq: %s" % (seq.genotype_description.genotype_name, seq.genotype_description.genotype_subject_id, seq.sequence_details.sequence_id)))
         else:
             add = True
             for desc in seq.gene_descriptions:
@@ -941,6 +935,7 @@ def get_sequences(id):
     return json.dumps(seqs)
 
 @app.route('/seq_add_inference/<id>', methods=['GET', 'POST'])
+@login_required
 def seq_add_inference(id):
     seq = check_seq_edit(id)
     if seq is None:
@@ -991,10 +986,13 @@ def sequence(id):
     if seq is None:
         return redirect('/sequences')
 
-    form = GeneDescriptionForm()
-    return render_template('sequence_view.html', form=form)
+    form = FlaskForm()
+    tables = setup_sequence_view_tables(db, seq)
+    return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
+
 
 @app.route('/edit_sequence/<id>', methods=['GET', 'POST'])
+@login_required
 def edit_sequence(id):
     seq = check_seq_edit(id)
     if seq is None:
@@ -1040,9 +1038,28 @@ def edit_sequence(id):
                     else:
                         seq.release_version = 1
 
+                    # Mark any referenced submissions as public
+
+                    for inferred_sequence in seq.inferred_sequences:
+                        sub = inferred_sequence.submission
+                        if not inferred_sequence.submission.public:
+                            inferred_sequence.submission.public = True
+                            db.session.commit()
+                            add_history(current_user, 'Submission published', sub, db)
+                            send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, sequence=seq)
+                            send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, sequence=seq)
+
+                        # Make a note in submissionhistory if we haven't already
+                        title = 'Sequence %s listed in affirmation' % inferred_sequence.sequence_details.sequence_id
+                        entry = db.session.query(JournalEntry).filter_by(type = 'note', submission=sub, title=title).all()
+                        if not entry:
+                            add_note(current_user, title, textile('* Sequence: %s\n* Genotype: %s\n* Subject ID: %s\nis referenced in affirmation %s (sequence name %s)' %
+                                (inferred_sequence.sequence_details.sequence_id, inferred_sequence.genotype_description.genotype_name, inferred_sequence.genotype_description.genotype_subject_id, seq.description_id, seq.sequence_name)), sub, db)
+
                     seq.release_date = datetime.date.today()
                     add_history(current_user, 'Version %s published' % seq.release_version, seq, db, body = form.body.data)
                     send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_released', reviewer=current_user, user_name=seq.author, sequence=seq, comment=form.body.data)
+                    seq.release_description = form.body.data
                     seq.status = 'published'
                     db.session.commit()
                     flash('Sequence published')
@@ -1060,6 +1077,7 @@ def edit_sequence(id):
 
 
 @app.route('/delete_sequence/<id>', methods=['POST'])
+@login_required
 def delete_sequence(id):
     seq = check_seq_edit(id)
     if seq is not None:
@@ -1070,6 +1088,7 @@ def delete_sequence(id):
 
 
 @app.route('/delete_inferred_sequence', methods=['POST'])
+@login_required
 def delete_inferred_sequence():
     seq = check_seq_edit(request.form['id'])
     if seq is not None:
@@ -1081,6 +1100,7 @@ def delete_inferred_sequence():
 
 
 @app.route('/draft_sequence/<id>', methods=['POST'])
+@login_required
 def draft_sequence(id):
     seq = check_seq_draft(id)
     if seq is not None:
@@ -1104,6 +1124,7 @@ def draft_sequence(id):
 
 
 @app.route('/withdraw_sequence/<id>', methods=['POST'])
+@login_required
 def withdraw_sequence(id):
     seq = check_seq_draft(id)
     if seq is not None:

@@ -95,15 +95,15 @@ class InferredSequence_view(Table):
 
 def make_InferredSequence_view(sub, private = False):
     ret = InferredSequence_view([])
-    ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence"})
-    ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)"})
-    ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering"})
-    ret.items.append({"item": "3\' end", "value": sub.end_3prime_ext, "tooltip": "End co-ordinate of 3\' extension (if any) in IMGT numbering"})
-    ret.items.append({"item": "5\' Extension", "value": sub.ext_5prime, "tooltip": "Extending sequence at 5\' end (IMGT gapped)"})
-    ret.items.append({"item": "5\' start", "value": sub.start_5prime_ext, "tooltip": "Start co-ordinate of 5\' extension (if any) in IMGT numbering"})
-    ret.items.append({"item": "5\' end", "value": sub.end_5prime_ext, "tooltip": "End co-ordinate of 5\' extension (if any) in IMGT numbering"})
-    ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository"})
-    ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository"})
-    ret.items.append({"item": "Run Accession Numbers", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made"})
+    ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence", "field": "inferred_extension"})
+    ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)", "field": "ext_3prime"})
+    ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "start_3prime_ext"})
+    ret.items.append({"item": "3\' end", "value": sub.end_3prime_ext, "tooltip": "End co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "end_3prime_ext"})
+    ret.items.append({"item": "5\' Extension", "value": sub.ext_5prime, "tooltip": "Extending sequence at 5\' end (IMGT gapped)", "field": "ext_5prime"})
+    ret.items.append({"item": "5\' start", "value": sub.start_5prime_ext, "tooltip": "Start co-ordinate of 5\' extension (if any) in IMGT numbering", "field": "start_5prime_ext"})
+    ret.items.append({"item": "5\' end", "value": sub.end_5prime_ext, "tooltip": "End co-ordinate of 5\' extension (if any) in IMGT numbering", "field": "end_5prime_ext"})
+    ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository", "field": "seq_accession_no"})
+    ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository", "field": "deposited_version"})
+    ret.items.append({"item": "Run Accession Numbers", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made", "field": "run_ids"})
     return ret
 

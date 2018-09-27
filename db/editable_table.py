@@ -20,13 +20,13 @@ class ActionCol(StyledCol):
         fmt_string = []
 
         if self.view_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><span class="glyphicon glyphicon-sunglasses"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><span class="glyphicon glyphicon-sunglasses" data-toggle="tooltip" title="View Genotype"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
         if self.edit_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil"></span>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
         if self.delete_route:
-            fmt_string.append('<button onclick="delete_warn(this.id, \'%s\')" type="button" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (self.delete_message, url_for(self.delete_route, id=content)))
+            fmt_string.append('<button onclick="delete_warn(this.id, \'%s\')" type="button" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (self.delete_message, url_for(self.delete_route, id=content)))
         elif self.delete:
-            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs text-danger icon_back"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>'  % (self.cname, content, self.cname, content))
+            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs text-danger icon_back"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>'  % (self.cname, content, self.cname, content))
 
         return '&nbsp'.join(fmt_string)
 

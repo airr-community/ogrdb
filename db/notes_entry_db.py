@@ -60,7 +60,7 @@ class NotesEntry_view(Table):
 
 def make_NotesEntry_view(sub, private = False):
     ret = NotesEntry_view([])
-    ret.items.append({"item": "Notes", "value": sub.notes_text, "tooltip": "Notes from submitter accompanying submission"})
-    ret.items.append({"item": "Attachment File Name", "value": sub.notes_attachment_filename, "tooltip": "File attachment name"})
+    ret.items.append({"item": "Notes", "value": sub.notes_text, "tooltip": "Notes from submitter accompanying submission", "field": "notes_text"})
+    ret.items.append({"item": "Attachment File Name", "value": sub.notes_attachment_filename, "tooltip": "File attachment name", "field": "notes_attachment_filename"})
     return ret
 

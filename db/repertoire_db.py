@@ -62,7 +62,7 @@ class PubId_view(Table):
 
 def make_PubId_view(sub, private = False):
     ret = PubId_view([])
-    ret.items.append({"item": "PubMed ID", "value": sub.pubmed_id, "tooltip": "PubMed ID (e.g. 26543)"})
+    ret.items.append({"item": "PubMed ID", "value": sub.pubmed_id, "tooltip": "PubMed ID (e.g. 26543)", "field": "pubmed_id"})
     return ret
 
 
@@ -116,8 +116,8 @@ class ForwardPrimer_view(Table):
 
 def make_ForwardPrimer_view(sub, private = False):
     ret = ForwardPrimer_view([])
-    ret.items.append({"item": "Primer Name", "value": sub.fw_primer_name, "tooltip": "Primer name or quick description"})
-    ret.items.append({"item": "Primer Sequence", "value": sub.fw_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)"})
+    ret.items.append({"item": "Primer Name", "value": sub.fw_primer_name, "tooltip": "Primer name or quick description", "field": "fw_primer_name"})
+    ret.items.append({"item": "Primer Sequence", "value": sub.fw_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)", "field": "fw_primer_seq"})
     return ret
 
 
@@ -171,8 +171,8 @@ class ReversePrimer_view(Table):
 
 def make_ReversePrimer_view(sub, private = False):
     ret = ReversePrimer_view([])
-    ret.items.append({"item": "Primer Name", "value": sub.rv_primer_name, "tooltip": "Primer name or quick description"})
-    ret.items.append({"item": "Primer Sequence", "value": sub.rv_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)"})
+    ret.items.append({"item": "Primer Name", "value": sub.rv_primer_name, "tooltip": "Primer name or quick description", "field": "rv_primer_name"})
+    ret.items.append({"item": "Primer Sequence", "value": sub.rv_primer_seq, "tooltip": "primer sequence (may contain ambiguous characters)", "field": "rv_primer_seq"})
     return ret
 
 
@@ -233,9 +233,9 @@ class Acknowledgements_view(Table):
 
 def make_Acknowledgements_view(sub, private = False):
     ret = Acknowledgements_view([])
-    ret.items.append({"item": "Name", "value": sub.ack_name, "tooltip": "Name of individual to be acknowledged as contributing to this work"})
-    ret.items.append({"item": "Institution", "value": sub.ack_institution_name, "tooltip": "Individual's department and institution name"})
-    ret.items.append({"item": "ORCID ID", "value": sub.ack_ORCID_id, "tooltip": "Individual's ORCID Id, if available"})
+    ret.items.append({"item": "Name", "value": sub.ack_name, "tooltip": "Name of individual to be acknowledged as contributing to this work", "field": "ack_name"})
+    ret.items.append({"item": "Institution", "value": sub.ack_institution_name, "tooltip": "Individual's department and institution name", "field": "ack_institution_name"})
+    ret.items.append({"item": "ORCID ID", "value": sub.ack_ORCID_id, "tooltip": "Individual's ORCID Id, if available", "field": "ack_ORCID_id"})
     return ret
 
 
@@ -313,13 +313,13 @@ class Repertoire_view(Table):
 
 def make_Repertoire_view(sub, private = False):
     ret = Repertoire_view([])
-    ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)"})
-    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)"})
-    ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository"})
-    ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format"})
-    ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available"})
-    ret.items.append({"item": "Sequencing Platform", "value": sub.sequencing_platform, "tooltip": "Designation of sequencing instrument used"})
-    ret.items.append({"item": "Read Length", "value": sub.read_length, "tooltip": "Read length in bases for each direction"})
-    ret.items.append({"item": "Primers Overlapping?", "value": sub.primers_overlapping, "tooltip": "Do primers overlap with the stated sequence of any inferred allele?"})
+    ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)", "field": "repository_name"})
+    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)", "field": "rep_accession_no"})
+    ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository", "field": "dataset_url"})
+    ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format", "field": "miarr_compliant"})
+    ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available", "field": "miairr_link"})
+    ret.items.append({"item": "Sequencing Platform", "value": sub.sequencing_platform, "tooltip": "Designation of sequencing instrument used", "field": "sequencing_platform"})
+    ret.items.append({"item": "Read Length", "value": sub.read_length, "tooltip": "Read length in bases for each direction", "field": "read_length"})
+    ret.items.append({"item": "Primers Overlapping?", "value": sub.primers_overlapping, "tooltip": "Do primers overlap with the stated sequence of any inferred allele?", "field": "primers_overlapping"})
     return ret
 

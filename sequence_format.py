@@ -1,5 +1,7 @@
 # Functions for formatting sequences for display
 import itertools
+from Bio.Seq import Seq
+from Bio.Alphabet import IUPAC
 
 
 def chunks(l, n):
@@ -45,10 +47,10 @@ def format_imgt_v(seq, width):
     fmt_aa = ''
     for cd in chunks(seq, 3):
         fmt_seq += cd + ' '
-#        if '.' in cd or len(cd) < 3:           # commented out until we install biopython
-#            fmt_aa += '    '
-#        else:
-#            fmt_aa += ' ' + str(Seq(cd, IUPAC.unambiguous_dna).translate()) + '  '
+        if '.' in cd or len(cd) < 3:           # commented out until we install biopython
+            fmt_aa += '    '
+        else:
+            fmt_aa += ' ' + str(Seq(cd, IUPAC.unambiguous_dna).translate()) + '  '
 
     # this will deliberately truncate at the end of the shortest line - which will never be imgt_leg or imgt_num unless the sequence is longer than it should be...
     return splitlines(imgt_leg + '\n' + imgt_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0)

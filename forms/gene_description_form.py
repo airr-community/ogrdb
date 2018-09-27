@@ -12,10 +12,10 @@ class GeneDescriptionForm(FlaskForm):
     alt_names = StringField('Alternative names', [validators.Length(max=255)], description="Alternative names for this sequence")
     locus = SelectField('Locus', choices=[('Heavy', 'Heavy'), ('Light-Kappa', 'Light-Kappa'), ('Light-Lambda', 'Light-Lambda'), ('Alpha', 'Alpha'), ('Beta', 'Beta'), ('Gamma', 'Gamma'), ('Delta', 'Delta')], description="Gene locus")
     domain = SelectField('Domain', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('C', 'C')], description="Sequence domain (V, D, J or Constant)")
-    functional = BooleanField('functional', [], description="Functional")
-    inference_type = SelectField('inference_type', choices=[('Genomic and Rearranged', 'Genomic and Rearranged'), ('Genomic Only', 'Genomic Only'), ('Rearranged Only', 'Rearranged Only')], description="Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)")
+    functional = BooleanField('Functional', [], description="Functional")
+    inference_type = SelectField('Inference Type', choices=[('Genomic and Rearranged', 'Genomic and Rearranged'), ('Genomic Only', 'Genomic Only'), ('Rearranged Only', 'Rearranged Only')], description="Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)")
     affirmation_level = SelectField('Affirmation Level', choices=[('0', '0'), ('1', '1'), ('2', '2'), ('3', '3')], description="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
-    status = SelectField('status', choices=[('published', 'published'), ('draft', 'draft'), ('retired', 'retired'), ('withdrawn', 'withdrawn')], description="Status of record")
+    status = SelectField('Status', choices=[('published', 'published'), ('draft', 'draft'), ('retired', 'retired'), ('withdrawn', 'withdrawn')], description="Status of record")
     gene_subgroup = StringField('Gene Subgroup', [validators.Length(max=255)], description="Gene subgroup (family), as (and if) identified for this species and gene")
     subgroup_designation = StringField('Gene Designation', [validators.Length(max=255)], description="Gene designation within this subgroup")
     allele_designation = StringField('Allele Designation', [validators.Length(max=255)], description="Allele designation")
@@ -35,6 +35,6 @@ class GeneDescriptionForm(FlaskForm):
     d_rs_5_prime_end = IntegerField('d_rs_5_prime_end', [validators.Optional()], description="End co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)")
     j_rs_start = IntegerField('j_rs_start', [validators.Optional()], description="Start co-ordinate in the Full Sequence of J recombination site (J-genes only)")
     j_rs_end = IntegerField('j_rs_end', [validators.Optional()], description="End co-ordinate in the Full Sequence of J recombination site (J-genes only)")
-    paralogs = StringField('paralogs', [validators.Length(max=255)], description="Canonical names of 0 or more paralogs")
+    paralogs = StringField('Paralogs', [validators.Length(max=255)], description="Canonical names of 0 or more paralogs")
 
 

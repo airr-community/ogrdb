@@ -74,10 +74,10 @@ class InferenceTool_view(Table):
 
 def make_InferenceTool_view(sub, private = False):
     ret = InferenceTool_view([])
-    ret.items.append({"item": "Tool/Settings Name", "value": sub.tool_settings_name, "tooltip": "Descriptive name for this combination of tool and settings"})
-    ret.items.append({"item": "Tool Name", "value": sub.tool_name, "tooltip": "Name of the inference tool"})
-    ret.items.append({"item": "Tool Version", "value": sub.tool_version, "tooltip": "Version of the inference tool"})
-    ret.items.append({"item": "Starting Database", "value": sub.tool_starting_database, "tooltip": "Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)"})
-    ret.items.append({"item": "Settings", "value": sub.tool_settings, "tooltip": "Settings/configuration of the tool when used to provide the inferences"})
+    ret.items.append({"item": "Tool/Settings Name", "value": sub.tool_settings_name, "tooltip": "Descriptive name for this combination of tool and settings", "field": "tool_settings_name"})
+    ret.items.append({"item": "Tool Name", "value": sub.tool_name, "tooltip": "Name of the inference tool", "field": "tool_name"})
+    ret.items.append({"item": "Tool Version", "value": sub.tool_version, "tooltip": "Version of the inference tool", "field": "tool_version"})
+    ret.items.append({"item": "Starting Database", "value": sub.tool_starting_database, "tooltip": "Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)", "field": "tool_starting_database"})
+    ret.items.append({"item": "Settings", "value": sub.tool_settings, "tooltip": "Settings/configuration of the tool when used to provide the inferences", "field": "tool_settings"})
     return ret
 

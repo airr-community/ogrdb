@@ -1,5 +1,3 @@
 Dear IARC {{ submission.species }} Committee Member,
 
-The submission {{  url_for('submission', id=submission.submission_id, _external=True) }} has been published by {{ reviewer.name }}, with the following message to the submitter:
-
-{{ comment }}
+The submission {{  url_for('submission', id=submission.submission_id, _external=True) }} has been published by {{ reviewer.name }}, as a result of IARC's affirmation of sequence {{ url_for('sequence', id=sequence.id, _external=True) }}

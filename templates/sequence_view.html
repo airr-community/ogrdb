@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block pagetitle %} Sequence {{ sequence_name }}{% endblock %}
+
+{% block content %}
+    {% include 'sequence_popup.html' %}
+    {{ super() }}
+{% endblock %}
+
+{% block c_body %}
+
+    <div>
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation" class="active"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
+            <li role="presentation"><a href="#inf" aria-controls="inf" role="tab" data-toggle="tab" id="tab-inf">Inferences</a></li>
+            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
+            <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
+            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
+        </ul>
+
+        {{ form.hidden_tag() }}
+
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="det">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    {{ tables['gene_description'] }}
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="inf">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Inferences</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Inferences on which the sequence is based:</p>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                            {{ tables['inferred_sequences'] }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="ack">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Individuals acknowledged as contributing to this sequence:</p>
+                        <a name="ack"> </a>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            {{ tables['acknowledgements'] }}
+                        </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="notes">
+                <div class="row">
+                    {{ tables['notes'] }}
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="history">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        {% for t in tables['history'] %}
+                            {{ t }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+    {% include 'sequence_popup_script.html' %}
+
+{% endblock %}
