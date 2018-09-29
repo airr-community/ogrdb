@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block pagetitle %} Submitting Inferred Sequences with Ogre {% endblock %}
+{% block pagetitle %} Submitting Inferred Sequences with OGRDB {% endblock %}
 
 {% block c_body %}
     <div class="row">
@@ -14,7 +14,7 @@
 
     <h3>Pre-Requisites</h3>
 
-    <p>Before submitting inferred sequences with Ogre, you should have completed the Genbank/ENA Workflow. From this
+    <p>Before submitting inferred sequences with OGRDB, you should have completed the Genbank/ENA Workflow. From this
     workflow, you should have accession numbers for the folowing:</p>
 
         <ul>
@@ -23,13 +23,13 @@
             <li>The Inferred Sequences themselves</li>
         </ul>
 
-        <p>You will also need to <a href="/register">register</a> for an account with Ogre. Please note that the institution that you
+        <p>You will also need to <a href="/register">register</a> for an account with OGRDB. Please note that the institution that you
         provide at registration will be used in the submission. You can change this in your <a href="/profile">profile</a> after
         registration if necessary.</p>
 
     <h3>Submission Overview</h3>
 
-    <p>A submission is based around a single <i>Repertoire</i>. A Repertoire, in Ogre, is loosely equivalent to a BioProject in Genbank or a Study in ENA.
+    <p>A submission is based around a single <i>Repertoire</i>. A Repertoire, in OGRDB, is loosely equivalent to a BioProject in Genbank or a Study in ENA.
     It can contain multiple sequence sets (for example multiple timepoints) from multiple individuals of the same species. The same PCR primers must have been used
     in preparing each sequence set. The sequence sets must have been the subject of a published study (the publication does not need to relate
     to germline inference: it provides documentation and peer review of the repertoire sequencing methods used).</p>
@@ -37,10 +37,10 @@
     <p>Germline Inferences may have been made with one or more inference tools. Each of these may have been used with one or more settings. For
     example, it is possible - although by no means mandatory - that an inference was confirmed by the use of two tools, and that each tool was
     run more than once, with different sensitivity parameters or other adjustments. Each combination of a tool and the settings used is entered into
-    Ogre - hence if two different tools were each used with two settings each, there will be four tool/settings combinations.</p>
+    OGRDB - hence if two different tools were each used with two settings each, there will be four tool/settings combinations.</p>
 
     <p>When a tool is run against a sequence set from the repertoire, it will generate a genotype. The genotype may contain both known germline sequences
-    (from the starting database provided to the tool) and inferred sequences. The inferred genotypes is uploaded to Ogre.</p>
+    (from the starting database provided to the tool) and inferred sequences. The inferred genotypes is uploaded to OGRDB.</p>
 
     <p>Finally, the inferred sequences to be submitted to IARC are selected from the uploaded genotypes. Note that the same sequence may have been inferred
     in multiple genotypes (providing increased support). Each occurrence should be identified as an Inferred sequence, selected from the genotype in which
@@ -57,7 +57,7 @@
     under My Submissions, as well as a list of Published Submissions. Pressing the New Submission button will initiate a new submission. Once you
     press Create, you will be taken to the Submission Details tab of the submission entry screen.</p>
 
-    <p>Please note, as you use Ogre, that you can obtain help on the fields by hovering over them. For example, if you hover over Ethnicity on the Submission
+    <p>Please note, as you use OGRDB, that you can obtain help on the fields by hovering over them. For example, if you hover over Ethnicity on the Submission
     Details tab, you will see an explanation of its meaning.</p>
 
     <p>The submission entry tabs are set out in the order listed in the overivew, and it is best to work through them in this order, starting with the Submission Details

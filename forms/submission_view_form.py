@@ -1,6 +1,6 @@
 # Composite tables for View Submission page - defined manually
 
-import textile
+from textile_filter import safe_textile
 from flask import Markup
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
@@ -27,7 +27,7 @@ class MessageHeaderCol(StyledCol):
 
 class MessageBodyCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return Markup(textile.textile(item.body)) if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, Markup(textile.textile(item.body)))
+        return Markup(safe_textile(item.body)) if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, Markup(safe_textile(item.body)))
 
 class DelegateForm(FlaskForm):
     delegate = SelectField('Delegate', coerce=int)
@@ -99,7 +99,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
             if item['value'] == '' or item['value'] is None:
                 item['value'] = 'No notes provided'
             else:
-                item['value'] = Markup(textile.textile(item['value']))
+                item['value'] = Markup(safe_textile(item['value']))
 
     t = make_InferenceTool_table(sub.inference_tools)
     t.add_column('id', ActionCol("View", delete=False, view_route='inference_tool'))

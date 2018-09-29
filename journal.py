@@ -5,7 +5,7 @@ from db.journal_entry_db import *
 from db.gene_description_db import GeneDescription
 from db.submission_db import Submission
 
-import textile
+from textile_filter import safe_textile
 
 def add_note(user, title, body, obj, db, parent_id=None):
     journal_entry = JournalEntry()
@@ -13,7 +13,7 @@ def add_note(user, title, body, obj, db, parent_id=None):
     journal_entry.author = user.name
     journal_entry.date = datetime.datetime.now()
     journal_entry.title = title
-    journal_entry.body = textile.textile(body)
+    journal_entry.body = safe_textile(body)
     if hasattr(obj, 'submission_id'):
         journal_entry.submission = obj
     elif hasattr(obj, 'description_id'):

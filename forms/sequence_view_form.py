@@ -5,7 +5,7 @@ from db.repertoire_db import make_Acknowledgements_table
 from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table
 from sequence_format import *
 from copy import deepcopy
-from textile import textile
+from textile_filter import safe_textile
 
 
 class GeneDescriptionNotes_table(StyledTable):
@@ -50,14 +50,14 @@ def setup_sequence_view_tables(db, seq):
     for field in tables['gene_description'].items:
         if field['field'] == 'sequence':
             if field['value'] is not None and len(field['value']) > 0:
-                field['value'] =  Markup('<button type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
+                field['value'] =  Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
                     % (format_nuc_sequence(seq.sequence, 50), seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
             else:
                 field['value'] = 'None'
         elif field['field'] == 'coding_seq_imgt':
             if field['value'] is not None and len(field['value']) > 0:
                 if seq.domain == 'V':
-                    field['value'] =  Markup('<button type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
+                    field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
                         % (format_imgt_v(seq.coding_seq_imgt, 52), seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.coding_seq_imgt, 50)))
                 else:
                     field['value'] =  Markup('<button type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s"><span class="glyphicon glyphicon-search" data-toggle="tooltip" title="View"></span>&nbsp;</button>' \
@@ -66,11 +66,11 @@ def setup_sequence_view_tables(db, seq):
                 field['value'] = 'None'
         elif field['field'] == 'release_description':
             if field['value'] is not None and len(field['value']) > 0:
-                field['value'] = Markup(textile(field['value']))
+                field['value'] = Markup(safe_textile(field['value']))
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id, action=False)
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
-    tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(textile(seq.notes)), 'id': seq.id}])
+    tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
 
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []

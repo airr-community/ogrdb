@@ -5,7 +5,9 @@ from flask_admin.contrib.sqla import ModelView
 from app import admin_obj, db
 from db.userdb import User, Role
 from db.submission_db import Submission
+from db.gene_description_db import GeneDescription
 from db.misc_db import *
+from db.repertoire_db import Repertoire
 
 
 class AdminView(ModelView):
@@ -19,5 +21,7 @@ class UserView(AdminView):
 
 admin_obj.add_view(UserView(User, db.session))
 admin_obj.add_view(AdminView(Role, db.session))
-admin_obj.add_view(AdminView(Submission, db.session))
 admin_obj.add_view(AdminView(Committee, db.session))
+admin_obj.add_view(AdminView(Submission, db.session))
+admin_obj.add_view(AdminView(Repertoire, db.session))
+admin_obj.add_view(AdminView(GeneDescription, db.session))
