@@ -24,7 +24,7 @@ admin_obj = Admin(app, template_mode='bootstrap3')
 
 db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
-db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
+#db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
 
 mail = Mail(app)
 from mail import send_mail
