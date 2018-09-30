@@ -17,6 +17,7 @@ from forms.notes_entry_form import *
 from sys import exc_info
 from get_pmid_details import get_pmid_details
 from collections import namedtuple
+from custom_validators import ValidNucleotideSequence, ValidOrcidID
 
 class EditablePubIdTable(EditableTable):
     def check_add_item(self, request, db):
@@ -46,11 +47,21 @@ class EditableFwPrimerTable(EditableTable):
         if self.form.add_fw_primer.data:
             try:
                 if len(self.form.fw_primer_name.data) < 1:
-                    raise ValueError('Name cannot be blank.', self.form.fw_primer_name.errors)
+                    self.form.fw_primer_name.errors = ['Name cannot be blank.']
+                    raise ValueError()
                 if self.form.fw_primer_name.data in [i.fw_primer_name for i in self.items]:
-                    raise ValueError('A primer with that name is already in the table', self.form.fw_primer_name.errors)
+                    self.form.fw_primer_name.errors = ['A primer with that name is already in the table']
+                    raise ValueError()
                 if len(self.form.fw_primer_seq.data) < 1:
-                    raise ValueError('Sequence cannot be blank.', self.form.fw_primer_seq.errors)
+                    self.form.fw_primer_seq.errors = ['Sequence cannot be blank.']
+                    raise ValueError()
+                else:
+                    v = ValidNucleotideSequence(ambiguous = True)
+                    try:
+                        v.__call__(self.form, self.form.fw_primer_seq)
+                    except ValidationError:
+                        self.form.fw_primer_seq.errors = ['Invalid sequence.']
+                        raise ValueError()
 
                 p = ForwardPrimer()
                 p.fw_primer_name = self.form.fw_primer_name.data
@@ -60,7 +71,7 @@ class EditableFwPrimerTable(EditableTable):
                 db.session.commit()
                 added = True
             except ValueError as e:
-                e.args[1].append(e.args[0])
+                pass
 
         return (added, None, None)
 
@@ -70,11 +81,21 @@ class EditableRvPrimerTable(EditableTable):
         if self.form.add_rv_primer.data:
             try:
                 if len(self.form.rv_primer_name.data) < 1:
-                    raise ValueError('Name cannot be blank.', self.form.rv_primer_name.errors)
+                    self.form.rv_primer_name.errors = ['Name cannot be blank.']
+                    raise ValueError()
                 if self.form.rv_primer_name.data in [i.rv_primer_name for i in self.items]:
-                    raise ValueError('A primer with that name is already in the table', self.form.rv_primer_name.errors)
+                    self.form.rv_primer_name.errors = ['A primer with that name is already in the table']
+                    raise ValueError()
                 if len(self.form.rv_primer_seq.data) < 1:
-                    raise ValueError('Sequence cannot be blank.', self.form.rv_primer_seq.errors)
+                    self.form.rv_primer_seq.errors = ['Sequence cannot be blank.']
+                    raise ValueError()
+                else:
+                    v = ValidNucleotideSequence(ambiguous = True)
+                    try:
+                        v.__call__(self.form, self.form.rv_primer_seq)
+                    except ValidationError:
+                        self.form.rv_primer_seq.errors = ['Invalid sequence.']
+                        raise ValueError()
 
                 p = ReversePrimer()
                 p.rv_primer_name = self.form.rv_primer_name.data
@@ -84,9 +105,10 @@ class EditableRvPrimerTable(EditableTable):
                 db.session.commit()
                 added = True
             except ValueError as e:
-                e.args[1].append(e.args[0])
+                pass
 
         return (added, None, None)
+
 
 class EditableAckTable(EditableTable):
     def check_add_item(self, request, db):
@@ -94,13 +116,23 @@ class EditableAckTable(EditableTable):
         if self.form.add_ack.data:
             try:
                 if len(self.form.ack_name.data) < 1:
-                    raise ValueError('Name cannot be blank.', self.form.ack_name.errors)
+                    self.form.ack_name.errors = ['Name cannot be blank.']
+                    raise ValueError()
                 if len(self.form.ack_institution_name.data) < 1:
-                    raise ValueError('Institution cannot be blank.', self.form.ack_institution_name.errors)
+                    self.form.ack_institution_name.errors = ['Institution cannot be blank.']
+                    raise ValueError()
+                if len(self.form.ack_ORCID_id.data) > 0:
+                    v = ValidOrcidID()
+                    try:
+                        v.__call__(self.form, self.form.ack_ORCID_id)
+                    except ValidationError:
+                        self.form.ack_ORCID_id.errors = ['Invalid ORCID ID.']
+                        raise ValueError()
 
                 for item in self.items:
                     if self.form.ack_name.data == item.ack_name and self.form.ack_institution_name.data == item.ack_institution_name:
-                        raise ValueError('That row is already in the table..', self.form.ack_institution_name.errors)
+                        self.form.ack_name.errors = ['That person is already in the table..']
+                        raise ValueError()
 
                 a = Acknowledgements()
                 a.ack_name = self.form.ack_name.data
@@ -111,7 +143,7 @@ class EditableAckTable(EditableTable):
                 db.session.commit()
                 added = True
             except ValueError as e:
-                e.args[1].append(e.args[0])
+                pass
 
         return (added, None, None)
 

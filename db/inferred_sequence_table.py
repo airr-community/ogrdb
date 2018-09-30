@@ -48,7 +48,7 @@ def setup_inferred_sequence_table(seqs, id, action=True):
         table._cols.move_to_end('action', last=False)
     return table
 
-def setup_sequence_edit_tables(seq):
+def setup_sequence_edit_tables(db, seq):
     tables = {}
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')

@@ -187,20 +187,21 @@ def edit_submission(id):
     missing_sequence_error = False
     validation_result = ValidationResult()
     try:
-        if ('save_btn' in request.form or 'submit_btn' in request.form) and not form.validate():
-            if 'submit_btn' in request.form:
-                raise ValidationError()
+        if ('save_btn' in request.form or 'submit_btn' in request.form):
+            if not form.validate():
+                if 'submit_btn' in request.form:
+                    raise ValidationError()
 
-            # Overlook empty field errors when saving to draft
-            nonblank_errors = False
-            for field in form._fields:
-                if len(form._fields[field].errors) > 0:
-                    if len(form._fields[field].data) == 0:
-                        form._fields[field].errors = []
-                    else:
-                        nonblank_errors = True
-            if nonblank_errors:
-                raise ValidationError()
+                # Overlook empty field errors when saving to draft
+                nonblank_errors = False
+                for field in form._fields:
+                    if len(form._fields[field].errors) > 0:
+                        if len(form._fields[field].data) == 0:
+                            form._fields[field].errors = []
+                        else:
+                            nonblank_errors = True
+                if nonblank_errors:
+                    raise ValidationError()
 
 
         # Check for additions/deletions to editable tables, and any errors flagged up by validation in check_add_item
@@ -998,7 +999,7 @@ def edit_sequence(id):
     if seq is None:
         return redirect('/sequences')
 
-    tables = setup_sequence_edit_tables(seq)
+    tables = setup_sequence_edit_tables(db, seq)
     desc_form = GeneDescriptionForm(obj=seq)
     notes_form = GeneDescriptionNotesForm(obj=seq)
     hidden_return_form = HiddenReturnForm()
@@ -1075,6 +1076,11 @@ def edit_sequence(id):
                 return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
             else:
                 return redirect(url_for('sequences'))
+
+        else:
+            for field in tables['ack'].form:
+                if len(field.errors) > 0:
+                    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version+1)
 
     return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version+1)
 
