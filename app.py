@@ -431,7 +431,7 @@ def upload_primer(id, primer_type):
         else:
             flash('No valid FASTA records found in file.')
 
-        return ''
+    return ''
 
 
 def check_tool_edit(id):
