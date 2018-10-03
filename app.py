@@ -569,7 +569,8 @@ def edit_genotype_description(id):
         populate_GenotypeDescription(db, desc, form)
 
         if desc.inference_tool is not None:
-            form.inference_tool_id.data = desc.inference_tool_id
+            form.inference_tool_id.data = str(desc.inference_tool_id)
+            form.inference_tool_id.default = str(desc.inference_tool_id)
 
     return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)
 
