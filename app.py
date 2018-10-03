@@ -559,6 +559,7 @@ def edit_genotype_description(id):
                     db.session.commit()
                     blob_to_genotype(desc, db)
                 else:
+                    form.genotype_filename.data = desc.genotype_filename       # doesn't get passed back in request as the field is read-only
                     save_GenotypeDescription(db, desc, form, new=False)
 
                 return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
