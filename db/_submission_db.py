@@ -19,7 +19,7 @@ class SubmissionMixin:
             db.session.delete(j)
 
     def can_see(self, user):
-        return(self.submission_status == 'published' or
+        return(self.public or
             user.is_authenticated and
                #(user.has_role('Admin') or
                 user.has_role(self.species) or \
