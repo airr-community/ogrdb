@@ -47,7 +47,7 @@ def format_imgt_v(seq, width):
     fmt_aa = ''
     for cd in chunks(seq, 3):
         fmt_seq += cd + ' '
-        if '.' in cd or len(cd) < 3:           # commented out until we install biopython
+        if '.' in cd or '-' in cd or len(cd) < 3:           # commented out until we install biopython
             fmt_aa += '    '
         else:
             fmt_aa += ' ' + str(Seq(cd, IUPAC.unambiguous_dna).translate()) + '  '

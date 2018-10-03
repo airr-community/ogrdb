@@ -314,7 +314,7 @@ class Repertoire_view(Table):
 def make_Repertoire_view(sub, private = False):
     ret = Repertoire_view([])
     ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)", "field": "repository_name"})
-    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository (e.g. NIH Project or ENA Study)", "field": "rep_accession_no"})
+    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)", "field": "rep_accession_no"})
     ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository", "field": "dataset_url"})
     ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format", "field": "miarr_compliant"})
     ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available", "field": "miairr_link"})

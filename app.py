@@ -74,6 +74,22 @@ init_logging(app, mail)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Add the test role if we are in UAT
+
+    if 'UAT' in app.config and app.config['UAT']:
+        if not user_datastore.find_role('Test'):
+            user_datastore.create_role(name = 'Test')
+        tc = db.session.query(Committee).filter(Committee.species == 'Test').count()
+        if tc < 1:
+            test_ctee = Committee()
+            test_ctee.species = 'Test'
+            test_ctee.committee = 'Test Committee'
+            db.session.add(test_ctee)
+            db.session.commit()
+        if current_user.is_authenticated and not current_user.has_role('Test'):
+            user_datastore.add_role_to_user(current_user, 'Test')
+            db.session.commit()
+
     return render_template('index.html', current_user=current_user)
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -931,7 +947,7 @@ def get_sequences(id):
                     break
 
             if add:
-                seqs.append((seq.id, seq.sequence_details.sequence_id))
+                seqs.append((seq.id, "Gen: %s  |  Subj: %s  |  Seq: %s" % (seq.genotype_description.genotype_name, seq.genotype_description.genotype_subject_id, seq.sequence_details.sequence_id)))
 
     return json.dumps(seqs)
 

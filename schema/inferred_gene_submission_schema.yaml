@@ -173,7 +173,7 @@ Repertoire:
             nonblank: true
         rep_accession_no:
             type: string
-            description: Accession number or serial number within the repository (e.g. NIH Project or ENA Study)
+            description: Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)
             completed_by: submitter
             label: Accession Number
             nonblank: true
@@ -449,18 +449,18 @@ InferredSequence:
             nonblank: false
         seq_accession_no:
             type: string
-            description: Accession number of the inferred allele within the repository
+            description: Accession number of the inferred allele within the repository (e.g. BK010573)
             completed_by: submitter
             label: Accession Number
             nonblank: true
         deposited_version:
             type: string
-            description: Version number of the sequence within the repository
+            description: Version number of the sequence within the repository (e.g. 1)
             completed_by: submitter
             label: Version
         run_ids:
             type: string
-            description: Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made
+            description: Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)
             completed_by: submitter
             label: Run Accession Numbers
             nonblank: true
@@ -489,7 +489,7 @@ GenotypeDescription:
             nonblank: true
         genotype_biosample_ids:
             type: list
-            description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)
+            description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)
             completed_by: submitter
             label: Sample IDs
             nonblank: true
@@ -505,7 +505,7 @@ GenotypeDescription:
             label: Inference Tool
         genotype_file:
             type: blob
-            description: Contents of the uploaded file from which the genotype was read
+            description: CSV file containing genotype information
             label: Genotype File
         genotype_filename:
             type: string

@@ -20,7 +20,7 @@ class ActionCol(StyledCol):
         fmt_string = []
 
         if self.view_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><span class="glyphicon glyphicon-sunglasses" data-toggle="tooltip" title="View Genotype"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><span class="glyphicon glyphicon-sunglasses" data-toggle="tooltip" title="View Detail"></span>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
         if self.edit_route:
             fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
         if self.delete_route:

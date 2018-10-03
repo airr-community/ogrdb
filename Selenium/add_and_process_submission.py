@@ -21,6 +21,7 @@ def random_proper():
     return random_chars(size=1, chars=string.ascii_uppercase) + random_chars()
 
 driver = webdriver.Chrome()
+#driver = webdriver.Ie()
 wait = WebDriverWait(driver, 10)
 
 host_address = "http://localhost:5000/"
@@ -333,10 +334,11 @@ def sub_edit_seq():
     driver.find_element_by_id('save_sequence').click()
     wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
+    time.sleep(3)
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "inferred_sequence_del")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
-    time.sleep(1)
+    time.sleep(3)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "inferred_sequence_del")]')
     assert(len(x) == nitems-1)

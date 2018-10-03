@@ -16,8 +16,8 @@ class InferredSequenceForm(FlaskForm):
     ext_5prime = TextAreaField('5\' Extension', [ValidNucleotideSequence(ambiguous=False, gapped=True), validators.Optional()], description="Extending sequence at 5\' end (IMGT gapped)")
     start_5prime_ext = IntegerField('5\' start', [validators.Optional()], description="Start co-ordinate of 5\' extension (if any) in IMGT numbering")
     end_5prime_ext = IntegerField('5\' end', [validators.Optional()], description="End co-ordinate of 5\' extension (if any) in IMGT numbering")
-    seq_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number of the inferred allele within the repository")
-    deposited_version = StringField('Version', [validators.Length(max=255)], description="Version number of the sequence within the repository")
-    run_ids = StringField('Run Accession Numbers', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made")
+    seq_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number of the inferred allele within the repository (e.g. BK010573)")
+    deposited_version = StringField('Version', [validators.Length(max=255)], description="Version number of the sequence within the repository (e.g. 1)")
+    run_ids = StringField('Run Accession Numbers', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)")
 
 

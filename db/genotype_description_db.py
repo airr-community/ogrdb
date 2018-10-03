@@ -78,7 +78,7 @@ def make_GenotypeDescription_view(sub, private = False):
     ret = GenotypeDescription_view([])
     ret.items.append({"item": "Genotype Name", "value": sub.genotype_name, "tooltip": "Descriptive name for this genotype", "field": "genotype_name"})
     ret.items.append({"item": "Subject ID", "value": sub.genotype_subject_id, "tooltip": "Identifier of the subject from which this genotype was inferred", "field": "genotype_subject_id"})
-    ret.items.append({"item": "Sample IDs", "value": sub.genotype_biosample_ids, "tooltip": "Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. NIH biosamples or ENA samples)", "field": "genotype_biosample_ids"})
+    ret.items.append({"item": "Sample IDs", "value": sub.genotype_biosample_ids, "tooltip": "Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)", "field": "genotype_biosample_ids"})
     ret.items.append({"item": "Genotype Filename", "value": sub.genotype_filename, "tooltip": "Name of the uploaded file from which the genotype was read", "field": "genotype_filename"})
     return ret
 

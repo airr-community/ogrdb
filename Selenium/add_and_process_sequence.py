@@ -21,6 +21,8 @@ def random_proper():
     return random_chars(size=1, chars=string.ascii_uppercase) + random_chars()
 
 driver = webdriver.Chrome()
+#driver = webdriver.Ie()
+
 wait = WebDriverWait(driver, 10)
 
 host_address = "http://localhost:5000/"
@@ -89,10 +91,10 @@ def sub_add_and_process():
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
 
     wait.until(EC.element_to_be_clickable((By.ID, 'coding_seq_imgt')))
-    driver.find_element_by_name("coding_seq_imgt").send_keys("""caggtgcagctggtgcagtctggggct...gaggtgaagaagcctggggcctcagtgaag
-gtctcctgcaaggcttctggatacaccttc............accggctactatatgcac
-tgggtgcgacaggcccctggacaagggcttgagtggatgggatggatcaaccctaac...
-...agtggtggcacaaactatgcacagaagtttcag...ggcagggtcaccatgaccagg
+    driver.find_element_by_name("coding_seq_imgt").send_keys("""caggtgcagctggtgcagtctggggct---gaggtgaagaagcctggggcctcagtgaag
+gtctcctgcaaggcttctggatacaccttc------------accggctactatatgcac
+tgggtgcgacaggcccctggacaagggcttgagtggatgggatggatcaaccctaac---
+---agtggtggcacaaactatgcacagaagtttcag---ggcagggtcaccatgaccagg
 gacacgtccatcagcacagcctacatggagctgagcaggctgagatctgacgacacggcc
 gtgtattactgtgcgagaga""")
 

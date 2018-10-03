@@ -60,7 +60,7 @@ from custom_validators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class RepertoireForm(FlaskForm):
     repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)")
-    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository (e.g. NIH Project or ENA Study)")
+    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)")
     dataset_url = StringField('Dataset URL', [validators.Length(max=255), validators.URL()], description="URL of the study or project within the repository")
     miarr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the repertoire dataset and associated metadata is available in MiAIRR format")
     miairr_link = StringField('MiAIRR URL', [validators.Length(max=255), validators.Optional(), validators.URL()], description="Link to MiAIRR metadata, if available")
