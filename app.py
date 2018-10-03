@@ -1086,7 +1086,7 @@ def edit_sequence(id):
                     return redirect('/sequences')
 
             except ValidationError:
-                return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version+1)
+                return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version)
 
             if validation_result.tag:
                 return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
@@ -1096,9 +1096,9 @@ def edit_sequence(id):
         else:
             for field in tables['ack'].form:
                 if len(field.errors) > 0:
-                    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version+1)
+                    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version)
 
-    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version+1)
+    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version)
 
 
 @app.route('/delete_sequence/<id>', methods=['POST'])
