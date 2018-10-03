@@ -33,15 +33,16 @@ def send_mail(subject, recipients, template, **context):
     role_names = [el[0] for el in role_names]
 
     for recipient in recipients:
-        if recipient in role_names and recipient != 'Test':         # don't send mails to the Test role as everyone has it
-            role_owners = db.session.query(User.email).join(User.roles).filter(Role.name == recipient).all()
-            if len(role_owners) == 0:
-                current_app.logger.info('Empty role: %s' % recipient)
+        if recipient != 'Test':        # don't send mails to the Test role as everyone has it
+            if recipient in role_names:
+                role_owners = db.session.query(User.email).join(User.roles).filter(Role.name == recipient).all()
+                if len(role_owners) == 0:
+                    current_app.logger.info('Empty role: %s' % recipient)
+                else:
+                    role_owners = [el[0] for el in role_owners]
+                    rec.extend(role_owners)
             else:
-                role_owners = [el[0] for el in role_owners]
-                rec.extend(role_owners)
-        else:
-            rec.append(recipient)
+                rec.append(recipient)
 
     if len(rec) == 0:
         current_app.logger.info('No recpients for mail %s' % (subject))
