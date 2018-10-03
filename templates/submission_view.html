@@ -110,11 +110,13 @@
         {% endfor %}
 
         <form action="{{ url_for('submission', id=id) }}" method="POST" name="form" class="form-horizontal">
-        <h3>Review Delegates</h3>
-        <div class="row">
-            <a name="delegates"> </a>
-            {% include 'delegate_edit.html' %}
-        </div>
+        {% if status == 'reviewing' %}
+            <h3>Review Delegates</h3>
+            <div class="row">
+                <a name="delegates"> </a>
+                {% include 'delegate_edit.html' %}
+            </div>
+        {%  endif %}
         <h3>Actions</h3>
             {{ form.hidden_tag() }}
             <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
