@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Reviewing Submissions in OGRDB {% endblock %}
+
+{% block c_body %}
+    <div class="row">
+        {% include '/static/doclinks.html' %}
+    <div class="big col-sm-8">
+    <h3>This is a test website, provided to the AIRR GLDB WG for feedback</h3>
+
+    <p>The site is not live. Please explore it and provide feedback - but don't submit your sequences yet!<p>
+
+    <p><i>The text below is not final. Please comment.</i></p>
+
+    <h3>Overview</h3>
+
+    <p>An IARC Committee reviews submissions for one or more species. When a submission for that species is completed by the submitter, its status
+    changes from <i>draft</i> to <i>reviewing.</i> At that point, it is listed on the Committee's section on the Submissions page, which is visible only to
+        members of the Committee. An email is sent to Commottee members to inform them of its arrival. The submission will continue to be visible to the submitter, but cannot be edited.
+    </p>
+
+    <p>When a Committee member views the submission, there is an additional tab, the Review tab. It contains three elements:
+    <ul>
+        <li><i>History</i> - A list of key events in the submission's lifecycle</li>
+        <li><i>Notes</i> - Notes from reviewers, in forum-style threaded format</li>
+        <li><i>Delegates</i> - A section which enables additional reviewers to be added for this submission only.</li>
+    </ul>
+    </p>
+
+        <p>In addition, the Review tab provides Action buttons to change the status of the submission. In particular, it can be returned to the submitter as <i>draft</i>, for
+        rework, or it can be marked as <i>complete</i>. <i>Complete</i> submissions are not listed by default in the Committee's section on the Submissions
+    page, although they can be recalled by pushing <i>Show Completed</i>.</p>
+
+    <p>Affirmed sequences (listed on the <i>Sequences</i> tab) are drawn from submissions. A Committee member can create a draft sequence of the appropriate
+    species, at which point they reference an inferred sequence from a submission. In the course of editing the sequence details, additional inferred sequences
+    supporting the affirmation can be added: these can come from the same submission, or additional submissions - recall that the same sequence may be listed
+    more than once in a submission, for example if it has been inferred from more than one sample in separate analyses, or from more than one individual.
+    </p>
+
+    <p>Once the draft is completed, the affirmed sequence is published. If additional supporting evidence for the sequence is found later, a Committee member
+    can click the <i>copy</i> icon (next to the trash) to create a new draft, with an updated version number. This draft is edited to reflect the new information,
+    including, if necessary, references to additional submissions. When the new draft is published, it replaces the former one in the submission list (although
+        all drafts are retained in OGRDB's database). Sequences contain publicly available <i>History</i> records, so that the reasons for updates are available to all users.</p>
+
+    <p>Submissions become visible to all users once an inferred sequence is referenced in a published affirmed sequence. At that point, Committees can no longer
+    return the submission to the submitter for changes, as that would potentially allow the evidence supporting an affirmation to be altered.
+    An inferred sequence listed in a submission can only be referenced in one affirmation. It is, however, possible to withdraw an affirmed sequence by clicking the
+        <i>trash</i> icon. In this, exceptional, case, the sequences it references can then be used in another affirmed sequence record.</p>
+
+    <h3>Reviewing Submissions</h3>
+
+    <h4>Updating Notes</h4>
+
+    <p>Notes are intended to allow Committee discussion to be structured and recorded on the submission itself. They are only ever visible to members of the Committee
+        and to delegates. They are useful for listing and discussing any concerns. They could also be used as a checklist: for example, if a Committee decided that there
+        were six points that required review, a message thread could be created for each point.
+        Click <i>New Thread</i> to create a message thread. You will be prompted to enter a title. Click <i>Reply to Thread</i> to write a reply to the thread
+        immediately above the button.</p>
+
+    <p>Simple formatting can be used, as follows:
+    <ul>
+        <li>Words or phrases with *asterisks* will be shown in bold.</li>
+        <li>Words or phrases with _underscores_ will be shown in italics.</li>
+        <li>Use * as a bullet point at the start of each line to create a bulleted list.</li>
+    </ul>
+
+     Simple formatting can be used whenever you enter notes - both in threaded messages, in other notes fields, and in any messages or comments you are prompted to enter.</p>
+
+    <h4>Delegates</h4>
+        <p>Delegates are non-Committee members who are provided with the same ability as Committee members to review a submission, including marking it as <i>complete</i>
+        and/or returning it to the submitter. Delegates do not gain any ability to create or modify affirmed sequences. To add a delegate to a submission, select their name
+            and press <i>Add Delegate</i>. Multiple delegates may be nominated, and existing delegates may be removed from the list.<p>
+
+    <h4>Return to Submitter</h4>
+        <p>Clicking <i>Return to Submitter</i> will return the submission to <i>draft</i> status. The submitter will be able to edit the submission, and re-submit (they may also
+        opt to delete it, or hold it in draft indefinitely). You will be prompted to enter a message, which will be emiled to the submitter and to Committee members, and copied to
+            Notes. <i>Return to Submitter</i> will not be displayed if inferred sequences from the submission have been listed in a published affirmed sequence</p>
+
+    <h4>Complete Submission</h4>
+    <p>Clicking <i>Complete</i> will change the submission status from <i>reviewing</i> to <i>completed</i>. The submission will no longer be listed by default in the Committee's
+    Submissions section. You will be prompted to enter a reason, which will be recorded in the Notes. If necessary, completed submissions may be returned to the <i>reviewing</i>
+    status, by pressing <i>Un-Complete Submission</i>. Again, you will be prompted to enter a reason, which will be displayed in Notes and emailed to the submitter. The Complete
+        facility is provided to enable the Committee's Submission List to function as a to-do list of submissions requiring attention.</p>
+
+    <h3>Affirmed Sequence</h3>
+        <h4>New Sequence</h4>
+
+        <p>To create a new affirmed sequence, click <i>New Sequence</i> on the Sequences page. You will be promoted to enter the sequence name, and to select an inferred sequence
+        from a submission. All submissions that are in <i>reviewing</i> or <i>completed</i> status are available for selection. Only inferred sequences that have not been added to affirmed
+        sequence records  will be available for selection. In order to allow you to pick the correct inferred sequence from a selection, the selector displays the genotype
+        name and the subject ID for each sequence. At this stage, only one inferred sequence is selected. You will be returned to the Sequences list, and the new sequence will be shown
+        as dfraft, and available for editing.</p>
+
+        <h4>Editing Affirmed Sequences</h4>
+
+        <p>The editing process is similar in nature to the editing of a submission: at any point you can press <i>Save Draft</i> to save, so that editing and review can continue later.
+        Drafts are visible to all Committee members. All fields should be reviewed, but your attention is drawn to the following points:
+        <ul>
+        <li><i>Inference Type</i> - It is possible that genomic information is available to support the inference. In this case, change the inference type accordingly. Additional
+        fields will be shown, depending on the selected Domain, to enable non-coding information to be supplied, should it be available. The source of the genomic information should
+        be recorded in the Notes tab, as there are no explicit fields to hold accession numbers at the moment.</li>
+        <li><i>Coding Sequence</i> - an IMGT-gapped sequence should be entered, using . or - to denote a gap.</li>
+        <li><i>Inferences</i> - The inferences associated with the affirmed sequence can be updated.</li>
+        </ul>
+
+        <h4>Publishing Affirmed Sequences</h4>
+        <p>Click <i>Publish</i> to change the sequence status to <i>published</i> and make it visible to all users. You will be prompted to enter a note, which will be recorded in the history
+            and will be visible to all users. An email will be sent to Committee members. If submissions become public as a result of the sequence affirmation, the submitters will be notified. </p>
+
+        <h4>Updating Affirmed Sequences</h4>
+        <p>Click the <i>copy</i> icon (next to </i>trash</i> to create a new draft of a sequence. Its version number will be updated. Once edits are complete, publishing the draft will
+        replace the existing published version, although the previous version will be retained in the database in case reference to it is subsequently required.</p>
+
+        <h4>Withdrawing Affirmed Sequences</h4>
+        <p>Click the <i>trash</i> icon to withdraw a sequence from publication. You will be prompted to enter a reason, and Committee members will emailed. Withdrawn sequences are not displayed
+        to users but may be viewed by Committee members by pressing <i>Show Withdrawn</i>.</p>
+        </p>
+
+    </div>
+    </div>
+{% endblock %}
