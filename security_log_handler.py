@@ -12,10 +12,12 @@ def init_security_logging():
     user_confirmed.connect(log_user_confirmed)
 
 def log_user_logged_in(app, user):
-    app.logger.info('User %s logged in' % user.email)
+    if hasattr(user, 'email'):      
+        app.logger.info('User %s logged in' % user.email)
 
 def log_user_logged_out(app, user):
-    app.logger.info('User %s logged out' % user.email)
+    if hasattr(user, 'email'):      # Anonymous users can log out during registration/confirmation
+        app.logger.info('User %s logged out' % user.email)
 
 def log_user_registered(app, user, **extras):
     app.logger.info('User %s registered' % user.email)
