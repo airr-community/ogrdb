@@ -33,8 +33,6 @@ def blob_to_genotype(desc, db):
                 if field in row and row[field] is not None:
                     f = row[field].strip()
                     if len(f) > 0:
-                        t = type(getattr(Genotype, field))
-                        c = Genotype
                         setattr(rec, field, row[field])
                         has_data = True
 

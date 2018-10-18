@@ -557,6 +557,9 @@ def edit_genotype_description(id):
                     save_GenotypeDescription(db, desc, form, new=False)
                     desc.genotype_file = form.genotype_file.data.read()
                     db.session.commit()
+                    for g in desc.genotypes:
+                        db.session.delete(g)
+
                     blob_to_genotype(desc, db)
                 else:
                     form.genotype_filename.data = desc.genotype_filename       # doesn't get passed back in request as the field is read-only

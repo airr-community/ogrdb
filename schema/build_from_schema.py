@@ -191,7 +191,7 @@ class %s(db.Model):
                     else:
                         fo.write("    %s = db.Column(db.Integer)" % sc_item)
                 elif type == 'number':
-                    fo.write("    %s = db.Column(db.Numeric)" % sc_item)
+                    fo.write("    %s = db.Column(db.Numeric(precision=(12,2)))" % sc_item)
                 elif type == 'dictionary':
                     fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'text':

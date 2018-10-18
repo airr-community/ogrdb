@@ -21,9 +21,9 @@ def log_user_logged_out(app, user):
 
 def log_user_registered(app, user, **extras):
     app.logger.info('User %s registered' % user.email)
-    send_mail('User Registered', ['Admin'], 'user_registered', user=user.email)
+    send_mail('User Registered', ['Admin'], 'user_registered', name=user.email)
 
 def log_user_confirmed(app, user):
     app.logger.info('User %s confirmed registration' % user.email)
-    send_mail('User Confirmed', ['Admin'], 'user_confirmed', user=user.email)
+    send_mail('User Confirmed', ['Admin'], 'user_confirmed', name=user.email)
 
