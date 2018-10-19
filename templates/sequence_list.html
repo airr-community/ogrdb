@@ -6,16 +6,16 @@
         {% for sp, t in tables['species'].items() %}
             <div class="row">
                 <div class="col-md-8"><h2>Draft Sequences for IARC {{ sp }} Committee</h2></div>
+                <div class="col-md-offset-10">
+                <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-default heading-btn">New Sequence</a>
                 {% if loop.previtem is not defined %}
-                    <div class="col-md-offset-10">
-                    <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-default heading-btn">New Sequence</a>
                    {% if show_withdrawn %}
                         <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Withdrawn</a>
                     {% else %}
                         <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Withdrawn</a>
                     {% endif %}
-                    </div>
                 {% endif %}
+                </div>
             </div>
             <div class="row">
                 <div class=".table col-md-12">
