@@ -3,7 +3,7 @@
       var button = $(event.relatedTarget); // Button that triggered the modal
       var sequence = button.data('sequence'); // Extract info from data-* attributes
       var name = button.data('name'); // Extract info from data-* attributes
-      var fa_href = "data:application/octet-stream;charset=utf-8," + button.data('fa')
+      var fa_href = "data:application/octet-stream;charset=utf-8," + button.data('fa').replace(/\n/g, "\r\n")
       var modal = $(this);
       document.querySelector('#modal-sequence').textContent = sequence
       modal.find('.modal-title').text(name)
