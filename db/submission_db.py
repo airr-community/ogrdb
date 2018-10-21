@@ -94,7 +94,7 @@ def make_Submission_view(sub, private = False):
     ret.items.append({"item": "Submission Date", "value": sub.submission_date, "tooltip": "Date submission received", "field": "submission_date"})
     ret.items.append({"item": "Submission Status", "value": sub.submission_status, "tooltip": "Status of submission", "field": "submission_status"})
     ret.items.append({"item": "Submitter", "value": sub.submitter_name, "tooltip": "Full contact information of the submitter, i.e. the person depositing the data", "field": "submitter_name"})
-    ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institutional address of submitter", "field": "submitter_address"})
+    ret.items.append({"item": "Submitter Address", "value": sub.submitter_address, "tooltip": "Institution and full address of submitter", "field": "submitter_address"})
     if private:
         ret.items.append({"item": "Submitter Email", "value": sub.submitter_email, "tooltip": "Preferred email address of submitter", "field": "submitter_email"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})

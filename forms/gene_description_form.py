@@ -8,7 +8,7 @@ from custom_validators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
 class GeneDescriptionForm(FlaskForm):
     author = StringField('Author', [validators.Length(max=255)], description="Corresponding author")
-    lab_address = StringField('Author address', [validators.Length(max=255)], description="Institutional address of corresponding author")
+    lab_address = StringField('Author address', [validators.Length(max=255)], description="Institution and full address of corresponding author")
     alt_names = StringField('Alternative names', [validators.Length(max=255)], description="Alternative names for this sequence")
     locus = SelectField('Locus', choices=[('Heavy', 'Heavy'), ('Light-Kappa', 'Light-Kappa'), ('Light-Lambda', 'Light-Lambda'), ('Alpha', 'Alpha'), ('Beta', 'Beta'), ('Gamma', 'Gamma'), ('Delta', 'Delta')], description="Gene locus")
     domain = SelectField('Domain', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('C', 'C')], description="Sequence domain (V, D, J or Constant)")

@@ -6,6 +6,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_required
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
+from sqlalchemy import and_
 
 
 import json
@@ -861,7 +862,7 @@ def new_sequence(species):
                 form.new_name.errors = ['Name cannot be blank.']
                 raise ValidationError()
 
-            if db.session.query(GeneDescription).filter_by(organism = species).filter_by(sequence_name = form.new_name.data).count() > 0:
+            if db.session.query(GeneDescription).filter(and_(GeneDescription.organism == species, GeneDescription.sequence_name == form.new_name.data, ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
                 form.new_name.errors = ['A sequence already exists with that name.']
                 raise ValidationError()
 

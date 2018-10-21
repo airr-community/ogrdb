@@ -177,6 +177,7 @@ class GeneDescription_table(StyledTable):
     locus = StyledCol("Locus", tooltip="Gene locus")
     domain = StyledCol("Domain", tooltip="Sequence domain (V, D, J or Constant)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
+    status = StyledCol("Status", tooltip="Status of record")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):
@@ -194,7 +195,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence (i.e., the name which the curators determine should be used by preference)", "field": "sequence_name"})
     ret.items.append({"item": "Sequence ID", "value": sub.description_id, "tooltip": "Unique identifier of this gene sequence", "field": "description_id"})
     ret.items.append({"item": "Author", "value": sub.author, "tooltip": "Corresponding author", "field": "author"})
-    ret.items.append({"item": "Author address", "value": sub.lab_address, "tooltip": "Institutional address of corresponding author", "field": "lab_address"})
+    ret.items.append({"item": "Author address", "value": sub.lab_address, "tooltip": "Institution and full address of corresponding author", "field": "lab_address"})
     ret.items.append({"item": "Version", "value": sub.release_version, "tooltip": "Version number of this record, updated whenever a revised version is published or released", "field": "release_version"})
     ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     ret.items.append({"item": "Release Notes", "value": sub.release_description, "tooltip": "Brief descriptive notes of the reason for this release and the changes embodied", "field": "release_description"})

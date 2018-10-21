@@ -725,6 +725,7 @@ GeneDescription:
             description: Status of record
             label: Status
             width: narrow
+            tableview: true
         gene_subgroup:
             type: string
             description: Gene subgroup (family), as (and if) identified for this species and gene
