@@ -48,13 +48,11 @@
 
     <div role="tabpanel" class="tab-pane" id="primers">
         <p>Sequences of the PCR primers used in the study.</p>
-        <a name="fw_primer"> </a>
-        <h4>Forward Primers</h4>
-        {{ tables['fw_primer'] }}
-
-        <a name="rv_primer"> </a>
-        <h4>Reverse Primers</h4>
-        {{ tables['rv_primer'] }}
+        {% for (name, notes, table) in tables['primer_sets'] %}
+            <h3>{{ name }}</h3>
+            <p>{{ notes | textile_filter }}</p>
+            {{ table }}
+        {%  endfor %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="tools">

@@ -6,12 +6,6 @@
     <div class="row">
         {% include '/static/doclinks.html' %}
     <div class="big col-sm-8">
-    <h3>This is a test website, provided to the AIRR GLDB WG for feedback</h3>
-
-    <p>The site is not live. Please explore it and provide feedback - but don't submit your sequences yet!<p>
-
-    <p><i>The text below is not final. Please comment.</i></p>
-
     <h3>Pre-Requisites</h3>
 
     <p>Before submitting inferred sequences with OGRDB, you should have completed the Genbank/ENA Workflow. From this
@@ -30,8 +24,8 @@
     <h3>Submission Overview</h3>
 
     <p>A submission is based around a single <i>Repertoire</i>. A Repertoire, in OGRDB, is loosely equivalent to a BioProject in Genbank or a Study in ENA.
-    It can contain multiple sequence sets (for example multiple timepoints) from multiple individuals of the same species. The same PCR primers must have been used
-    in preparing each sequence set. The sequence sets must have been the subject of a published study (the publication does not need to relate
+    It can contain multiple sequence sets (for example multiple timepoints) from multiple individuals of the same species.
+        The sequence sets must have been the subject of a published study (the publication does not need to relate
     to germline inference: it provides documentation and peer review of the repertoire sequencing methods used).</p>
 
     <p>Germline Inferences may have been made with one or more inference tools. Each of these may have been used with one or more settings. For
@@ -77,7 +71,8 @@
         Please provide ORCID IDs if the individuals are listed on ORCID, as this avoids ambiguity.</p>
 
         <h4>Primers Tab</h4>
-        <p>Please enter the forward and reverse primers used. For convenience, you may upload FASTA files containing the primer names and sequences, rather than entering them individually.</p>
+        <p>Please enter the primer sets used. You can create as many sets as you need for the study: please use the Notes field to describe the purpose of each set.
+            For each set, you may upload FASTA files containing the primer names and sequences, rather than entering them individually.</p>
 
         <h4>Inference Tools</h4>
         <p>As described in the Overview, each combination of tool and associated settings that was used in the study should be entered here. Please provide each combination with a descriptive

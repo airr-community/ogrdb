@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Primer Set '{{  name }}' {% endblock %}
+
+{% block c_body %}
+
+<h3>Details</h3>
+
+<form action="{{ url_for('primer_sets', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+        {{ form.hidden_tag() }}
+
+        {% include 'primer_set_form.html' %}
+
+        <div class="row col-sm-offset-3">
+            <div class="btn-toolbar ">
+                <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" name="submit_btn" id="submit_btn">
+                <input type="submit" value="Add/Edit Primers" class="btn btn-default" name="edit_btn" id="edit_btn">
+                <input type="submit" value="Close" class="btn btn-default" name="cancel_btn" id="cancel_btn">
+            </div>
+        </div>
+</form>
+
+{% endblock %}
+

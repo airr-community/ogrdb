@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Primers for Set '{{  name }}' {% endblock %}
+
+{% block c_body %}
+
+<form action="{{ url_for('edit_primers', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+        {{ form.hidden_tag() }}
+
+    {{ tables['primers'] }}
+
+    {% include 'primer_form.html' %}
+
+    <div class="row col-sm-offset-3">
+        <div class="btn-toolbar ">
+                {{ form.add_primers(class="btn btn-primary") }}
+                <input type="submit" value="Close" class="btn btn-default" name="close_btn" id="close_btn">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#uploadModal" data-primer-id="{{ id }}" id="upload_primer">Upload FASTA</button>
+                <a class="btn btn-default" href="/static/docs/R1_lim_primers.fasta">Example FASTA</a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+      <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="messageModallLabel">Upload Primers</h4>
+          </div>
+          <div class="modal-body">
+              <input type="file" name="file" id="sel-file"/>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btn-upload">Upload</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+
+    $('#uploadModal').on('show.bs.modal', function (event) {
+        var modal = $(this);
+        var button = $(event.relatedTarget); // Button that triggered the modal
+
+        if(modal.find("#sel-file").value == '') {
+            modal.find("#btn-upload").prop('disabled', true);
+        }
+
+        modal.find("#btn-upload").click( function()
+        {
+            //https://gist.github.com/umidjons/6173837
+            var file = modal.find("#sel-file").get( 0 ).files[0],
+                formData = new FormData();
+
+            formData.append( 'file', file );
+            console.log( file );
+            $.ajax( {
+                url        : '/upload_primers/{{ id }}',
+                type       : 'POST',
+                contentType: false,
+                cache      : false,
+                processData: false,
+                data       : formData,
+                success    : function ( data )
+                {
+                    window.location.reload(true);
+                }
+            } );
+        });
+
+        modal.find("#sel-file").change( function()
+        {
+            if(modal.find("#sel-file").value != '') {
+               modal.find("#btn-upload").prop('disabled', false);
+            }
+        });
+
+
+    });
+    </script>
+
+    {% include 'sequence_popup_script.html' %}
+{% endblock %}

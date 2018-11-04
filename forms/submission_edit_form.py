@@ -7,6 +7,7 @@ from db.genotype_description_db import *
 from db.editable_table import *
 from db.inferred_sequence_db import *
 from db.notes_entry_db import *
+from db.primer_set_db import *
 from forms.repertoire_form import *
 from forms.submission_form import *
 from forms.inference_tool_form import *
@@ -14,6 +15,7 @@ from forms.genotype_description_form import *
 from forms.aggregate_form import *
 from forms.inferred_sequence_form import *
 from forms.notes_entry_form import *
+from forms.primer_set_form import *
 from sys import exc_info
 from get_pmid_details import get_pmid_details
 from collections import namedtuple
@@ -41,74 +43,20 @@ class EditablePubIdTable(EditableTable):
                 self.form.pubmed_id.errors = list(self.form.pubmed_id.errors) + [e]
         return (added, None, None)
 
-class EditableFwPrimerTable(EditableTable):
+class EditablePrimerSetTable(EditableTable):
     def check_add_item(self, request, db):
-        added = False
-        if self.form.add_fw_primer.data:
+        if self.form.add_primer_sets.data:
             try:
-                if len(self.form.fw_primer_name.data) < 1:
-                    self.form.fw_primer_name.errors = ['Name cannot be blank.']
-                    raise ValueError()
-                if self.form.fw_primer_name.data in [i.fw_primer_name for i in self.items]:
-                    self.form.fw_primer_name.errors = ['A primer with that name is already in the table']
-                    raise ValueError()
-                if len(self.form.fw_primer_seq.data) < 1:
-                    self.form.fw_primer_seq.errors = ['Sequence cannot be blank.']
-                    raise ValueError()
-                else:
-                    v = ValidNucleotideSequence(ambiguous = True)
-                    try:
-                        v.__call__(self.form, self.form.fw_primer_seq)
-                    except ValidationError:
-                        self.form.fw_primer_seq.errors = ['Invalid sequence.']
-                        raise ValueError()
-
-                p = ForwardPrimer()
-                p.fw_primer_name = self.form.fw_primer_name.data
-                p.fw_primer_seq = self.form.fw_primer_seq.data
+                p = PrimerSet()
+                p.primer_set_name = ''
+                p.primer_set_notes = ''
                 self.items.append(p)
-                self.table = make_ForwardPrimer_table(self.items)
+                self.table = make_PrimerSet_table(self.items)
                 db.session.commit()
-                added = True
+                return (True, 'primer_sets', p.id)
             except ValueError as e:
-                pass
-
-        return (added, None, None)
-
-class EditableRvPrimerTable(EditableTable):
-    def check_add_item(self, request, db):
-        added = False
-        if self.form.add_rv_primer.data:
-            try:
-                if len(self.form.rv_primer_name.data) < 1:
-                    self.form.rv_primer_name.errors = ['Name cannot be blank.']
-                    raise ValueError()
-                if self.form.rv_primer_name.data in [i.rv_primer_name for i in self.items]:
-                    self.form.rv_primer_name.errors = ['A primer with that name is already in the table']
-                    raise ValueError()
-                if len(self.form.rv_primer_seq.data) < 1:
-                    self.form.rv_primer_seq.errors = ['Sequence cannot be blank.']
-                    raise ValueError()
-                else:
-                    v = ValidNucleotideSequence(ambiguous = True)
-                    try:
-                        v.__call__(self.form, self.form.rv_primer_seq)
-                    except ValidationError:
-                        self.form.rv_primer_seq.errors = ['Invalid sequence.']
-                        raise ValueError()
-
-                p = ReversePrimer()
-                p.rv_primer_name = self.form.rv_primer_name.data
-                p.rv_primer_seq = self.form.rv_primer_seq.data
-                self.items.append(p)
-                self.table = make_ReversePrimer_table(self.items)
-                db.session.commit()
-                added = True
-            except ValueError as e:
-                pass
-
-        return (added, None, None)
-
+                self.form.primer_set_name.errors = list(self.form.primer_set_name.errors) + [e]
+        return (False, None, None)
 
 class EditableAckTable(EditableTable):
     def check_add_item(self, request, db):
@@ -265,14 +213,13 @@ def setup_submission_edit_forms_and_tables(sub, db):
     db.session.commit()
 
     tables['pubmed_table'] = EditablePubIdTable(make_PubId_table(sub.repertoire[0].pub_ids), 'pubmed', PubIdForm, sub.repertoire[0].pub_ids, legend='Add Publication')
-    tables['fw_primer'] = EditableFwPrimerTable(make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set), 'fw_primer', ForwardPrimerForm, sub.repertoire[0].forward_primer_set, legend='Add Primer')
-    tables['rv_primer'] = EditableRvPrimerTable(make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set), 'rv_primer', ReversePrimerForm, sub.repertoire[0].reverse_primer_set, legend='Add Primer')
+    tables['primer_sets'] = EditablePrimerSetTable(make_PrimerSet_table(sub.repertoire[0].primer_sets), 'primer_sets', FlaskForm, sub.repertoire[0].primer_sets, legend='Add Primer Set', edit_route='primer_sets')
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(sub.acknowledgements), 'ack', AcknowledgementsForm, sub.acknowledgements, legend='Add Acknowledgement')
     tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool', delete_route='delete_tool', delete_message='Are you sure you wish to delete the tool settings and any associated genotypes?')
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
 
-    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['fw_primer'].form, tables['rv_primer'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)
+    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)
     return (tables, form)
 
 

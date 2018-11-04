@@ -48,6 +48,8 @@ from db.journal_entry_db import *
 from db.notes_entry_db import *
 from db.gene_description_db import *
 from db.inferred_sequence_table import *
+from db.primer_set_db import *
+from db.primer_db import *
 
 from forms.useradmin import *
 from forms.submission_form import *
@@ -62,6 +64,7 @@ from forms.sequence_new_form import *
 from forms.gene_description_form import *
 from forms.gene_description_notes_form import *
 from forms.sequence_view_form import *
+from forms.primer_set_edit_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -329,7 +332,7 @@ def delete_submission(id):
 def submission(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
     reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
-    if sub is None or not sub.can_see(current_user):
+    if sub is None or not (sub.can_see(current_user) or current_user.has_role('Admin')):
         flash('Submission not found')
         return redirect('/submissions')
 
@@ -396,43 +399,6 @@ def submission(id):
            return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
 
 
-@app.route('/upload_primers/<id>/<primer_type>', methods=['POST'])
-@login_required
-def upload_primer(id, primer_type):
-    sub = check_sub_edit(id)
-    rep_id = sub.repertoire[0].id
-    if sub is None:
-        return redirect('/submissions')
-
-    if 'file' not in request.files:
-        flash('Nothing uploaded.')
-    else:
-        content = io.StringIO(request.files['file'].read().decode("utf-8"))
-        seq_count = 0
-
-        for seq_record in SeqIO.parse(content, 'fasta'):
-            seq_count += 1
-
-            if primer_type == 'forward':
-                p = ForwardPrimer()
-                p.repertoire_id = rep_id
-                p.fw_primer_name = seq_record.id
-                p.fw_primer_seq = str(seq_record.seq)
-            else:
-                p = ReversePrimer()
-                p.repertoire_id = rep_id
-                p.rv_primer_name = seq_record.id
-                p.rv_primer_seq = str(seq_record.seq)
-
-            db.session.add(p)
-
-        if seq_count > 0:
-            flash('Added %d %s primer records' % (seq_count, primer_type))
-            db.session.commit()
-        else:
-            flash('No valid FASTA records found in file.')
-
-    return ''
 
 
 def check_tool_edit(id):
@@ -1164,3 +1130,169 @@ def withdraw_sequence(id):
         flash('Sequence %s withdrawn' % seq.sequence_name)
     return ''
 
+def check_primer_set_edit(id):
+    try:
+        set = db.session.query(PrimerSet).filter_by(id = id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        sub = set.repertoire.submission
+        if not sub.can_edit(current_user):
+            flash('You do not have rights to edit that primer set.')
+
+        return (sub, set)
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return (None, None)
+
+@app.route('/primer_sets/<id>', methods=['GET', 'POST'])
+@login_required
+def primer_sets(id):
+    (sub, set) = check_primer_set_edit(id)
+    if set is None:
+        return redirect('/submissions')
+
+    form = PrimerSetForm()
+
+    if request.method == 'GET':
+        populate_PrimerSet(db, set, form)
+        return render_template('primer_set_edit.html', form=form, name=set.primer_set_name, id=id)
+    else:
+        if 'cancel_btn' in request.form:
+            if len(set.primer_set_name) == 0:         # this is a new primer set, since you can't save a blank name
+                db.session.delete(set)
+                db.session.commit()
+            return redirect(url_for('edit_submission', id=sub.submission_id, _anchor='primer_sets'))
+
+        valid = form.validate()
+
+        if valid:
+            set.primer_set_name = form.primer_set_name.data
+            set.primer_set_notes = form.primer_set_notes.data
+            db.session.commit()
+
+            if 'edit_btn' in request.form:
+                return redirect(url_for('edit_primers', id=id, _anchor='primer_sets'))
+            elif 'submit_btn' in request.form:
+                return redirect(url_for('edit_submission', id=sub.submission_id, _anchor='primer_sets'))
+
+        return render_template('primer_set_edit.html', form=form, name=set.primer_set_name, id=id)
+
+@app.route('/edit_primers/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_primers(id):
+    (sub, set) = check_primer_set_edit(id)
+    if set is None:
+        return redirect('/submissions')
+
+    (form, tables) = setup_primer_set_forms_and_tables(db, set)
+
+    if request.method == 'GET':
+        return render_template('primers_edit.html', tables=tables, form=form, name=set.primer_set_name, id=id)
+    else:
+        if 'close_btn' in request.form:
+            return redirect(url_for('primer_sets', id=id))
+
+        valid = form.validate()
+
+        if valid:
+            validation_result = process_table_updates({'primers': tables['primers']}, request, db)
+            if validation_result.tag:
+                if validation_result.valid:     # rebuild tables if something has changed
+                    (form, tables) = setup_primer_set_forms_and_tables(db, set)
+
+        return render_template('primers_edit.html', tables=tables, form=form, name=set.primer_set_name, id=id)
+
+
+@app.route('/upload_primers/<id>', methods=['POST'])
+@login_required
+def upload_primer(id):
+    (sub, set) = check_primer_set_edit(id)
+    if set is None:
+        return redirect('/submissions')
+
+    if 'file' not in request.files:
+        flash('Nothing uploaded.')
+    else:
+        content = io.StringIO(request.files['file'].read().decode("utf-8"))
+        seq_count = 0
+
+        for seq_record in SeqIO.parse(content, 'fasta'):
+            seq_count += 1
+
+            p = Primer()
+            p.primer_name = seq_record.id
+            p.primer_seq = str(seq_record.seq)
+            db.session.add(p)
+            set.primers.append(p)
+
+        if seq_count > 0:
+            flash('Added %d primer records' % seq_count)
+            db.session.commit()
+        else:
+            flash('No valid FASTA records found in file.')
+
+    return ''
+
+@app.route('/upgrade')
+@login_required
+def upgrade():
+    if current_user.has_role('Admin'):
+        # Upgrade fw, rv primers to new collection
+        subs = db.session.query(Submission).all()
+
+        for sub in subs:
+            app.logger.info('Upgrader is processing submission %s' % sub.submission_id)
+            if len(sub.repertoire) > 0:
+                l = len(sub.repertoire[0].forward_primer_set)
+                if l > 0:
+                    app.logger.info('Found fw primer set with length %d' % l)
+                    for set in sub.repertoire[0].primer_sets:
+                        if set.primer_set_name == 'Forward':
+                            app.logger.info('Removing existing new-form forward primer set')
+                            db.session.delete(set)
+                            break
+                    new_s = PrimerSet()
+                    new_s.primer_set_name = 'Forward'
+                    new_s.primer_set_notes = 'Forward Primers'
+                    db.session.add(new_s)
+                    sub.repertoire[0].primer_sets.append(new_s)
+                    for primer in sub.repertoire[0].forward_primer_set:
+                        new_p = Primer()
+                        new_p.primer_name = primer.fw_primer_name
+                        new_p.primer_seq = primer.fw_primer_seq
+                        db.session.add(new_p)
+                        new_s.primers.append(new_p)
+                    db.session.commit()
+                else:
+                    app.logger.info('...no old-style forward primer set')
+
+                l = len(sub.repertoire[0].reverse_primer_set)
+                if l > 0:
+                    app.logger.info('Found rv primer set with length %d' % l)
+                    for set in sub.repertoire[0].primer_sets:
+                        if set.primer_set_name == 'Reverse':
+                            app.logger.info('Removing existing new-form reverse primer set')
+                            db.session.delete(set)
+                            break
+                    new_s = PrimerSet()
+                    new_s.primer_set_name = 'Reverse'
+                    new_s.primer_set_notes = 'Reverse Primers'
+                    db.session.add(new_s)
+                    sub.repertoire[0].primer_sets.append(new_s)
+                    for primer in sub.repertoire[0].reverse_primer_set:
+                        new_p = Primer()
+                        new_p.primer_name = primer.rv_primer_name
+                        new_p.primer_seq = primer.rv_primer_seq
+                        db.session.add(new_p)
+                        new_s.primers.append(new_p)
+                    db.session.commit()
+                else:
+                    app.logger.info('...no old-style forward primer set')
+            else:
+                app.logger.info('...no repertoire attached to submission')
+
+        return redirect('/')
