@@ -205,16 +205,6 @@ Repertoire:
             completed_by: submitter
             label: Read Length
             nonblank: true
-        forward_primer_set:
-            type: list of IUPAC nucleotide notation
-            description: sequences of forward pcr primers used for sequence amplification
-            completed_by: submitter
-            ignore: true
-        reverse_primer_set:
-            type: list of IUPAC nucleotide notation
-            description: sequences of reverse pcr primers used for sequence amplification
-            completed_by: submitter
-            ignore: true
         primer_sets:
             type: list primer_sets
             description: PCR primer sets used for sequence amplification
@@ -294,7 +284,7 @@ PrimerSet:
 
 Primer:
     discriminator: AIRR
-    description: Forward Primer Set
+    description: PCR Primer
     type: object
     occurrence: single
     properties:

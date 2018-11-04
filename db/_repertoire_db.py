@@ -12,12 +12,6 @@ class RepertoireMixin:
             db.session.delete(p)
 
         # primers
-        for p in self.forward_primer_set:
-            db.session.delete(p)
-
-        for p in self.reverse_primer_set:
-            db.session.delete(p)
-
         for s in self.primer_sets:
             s.delete_dependencies(db)
             db.session.delete(s)
