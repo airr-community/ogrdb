@@ -314,49 +314,6 @@ Primer:
             relationship: [primer_set, PrimerSet, primers]
             hide: true
 
-ForwardPrimer:
-    discriminator: AIRR
-    description: Forward Primer Set
-    type: object
-    occurrence: single
-    properties:
-        fw_primer_name:
-            type: string
-            description: Primer name or quick description
-            tableview: true
-            label: Primer Name
-        fw_primer_seq:
-            type: ambiguous nucleotide sequence
-            description: primer sequence (may contain ambiguous characters)
-            tableview: true
-            label: Primer Sequence
-        repertoire_id:
-            type: integer
-            foreign_key: repertoire.id
-            relationship: [repertoire, Repertoire, forward_primer_set]
-            hide: true
-
-ReversePrimer:
-    discriminator: AIRR
-    description: Reverse Primer Set
-    type: object
-    occurrence: single
-    properties:
-        rv_primer_name:
-            type: string
-            description: Primer name or quick description
-            tableview: true
-            label: Primer Name
-        rv_primer_seq:
-            type: ambiguous nucleotide sequence
-            description: primer sequence (may contain ambiguous characters)
-            tableview: true
-            label: Primer Sequence
-        repertoire_id:
-            type: integer
-            foreign_key: repertoire.id
-            relationship: [repertoire, Repertoire, reverse_primer_set]
-            hide: true
 
 Acknowledgements:
     discriminator: AIRR
