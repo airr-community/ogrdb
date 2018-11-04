@@ -143,48 +143,56 @@ def sub_edit_rep(sub_id):
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 
 
-def sub_edit_pri():
+def add_primer_set():
     driver.find_element_by_xpath('//*[@id="tab-pri"]').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'add_primer_sets')))
+    driver.find_element_by_id("add_primer_sets").click()
 
-    wait.until(EC.element_to_be_clickable((By.ID,'upload_fw')))
-    driver.find_element_by_id("upload_fw").click()
+    wait.until(EC.element_to_be_clickable((By.ID,'edit_btn')))
+    driver.find_element_by_id("primer_set_name").send_keys(random_chars())
+    driver.find_element_by_id("primer_set_notes").send_keys(random_chars())
+    driver.find_element_by_id("edit_btn").click()
+
+    wait.until(EC.element_to_be_clickable((By.ID,'upload_primer')))
+    driver.find_element_by_id("upload_primer").click()
     wait.until(EC.element_to_be_clickable((By.ID,'btn-upload')))
     driver.find_element_by_id("sel-file").send_keys("D:\\Research\\ogre\\testfiles\\R1_lim_primers.fasta")
     driver.find_element_by_id("btn-upload").click()
     time.sleep(2)
-    wait.until(EC.element_to_be_clickable((By.ID,'upload_rv')))
+    wait.until(EC.element_to_be_clickable((By.ID,'upload_primer')))
     time.sleep(2)
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "fw_primer_del_")]')
+    x = driver.find_elements(By.XPATH, '//*[contains(@id, "primers_del_")]')
+    foo = len(x)
     assert(len(x) == 20)
     x[random.randint(0, 19)].click()
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "fw_primer_del_")]')
+    x = driver.find_elements(By.XPATH, '//*[contains(@id, "primers_del_")]')
     assert(len(x) == 19)
-    driver.find_element_by_id("fw_primer_name").send_keys(random_proper())
-    driver.find_element_by_id("fw_primer_seq").send_keys(random_chars(random.randint(10,30), chars='AGCTRYSWKMBDHVN'))
-    driver.find_element_by_id('add_fw_primer').click()
-    wait.until(EC.element_to_be_clickable((By.ID,'add_fw_primer')))
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "fw_primer_del_")]')
+    driver.find_element_by_id("primer_name").send_keys(random_proper())
+    driver.find_element_by_id("primer_seq").send_keys(random_chars(random.randint(10,30), chars='AGCTRYSWKMBDHVN'))
+    driver.find_element_by_id('add_primers').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'add_primers')))
+    x = driver.find_elements(By.XPATH, '//*[contains(@id, "primers_del_")]')
     assert(len(x) == 20)
+    driver.find_element_by_id('close_btn').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'cancel_btn')))
+    driver.find_element_by_id('cancel_btn').click()
 
-    driver.find_element_by_id("upload_rv").click()
+
+def sub_edit_pri():
+    nitems = random.randint(3,6)
+
+    for i in range(nitems):
+        add_primer_set()
+
+    wait.until(EC.element_to_be_clickable((By.ID,'add_primer_sets')))
     time.sleep(2)
-    wait.until(EC.element_to_be_clickable((By.ID,'btn-upload')))
-    driver.find_element_by_id("sel-file").send_keys("D:\\Research\\ogre\\testfiles\\R2_300_primers_inc_light.fasta")
-    driver.find_element_by_id("btn-upload").click()
-    time.sleep(2)
-    wait.until(EC.element_to_be_clickable((By.ID,'upload_rv')))
-    time.sleep(2)
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "rv_primer_del_")]')
-    assert(len(x) == 4)
-    x[random.randint(0, 3)].click()
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "rv_primer_del_")]')
-    assert(len(x) == 3)
-    driver.find_element_by_id("rv_primer_name").send_keys(random_proper())
-    driver.find_element_by_id("rv_primer_seq").send_keys(random_chars(random.randint(10,30), chars='AGCTRYSWKMBDHVN'))
-    driver.find_element_by_id('add_rv_primer').click()
-    wait.until(EC.element_to_be_clickable((By.ID,'add_rv_primer')))
-    x = driver.find_elements(By.XPATH, '//*[contains(@id, "rv_primer_del_")]')
-    assert(len(x) == 4)
+    x = driver.find_elements(By.XPATH, '//*[contains(@id, "primer_sets_del_")]')
+    assert(len(x) == nitems)
+    x[random.randint(0, nitems-1)].click()
+    x = driver.find_elements(By.XPATH, '//*[contains(@id, "primer_sets_del_")]')
+    assert(len(x) == nitems-1)
+
+
 
 def sub_edit_notes(sub_id):
     driver.find_element_by_xpath('//*[@id="tab-notes"]').click()
@@ -204,7 +212,7 @@ def sub_edit_inf():
 
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
 
-    nitems = random.randint(2,4)
+    nitems = random.randint(3,5)
 
     for _ in range(nitems):
         driver.find_element_by_id('add_tools').click()
@@ -227,8 +235,11 @@ def sub_edit_inf():
     assert(len(x) == nitems-1)
 
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
-    x = driver.find_elements(By.CLASS_NAME, 'text-warning')
-    x[random.randint(0,nitems-2)].click()
+    time.sleep(2)
+    x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_tool")]')
+    foo = len(x)
+    choice = random.randint(0,nitems-2)
+    x[choice].click()
     wait.until(EC.element_to_be_clickable((By.ID,'tool_settings_name')))
     driver.find_element_by_id('tool_settings_name').send_keys(random_proper())
     driver.find_element_by_id('save-btn').click()

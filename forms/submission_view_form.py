@@ -13,6 +13,9 @@ from db.inference_tool_db import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
 from db.notes_entry_db import *
+from db.primer_set_db import *
+from db.primer_db import *
+
 from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol
 from forms.journal_entry_form import JournalEntryForm
 from forms.aggregate_form import AggregateForm
@@ -82,9 +85,12 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['ack'] = make_Acknowledgements_table(sub.acknowledgements)
     tables['repertoire'] = make_Repertoire_view(sub.repertoire[0])
     tables['pub'] = make_PubId_table(sub.repertoire[0].pub_ids)
-    tables['fw_primer'] = make_ForwardPrimer_table(sub.repertoire[0].forward_primer_set)
-    tables['rv_primer'] = make_ReversePrimer_table(sub.repertoire[0].reverse_primer_set)
     tables['submission_notes'] = make_NotesEntry_view(sub.notes_entries[0])
+
+    tables['primer_sets'] = []
+    for set in sub.repertoire[0].primer_sets:
+        tables['primer_sets'].append((set.primer_set_name, set.primer_set_notes, make_Primer_table(set.primers)))
+
 
     if len(sub.repertoire) == 0:
         sub.repertoire.append(Repertoire())

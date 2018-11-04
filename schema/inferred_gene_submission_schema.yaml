@@ -215,6 +215,11 @@ Repertoire:
             description: sequences of reverse pcr primers used for sequence amplification
             completed_by: submitter
             ignore: true
+        primer_sets:
+            type: list primer_sets
+            description: PCR primer sets used for sequence amplification
+            completed_by: submitter
+            ignore: true
         primers_overlapping:
             type: [Yes, No]
             description: Do primers overlap with the stated sequence of any inferred allele?
@@ -264,6 +269,51 @@ PubId:
 
 
 # Primers
+PrimerSet:
+    discriminator: AIRR
+    description: PCR Primer Set
+    type: object
+    occurrence: multiple
+    properties:
+        primer_set_name:
+            type: string
+            description: Primer Set name or quick description
+            tableview: true
+            label: Primer Set Name
+            nonblank: true
+        primer_set_notes:
+            type: text
+            description: Notes on Primer Set purpose/usage
+            label: Primer Set Notes
+            rows: 5
+        repertoire_id:
+            type: integer
+            foreign_key: repertoire.id
+            relationship: [repertoire, Repertoire, primer_sets]
+            hide: true
+
+Primer:
+    discriminator: AIRR
+    description: Forward Primer Set
+    type: object
+    occurrence: single
+    properties:
+        primer_name:
+            type: string
+            description: Primer name or quick description
+            tableview: true
+            label: Primer Name
+        primer_seq:
+            type: ambiguous nucleotide sequence
+            description: primer sequence (may contain ambiguous characters)
+            tableview: true
+            label: Primer Sequence
+        primer_set_id:
+            type: integer
+            foreign_key: primer_set.id
+            relationship: [primer_set, PrimerSet, primers]
+            hide: true
+
 ForwardPrimer:
     discriminator: AIRR
     description: Forward Primer Set

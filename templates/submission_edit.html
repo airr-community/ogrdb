@@ -16,7 +16,7 @@
     <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
     <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
     <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-    <li role="presentation"><a href="#primers" aria-controls="rep" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
+    <li role="presentation"><a href="#primer_sets" aria-controls="rep" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
     <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
     <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
@@ -47,17 +47,10 @@
         {% include 'repertoire_form.html' %}
     </div>
 
-    <div role="tabpanel" class="tab-pane" id="primers">
-        <p>Please provide sequences of the PCR primers used in the study.</p>
-        <a name="fw_primer"> </a>
-        <h4>Forward Primers</h4>
-        {% include 'fw_primer_form.html' %}
-
-        <a name="rv_primer"> </a>
-        <h4>Reverse Primers</h4>
-        {% include 'rv_primer_form.html' %}
-        <label class="hidden" id="primer-type"></label>
-
+    <div role="tabpanel" class="tab-pane" id="primer_sets">
+        <p>Please provide details of the PCR primer sets used in the study.</p>
+        <a name="primer_sets"> </a>
+        {% include 'primer_set_table.html' %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="tools">
@@ -100,24 +93,6 @@
 
     </div>
 
-    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
-      <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="messageModallLabel">Upload Primers</h4>
-          </div>
-          <div class="modal-body">
-              <input type="file" name="file" id="sel-file"/>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btn-upload">Upload</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <input type="submit" value="Save Draft" class="btn btn-default  col-sm-offset-1" name="save_btn">
     <button type="button" class="btn btn-warning" onclick="submit_warn()" name="submit_btn">Submit to IARC</button>
     <input type="submit" value="Submit to IARC" class="hidden" name="submit_btn" id="submit_btn">
@@ -145,10 +120,6 @@
         if(anchor == "pubmed") {
             jump = anchor;
             anchor = "ack";
-        }
-        else if(anchor == "fw_primer" || anchor == "rv_primer") {
-            jump = anchor;
-            anchor = "primers";
         }
 
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
@@ -218,48 +189,6 @@
         })
     }
 
-    $('#uploadModal').on('show.bs.modal', function (event) {
-        var modal = $(this);
-        var button = $(event.relatedTarget); // Button that triggered the modal
-
-        if(modal.find("#sel-file").value == '') {
-            modal.find("#btn-upload").prop('disabled', true);
-        }
-
-        $("#primer-type").val(button.data('primer'));
-
-        modal.find("#btn-upload").click( function()
-        {
-            //https://gist.github.com/umidjons/6173837
-            var file = modal.find("#sel-file").get( 0 ).files[0],
-                formData = new FormData();
-
-            formData.append( 'file', file );
-            console.log( file );
-            primertype = $("#primer-type").val();
-            $.ajax( {
-                url        : '/upload_primers/{{ id }}/' + primertype,
-                type       : 'POST',
-                contentType: false,
-                cache      : false,
-                processData: false,
-                data       : formData,
-                success    : function ( data )
-                {
-                    window.location.reload(true);
-                }
-            } );
-        });
-
-        modal.find("#sel-file").change( function()
-        {
-            if(modal.find("#sel-file").value != '') {
-               modal.find("#btn-upload").prop('disabled', false);
-            }
-        });
-
-
-    });
     </script>
 
     {% include 'sequence_popup_script.html' %}

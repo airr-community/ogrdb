@@ -17,3 +17,7 @@ class RepertoireMixin:
 
         for p in self.reverse_primer_set:
             db.session.delete(p)
+
+        for s in self.primer_sets:
+            s.delete_dependencies(db)
+            db.session.delete(s)
