@@ -357,11 +357,13 @@ def sub_edit_seq():
 
 def sub_submit():
     time.sleep(3)
-    current_handles = driver.window_handles
     driver.find_element_by_name('submit_btn').click()
     time.sleep(3)
-    els = driver.find_elements_by_class_name('btn-warning')
-    els[2].click()
+
+    driver.find_element_by_id('accept-licence').click()
+    driver.find_element_by_id('accept-legal').click()
+    time.sleep(3)
+    driver.find_element_by_id('submitdlg-submit-btn').click()
 
 
 def sub_review_actions(sub_id):

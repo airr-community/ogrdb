@@ -164,18 +164,49 @@
     }
 
     function submit_warn() {
-        foo = BootstrapDialog.confirm({
+
+        foo = BootstrapDialog.show({
             title: 'Submit to IARC?',
-            message: 'This will submit the inferences for review. You will no longer be able to make changes to the submission.',
+            message: function(this_dialog) {
+                var msg = $('<div class="checkbox">');
+                msg.append('<label><input type="checkbox" value="" id="accept-licence">I accept the <a href="{{ url_for('render_page', page='licensing_statement.html') }}" target="_blank">Licence Agreement</a></label>');
+                msg.append('</div>');
+                msg.append('<div class="checkbox">');
+                msg.append('<label><input type="checkbox" value="" id="accept-legal">I confirm that what I\'m doing is legal and ethical</label>');
+                msg.append('</div>');
+
+                var dlg_submit_btn = this_dialog.getButton('submitdlg-submit-btn');
+
+                msg.find('input').change({dlg_submit_btn: dlg_submit_btn}, function(event) {
+                    if(document.getElementById("accept-licence").checked && document.getElementById("accept-legal").checked) {
+                        event.data.dlg_submit_btn.enable();
+                    } else {
+                        event.data.dlg_submit_btn.disable();
+                    }
+                });
+
+                return msg;
+            },
             type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Submit',
-            btnOKClass: 'btn-warning',
-              callback: function(result) {
-                if(result) {
+            onshow: function(this_dialog) {
+                this_dialog.getButton('submitdlg-submit-btn').disable();
+            },
+            buttons: [{
+                id: 'submitdlg-cancel-btn',
+                label: 'Cancel',
+                cssClass: 'btn-default',
+                action: function(this_dialog) {
+                    this_dialog.close()
+                }},
+                {
+                label: 'Submit',
+                id: 'submitdlg-submit-btn',
+                cssClass: 'btn-warning',
+                action: function(this_dialog) {
                     var submit_button = document.getElementById("submit_btn");
-                    submit_button.click()
-                }
-            }
+                    submit_button.click();
+                    this_dialog.close()
+            }}]
         });
     }
 
