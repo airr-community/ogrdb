@@ -9,11 +9,14 @@ class ExtendedRegisterForm(RegisterForm):
     name = StringField('Full Name', [DataRequired()])
     address = StringField('Institutional Address', [DataRequired()])
     accepted_terms = BooleanField('I accept the <a href="/render_page/privacy_statement.html" target="_blank">Privacy Statement</a>')
-#    accepted_terms = BooleanField('I have read and accept the Terms and Conditions')
+
 
 class ProfileForm(FlaskForm):
     name = StringField('Full Name', [DataRequired()])
     address = StringField('Institutional Address', [DataRequired()])
+    reduce_emails = BooleanField('Only send mail directly relating to my submissions')
+    active = BooleanField('Account is active (uncheck to deactivate)')
+
 
 def save_Profile(db, object, form, new=False):
     object.name = form.name.data

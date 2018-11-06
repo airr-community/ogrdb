@@ -44,6 +44,18 @@ def send_mail(subject, recipients, template, **context):
             else:
                 rec.append(recipient)
 
+    # check for disabled accounts and remove if found
+    checked_rec = []
+
+    for recipient in rec:
+        active = db.session.query(User).filter_by(email = recipient).first().active
+        if active:
+            checked_rec.append(recipient)
+        else:
+            current_app.logger.info('Mail %s not sent to recipient %s - not active' % (subject, recipient))
+
+    rec = checked_rec
+
     if len(rec) == 0:
         current_app.logger.info('No recpients for mail %s' % (subject))
         return

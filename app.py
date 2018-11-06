@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, url_for, Res
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_security import Security, SQLAlchemyUserDatastore, login_required
+from flask_security import Security, SQLAlchemyUserDatastore, login_required, logout_user
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
@@ -103,8 +103,15 @@ def profile():
     form.email = ''
     if request.method == 'POST':
         if form.validate():
-            save_Profile(db, current_user, form)
-            flash('Profile updated.')
+            if 'disable_btn' in request.form:
+                current_user.active = False
+                save_Profile(db, current_user, form)
+                flash('Account disabled.')
+                logout_user()
+                return redirect('/')
+            else:
+                save_Profile(db, current_user, form)
+                flash('Profile updated.')
 
     return render_template('profile.html', form=form, current_user=current_user, url='profile')
 
