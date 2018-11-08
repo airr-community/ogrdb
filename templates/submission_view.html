@@ -14,7 +14,7 @@
     <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
     <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
     <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
-    <li role="presentation"><a href="#primers" aria-controls="primers" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
+    <li role="presentation"><a href="#primer_sets" aria-controls="primer_sets" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
     <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
     <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
@@ -46,7 +46,7 @@
         {{ tables['pub'] }}
     </div>
 
-    <div role="tabpanel" class="tab-pane" id="primers">
+    <div role="tabpanel" class="tab-pane" id="primer_sets">
         <p>Sequences of the PCR primers used in the study.</p>
         {% for (name, notes, table) in tables['primer_sets'] %}
             <h3>{{ name }}</h3>
