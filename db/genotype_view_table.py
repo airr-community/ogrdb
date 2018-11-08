@@ -12,3 +12,9 @@ def setup_gv_table(desc):
     table.rotate_header = True
     table.add_column('nt_sequence', SeqCol('Sequence', tooltip="Click to view or download sequence"))
     return table
+
+def setup_gv_fasta(desc):
+    f = ''
+    for g in desc.genotypes:
+        f += format_fasta_sequence(g.sequence_id, g.nt_sequence, 100)
+    return f

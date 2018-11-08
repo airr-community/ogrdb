@@ -3,10 +3,27 @@
       var button = $(event.relatedTarget); // Button that triggered the modal
       var sequence = button.data('sequence'); // Extract info from data-* attributes
       var name = button.data('name'); // Extract info from data-* attributes
-      var fa_href = "data:application/octet-stream;charset=utf-8," + button.data('fa').replace(/\n/g, "\r\n")
+      var fasta = button.data('fa');
       var modal = $(this);
-      document.querySelector('#modal-sequence').textContent = sequence
-      modal.find('.modal-title').text(name)
-      document.getElementById('modal-fa').href = fa_href
+      document.querySelector('#modal-sequence').textContent = sequence;
+      modal.find('.modal-title').text(name);
+      state = 'numbered';
+      $( "#modal-fa" ).html('FASTA')
+
+      $( "#modal-fa" ).click(function() {
+        if(state == 'numbered') {
+            document.querySelector('#modal-sequence').textContent = fasta;
+            $( "#modal-fa" ).html('Numbered')
+            state = 'fasta'
+        } else {
+            document.querySelector('#modal-sequence').textContent = sequence;
+            $( "#modal-fa" ).html('FASTA')
+            state = 'numbered'
+        }
+      });
+    })
+
+    $('#seqModal').on('hide.bs.modal', function (event) {
+        $( "#modal-fa" ).off('click');
     })
 </script>

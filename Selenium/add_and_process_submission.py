@@ -273,7 +273,7 @@ def sub_edit_gen():
     driver.find_element_by_id('save_genotype').click()
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
-    x = driver.find_elements(By.XPATH, '//*[contains(@href, "genotype/")]')
+    x = driver.find_elements(By.XPATH, '//*[contains(@href, "genotype_e/")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
     wait.until(EC.element_to_be_clickable((By.ID,'download_genotype')))

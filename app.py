@@ -568,11 +568,16 @@ def check_genotype_description_view(id):
 
     return desc
 
+@app.route('/genotype_e/<id>')
+def genotype_e(id):
+    return genotype(id, True)
 
-
+# 'editable' parameter indicates whether links back to the submission should be editable or not
 @app.route('/genotype/<id>')
-def genotype(id):
+def genotype(id, editable=False):
     desc = check_genotype_description_view(id)
+    sub = desc.submission
+    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
     if desc is None:
         return redirect('/')
 
@@ -580,7 +585,9 @@ def genotype(id):
     tables['desc'] = make_GenotypeDescription_view(desc, False)
     tables['desc'].items.append({"item": "Tool/Settings", "value": desc.inference_tool.tool_settings_name, "tooltip": ""})
     tables['genotype'] = setup_gv_table(desc)
-    return render_template('genotype_view.html', desc=desc, tables=tables, id=id)
+    fasta = setup_gv_fasta(desc)
+    submission_link = 'edit_submission' if editable else 'submission'
+    return render_template('genotype_view.html', desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link)
 
 @app.route('/download_genotype/<id>')
 def download_genotype(id):
