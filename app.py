@@ -623,6 +623,28 @@ def delete_genotype(id):
         db.session.commit()
     return ''
 
+@app.route('/inferred_sequence/<id>', methods=['GET'])
+def inferred_sequence(id):
+    seq = db.session.query(InferredSequence).filter_by(id = id).one_or_none()
+    if seq is None:
+        flash('Record not found')
+        return redirect('/')
+    elif not seq.submission.can_see(current_user):
+        flash('You do not have rights to view that entry')
+        return redirect('/')
+
+    sub = seq.submission
+
+    table = make_InferredSequence_view(seq)
+
+    for i in range(len(table.items)-1, 0, -1):
+        if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?':
+            del(table.items[i])
+
+    return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id)
+
+
+
 
 def check_inferred_sequence_edit(id):
     try:

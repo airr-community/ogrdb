@@ -91,7 +91,6 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     for set in sub.repertoire[0].primer_sets:
         tables['primer_sets'].append((set.primer_set_name, set.primer_set_notes, make_Primer_table(set.primers)))
 
-
     if len(sub.repertoire) == 0:
         sub.repertoire.append(Repertoire())
         db.session.commit()
@@ -117,8 +116,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['genotype_description'] = t
 
     t = make_InferredSequence_table(sub.inferred_sequences)
-    t2 = make_InferredSequence_table(sub.inferred_sequences)
-    t3 = make_InferredSequence_table(sub.inferred_sequences)
+    t.add_column('id', ActionCol("View", delete=False, view_route='inferred_sequence'))
     t.add_column('Sequence', SeqNameCol('Sequence'))
     t.add_column('Genotype', GenNameCol('Genotype'))
     tables['inferred_sequence'] = t

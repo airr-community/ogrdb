@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
-{% block pagetitle %} Inference Tool and Settings {% endblock %}
+{% block pagetitle %} Inferred Sequence {% endblock %}
+
 
 {% block c_body %}
+<h3>Submission {{ sub_id }} </h3>
+<h3>Inferred Sequence {{ seq_id }} </h3>
+
         <div class=".table">
             {{ table }}
         </div>
+
         <div class="row col-sm-offset-1">
                 <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
         </div>
+
 {% endblock %}
 
 

@@ -410,6 +410,23 @@ InferredSequence:
             description: Identifier of the genotype from which these sequences were inferred
             foreign_key: genotype_description.id
             relationship: [genotype_description, GenotypeDescription, inferred_sequences]
+        seq_accession_no:
+            type: string
+            description: Accession number of the inferred allele within the repository (e.g. BK010573)
+            completed_by: submitter
+            label: Accession Number
+            nonblank: true
+        deposited_version:
+            type: string
+            description: Version number of the sequence within the repository (e.g. 1)
+            completed_by: submitter
+            label: Version
+        run_ids:
+            type: string
+            description: Comma-separated list of accession number(s) of the select set(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)
+            completed_by: submitter
+            label: Select sets
+            nonblank: true
         inferred_extension:
             type: boolean
             label: Extension?
@@ -444,23 +461,6 @@ InferredSequence:
             label: 5\' end
             description: End co-ordinate of 5\' extension (if any) in IMGT numbering
             nonblank: false
-        seq_accession_no:
-            type: string
-            description: Accession number of the inferred allele within the repository (e.g. BK010573)
-            completed_by: submitter
-            label: Accession Number
-            nonblank: true
-        deposited_version:
-            type: string
-            description: Version number of the sequence within the repository (e.g. 1)
-            completed_by: submitter
-            label: Version
-        run_ids:
-            type: string
-            description: Comma-separated list of accession number(s) of the run(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)
-            completed_by: submitter
-            label: Run Accession Numbers
-            nonblank: true
 
 
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
@@ -550,7 +550,7 @@ Genotype:
             label: NT Diffs
         nt_substitutions:
             type: string
-            description: Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
+            description: For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
             completed_by: submitter            
             tableview: true
             label: NT Substs
@@ -562,7 +562,7 @@ Genotype:
             label: AA Diffs
         aa_substitutions:
             type: string
-            description: List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
+            description: For inferred alleles, List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
             label: AA Substs
@@ -574,7 +574,7 @@ Genotype:
             label: Unmutated Freq
         unmutated_sequences:
             type: integer
-            description: he number of sequences exactly matching this unmutated sequence
+            description: The number of sequences exactly matching this unmutated sequence
             completed_by: submitter
             tableview: true
             label: Unmutated Seqs
@@ -592,13 +592,13 @@ Genotype:
             label: Allelic %
         unique_ds:
             type: integer
-            description: Number of D allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
+            description: For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence
             completed_by: submitter
             tableview: true
             label: Unique Ds
         unique_js:
             type: integer
-            description: Number of J allele calls (i.e., unique allelic sequences) found associated with an inferred V sequence
+            description: For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence
             completed_by: submitter
             tableview: true
             label: Unique Js
@@ -610,13 +610,13 @@ Genotype:
             label: Unique CDR3s
         haplotyping_locus:
             type: string
-            description: Locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
+            description: For inferred alleles, the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
             completed_by: submitter
             tableview: true
             label: Haplotyping Locus
         haplotyping_ratio:
             type: string
-            description: Ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
+            description: For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
             completed_by: submitter
             tableview: true
             label: Haplotyping Ratio
