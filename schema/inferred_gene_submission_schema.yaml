@@ -550,7 +550,7 @@ Genotype:
             label: NT Diffs
         nt_substitutions:
             type: string
-            description: For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele
+            description: For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
             label: NT Substs
@@ -562,7 +562,7 @@ Genotype:
             label: AA Diffs
         aa_substitutions:
             type: string
-            description: For inferred alleles, List of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
+            description: For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
             label: AA Substs
