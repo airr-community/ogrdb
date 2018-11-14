@@ -49,7 +49,7 @@ def send_mail(subject, recipients, template, **context):
 
     for recipient in rec:
         active = db.session.query(User).filter_by(email = recipient).first().active
-        if active:
+        if active is None or active:
             checked_rec.append(recipient)
         else:
             current_app.logger.info('Mail %s not sent to recipient %s - not active' % (subject, recipient))
