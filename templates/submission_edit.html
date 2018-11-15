@@ -169,16 +169,19 @@
             title: 'Submit to IARC?',
             message: function(this_dialog) {
                 var msg = $('<div class="checkbox">');
-                msg.append('<label><input type="checkbox" value="" id="accept-licence">I accept the <a href="{{ url_for('render_page', page='licensing_statement.html') }}" target="_blank">Licence Agreement</a></label>');
+                msg.append('<p>Any data or information uploaded to this site is deposited under a <br><a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode" target="_blank">CC0 (Creative Commons 0) license</a></p>')
+                msg.append('<label><input type="checkbox" value="" id="accept-licence">I agree</label>');
                 msg.append('</div>');
-                msg.append('<div class="checkbox">');
-                msg.append('<label><input type="checkbox" value="" id="accept-legal">I confirm that what I\'m doing is legal and ethical</label>');
-                msg.append('</div>');
+//                msg.append('<div class="checkbox">');
+//                msg.append('<label><input type="checkbox" value="" id="accept-legal">I confirm that what I\'m doing is legal and ethical</label>');
+//                msg.append('</div>');
 
                 var dlg_submit_btn = this_dialog.getButton('submitdlg-submit-btn');
 
                 msg.find('input').change({dlg_submit_btn: dlg_submit_btn}, function(event) {
-                    if(document.getElementById("accept-licence").checked && document.getElementById("accept-legal").checked) {
+                    if(document.getElementById("accept-licence").checked
+//                        && document.getElementById("accept-legal").checked
+                    ) {
                         event.data.dlg_submit_btn.enable();
                     } else {
                         event.data.dlg_submit_btn.disable();

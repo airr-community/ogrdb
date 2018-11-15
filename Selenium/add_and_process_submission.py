@@ -367,7 +367,7 @@ def sub_submit():
     time.sleep(3)
 
     driver.find_element_by_id('accept-licence').click()
-    driver.find_element_by_id('accept-legal').click()
+    #driver.find_element_by_id('accept-legal').click()
     time.sleep(3)
     driver.find_element_by_id('submitdlg-submit-btn').click()
 
