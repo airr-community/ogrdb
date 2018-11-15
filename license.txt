@@ -1,6 +1,8 @@
-# Copyright William Lees
-#
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
-# the English version of which is available here: https://perma.cc/DK5U-NDVE
-#
+Copyright William Lees
+
+This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+the English version of which is available here: https://perma.cc/DK5U-NDVE
+
+To inquire about obtaining or using this software through a license other than the EUPL v. 1.2, including for commercial purposes, 
+please contact the author at william@lees.org.uk.
 
