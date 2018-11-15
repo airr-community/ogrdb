@@ -1,3 +1,9 @@
+# Copyright William Lees
+#
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# the English version of which is available here: https://perma.cc/DK5U-NDVE
+#
+
 # Sublcasses for read-only views of objects, supporting tooltips
 
 from flask_table import Table, Col, LinkCol

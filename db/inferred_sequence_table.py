@@ -1,3 +1,9 @@
+# Copyright William Lees
+#
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# the English version of which is available here: https://perma.cc/DK5U-NDVE
+#
+
 from forms.submission_edit_form import EditableAckTable
 from db.repertoire_db import make_Acknowledgements_table
 from forms.repertoire_form import AcknowledgementsForm

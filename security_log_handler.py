@@ -1,3 +1,9 @@
+# Copyright William Lees
+#
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# the English version of which is available here: https://perma.cc/DK5U-NDVE
+#
+
 # Flask-login and flask-security signal handling
 
 from flask_login import user_logged_in, user_logged_out, user_unauthorized
