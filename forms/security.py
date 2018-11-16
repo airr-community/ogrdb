@@ -13,13 +13,13 @@ from flask_wtf import FlaskForm
 
 class ExtendedRegisterForm(RegisterForm):
     name = StringField('Full Name', [DataRequired()])
-    address = StringField('Institutional Address', [DataRequired()])
+    address = StringField('Institution and Postal Address', [DataRequired()])
     accepted_terms = BooleanField('I accept the <a href="/render_page/privacy_statement.html" target="_blank">Privacy</a> and <a href="/render_page/licensing_statement.html" target="_blank">Licensing</a> statements')
 
 
 class ProfileForm(FlaskForm):
     name = StringField('Full Name', [DataRequired()])
-    address = StringField('Institutional Address', [DataRequired()])
+    address = StringField('Institution and Postal Address', [DataRequired()])
     reduce_emails = BooleanField('Only send mail directly relating to my submissions')
     active = BooleanField('Account is active (uncheck to deactivate)')
 
