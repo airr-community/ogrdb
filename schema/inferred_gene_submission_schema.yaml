@@ -84,6 +84,7 @@ NotesEntry:
             description: Notes from submitter accompanying submission
             label: Notes
             rows: 20
+            width: wide
         notes_attachment:
             type: blob
             description: File attachment from submitter accompanying submission
@@ -371,6 +372,7 @@ InferenceTool:
             description: Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)
             completed_by: submitter
             rows: 10
+            width: wide
             label: Starting Database
             nonblank: true
         tool_settings:
@@ -379,6 +381,7 @@ InferenceTool:
             completed_by: submitter
             rows: 20
             label: Settings
+            width: wide
             nonblank: true
         submission_id:
             type: integer

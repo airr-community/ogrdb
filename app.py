@@ -489,6 +489,11 @@ def inference_tool(id):
         return redirect('/')
 
     table = make_InferenceTool_view(tool, tool.submission.can_edit(current_user))
+
+    for item in table.items:
+        if (item['item'] == 'Starting Database' or item['item'] == 'Settings') and len(item['value']) > 0 :
+            item['value'] = Markup(safe_textile(item['value']))
+
     return render_template('inference_tool_view.html', table=table)
 
 

@@ -77,13 +77,22 @@
 
     <div role="tabpanel" class="tab-pane" id="notes">
         <h3>Notes</h3>
-        {{ tables['submission_notes'] }}
+        {% for item in tables['submission_notes'].items %}
+            {% if item['item'] == 'Notes' %}
+                {{  item['value'] | textile_filter }}
+            {% endif %}
+            {% if item['item'] == 'Attachment File Name' %}
+                <br><br><br>
+                <p>Attached file: {{  item['value'] }}</p>
+            {% endif %}
+        {% endfor %}
         {% if attachment %}
             <div class="form-group">
-                <div class="form-control-label col-sm-4 col-sm-offset-2">
+                <div class="form-control-label col-sm-4">
                     <a class="btn btn-default" role="button" href="{{ url_for('download_submission_attachment', id=id) }}">Download Attachment</a>
                 </div>
             </div>
+            <br><br><br>
         {% endif %}
     </div>
 

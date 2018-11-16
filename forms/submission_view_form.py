@@ -109,8 +109,6 @@ def setup_submission_view_forms_and_tables(sub, db, private):
         if item['item'] == 'Notes':
             if item['value'] == '' or item['value'] is None:
                 item['value'] = 'No notes provided'
-            else:
-                item['value'] = Markup(safe_textile(item['value']))
 
     t = make_InferenceTool_table(sub.inference_tools)
     t.add_column('id', ActionCol("View", delete=False, view_route='inference_tool'))
