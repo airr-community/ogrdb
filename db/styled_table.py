@@ -19,6 +19,10 @@ class StyledTable(Table):
         if 'classes' not in kwargs:
             kwargs['classes'] = []
 
+        self.empty_message = kwargs.get('empty_message', 'No Items')
+        if 'empty_message' in kwargs:
+            del(kwargs['empty_message'])
+
         kwargs['classes'] = list(kwargs['classes'])
         kwargs['classes'].append('table')
         kwargs['classes'].append('table_back')
@@ -45,6 +49,12 @@ class StyledTable(Table):
             escape_content = False,
             attrs = attrs,
         )
+
+    def __html__(self):
+        ret =  super(StyledTable, self).__html__()
+        if 'No Items' in ret:
+            ret = '<div class="%s">'% ' '.join(self.classes) + self.empty_message + '</div>'
+        return ret
 
 class StyledCol(Col):
     def __init__(self, *args, **kwargs):

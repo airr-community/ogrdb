@@ -48,7 +48,7 @@ class Delegate_table(StyledTable):
 
 def make_Delegate_table(results, private = False, classes=()):
     t=create_table(base=Delegate_table)
-    ret = t(results, classes=classes)
+    ret = t(results, classes=classes, empty_message='No Delegates have been added')
     return ret
 
 class EditableDelegateTable(EditableTable):
@@ -62,6 +62,8 @@ class EditableDelegateTable(EditableTable):
                 sub = db.session.query(Submission).filter(Submission.id==self.sub_id).one_or_none()
                 if user in sub.delegates:
                     raise ValueError('%s is already a delegate!' % user.name)
+                if user_id < 0:
+                    raise ValueError('Please select a delegate to add.')
                 sub.delegates.append(user)
                 db.session.commit()
                 added = True
@@ -153,7 +155,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['delegate_table'].sub_id = sub.id
 
     users = db.session.query(User).filter(User.active==True, User.confirmed_at!=None)
-    tables['delegate_table'].form.delegate.choices = [(user.id, '%s, %s' % (user.name, user.address)) for user in users]
+    tables['delegate_table'].form.delegate.choices = [(-1, '--- Select User to add as Delegate ---')] + [(user.id, '%s, %s' % (user.name, user.address)) for user in users]
 
     form = AggregateForm(journal_entry_form, hidden_return_form, tables['delegate_table'].form)
     return (form, tables)
