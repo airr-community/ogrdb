@@ -74,7 +74,7 @@ from forms.primer_set_edit_form import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-migrate = Migrate(app, db, compare_type=True)
+migrate = Migrate(app, db)
 
 security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
 
