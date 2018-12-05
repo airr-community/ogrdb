@@ -1182,7 +1182,7 @@ def check_primer_set_edit(id):
         set = db.session.query(PrimerSet).filter_by(id = id).one_or_none()
         if set is None:
             flash('Record not found')
-            return None
+            return (None, None)
 
         sub = set.repertoire.submission
         if not sub.can_edit(current_user):
