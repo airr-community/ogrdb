@@ -11,7 +11,7 @@ class GeneDescriptionForm(FlaskForm):
     lab_address = StringField('Author address', [validators.Length(max=255)], description="Institution and full address of corresponding author")
     alt_names = StringField('Alternative names', [validators.Length(max=255)], description="Alternative names for this sequence")
     locus = SelectField('Locus', choices=[('IGH', 'IGH'), ('IGK', 'IGK'), ('IGL', 'IGL'), ('TRA', 'TRA'), ('TRB', 'TRB'), ('TRG', 'TRG'), ('TRD', 'TRD')], description="Gene locus")
-    sequence_type = SelectField('Domain', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('C', 'C')], description="Sequence type (Leader, V, D, J, CH1 ... CH4)")
+    sequence_type = SelectField('Sequence Type', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('CH1', 'CH1'), ('CH2', 'CH2'), ('CH3', 'CH3'), ('CH4', 'CH4'), ('Leader', 'Leader')], description="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     functional = BooleanField('Functional', [], description="Functional")
     inference_type = SelectField('Inference Type', choices=[('Genomic and Rearranged', 'Genomic and Rearranged'), ('Genomic Only', 'Genomic Only'), ('Rearranged Only', 'Rearranged Only')], description="Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)")
     affirmation_level = SelectField('Affirmation Level', choices=[('0', '0'), ('1', '1'), ('2', '2'), ('3', '3')], description="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")

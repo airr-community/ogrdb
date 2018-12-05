@@ -175,7 +175,7 @@ class GeneDescription_table(StyledTable):
     release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
     organism = StyledCol("Organism", tooltip="Binomial designation of subject's species")
     locus = StyledCol("Locus", tooltip="Gene locus")
-    sequence_type = StyledCol("Domain", tooltip="Sequence type (Leader, V, D, J, CH1 ... CH4)")
+    sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
     status = StyledCol("Status", tooltip="Status of record")
 
@@ -202,7 +202,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Organism", "value": sub.organism, "tooltip": "Binomial designation of subject's species", "field": "organism"})
     ret.items.append({"item": "Alternative names", "value": sub.alt_names, "tooltip": "Alternative names for this sequence", "field": "alt_names"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
-    ret.items.append({"item": "Domain", "value": sub.sequence_type, "tooltip": "Sequence type (Leader, V, D, J, CH1 ... CH4)", "field": "sequence_type"})
+    ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
     ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
     ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})

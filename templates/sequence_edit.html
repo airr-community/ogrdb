@@ -128,7 +128,7 @@
         if($("#inference_type").val() != 'Rearranged Only') {
             $("label[for='l_region_start']").parent().show();
             $("label[for='l_region_end']").parent().show();
-            if($("#domain").val() == 'V') {
+            if($("#sequence_type").val() == 'V') {
                 $("label[for='utr_5_prime_start']").parent().show();
                 $("label[for='utr_5_prime_end']").parent().show();
                 $("label[for='start_5prime_ext']").parent().hide();
@@ -139,7 +139,7 @@
                 $("label[for='v_rs_start']").parent().hide();
                 $("label[for='v_rs_end']").parent().hide();
             }
-            if($("#domain").val() == 'D') {
+            if($("#sequence_type").val() == 'D') {
                 $("label[for='d_rs_3_prime_start']").parent().show();
                 $("label[for='d_rs_3_prime_end']").parent().show();
                 $("label[for='d_rs_5_prime_start']").parent().show();
@@ -150,7 +150,7 @@
                 $("label[for='d_rs_5_prime_start']").parent().hide();
                 $("label[for='d_rs_5_prime_end']").parent().hide();
             }
-            if($("#domain").val() == 'J') {
+            if($("#sequence_type").val() == 'J') {
                 $("label[for='j_rs_start']").parent().show();
                 $("label[for='j_rs_end']").parent().show();
             } else {
@@ -176,7 +176,7 @@
     }
 
     function j_display() {
-        if($("#domain").val() == 'J') {
+        if($("#sequence_type").val() == 'J') {
             $("label[for='j_cdr3_end']").parent().show();
             $("label[for='codon_frame']").parent().show();
         } else {
@@ -202,7 +202,7 @@
         j_display()
     });
 
-    $("#domain").change( function()
+    $("#sequence_type").change( function()
     {
         utr_display();
         j_display()

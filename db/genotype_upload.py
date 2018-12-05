@@ -22,14 +22,19 @@ def blob_to_genotype(desc, db):
         first = True
         imported = []
         for row in reader:
+            # support former field name 'haplotyping_locus' -> 'haplotyping_gene'
+            if 'haplotyping_locus' in row and 'haplotyping_gene' not in row:
+                row['haplotyping_gene'] = row['haplotyping_locus']
+                del(row['haplotyping_locus'])
             rec = Genotype()
             if first:
                 unsupported = []
                 for field in reader.fieldnames:
-                    if not hasattr(rec, field):
-                        unsupported.append(field)
-                    else:
-                        imported.append(field)
+                    if field != 'haplotyping_locus':
+                        if not hasattr(rec, field):
+                            unsupported.append(field)
+                        else:
+                            imported.append(field)
                 if len(unsupported) > 0:
                     flash("Unrecognised field(s) '%s' have not been imported" % ','.join(unsupported))
                 first = False

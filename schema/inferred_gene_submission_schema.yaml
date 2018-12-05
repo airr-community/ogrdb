@@ -700,9 +700,9 @@ GeneDescription:
             tableview: true
             width: narrow
         sequence_type:
-            type: [V,D,J,C]
-            description: Sequence type (Leader, V, D, J, CH1 ... CH4)
-            label: Domain
+            type: [V,D,J,CH1,CH2,CH3,CH4,Leader]
+            description: Sequence type (V, D, J, CH1 ... CH4, Leader)
+            label: Sequence Type
             tableview: true
             width: narrow
         functional:
