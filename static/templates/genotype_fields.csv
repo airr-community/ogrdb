@@ -22,6 +22,6 @@
 ,unique_ds,"For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence"
 ,unique_js,"For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence"
 ,unique_cdr3s,Number of unique CDR3s found associated with an inferred V sequence
-,haplotyping_locus,"For inferred alleles,  the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)"
+,haplotyping_gene,"For inferred alleles,  the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)"
 ,haplotyping_ratio,"For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)"
 ,nt_sequence,The consensus sequence provided by the inference tool 

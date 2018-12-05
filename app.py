@@ -916,7 +916,7 @@ def new_sequence(species):
                 if sn[:2] == 'IG' or sn[:2] == 'TR':
                     ld = {'H': 'IGH', 'K': 'IGK', 'L': 'IGL', 'A': 'TRA', 'B': 'TRB', 'G': 'TRG', 'D': 'TRD'}
                     gene_description.locus = ld[sn[2]]
-                    gene_description.domain = sn[3]
+                    gene_description.sequence_type = sn[3]
                     if '-' in sn:
                         snp = sn.split('-')
                         gene_description.gene_subgroup = snp[0][4:]
