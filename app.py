@@ -914,7 +914,7 @@ def new_sequence(species):
             try:
                 sn = gene_description.sequence_name
                 if sn[:2] == 'IG' or sn[:2] == 'TR':
-                    ld = {'H': 'Heavy', 'K': 'Light-Kappa', 'L': 'Light-Lambda', 'A': 'Alpha', 'B': 'Beta', 'G': 'Gamma', 'D': 'Delta'}
+                    ld = {'H': 'IGH', 'K': 'IGK', 'L': 'IGL', 'A': 'TRA', 'B': 'TRB', 'G': 'TRG', 'D': 'TRD'}
                     gene_description.locus = ld[sn[2]]
                     gene_description.domain = sn[3]
                     if '-' in sn:

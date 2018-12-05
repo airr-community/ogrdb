@@ -3,7 +3,7 @@
 #
 # Submission Details
 Submission:
-    discriminator: AIR3
+    discriminator: AIRR
     description: Overall details of the submission
     type: object
     occurrence: single
@@ -694,7 +694,7 @@ GeneDescription:
             description: Alternative names for this sequence
             label: Alternative names
         locus:
-            type: [Heavy, Light-Kappa, Light-Lambda, Alpha, Beta, Gamma, Delta]
+            type: [IGH, IGK, IGL, TRA, TRB, TRG, TRD]
             description: Gene locus
             label: Locus
             tableview: true
@@ -788,7 +788,7 @@ GeneDescription:
             width: narrow
         v_rs_start:
             type: integer
-            description: Start co-ordinate in the Full Sequence of V recombination site (V genes only)
+            description: Start co-ordinate in the Full Sequence of V recombination site (V-genes only)
             nonblank: false
             width: narrow
         v_rs_end:
