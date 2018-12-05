@@ -183,7 +183,7 @@ Repertoire:
             description: URL of the study or project within the repository
             completed_by: submitter
             label: Dataset URL
-        miarr_compliant:
+        miairr_compliant:
             type: [Yes, No]
             description: Yes if the repertoire dataset and associated metadata is available in MiAIRR format
             completed_by: submitter

@@ -136,7 +136,7 @@ class Repertoire(db.Model, RepertoireMixin):
     repository_name = db.Column(db.String(1000))
     rep_accession_no = db.Column(db.String(1000))
     dataset_url = db.Column(db.String(500))
-    miarr_compliant = db.Column(db.String(255))
+    miairr_compliant = db.Column(db.String(255))
     miairr_link = db.Column(db.String(500))
     sequencing_platform = db.Column(db.String(1000))
     read_length = db.Column(db.String(1000))
@@ -149,7 +149,7 @@ def save_Repertoire(db, object, form, new=False):
     object.repository_name = form.repository_name.data
     object.rep_accession_no = form.rep_accession_no.data
     object.dataset_url = form.dataset_url.data
-    object.miarr_compliant = form.miarr_compliant.data
+    object.miairr_compliant = form.miairr_compliant.data
     object.miairr_link = form.miairr_link.data
     object.sequencing_platform = form.sequencing_platform.data
     object.read_length = form.read_length.data
@@ -166,7 +166,7 @@ def populate_Repertoire(db, object, form):
     form.repository_name.data = object.repository_name
     form.rep_accession_no.data = object.rep_accession_no
     form.dataset_url.data = object.dataset_url
-    form.miarr_compliant.data = object.miarr_compliant
+    form.miairr_compliant.data = object.miairr_compliant
     form.miairr_link.data = object.miairr_link
     form.sequencing_platform.data = object.sequencing_platform
     form.read_length.data = object.read_length
@@ -179,7 +179,7 @@ def copy_Repertoire(c_from, c_to):
     c_to.repository_name = c_from.repository_name
     c_to.rep_accession_no = c_from.rep_accession_no
     c_to.dataset_url = c_from.dataset_url
-    c_to.miarr_compliant = c_from.miarr_compliant
+    c_to.miairr_compliant = c_from.miairr_compliant
     c_to.miairr_link = c_from.miairr_link
     c_to.sequencing_platform = c_from.sequencing_platform
     c_to.read_length = c_from.read_length
@@ -206,7 +206,7 @@ def make_Repertoire_view(sub, private = False):
     ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)", "field": "repository_name"})
     ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)", "field": "rep_accession_no"})
     ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository", "field": "dataset_url"})
-    ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miarr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format", "field": "miarr_compliant"})
+    ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miairr_compliant, "tooltip": "Yes if the repertoire dataset and associated metadata is available in MiAIRR format", "field": "miairr_compliant"})
     ret.items.append({"item": "MiAIRR URL", "value": sub.miairr_link, "tooltip": "Link to MiAIRR metadata, if available", "field": "miairr_link"})
     ret.items.append({"item": "Sequencing Platform", "value": sub.sequencing_platform, "tooltip": "Designation of sequencing instrument used", "field": "sequencing_platform"})
     ret.items.append({"item": "Read Length", "value": sub.read_length, "tooltip": "Read length in bases for each direction", "field": "read_length"})
