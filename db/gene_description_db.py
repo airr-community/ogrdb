@@ -218,7 +218,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "UTR 5\' End", "value": sub.utr_5_prime_end, "tooltip": "End co-ordinate in the Full Sequence of 5 prime UTR", "field": "utr_5_prime_end"})
     ret.items.append({"item": "L Region Start", "value": sub.l_region_start, "tooltip": "Start co-ordinate in the Full Sequence of L region", "field": "l_region_start"})
     ret.items.append({"item": "L Region End", "value": sub.l_region_end, "tooltip": "End co-ordinate in the Full Sequence of L region", "field": "l_region_end"})
-    ret.items.append({"item": "v_rs_start", "value": sub.v_rs_start, "tooltip": "Start co-ordinate in the Full Sequence of V recombination site (V genes only)", "field": "v_rs_start"})
+    ret.items.append({"item": "v_rs_start", "value": sub.v_rs_start, "tooltip": "Start co-ordinate in the Full Sequence of V recombination site (V-genes only)", "field": "v_rs_start"})
     ret.items.append({"item": "v_rs_end", "value": sub.v_rs_end, "tooltip": "End co-ordinate in the Full Sequence of V recombination site (V-genes only)", "field": "v_rs_end"})
     ret.items.append({"item": "d_rs_3_prime_start", "value": sub.d_rs_3_prime_start, "tooltip": "Start co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)", "field": "d_rs_3_prime_start"})
     ret.items.append({"item": "d_rs_3_prime_end", "value": sub.d_rs_3_prime_end, "tooltip": "End co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)", "field": "d_rs_3_prime_end"})
