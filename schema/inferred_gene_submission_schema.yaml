@@ -611,12 +611,12 @@ Genotype:
             completed_by: submitter
             tableview: true
             label: Unique CDR3s
-        haplotyping_locus:
+        haplotyping_gene:
             type: string
-            description: For inferred alleles, the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)
+            description: For inferred alleles, the gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)
             completed_by: submitter
             tableview: true
-            label: Haplotyping Locus
+            label: Haplotyping Gene
         haplotyping_ratio:
             type: string
             description: For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
@@ -699,9 +699,9 @@ GeneDescription:
             label: Locus
             tableview: true
             width: narrow
-        domain:
+        sequence_type:
             type: [V,D,J,C]
-            description: Sequence domain (V, D, J or Constant)
+            description: Sequence type (Leader, V, D, J, CH1 ... CH4)
             label: Domain
             tableview: true
             width: narrow

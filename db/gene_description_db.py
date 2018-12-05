@@ -29,7 +29,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     organism = db.Column(db.String(1000))
     alt_names = db.Column(db.String(1000))
     locus = db.Column(db.String(255))
-    domain = db.Column(db.String(255))
+    sequence_type = db.Column(db.String(255))
     functional = db.Column(db.Boolean)
     inference_type = db.Column(db.String(255))
     affirmation_level = db.Column(db.String(255))
@@ -64,7 +64,7 @@ def save_GeneDescription(db, object, form, new=False):
     object.lab_address = form.lab_address.data
     object.alt_names = form.alt_names.data
     object.locus = form.locus.data
-    object.domain = form.domain.data
+    object.sequence_type = form.sequence_type.data
     object.functional = form.functional.data
     object.inference_type = form.inference_type.data
     object.affirmation_level = form.affirmation_level.data
@@ -102,7 +102,7 @@ def populate_GeneDescription(db, object, form):
     form.lab_address.data = object.lab_address
     form.alt_names.data = object.alt_names
     form.locus.data = object.locus
-    form.domain.data = object.domain
+    form.sequence_type.data = object.sequence_type
     form.functional.data = object.functional
     form.inference_type.data = object.inference_type
     form.affirmation_level.data = object.affirmation_level
@@ -141,7 +141,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.organism = c_from.organism
     c_to.alt_names = c_from.alt_names
     c_to.locus = c_from.locus
-    c_to.domain = c_from.domain
+    c_to.sequence_type = c_from.sequence_type
     c_to.functional = c_from.functional
     c_to.inference_type = c_from.inference_type
     c_to.affirmation_level = c_from.affirmation_level
@@ -175,7 +175,7 @@ class GeneDescription_table(StyledTable):
     release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
     organism = StyledCol("Organism", tooltip="Binomial designation of subject's species")
     locus = StyledCol("Locus", tooltip="Gene locus")
-    domain = StyledCol("Domain", tooltip="Sequence domain (V, D, J or Constant)")
+    sequence_type = StyledCol("Domain", tooltip="Sequence type (Leader, V, D, J, CH1 ... CH4)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
     status = StyledCol("Status", tooltip="Status of record")
 
@@ -202,7 +202,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Organism", "value": sub.organism, "tooltip": "Binomial designation of subject's species", "field": "organism"})
     ret.items.append({"item": "Alternative names", "value": sub.alt_names, "tooltip": "Alternative names for this sequence", "field": "alt_names"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
-    ret.items.append({"item": "Domain", "value": sub.domain, "tooltip": "Sequence domain (V, D, J or Constant)", "field": "domain"})
+    ret.items.append({"item": "Domain", "value": sub.sequence_type, "tooltip": "Sequence type (Leader, V, D, J, CH1 ... CH4)", "field": "sequence_type"})
     ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
     ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})

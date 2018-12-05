@@ -26,7 +26,7 @@ class Genotype(db.Model):
     unique_ds = db.Column(db.Integer)
     unique_js = db.Column(db.Integer)
     unique_cdr3s = db.Column(db.Integer)
-    haplotyping_locus = db.Column(db.String(1000))
+    haplotyping_gene = db.Column(db.String(1000))
     haplotyping_ratio = db.Column(db.String(1000))
     nt_sequence = db.Column(db.Text())
     description_id = db.Column(db.Integer, db.ForeignKey('genotype_description.id'))
@@ -49,7 +49,7 @@ def save_Genotype(db, object, form, new=False):
     object.unique_ds = form.unique_ds.data
     object.unique_js = form.unique_js.data
     object.unique_cdr3s = form.unique_cdr3s.data
-    object.haplotyping_locus = form.haplotyping_locus.data
+    object.haplotyping_gene = form.haplotyping_gene.data
     object.haplotyping_ratio = form.haplotyping_ratio.data
     object.nt_sequence = form.nt_sequence.data
 
@@ -76,7 +76,7 @@ def populate_Genotype(db, object, form):
     form.unique_ds.data = object.unique_ds
     form.unique_js.data = object.unique_js
     form.unique_cdr3s.data = object.unique_cdr3s
-    form.haplotyping_locus.data = object.haplotyping_locus
+    form.haplotyping_gene.data = object.haplotyping_gene
     form.haplotyping_ratio.data = object.haplotyping_ratio
     form.nt_sequence.data = object.nt_sequence
 
@@ -99,7 +99,7 @@ def copy_Genotype(c_from, c_to):
     c_to.unique_ds = c_from.unique_ds
     c_to.unique_js = c_from.unique_js
     c_to.unique_cdr3s = c_from.unique_cdr3s
-    c_to.haplotyping_locus = c_from.haplotyping_locus
+    c_to.haplotyping_gene = c_from.haplotyping_gene
     c_to.haplotyping_ratio = c_from.haplotyping_ratio
     c_to.nt_sequence = c_from.nt_sequence
 
@@ -122,7 +122,7 @@ class Genotype_table(StyledTable):
     unique_ds = StyledCol("Unique Ds", tooltip="For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence")
     unique_js = StyledCol("Unique Js", tooltip="For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence")
     unique_cdr3s = StyledCol("Unique CDR3s", tooltip="Number of unique CDR3s found associated with an inferred V sequence")
-    haplotyping_locus = StyledCol("Haplotyping Locus", tooltip="For inferred alleles, the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)")
+    haplotyping_gene = StyledCol("Haplotyping Gene", tooltip="For inferred alleles, the gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)")
     haplotyping_ratio = StyledCol("Haplotyping Ratio", tooltip="For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)")
 
 
@@ -153,7 +153,7 @@ def make_Genotype_view(sub, private = False):
     ret.items.append({"item": "Unique Ds", "value": sub.unique_ds, "tooltip": "For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence", "field": "unique_ds"})
     ret.items.append({"item": "Unique Js", "value": sub.unique_js, "tooltip": "For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence", "field": "unique_js"})
     ret.items.append({"item": "Unique CDR3s", "value": sub.unique_cdr3s, "tooltip": "Number of unique CDR3s found associated with an inferred V sequence", "field": "unique_cdr3s"})
-    ret.items.append({"item": "Haplotyping Locus", "value": sub.haplotyping_locus, "tooltip": "For inferred alleles, the locus (or loci) from which haplotyping was inferred (e.g. IGHJ6)", "field": "haplotyping_locus"})
+    ret.items.append({"item": "Haplotyping Gene", "value": sub.haplotyping_gene, "tooltip": "For inferred alleles, the gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)", "field": "haplotyping_gene"})
     ret.items.append({"item": "Haplotyping Ratio", "value": sub.haplotyping_ratio, "tooltip": "For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)", "field": "haplotyping_ratio"})
     ret.items.append({"item": "NT Sequence", "value": sub.nt_sequence, "tooltip": "The consensus sequence provided by the inference tool", "field": "nt_sequence"})
     return ret
