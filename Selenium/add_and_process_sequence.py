@@ -153,12 +153,13 @@ gtgtattactgtgcgagaga""")
 
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
-    assert(len(x) == nitems)
+    assert(len(x) == nitems+1)
+    nacks = len(x)
     i = random.randint(0, nitems-1)
     x[i].click()
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
-    assert(len(x) == nitems-1)
+    assert(len(x) == nacks-1)
 
     # Add a note
 

@@ -19,7 +19,6 @@ from db._gene_description_db import *
 
 class GeneDescription(db.Model, GeneDescriptionMixin):
     id = db.Column(db.Integer, primary_key=True)
-    sequence_name = db.Column(db.String(1000))
     description_id = db.Column(db.String(1000))
     author = db.Column(db.String(1000))
     lab_address = db.Column(db.String(1000))
@@ -27,6 +26,8 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     release_date = db.Column(db.DateTime)
     release_description = db.Column(db.Text())
     organism = db.Column(db.String(1000))
+    sequence_name = db.Column(db.String(1000))
+    imgt_name = db.Column(db.String(1000))
     alt_names = db.Column(db.String(1000))
     locus = db.Column(db.String(255))
     sequence_type = db.Column(db.String(255))
@@ -57,11 +58,20 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     notes = db.Column(db.Text())
 
     inferred_sequences = db.relationship('InferredSequence', secondary = inferred_sequences_gene_descriptions, backref = db.backref('gene_descriptions', lazy='dynamic'))
+    inferred_extension = db.Column(db.Boolean)
+    ext_3prime = db.Column(db.Text())
+    start_3prime_ext = db.Column(db.Integer)
+    end_3prime_ext = db.Column(db.Integer)
+    ext_5prime = db.Column(db.Text())
+    start_5prime_ext = db.Column(db.Integer)
+    end_5prime_ext = db.Column(db.Integer)
 
 
 def save_GeneDescription(db, object, form, new=False):   
     object.author = form.author.data
     object.lab_address = form.lab_address.data
+    object.sequence_name = form.sequence_name.data
+    object.imgt_name = form.imgt_name.data
     object.alt_names = form.alt_names.data
     object.locus = form.locus.data
     object.sequence_type = form.sequence_type.data
@@ -89,6 +99,13 @@ def save_GeneDescription(db, object, form, new=False):
     object.j_rs_start = form.j_rs_start.data
     object.j_rs_end = form.j_rs_end.data
     object.paralogs = form.paralogs.data
+    object.inferred_extension = form.inferred_extension.data
+    object.ext_3prime = form.ext_3prime.data
+    object.start_3prime_ext = form.start_3prime_ext.data
+    object.end_3prime_ext = form.end_3prime_ext.data
+    object.ext_5prime = form.ext_5prime.data
+    object.start_5prime_ext = form.start_5prime_ext.data
+    object.end_5prime_ext = form.end_5prime_ext.data
 
     if new:
         db.session.add(object)
@@ -100,6 +117,8 @@ def save_GeneDescription(db, object, form, new=False):
 def populate_GeneDescription(db, object, form):   
     form.author.data = object.author
     form.lab_address.data = object.lab_address
+    form.sequence_name.data = object.sequence_name
+    form.imgt_name.data = object.imgt_name
     form.alt_names.data = object.alt_names
     form.locus.data = object.locus
     form.sequence_type.data = object.sequence_type
@@ -127,18 +146,26 @@ def populate_GeneDescription(db, object, form):
     form.j_rs_start.data = object.j_rs_start
     form.j_rs_end.data = object.j_rs_end
     form.paralogs.data = object.paralogs
+    form.inferred_extension.data = object.inferred_extension
+    form.ext_3prime.data = object.ext_3prime
+    form.start_3prime_ext.data = object.start_3prime_ext
+    form.end_3prime_ext.data = object.end_3prime_ext
+    form.ext_5prime.data = object.ext_5prime
+    form.start_5prime_ext.data = object.start_5prime_ext
+    form.end_5prime_ext.data = object.end_5prime_ext
 
 
 
 
 def copy_GeneDescription(c_from, c_to):   
-    c_to.sequence_name = c_from.sequence_name
     c_to.author = c_from.author
     c_to.lab_address = c_from.lab_address
     c_to.release_version = c_from.release_version
     c_to.release_date = c_from.release_date
     c_to.release_description = c_from.release_description
     c_to.organism = c_from.organism
+    c_to.sequence_name = c_from.sequence_name
+    c_to.imgt_name = c_from.imgt_name
     c_to.alt_names = c_from.alt_names
     c_to.locus = c_from.locus
     c_to.sequence_type = c_from.sequence_type
@@ -167,6 +194,13 @@ def copy_GeneDescription(c_from, c_to):
     c_to.j_rs_end = c_from.j_rs_end
     c_to.paralogs = c_from.paralogs
     c_to.notes = c_from.notes
+    c_to.inferred_extension = c_from.inferred_extension
+    c_to.ext_3prime = c_from.ext_3prime
+    c_to.start_3prime_ext = c_from.start_3prime_ext
+    c_to.end_3prime_ext = c_from.end_3prime_ext
+    c_to.ext_5prime = c_from.ext_5prime
+    c_to.start_5prime_ext = c_from.start_5prime_ext
+    c_to.end_5prime_ext = c_from.end_5prime_ext
 
 
 
@@ -192,14 +226,15 @@ class GeneDescription_view(Table):
 
 def make_GeneDescription_view(sub, private = False):
     ret = GeneDescription_view([])
-    ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence (i.e., the name which the curators determine should be used by preference)", "field": "sequence_name"})
     ret.items.append({"item": "Sequence ID", "value": sub.description_id, "tooltip": "Unique identifier of this gene sequence", "field": "description_id"})
-    ret.items.append({"item": "Author", "value": sub.author, "tooltip": "Corresponding author", "field": "author"})
-    ret.items.append({"item": "Author address", "value": sub.lab_address, "tooltip": "Institution and full address of corresponding author", "field": "lab_address"})
+    ret.items.append({"item": "Curator", "value": sub.author, "tooltip": "Curator of this sequence record", "field": "author"})
+    ret.items.append({"item": "Curator address", "value": sub.lab_address, "tooltip": "Institution and full address of corresponding author", "field": "lab_address"})
     ret.items.append({"item": "Version", "value": sub.release_version, "tooltip": "Version number of this record, updated whenever a revised version is published or released", "field": "release_version"})
     ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     ret.items.append({"item": "Release Notes", "value": sub.release_description, "tooltip": "Brief descriptive notes of the reason for this release and the changes embodied", "field": "release_description"})
     ret.items.append({"item": "Organism", "value": sub.organism, "tooltip": "Binomial designation of subject's species", "field": "organism"})
+    ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence as assigned by IARC", "field": "sequence_name"})
+    ret.items.append({"item": "IMGT Name", "value": sub.imgt_name, "tooltip": "The name of this sequence as assigned by IMGT", "field": "imgt_name"})
     ret.items.append({"item": "Alternative names", "value": sub.alt_names, "tooltip": "Alternative names for this sequence", "field": "alt_names"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
     ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
@@ -227,5 +262,12 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "j_rs_start", "value": sub.j_rs_start, "tooltip": "Start co-ordinate in the Full Sequence of J recombination site (J-genes only)", "field": "j_rs_start"})
     ret.items.append({"item": "j_rs_end", "value": sub.j_rs_end, "tooltip": "End co-ordinate in the Full Sequence of J recombination site (J-genes only)", "field": "j_rs_end"})
     ret.items.append({"item": "Paralogs", "value": sub.paralogs, "tooltip": "Canonical names of 0 or more paralogs", "field": "paralogs"})
+    ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence", "field": "inferred_extension"})
+    ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)", "field": "ext_3prime"})
+    ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "start_3prime_ext"})
+    ret.items.append({"item": "3\' end", "value": sub.end_3prime_ext, "tooltip": "End co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "end_3prime_ext"})
+    ret.items.append({"item": "5\' Extension", "value": sub.ext_5prime, "tooltip": "Extending sequence at 5\' end (IMGT gapped)", "field": "ext_5prime"})
+    ret.items.append({"item": "5\' start", "value": sub.start_5prime_ext, "tooltip": "Start co-ordinate of 5\' extension (if any) in IMGT numbering", "field": "start_5prime_ext"})
+    ret.items.append({"item": "5\' end", "value": sub.end_5prime_ext, "tooltip": "End co-ordinate of 5\' extension (if any) in IMGT numbering", "field": "end_5prime_ext"})
     return ret
 

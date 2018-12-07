@@ -673,6 +673,24 @@ def check_inferred_sequence_edit(id):
 
     return desc
 
+def validate_ext(c_seq, c_start, c_end):
+    if c_seq.data or c_start.data or c_end.data:
+        for control in [c_seq, c_start, c_end]:
+            if control.data is None:
+                control.errors.append('Field cannot be empty.')
+                raise ValidationError()
+        for control in [c_start, c_end]:
+            if int(control.data) < 1 or int(control.data) > 1100:
+                control.errors.append('co-ordinate is implausible.')
+                raise ValidationError()
+        if int(c_start.data) > int(c_end.data):
+            c_end.errors.append('End co-ordinate must be greater than or equal to start co-ordinate')
+            raise ValidationError()
+        if len(c_seq.data) != int(c_end.data) - int(c_start.data) + 1:
+            c_seq.errors.append('Co-ordinates do not match sequence length.')
+            raise ValidationError()
+
+
 @app.route('/edit_inferred_sequence/<id>', methods=['GET', 'POST'])
 @login_required
 def edit_inferred_sequence(id):
@@ -720,23 +738,6 @@ def edit_inferred_sequence(id):
                     if sequence is not seq and str(sequence.sequence_id) == form.sequence_id.data and str(sequence.genotype_id) == form.genotype_id.data:
                         form.sequence_id.errors.append('That inferred sequence is already listed in the submission.')
                         raise ValidationError()
-
-                def validate_ext(c_seq, c_start, c_end):
-                    if c_seq.data or c_start.data or c_end.data:
-                        for control in [c_seq, c_start, c_end]:
-                            if control.data is None:
-                                control.errors.append('Field cannot be empty.')
-                                raise ValidationError()
-                        for control in [c_start, c_end]:
-                            if int(control.data) < 1 or int(control.data) > 1100:
-                                control.errors.append('co-ordinate is implausible.')
-                                raise ValidationError()
-                        if int(c_start.data) > int(c_end.data):
-                            c_end.errors.append('End co-ordinate must be greater than or equal to start co-ordinate')
-                            raise ValidationError()
-                        if len(c_seq.data) != int(c_end.data) - int(c_start.data) + 1:
-                            c_seq.errors.append('Co-ordinates do not match sequence length.')
-                            raise ValidationError()
 
                 if form.inferred_extension.data:
                     validate_ext(form.ext_3prime, form.start_3prime_ext, form.end_3prime_ext)
@@ -908,6 +909,21 @@ def new_sequence(species):
             gene_description.inference_type = 'Rearranged Only'
             gene_description.release_version = 1
             gene_description.affirmation_level = 0
+            gene_description.inferred_extension = seq.inferred_extension
+            gene_description.ext_3prime = seq.ext_3prime
+            gene_description.start_3prime_ext = seq.start_3prime_ext
+            gene_description.end_3prime_ext = seq.end_3prime_ext
+            gene_description.ext_5prime = seq.ext_5prime
+            gene_description.start_5prime_ext = seq.start_5prime_ext
+            gene_description.end_5prime_ext = seq.end_5prime_ext
+
+            # Add submitter to acknowledgements
+
+            a = Acknowledgements()
+            a.ack_name = seq.submission.submitter_name
+            a.ack_institution_name = seq.submission.submitter_address
+            a.ack_ORCID_id = ''
+            gene_description.acknowledgements.append(a)
 
             # Parse the name, if it's tractable
 
@@ -916,16 +932,18 @@ def new_sequence(species):
                 if sn[:2] == 'IG' or sn[:2] == 'TR':
                     ld = {'H': 'IGH', 'K': 'IGK', 'L': 'IGL', 'A': 'TRA', 'B': 'TRB', 'G': 'TRG', 'D': 'TRD'}
                     gene_description.locus = ld[sn[2]]
-                    gene_description.sequence_type = sn[3]
+                    gene_description.sequence_type = sn[3] if sn[3] in ('V', 'D', 'J', 'C') else ''
                     if '-' in sn:
-                        snp = sn.split('-')
-                        gene_description.gene_subgroup = snp[0][4:]
-                        if '*' in snp[1]:
-                            snq = snp[1].split('*')
-                            gene_description.subgroup_designation = snq[0]
+                        if '*' in sn:
+                            snq = sn.split('*')
                             gene_description.allele_designation = snq[1]
+                            sn = snq[0]
                         else:
-                            gene_description.subgroup_designation = snp[1]
+                            gene_description.allele_designation = ''
+                        snq = sn.split('-')
+                        gene_description.subgroup_designation = snq[len(snq)-1]
+                        del(snq[len(snq)-1])
+                        gene_description.gene_subgroup = '-'.join(snq)[4:]
                     elif '*' in sn:
                         snq = sn.split('*')
                         gene_description.gene_subgroup = snq[0][4:]
@@ -1010,6 +1028,19 @@ def seq_add_inference(id):
             return redirect(url_for(sequences, id=id))
 
         seq.inferred_sequences.append(inferred_seq)
+        add_ack = True
+        for ack in seq.acknowledgements:
+            if ack.ack_name == inferred_seq.submission.submitter_name and ack.ack_institution_name == inferred_seq.submission.submitter_address:
+                add_ack = False
+                break
+
+        if add_ack:
+            a = Acknowledgements()
+            a.ack_name = inferred_seq.submission.submitter_name
+            a.ack_institution_name = inferred_seq.submission.submitter_address
+            a.ack_ORCID_id = ''
+            seq.acknowledgements.append(a)
+
         db.session.commit()
         return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
@@ -1045,7 +1076,10 @@ def edit_sequence(id):
         form.sequence.data = "".join(form.sequence.data.split())
         form.coding_seq_imgt.data = "".join(form.coding_seq_imgt.data.split())
 
-        # Ignore journal validators, unless we are saving a journal entry
+        # Clean out the extension fields if we are not using them, so they can't fail validation
+        if not form.inferred_extension.data:
+            for control in [form.ext_3prime, form.start_3prime_ext, form.end_3prime_ext, form.ext_5prime, form.start_5prime_ext, form.end_5prime_ext]:
+                control.data = None
 
         form.validate()
         valid = True
@@ -1068,6 +1102,13 @@ def edit_sequence(id):
                 validation_result = process_table_updates({'ack': tables['ack']}, request, db)
                 if not validation_result.valid:
                     raise ValidationError()
+
+                if form.inferred_extension.data:
+                    validate_ext(form.ext_3prime, form.start_3prime_ext, form.end_3prime_ext)
+                    validate_ext(form.ext_5prime, form.start_5prime_ext, form.end_5prime_ext)
+                    if not(form.ext_3prime.data or form.ext_5prime.data):
+                        form.inferred_extension.errors.append('Please specify an extension at at least one end')
+                        raise ValidationError()
 
                 seq.notes = form.notes.data      # this was left out of the form definition in the schema so it could go on its own tab
                 save_GeneDescription(db, seq, form)

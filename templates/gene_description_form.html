@@ -5,6 +5,10 @@
 
         {{ render_field_with_errors(form.lab_address, class="form-control") }}
 
+        {{ render_field_with_errors(form.sequence_name, class="form-control") }}
+
+        {{ render_field_with_errors(form.imgt_name, class="form-control") }}
+
         {{ render_field_with_errors(form.alt_names, class="form-control") }}
 
         {{ render_narrow_field_with_errors(form.locus, class="form-control") }}
@@ -58,3 +62,17 @@
         {{ render_narrow_field_with_errors(form.j_rs_end, class="form-control") }}
 
         {{ render_field_with_errors(form.paralogs, class="form-control") }}
+
+        {{ render_field_with_errors(form.inferred_extension, class="checkbox") }}
+
+        {{ render_field_with_errors(form.ext_3prime, class="form-control") }}
+
+        {{ render_field_with_errors(form.start_3prime_ext, class="form-control") }}
+
+        {{ render_field_with_errors(form.end_3prime_ext, class="form-control") }}
+
+        {{ render_field_with_errors(form.ext_5prime, class="form-control") }}
+
+        {{ render_field_with_errors(form.start_5prime_ext, class="form-control") }}
+
+        {{ render_field_with_errors(form.end_5prime_ext, class="form-control") }}
