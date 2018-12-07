@@ -1057,6 +1057,12 @@ def edit_sequence(id):
                 else:
                     valid = False
 
+        if form.action.data == 'published':
+            for inferred_sequence in seq.inferred_sequences:
+                if inferred_sequence.submission.submission_status == 'draft':
+                    flash("Can't publish this sequence while submission %s is in draft." % inferred_sequence.submission.submission_id)
+                    valid = False
+
         if valid:
             try:
                 validation_result = process_table_updates({'ack': tables['ack']}, request, db)

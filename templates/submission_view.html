@@ -71,7 +71,11 @@
     <div role="tabpanel" class="tab-pane" id="inferred_sequence">
         <h3>Inferred Sequences</h3>
         <p>The novel alleles from each genotype that are submitted for review. </p>
-        {{ tables['inferred_sequence'] }}
+        {% if reviewer %}
+            {{ tables['iarc_inferred_sequence'] }}
+        {% else %}
+            {{ tables['inferred_sequence'] }}
+        {% endif %}
 
     </div>
 

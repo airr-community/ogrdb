@@ -85,6 +85,23 @@ class EditableDelegateTable(EditableTable):
                         return True
         return False
 
+class PubGeneCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        ret = ''
+        for desc in item.gene_descriptions:
+            if desc.status == 'published':
+                ret = '<a href=%s>%s</a>' % (url_for('sequence', id=desc.id), desc.description_id)
+                break
+        return ret
+
+class DraftGeneCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        ret = ''
+        for desc in item.gene_descriptions:
+            if desc.status == 'draft':
+                ret = '<a href=%s>%s</a>' % (url_for('edit_sequence', id=desc.id), desc.description_id)
+                break
+        return ret
 
 
 def setup_submission_view_forms_and_tables(sub, db, private):
@@ -125,7 +142,16 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     t.add_column('id', ActionCol("View", delete=False, view_route='inferred_sequence'))
     t.add_column('Sequence', SeqNameCol('Sequence'))
     t.add_column('Genotype', GenNameCol('Genotype'))
+    t.add_column('Published', PubGeneCol('Published'))
     tables['inferred_sequence'] = t
+
+    t = make_InferredSequence_table(sub.inferred_sequences)
+    t.add_column('id', ActionCol("View", delete=False, view_route='inferred_sequence'))
+    t.add_column('Sequence', SeqNameCol('Sequence'))
+    t.add_column('Genotype', GenNameCol('Genotype'))
+    t.add_column('Draft', DraftGeneCol('Draft'))
+    t.add_column('Published', PubGeneCol('Published'))
+    tables['iarc_inferred_sequence'] = t
 
     history = db.session.query(JournalEntry).filter_by(submission_id = sub.id, type = 'history').all()
     t = make_JournalEntry_table(history)
