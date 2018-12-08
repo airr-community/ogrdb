@@ -27,6 +27,15 @@ app = Flask(__name__)
 bootstrap = Bootstrap(app)
 app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
+
+# Check log file can be opened for writing, default otherwise
+
+try:
+    with(open(app.config["LOGPATH"], 'w')) as fp:
+        pass
+except:
+    app.config["LOGPATH"] = 'app.log'
+
 admin_obj = Admin(app, template_mode='bootstrap3')
 
 db = SQLAlchemy(app)
