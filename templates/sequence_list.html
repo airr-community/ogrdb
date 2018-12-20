@@ -19,7 +19,15 @@
             </div>
             <div class="row">
                 <div class=".table col-md-12">
-                    {{ t }}
+                    {{ t['draft'] }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8"><h2>Level 0 Sequences for IARC {{ sp }} Committee</h2></div>
+            </div>
+            <div class="row">
+                <div class=".table col-md-12">
+                    {{ t['level_0'] }}
                 </div>
             </div>
         {% endfor %}
@@ -41,12 +49,17 @@
         {% for sp, t in tables['species'].items() %}
             <script>
                 $(document).ready(function() {
-                $("#{{ t.table_id }}").DataTable({
-                    "paging":   false,
-                    "searching": false,
-                    "info":     false
-                });
-                } );
+                    $("#{{ t['draft'].table_id }}").DataTable({
+                        "paging":   false,
+                        "searching": false,
+                        "info":     false
+                    });
+                    $("#{{ t['level_0'].table_id }}").DataTable({
+                        "paging":   false,
+                        "searching": false,
+                        "info":     false
+                    })
+                })
             </script>
         {% endfor %}
     {% endif %}

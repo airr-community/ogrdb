@@ -845,6 +845,10 @@ def sequences():
         species = [s[0] for s in db.session.query(Committee.species).all()]
         for sp in species:
             if current_user.has_role(sp):
+                if 'species' not in tables:
+                    tables['species'] = {}
+                tables['species'][sp] = {}
+
                 if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
                     q = db.session.query(GeneDescription).filter(GeneDescription.organism==sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
                     show_withdrawn = True
@@ -853,12 +857,15 @@ def sequences():
                     show_withdrawn = False
                 results = q.all()
 
-                if 'species' not in tables:
-                    tables['species'] = {}
-                tables['species'][sp] = setup_sequence_list_table(results, current_user)
-                tables['species'][sp].table_id = sp
+                tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
+                tables['species'][sp]['draft'].table_id = sp + '_draft'
 
-    q = db.session.query(GeneDescription).filter_by(status='published')
+                q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.organism==sp, GeneDescription.affirmation_level == '0')
+                results = q.all()
+                tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
+                tables['species'][sp]['level_0'].table_id = sp + '_level_0'
+
+    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0')
     results = q.all()
     tables['affirmed'] = setup_sequence_list_table(results, current_user)
     tables['affirmed'].table_id = 'affirmed'
