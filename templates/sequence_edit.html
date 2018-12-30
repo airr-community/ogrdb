@@ -34,6 +34,17 @@
                         </div>
                     </div>
                 </div>
+                {% if  tables['matches'] %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Published/Draft Sequences Matching Inferences in This Submission</h3>
+                        <p class="col-sm-offset-1 col-sm-11">Matching or near-matching inferred sequences in submissions not currently referenced here:</p>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                {{ tables['matches'] }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
 
             <div role="tabpanel" class="tab-pane" id="ack">
@@ -288,7 +299,7 @@
         } else {
             modal.find('#save_btn').addClass("btn-primary")
         }
-    })
+    });
 
     </script>
 

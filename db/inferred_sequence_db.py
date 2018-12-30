@@ -9,7 +9,9 @@ from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
 from sqlalchemy.orm import backref
 
-class InferredSequence(db.Model):
+from db._inferred_sequence_db import *
+
+class InferredSequence(db.Model, InferredSequenceMixin):
     id = db.Column(db.Integer, primary_key=True)
     sequence_id = db.Column(db.Integer, db.ForeignKey('genotype.id'))
     sequence_details = db.relationship('Genotype', backref = 'inferred_sequences')

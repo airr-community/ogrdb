@@ -9,15 +9,16 @@ from db.repertoire_db import make_Acknowledgements_table
 from forms.repertoire_form import AcknowledgementsForm
 from textile_filter import *
 from flask import url_for
-
-
 from db.styled_table import *
 from db.gene_description_db import *
+from sequence_format import *
+from flask import Markup
+
 
 class InferredSequenceTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return '<button type="button" class="delbutton btn btn-xs text-danger icon_back" data-id="%s" data-inf="%s" id="%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
-
+        contents = '<button type="button" class="delbutton btn btn-xs text-danger icon_back" data-id="%s" data-inf="%s" id="%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
+        return(contents)
 
 class SubLinkCol(StyledCol):
     def td_format(self, content):
@@ -54,10 +55,39 @@ def setup_inferred_sequence_table(seqs, id, action=True):
         table._cols.move_to_end('action', last=False)
     return table
 
+class MatchingSubmissionsTable(StyledTable):
+    submission_id = SubLinkCol("Submission ID", tooltip='Submission containing the matching inference')
+    subject_id = StyledCol("Subject ID", tooltip="ID of the subject from which this sequence was inferred")
+    genotype_name = StyledCol("Genotype Name", tooltip="Name of genotype from which sequence was drawn")
+    sequence_name = StyledCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
+    match = StyledCol("Match", tooltip="Details of the match")
+
+def make_MatchingSubmissions_table(results, classes=()):
+    t=create_table(base=MatchingSubmissionsTable)
+    ret = t(results, classes=classes)
+    return ret
+
+def setup_matching_submissions_table(seq):
+    results = []
+    for dup in seq.duplicate_sequences:
+        if dup not in seq.inferred_sequences:
+            match = report_dupe(seq.sequence, 'This', dup.sequence_details.nt_sequence, dup.submission.submission_id)
+            if '\n' in match:
+                match = Markup('<code>' + match.replace('\n', '<br>') + '</code>')
+            results.append({'submission_id': dup.submission.submission_id, 'sequence_name': dup.sequence_details.sequence_id, 'match': Markup(match),
+                            'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': dup.genotype_description.genotype_name})
+
+    if len(results) == 0:
+        return None
+
+    table = make_MatchingSubmissions_table(results)
+    return table
+
 def setup_sequence_edit_tables(db, seq):
     tables = {}
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
+    tables['matches'] = setup_matching_submissions_table(seq)
 
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []

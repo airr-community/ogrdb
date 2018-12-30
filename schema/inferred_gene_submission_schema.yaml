@@ -843,7 +843,11 @@ GeneDescription:
             hide: true
         inferred_sequences:
             type: list of inferred sequences
-            many-relationship: [InferredSequence, gene_descriptions]
+            many-relationship: [InferredSequence, gene_descriptions, inferred_sequence, gene_description]
+            hide: true
+        duplicate_sequences:
+            type: list of inferred sequences
+            many-relationship: [InferredSequence, published_duplicates, inferred_sequence, gene_description]
             hide: true
         inferred_extension:
             type: boolean

@@ -111,6 +111,7 @@ def index():
 
     return render_template('index.html', current_user=current_user)
 
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -129,6 +130,7 @@ def profile():
                 flash('Profile updated.')
 
     return render_template('profile.html', form=form, current_user=current_user, url='profile')
+
 
 @app.route('/submissions', methods=['GET', 'POST'])
 def submissions():
@@ -193,6 +195,7 @@ def new_submission():
 
     return render_template('submission_new.html', form=form, url='new_submission')
 
+
 def check_sub_edit(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
     if sub is None:
@@ -203,6 +206,7 @@ def check_sub_edit(id):
         return None
     return sub
 
+
 def check_sub_view(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
     if sub is None:
@@ -212,6 +216,7 @@ def check_sub_view(id):
         flash('You do not have rights to view that submission')
         return None
     return sub
+
 
 @app.route('/edit_submission/<id>', methods=['GET', 'POST'])
 @login_required
@@ -263,6 +268,8 @@ def edit_submission(id):
             send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [current_user.email], 'user_submission_submitted', user=current_user, submission=sub)
             send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_received', user=current_user, submission=sub)
             db.session.commit()
+            for seq in sub.inferred_sequences:
+                seq.build_duplicate_list(db)
             flash('Submission %s has been submitted to IARC for review.' % id)
             return redirect(url_for('submissions'))
 
@@ -316,6 +323,7 @@ def edit_submission(id):
 
         return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
 
+
 @app.route('/download_submission_attachment/<id>')
 def download_submission_attachment(id):
     sub = check_sub_view(id)
@@ -326,6 +334,7 @@ def download_submission_attachment(id):
         return Response(sub.notes_entries[0].notes_attachment, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
     else:
         return redirect('/')
+
 
 @app.route('/delete_submission_attachment/<id>', methods=['POST'])
 def delete_submission_attachment(id):
@@ -383,6 +392,8 @@ def submission(id):
                 send_mail('Submission %s returned to Submitter by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'draft'
                 db.session.commit()
+                for seq in sub.inferred_sequences:
+                    seq.build_duplicate_list(db)
                 flash('Submission returned to Submitter')
                 return redirect('/submissions')
             elif form.action.data == 'complete':
@@ -392,6 +403,8 @@ def submission(id):
                 send_mail('Submission %s completed review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'complete'
                 db.session.commit()
+                for seq in sub.inferred_sequences:
+                    seq.build_duplicate_list(db)
                 flash('Submission marked as complete')
                 return redirect('/submissions')
             elif form.action.data == 'review':
@@ -401,6 +414,8 @@ def submission(id):
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'reviewing'
                 db.session.commit()
+                for seq in sub.inferred_sequences:
+                    seq.build_duplicate_list(db)
                 flash('Submission returned to Review')
                 return redirect('/submissions')
             elif form.action.data == 'note':
@@ -419,8 +434,6 @@ def submission(id):
 
         else:
            return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
-
-
 
 
 def check_tool_edit(id):
@@ -664,8 +677,6 @@ def inferred_sequence(id):
     return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id)
 
 
-
-
 def check_inferred_sequence_edit(id):
     try:
         desc = db.session.query(InferredSequence).filter_by(id = id).one_or_none()
@@ -756,6 +767,7 @@ def edit_inferred_sequence(id):
                         raise ValidationError()
 
                 save_InferredSequence(db, seq, form, new=False)
+                seq.build_duplicate_list(db)
                 return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
             except ValidationError as e:
                 return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id)
@@ -835,6 +847,28 @@ def check_seq_draft(id):
 
     return desc
 
+def check_seq_withdraw(id):
+    try:
+        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+
+        if desc.status != 'published':
+            flash('Only published sequences can be withdrawn.')
+            return None
+
+        if not desc.can_draft(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return desc
+
 
 @app.route('/sequences', methods=['GET', 'POST'])
 def sequences():
@@ -871,6 +905,7 @@ def sequences():
     tables['affirmed'].table_id = 'affirmed'
 
     return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn)
+
 
 @app.route('/new_sequence/<species>', methods=['GET', 'POST'])
 @login_required
@@ -1004,6 +1039,7 @@ def get_sequences(id):
 
     return json.dumps(seqs)
 
+
 @app.route('/seq_add_inference/<id>', methods=['GET', 'POST'])
 @login_required
 def seq_add_inference(id):
@@ -1058,6 +1094,7 @@ def seq_add_inference(id):
             seq.acknowledgements.append(a)
 
         db.session.commit()
+        seq.build_duplicate_list(db)
         return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
     return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
@@ -1070,7 +1107,7 @@ def sequence(id):
         return redirect('/sequences')
 
     form = FlaskForm()
-    tables = setup_sequence_view_tables(db, seq)
+    tables = setup_sequence_view_tables(db, seq, current_user.has_role(seq.organism))
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
 
 
@@ -1136,6 +1173,7 @@ def edit_sequence(id):
                     old_seq = db.session.query(GeneDescription).filter_by(description_id = seq.description_id, status='published').one_or_none()
                     if old_seq:
                         old_seq.status = 'superceded'
+                        old_seq.duplicate_sequences = list()
                         seq.release_version = old_seq.release_version + 1
                     else:
                         seq.release_version = 1
@@ -1166,6 +1204,8 @@ def edit_sequence(id):
                     db.session.commit()
                     flash('Sequence published')
                     return redirect('/sequences')
+
+                seq.build_duplicate_list(db)
 
             except ValidationError:
                 return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version)
@@ -1203,6 +1243,8 @@ def delete_inferred_sequence():
         if inferred_seq is not None and inferred_seq in seq.inferred_sequences:
             seq.inferred_sequences.remove(inferred_seq)
             db.session.commit()
+            seq.build_duplicate_list(db)
+
     return ''
 
 
@@ -1226,6 +1268,8 @@ def draft_sequence(id):
             copy_JournalEntry(journal_entry, new_entry)
             new_seq.journal_entries.append(new_entry)
 
+        new_seq.build_duplicate_list(db)
+
         db.session.commit()
     return ''
 
@@ -1233,12 +1277,14 @@ def draft_sequence(id):
 @app.route('/withdraw_sequence/<id>', methods=['POST'])
 @login_required
 def withdraw_sequence(id):
-    seq = check_seq_draft(id)
+    seq = check_seq_withdraw(id)
     if seq is not None:
         seq.status = 'withdrawn'
         db.session.commit()
+        seq.duplicate_sequences = list()
         flash('Sequence %s withdrawn' % seq.sequence_name)
     return ''
+
 
 def check_primer_set_edit(id):
     try:
@@ -1257,6 +1303,7 @@ def check_primer_set_edit(id):
         exc_type, exc_value = sys.exc_info()[:2]
         flash('Error : exception %s with message %s' % (exc_type, exc_value))
         return (None, None)
+
 
 @app.route('/primer_sets/<id>', methods=['GET', 'POST'])
 @login_required
@@ -1290,6 +1337,7 @@ def primer_sets(id):
                 return redirect(url_for('edit_submission', id=sub.submission_id, _anchor='primer_sets'))
 
         return render_template('primer_set_edit.html', form=form, name=set.primer_set_name, id=id)
+
 
 @app.route('/edit_primers/<id>', methods=['GET', 'POST'])
 @login_required

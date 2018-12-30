@@ -8,6 +8,7 @@
 
 from db.journal_entry_db import JournalEntry
 from sqlalchemy import inspect
+from db.submission_db import *
 
 class GeneDescriptionMixin:
     def delete_dependencies(self, db):
@@ -29,4 +30,22 @@ class GeneDescriptionMixin:
         return(user.is_authenticated and
             #(user.has_role('Admin') or
              (user.has_role(self.organism) and self.status == 'published'))
+
+    # Find any submitted inferences out there that refer to this sequence
+
+    def build_duplicate_list(self, db):
+        self.duplicate_sequences = list()
+        subs = db.session.query(Submission).filter(Submission.submission_status.in_(['reviewing', 'complete']), Submission.species == self.organism).all()
+
+        for sub in subs:
+            for inf in sub.inferred_sequences:
+                try:
+                    inf_seq = inf.sequence_details.nt_sequence
+                    if len(inf_seq) > 0 and len(self.sequence) > 0:
+                        if(inf_seq in self.sequence or self.sequence in inf_seq):
+                            self.duplicate_sequences.append(inf)
+                except:
+                    continue
+
+        db.session.commit()
 

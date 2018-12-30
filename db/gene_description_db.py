@@ -15,6 +15,12 @@ inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descrip
     db.Column('gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
+                        
+duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates',
+    db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('inferred_sequence.id')),
+    db.Column('published_duplicates_id', db.Integer(), db.ForeignKey('gene_description.id')))
+    
+
 from db._gene_description_db import *
 
 class GeneDescription(db.Model, GeneDescriptionMixin):
@@ -58,6 +64,8 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     notes = db.Column(db.Text())
 
     inferred_sequences = db.relationship('InferredSequence', secondary = inferred_sequences_gene_descriptions, backref = db.backref('gene_descriptions', lazy='dynamic'))
+
+    duplicate_sequences = db.relationship('InferredSequence', secondary = duplicate_sequences_published_duplicates, backref = db.backref('published_duplicates', lazy='dynamic'))
     inferred_extension = db.Column(db.Boolean)
     ext_3prime = db.Column(db.Text())
     start_3prime_ext = db.Column(db.Integer)

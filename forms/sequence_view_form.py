@@ -8,7 +8,7 @@
 
 from db.gene_description_db import *
 from db.repertoire_db import make_Acknowledgements_table
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table
+from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table
 from sequence_format import *
 from copy import deepcopy
 from textile_filter import safe_textile
@@ -25,7 +25,7 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
     return ret
 
 
-def setup_sequence_view_tables(db, seq):
+def setup_sequence_view_tables(db, seq, private):
     tables = {}
     tables['gene_description'] = make_GeneDescription_view(seq)
 
@@ -75,6 +75,7 @@ def setup_sequence_view_tables(db, seq):
                 field['value'] = Markup(safe_textile(field['value']))
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id, action=False)
+    tables['matches'] = setup_matching_submissions_table(seq) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
 

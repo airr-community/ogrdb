@@ -11,6 +11,8 @@ from flask import Markup
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
 
+from copy import deepcopy
+
 from db.submission_db import *
 from db.repertoire_db import *
 from db.editable_table import *
@@ -21,8 +23,9 @@ from db.journal_entry_db import *
 from db.notes_entry_db import *
 from db.primer_set_db import *
 from db.primer_db import *
+from db.gene_description_db import *
 
-from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol
+from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol, SubjCol
 from forms.journal_entry_form import JournalEntryForm
 from forms.aggregate_form import AggregateForm
 
@@ -30,26 +33,32 @@ class HiddenReturnForm(FlaskForm):
     type = StringField('Type')
     action = StringField('Type')
 
+
 class MessageHeaderCol(StyledCol):
     def td_contents(self, item, attr_list):
         return "<strong>%s</strong><br><small>%s</small>" % (item.author, item.date)
+
 
 class MessageBodyCol(StyledCol):
     def td_contents(self, item, attr_list):
         return Markup(safe_textile(item.body)) if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, Markup(safe_textile(item.body)))
 
+
 class DelegateForm(FlaskForm):
     delegate = SelectField('Delegate', coerce=int)
+
 
 class Delegate_table(StyledTable):
     id = Col("id", show=False)
     name = StyledCol("Name", tooltip="Delegate Name")
     address = StyledCol("Address", tooltip="Delegate Address")
 
+
 def make_Delegate_table(results, private = False, classes=()):
     t=create_table(base=Delegate_table)
     ret = t(results, classes=classes, empty_message='No Delegates have been added')
     return ret
+
 
 class EditableDelegateTable(EditableTable):
     def check_add_item(self, request, db):
@@ -85,6 +94,7 @@ class EditableDelegateTable(EditableTable):
                         return True
         return False
 
+
 class PubGeneCol(StyledCol):
     def td_contents(self, item, attr_list):
         ret = ''
@@ -93,6 +103,7 @@ class PubGeneCol(StyledCol):
                 ret = '<a href=%s>%s</a>' % (url_for('sequence', id=desc.id), desc.description_id)
                 break
         return ret
+
 
 class DraftGeneCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -103,6 +114,53 @@ class DraftGeneCol(StyledCol):
                 break
         return ret
 
+class PubSequenceCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        return('<a href="%s">%s</a>'  % (url_for('sequence', id=item['published_id']), item['published_name'])) if item['status'] == 'published' else ''
+
+class DraftSequenceCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        return('<a href="%s">%s</a>'  % (url_for('edit_sequence', id=item['published_id']), item['published_name'])) if item['status'] == 'draft' else ''
+
+class MatchingSequencesTable(StyledTable):
+    sequence_name = StyledCol("Sequence", tooltip="Name of inferred sequence as referred to in the submission")
+    subject_id = StyledCol("Subject", tooltip="ID of the subject from which this sequence was inferred")
+    genotype_name = StyledCol("Genotype", tooltip="Name of genotype from which sequence was drawn")
+    draft_name = DraftSequenceCol("Draft", tooltip="Draft sequence matching this inference")
+    published_name = PubSequenceCol("Published", tooltip="Published sequence matching this inference")
+    match = StyledCol("Match", tooltip="Details of the match")
+
+def make_MatchingSequences_table(results, classes=()):
+    t=create_table(base=MatchingSequencesTable)
+    ret = t(results, classes=classes)
+    return ret
+
+def setup_matching_sequences_table(sub):
+    results = []
+    our_descriptions = []
+    for inf in sub.inferred_sequences:
+        our_descriptions.extend(inf.gene_descriptions)
+
+    for inf in sub.inferred_sequences:
+        for dup in inf.published_duplicates:
+            if dup not in our_descriptions:
+                match = report_dupe(inf.sequence_details.nt_sequence, 'This', dup.sequence, dup.description_id)
+                if '\n' in match:
+                    match = Markup('<code>' + match.replace('\n', '<br>') + '</code>')
+                results.append({'subject_id': inf.genotype_description.genotype_subject_id,
+                                'genotype_name': inf.genotype_description.genotype_name,
+                                'sequence_name': inf.sequence_details.sequence_id,
+                                'published_name': dup.description_id,
+                                'published_id': dup.id,
+                                'status': dup.status,
+                                'match': Markup(match)})
+
+    if len(results) == 0:
+        return None
+
+    table = make_MatchingSequences_table(results)
+    return table
+
 
 def setup_submission_view_forms_and_tables(sub, db, private):
     tables = {}
@@ -111,6 +169,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['repertoire'] = make_Repertoire_view(sub.repertoire[0])
     tables['pub'] = make_PubId_table(sub.repertoire[0].pub_ids)
     tables['submission_notes'] = make_NotesEntry_view(sub.notes_entries[0])
+    tables['matches'] = setup_matching_sequences_table(sub) if private else None
 
     tables['primer_sets'] = []
     for set in sub.repertoire[0].primer_sets:
@@ -141,6 +200,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     t = make_InferredSequence_table(sub.inferred_sequences)
     t.add_column('id', ActionCol("View", delete=False, view_route='inferred_sequence'))
     t.add_column('Sequence', SeqNameCol('Sequence'))
+    t.add_column('Subject', SubjCol('Subject'))
     t.add_column('Genotype', GenNameCol('Genotype'))
     t.add_column('Published', PubGeneCol('Published'))
     tables['inferred_sequence'] = t
@@ -148,6 +208,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     t = make_InferredSequence_table(sub.inferred_sequences)
     t.add_column('id', ActionCol("View", delete=False, view_route='inferred_sequence'))
     t.add_column('Sequence', SeqNameCol('Sequence'))
+    t.add_column('Subject', SubjCol('Subject'))
     t.add_column('Genotype', GenNameCol('Genotype'))
     t.add_column('Draft', DraftGeneCol('Draft'))
     t.add_column('Published', PubGeneCol('Published'))

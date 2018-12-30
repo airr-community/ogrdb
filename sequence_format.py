@@ -85,3 +85,30 @@ def splitlines(report, maxlength, label_cols):
         outlines.extend(" ")
 
     return "\n".join(["".join(line) for line in outlines])
+
+def report_dupe(s1, s1_name, s2, s2_name):
+    """
+    s1 should be a subset of s2 or vice versa.
+    The function returns an 'alignment' in which the common subset is replaced by an ellipsis
+    """
+    if s1 == s2:
+        return('Sequences are identical')
+    elif s1 not in s2 and s2 not in s1:
+        return('Sequences do not match')
+
+    namelength = max(len(s1_name), len(s2_name)) + 2
+    s1_name = s1_name.ljust(namelength)
+    s2_name = s2_name.ljust(namelength)
+
+    common = s1 if s1 in s2 else s2
+    s1 = s1.replace(common, '...')
+    s2 = s2.replace(common, '...')
+
+    if s1 in s2:
+        s1 = ' '*s2.find('...') + s1
+        s1 = s1.ljust(len(s2))
+    else:
+        s2 = ' '*s1.find('...') + s2
+        s2 = s2.ljust(len(s1))
+
+    return(s1_name + s1 + '\n' + s2_name + s2)

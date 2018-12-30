@@ -128,7 +128,7 @@ from sqlalchemy.orm import backref
     db.Column('%s_id', db.Integer(), db.ForeignKey('%s.id')),
     db.Column('%s_id', db.Integer(), db.ForeignKey('%s.id')))
     
-""" % (sc_item+'_'+rel[1], sc_item+'_'+rel[1], sc_item, sc_item[:-1], rel[1], rel[1][:-1]))
+""" % (sc_item+'_'+rel[1], sc_item+'_'+rel[1], sc_item, rel[2], rel[1], rel[3]))
 
         # second pass for everything else
 

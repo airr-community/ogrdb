@@ -77,6 +77,11 @@
             {{ tables['inferred_sequence'] }}
         {% endif %}
 
+        {% if reviewer and tables['matches'] %}
+            <h3>Unreferenced Matches in Published Sequences</h3>
+            <p>Matching or near-matching inferred sequences in published sequences not currently referencing this submission (this section is only visible to reviewers):</p>
+                    {{ tables['matches'] }}
+        {% endif %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="notes">

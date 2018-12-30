@@ -340,3 +340,10 @@ pre.lead {
 .row-80 {
     width: 80%;
 }
+
+code {
+    white-space: pre !important;
+    color: unset;
+    padding: 0px 0px;
+    background-color: unset;
+}
