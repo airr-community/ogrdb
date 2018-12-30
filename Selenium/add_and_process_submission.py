@@ -61,6 +61,7 @@ def main():
     driver.find_element_by_name("submit").click()
 
     driver.find_element_by_link_text("Submissions").click()
+#    for i in range(1,10):
     sub_add_and_process()
 
 def sub_add_and_process():
