@@ -24,6 +24,10 @@ class SubmissionMixin:
         for j in self.journal_entries:
             db.session.delete(j)
 
+        for d in self.genotype_descriptions:
+            d.delete_dependencies(db)
+            db.session.delete(d)
+
     def can_see(self, user):
         return(self.public or
             user.is_authenticated and

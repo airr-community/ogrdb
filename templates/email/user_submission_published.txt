@@ -2,4 +2,6 @@ Dear {{ user_name }},
 
 The submission {{  url_for('submission', id=submission.submission_id, _external=True) }} has been published by {{ reviewer.name }}, as a result of IARC's affirmation of sequence {{ url_for('sequence', id=sequence.id, _external=True) }}
 
+Submissions are published when at least one inferred allele in the submission is affirmed. Additional inferred alleles may be affirmed by IARC at a later date.
+
 This mail is automatically generated, please do not reply. If you need to contact the Committee, please mail iarc-{{ submission.species }}@airr-community.org.

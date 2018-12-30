@@ -70,7 +70,9 @@
 
     <div role="tabpanel" class="tab-pane" id="inferred_sequence">
         <h3>Inferred Sequences</h3>
-        <p>The novel alleles from each genotype that are submitted for review. </p>
+        <p>The inferred novel alleles from each genotype that are submitted for review. This table lists all inferences put forward by the submitter. Where IARC has
+        affirmed a sequence based on an inference, the corresponding sequence record will be listed in the Published column. Inferences for which no published
+        sequence is shown have not been affirmed.</p>
         {% if reviewer %}
             {{ tables['iarc_inferred_sequence'] }}
         {% else %}

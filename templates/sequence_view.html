@@ -29,8 +29,10 @@
 
             <div role="tabpanel" class="tab-pane" id="inf">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Inferences</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Inferences on which the sequence is based:</p>
+                    <h3 class="col-sm-offset-1 col-sm-10">Inferences</h3>
+                    <p class="col-sm-offset-1 col-sm-10">The table below lists the submissions, and the inferences within them, on which this published sequence is based.
+                    The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
+                    over time as additional inferences are submitted.</p>
                     <div class="col-sm-10 col-sm-offset-1">
                         <div class="form-group">
                             {{ tables['inferred_sequences'] }}
@@ -39,8 +41,8 @@
                 </div>
                 {% if  tables['matches'] %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Unreferenced Matches in Submissions</h3>
-                        <p class="col-sm-offset-1 col-sm-11">Matching or near-matching inferred sequences in submissions not currently referenced here (this section is only visible to IARC members):</p>
+                        <h3 class="col-sm-offset-1 col-sm-10">Unreferenced Matches in Submissions</h3>
+                        <p class="col-sm-offset-1 col-sm-10">Matching or near-matching inferred sequences in submissions not currently referenced here (this section is only visible to IARC members):</p>
                         <div class="col-sm-10 col-sm-offset-1">
                             <div class="form-group">
                                 {{ tables['matches'] }}
@@ -63,13 +65,18 @@
 
             <div role="tabpanel" class="tab-pane" id="notes">
                 <div class="row">
-                    {{ tables['notes'] }}
+                    <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>
+                    <p class="col-sm-offset-1 col-sm-10">Notes are added by IARC reviewers.</p>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        {{ tables['notes'] }}
+                    </div>
                 </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="history">
                 <div class="row">
                     <h3 class="col-sm-offset-1 col-sm-11">History</h3>
+                    <p class="col-sm-offset-1 col-sm-10">History records log the times and reasons for the publication of each version of this sequence record.</p>
                     <div class="col-sm-10 col-sm-offset-1">
                         {% for t in tables['history'] %}
                             {{ t }}

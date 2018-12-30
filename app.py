@@ -1395,3 +1395,26 @@ def upload_primer(id):
 
     return ''
 
+# Unpublished route that will remove all sequences and submissions published by the selenium test account
+@app.route('/remove_test', methods=['GET'])
+@login_required
+def remove_test():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    test_user = 'fred tester'
+
+    seqs = db.session.query(GeneDescription).filter(GeneDescription.author == test_user).all()
+    for seq in seqs:
+        seq.delete_dependencies(db)
+        db.session.delete(seq)
+    db.session.commit()
+
+    subs = db.session.query(Submission).filter(Submission.submitter_name == test_user).all()
+    for sub in subs:
+        sub.delete_dependencies(db)
+        db.session.delete(sub)
+    db.session.commit()
+
+    flash("Test records removed.")
+    return redirect('/')
