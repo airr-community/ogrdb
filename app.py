@@ -1008,6 +1008,7 @@ def new_sequence(species):
             db.session.commit()
             gene_description.description_id = "A%05d" % gene_description.id
             db.session.commit()
+            gene_description.build_duplicate_list(db)
             return redirect('/sequences')
 
         except ValidationError as e:
