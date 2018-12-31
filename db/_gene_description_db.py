@@ -33,7 +33,8 @@ class GeneDescriptionMixin:
 
     # Find any submitted inferences out there that refer to this sequence
 
-    def build_duplicate_list(self, db):
+    def build_duplicate_list(self, db, new_seq):
+        # new_seq is the sequence about to be added to the gene description
         self.duplicate_sequences = list()
         subs = db.session.query(Submission).filter(Submission.submission_status.in_(['reviewing', 'complete']), Submission.species == self.organism).all()
 
@@ -41,8 +42,8 @@ class GeneDescriptionMixin:
             for inf in sub.inferred_sequences:
                 try:
                     inf_seq = inf.sequence_details.nt_sequence
-                    if len(inf_seq) > 0 and len(self.sequence) > 0:
-                        if(inf_seq in self.sequence or self.sequence in inf_seq):
+                    if len(inf_seq) > 0 and len(new_seq) > 0:
+                        if(inf_seq in new_seq or new_seq in inf_seq):
                             self.duplicate_sequences.append(inf)
                 except:
                     continue

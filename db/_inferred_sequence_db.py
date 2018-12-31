@@ -11,9 +11,9 @@ from db.gene_description_db import *
 class InferredSequenceMixin:
     # Find any gene descriptions out there that refer to this sequence
 
-    def build_duplicate_list(self, db):
+    def build_duplicate_list(self, db, new_status):
         self.published_duplicates = list()
-        if self.submission.submission_status in ['reviewing', 'complete']:
+        if new_status in ['reviewing', 'complete']:
             genes = db.session.query(GeneDescription).filter(GeneDescription.status.in_(['draft', 'published']), GeneDescription.organism == self.submission.species).all()
 
             for gene in genes:
@@ -23,6 +23,4 @@ class InferredSequenceMixin:
                             self.published_duplicates.append(gene)
                 except:
                     continue
-
-        db.session.commit()
 

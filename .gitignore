@@ -10,3 +10,4 @@ Selenium/*.log
 docs/_build/
 docs/_downloads/
 ogre.wsgi
+/attachments

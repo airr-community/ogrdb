@@ -66,6 +66,8 @@ from db.inferred_sequence_table import *
 from db.primer_set_db import *
 from db.primer_db import *
 
+import db_events
+
 from forms.useradmin import *
 from forms.submission_form import *
 from forms.repertoire_form import *
@@ -268,8 +270,6 @@ def edit_submission(id):
             send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [current_user.email], 'user_submission_submitted', user=current_user, submission=sub)
             send_mail('Submission %s submitted to IARC %s Committee for review' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_received', user=current_user, submission=sub)
             db.session.commit()
-            for seq in sub.inferred_sequences:
-                seq.build_duplicate_list(db)
             flash('Submission %s has been submitted to IARC for review.' % id)
             return redirect(url_for('submissions'))
 
@@ -392,8 +392,6 @@ def submission(id):
                 send_mail('Submission %s returned to Submitter by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_returned', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'draft'
                 db.session.commit()
-                for seq in sub.inferred_sequences:
-                    seq.build_duplicate_list(db)
                 flash('Submission returned to Submitter')
                 return redirect('/submissions')
             elif form.action.data == 'complete':
@@ -403,8 +401,6 @@ def submission(id):
                 send_mail('Submission %s completed review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_completed', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'complete'
                 db.session.commit()
-                for seq in sub.inferred_sequences:
-                    seq.build_duplicate_list(db)
                 flash('Submission marked as complete')
                 return redirect('/submissions')
             elif form.action.data == 'review':
@@ -414,8 +410,6 @@ def submission(id):
                 send_mail('Submission %s returned to review by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_re_review', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
                 sub.submission_status = 'reviewing'
                 db.session.commit()
-                for seq in sub.inferred_sequences:
-                    seq.build_duplicate_list(db)
                 flash('Submission returned to Review')
                 return redirect('/submissions')
             elif form.action.data == 'note':
@@ -767,7 +761,6 @@ def edit_inferred_sequence(id):
                         raise ValidationError()
 
                 save_InferredSequence(db, seq, form, new=False)
-                seq.build_duplicate_list(db)
                 return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
             except ValidationError as e:
                 return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id)
@@ -1008,7 +1001,6 @@ def new_sequence(species):
             db.session.commit()
             gene_description.description_id = "A%05d" % gene_description.id
             db.session.commit()
-            gene_description.build_duplicate_list(db)
             return redirect('/sequences')
 
         except ValidationError as e:
@@ -1095,7 +1087,6 @@ def seq_add_inference(id):
             seq.acknowledgements.append(a)
 
         db.session.commit()
-        seq.build_duplicate_list(db)
         return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
     return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
@@ -1206,8 +1197,6 @@ def edit_sequence(id):
                     flash('Sequence published')
                     return redirect('/sequences')
 
-                seq.build_duplicate_list(db)
-
             except ValidationError:
                 return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version)
 
@@ -1244,7 +1233,6 @@ def delete_inferred_sequence():
         if inferred_seq is not None and inferred_seq in seq.inferred_sequences:
             seq.inferred_sequences.remove(inferred_seq)
             db.session.commit()
-            seq.build_duplicate_list(db)
 
     return ''
 
@@ -1257,6 +1245,7 @@ def draft_sequence(id):
         new_seq = GeneDescription()
         db.session.add(new_seq)
         db.session.commit()
+
         copy_GeneDescription(seq, new_seq)
         new_seq.description_id = seq.description_id
         new_seq.status = 'draft'
@@ -1268,8 +1257,6 @@ def draft_sequence(id):
             new_entry = JournalEntry()
             copy_JournalEntry(journal_entry, new_entry)
             new_seq.journal_entries.append(new_entry)
-
-        new_seq.build_duplicate_list(db)
 
         db.session.commit()
     return ''
