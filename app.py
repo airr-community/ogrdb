@@ -42,6 +42,12 @@ except:
 
 admin_obj = Admin(app, template_mode='bootstrap3')
 
+# Make the attachment directory, if it doesn't exist
+
+attach_path = app.config['ATTACHPATH'] + '/'
+if not isdir(attach_path):
+    mkdir(attach_path)
+
 db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
 #db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
@@ -292,7 +298,7 @@ def edit_submission(id):
 
             if 'notes_attachment' in request.files:
                 sub.notes_entries[0].notes_attachment_filename = request.files['notes_attachment'].filename
-                dirname = 'attachments/' + sub.submission_id
+                dirname = attach_path + sub.submission_id
 
                 try:
                     if not isdir(dirname):
@@ -347,7 +353,7 @@ def download_submission_attachment(id):
 
     if sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0:
         try:
-            dirname = 'attachments/' + sub.submission_id
+            dirname = attach_path + sub.submission_id
             with open(dirname + '/attachment_%s' % sub.submission_id, 'rb') as fi:
                 return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
         except:
@@ -368,7 +374,7 @@ def delete_submission_attachment(id):
     db.session.commit()
 
     try:
-        dirname = 'attachments/' + sub.submission_id
+        dirname = attach_path + sub.submission_id
         remove(dirname + '/attachment_%s' % sub.submission_id)
     except:
         info = sys.exc_info()
@@ -587,7 +593,7 @@ def edit_genotype_description(id):
                     form.genotype_filename.data = form.genotype_file.data.filename
                     save_GenotypeDescription(db, desc, form, new=False)
 
-                    dirname = 'attachments/' + desc.submission.submission_id
+                    dirname = attach_path + desc.submission.submission_id
 
                     try:
                         if not isdir(dirname):
@@ -665,7 +671,7 @@ def download_genotype(id):
         return redirect('/')
 
     try:
-        dirname = 'attachments/' + desc.submission.submission_id
+        dirname = attach_path + desc.submission.submission_id
         with open(dirname + '/genotype_%s.csv' % desc.id) as fi:
             return Response(fi.read(), mimetype="text/csv", headers={"Content-disposition": "attachment; filename=%s" % desc.genotype_filename})
     except:
@@ -1465,7 +1471,7 @@ def convert_files():
 
     subs = db.session.query(Submission).all()
     for sub in subs:
-        dirname = 'attachments/' + sub.submission_id
+        dirname = attach_path + sub.submission_id
         if not isdir(dirname):
             mkdir(dirname)
 
