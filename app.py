@@ -18,6 +18,8 @@ from sqlalchemy import and_
 import json
 from Bio import SeqIO
 import io
+from os.path import isdir
+from os import mkdir, remove
 
 
 
@@ -29,6 +31,8 @@ app.config.from_pyfile('config.cfg')
 app.config.from_pyfile('secret.cfg')
 
 # Check log file can be opened for writing, default otherwise
+
+from traceback import format_exc
 
 try:
     with(open(app.config["LOGPATH"], 'w')) as fp:
@@ -287,9 +291,20 @@ def edit_submission(id):
             db.session.commit()
 
             if 'notes_attachment' in request.files:
-                sub.notes_entries[0].notes_attachment = request.files['notes_attachment'].read()
-                db.session.commit()
                 sub.notes_entries[0].notes_attachment_filename = request.files['notes_attachment'].filename
+                dirname = 'attachments/' + sub.submission_id
+
+                try:
+                    if not isdir(dirname):
+                        mkdir(dirname)
+                    with open(dirname + '/attachment_%s' % sub.submission_id, 'wb') as fo:
+                        fo.write(request.files['notes_attachment'].read())
+                except:
+                    info = sys.exc_info()
+                    flash('Error saving attachment: %s' % (info[1]))
+                    app.logger.error(format_exc())
+                    return redirect(url_for('edit_submission', id=sub.submission_id))
+
 
             if 'notes_text' in request.form:
                 sub.notes_entries[0].notes_text = request.form['notes_text'].encode('utf-8')
@@ -330,10 +345,17 @@ def download_submission_attachment(id):
     if sub is None:
         return redirect('/')
 
-    if len(sub.notes_entries[0].notes_attachment) > 0:
-        return Response(sub.notes_entries[0].notes_attachment, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
-    else:
-        return redirect('/')
+    if sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0:
+        try:
+            dirname = 'attachments/' + sub.submission_id
+            with open(dirname + '/attachment_%s' % sub.submission_id, 'rb') as fi:
+                return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
+        except:
+            info = sys.exc_info()
+            flash('Error retrieving attachment: %s' % (info[1]))
+            app.logger.error(format_exc())
+
+    return redirect('/')
 
 
 @app.route('/delete_submission_attachment/<id>', methods=['POST'])
@@ -342,9 +364,17 @@ def delete_submission_attachment(id):
     if sub is None:
         return redirect('/')
 
-    sub.notes_entries[0].notes_attachment = ''.encode('utf-8')
     sub.notes_entries[0].notes_attachment_filename = ''
     db.session.commit()
+
+    try:
+        dirname = 'attachments/' + sub.submission_id
+        remove(dirname + '/attachment_%s' % sub.submission_id)
+    except:
+        info = sys.exc_info()
+        flash('Error deleting attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
     return ''
 
 
@@ -556,12 +586,24 @@ def edit_genotype_description(id):
                 if form.genotype_file.data:
                     form.genotype_filename.data = form.genotype_file.data.filename
                     save_GenotypeDescription(db, desc, form, new=False)
-                    desc.genotype_file = form.genotype_file.data.read()
-                    db.session.commit()
+
+                    dirname = 'attachments/' + desc.submission.submission_id
+
+                    try:
+                        if not isdir(dirname):
+                            mkdir(dirname)
+                        with open(dirname + '/genotype_%s.csv' % desc.id, 'w', newline='') as fo:
+                            fo.write(form.genotype_file.data.read().decode("utf-8"))
+                    except:
+                        info = sys.exc_info()
+                        flash('Error saving genotype file: %s' % (info[1]))
+                        app.logger.error(format_exc())
+                        return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id)
+
                     for g in desc.genotypes:
                         db.session.delete(g)
-
-                    blob_to_genotype(desc, db)
+                    db.session.commit()
+                    file_to_genotype(dirname + '/genotype_%s.csv' % desc.id, desc, db)
                 else:
                     form.genotype_filename.data = desc.genotype_filename       # doesn't get passed back in request as the field is read-only
                     save_GenotypeDescription(db, desc, form, new=False)
@@ -622,8 +664,15 @@ def download_genotype(id):
     if desc is None:
         return redirect('/')
 
-    foo = desc.genotype_file.decode("utf-8")
-    return Response(desc.genotype_file.decode("utf-8"), mimetype="text/csv", headers={"Content-disposition": "attachment; filename=%s" % desc.genotype_filename})
+    try:
+        dirname = 'attachments/' + desc.submission.submission_id
+        with open(dirname + '/genotype_%s.csv' % desc.id) as fi:
+            return Response(fi.read(), mimetype="text/csv", headers={"Content-disposition": "attachment; filename=%s" % desc.genotype_filename})
+    except:
+        info = sys.exc_info()
+        flash('Error retrieving genotype file: %s' % (info[1]))
+        app.logger.error(format_exc())
+        return redirect(url_for('genotype', id=desc.id))
 
 # AJAX - Return JSON structure listing sequence names and Genotype ids, given a GenotypeDesc id
 @app.route('/get_genotype_seqnames/<id>', methods=['POST'])
@@ -1406,3 +1455,37 @@ def remove_test():
 
     flash("Test records removed.")
     return redirect('/')
+
+# Temp route to convert attachments to files
+@app.route('/convert_attachments', methods=['GET'])
+@login_required
+def convert_files():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    subs = db.session.query(Submission).all()
+    for sub in subs:
+        dirname = 'attachments/' + sub.submission_id
+        if not isdir(dirname):
+            mkdir(dirname)
+
+            if sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0:
+                try:
+                    with open(dirname + '/attachment_%s' % sub.submission_id, 'wb') as fo:
+                        fo.write(sub.notes_entries[0].notes_attachment)
+                except:
+                    info = sys.exc_info()
+                    flash('Error saving attachment: %s' % (info[1]))
+                    app.logger.error(format_exc())
+
+            for desc in sub.genotype_descriptions:
+                if desc.genotype_filename is not None and len(desc.genotype_filename) > 0:
+                    try:
+                        with open(dirname + '/genotype_%s.csv' % desc.id, 'w', newline = '') as fo:
+                            fo.write(desc.genotype_file.decode("utf-8"))
+                    except:
+                        info = sys.exc_info()
+                        flash('Error saving genotype: %s' % (info[1]))
+                        app.logger.error(format_exc())
+
+    return('Attachments converted.')

@@ -14,10 +14,10 @@ from wtforms import ValidationError
 import sys
 from sqlalchemy.exc import OperationalError
 
-def blob_to_genotype(desc, db):
+def file_to_genotype(name, desc, db):
     line = 2
     try:
-        fi = StringIO(desc.genotype_file.decode('UTF-8'))
+        fi = open(name, 'r')
         reader = csv.DictReader(fi, lineterminator = '\n')
         first = True
         imported = []

@@ -22,7 +22,8 @@ def log_mail(message, app):
 
     if app.config['MAIL_LOG_BODY']:
         log_message += message.body + "\n"
-        log_message += message.html + "\n"
+        if message.html is not None:
+            log_message += message.html + "\n"
 
     app.logger.info(log_message)
 

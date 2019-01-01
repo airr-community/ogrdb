@@ -6,6 +6,11 @@
 
 # Mixin methods for Submission and associated objects
 
+from shutil import rmtree
+from sys import exc_info
+from app import app
+from traceback import format_exc
+
 class SubmissionMixin:
     def delete_dependencies(self, db):
         # repertoire and everything downstream
@@ -27,6 +32,13 @@ class SubmissionMixin:
         for d in self.genotype_descriptions:
             d.delete_dependencies(db)
             db.session.delete(d)
+
+        # associated files
+        try:
+            rmtree('attachments/' + self.submission_id)
+        except:
+            app.logger.error(format_exc())
+
 
     def can_see(self, user):
         return(self.public or
