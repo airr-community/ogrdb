@@ -11,3 +11,4 @@ docs/_build/
 docs/_downloads/
 ogre.wsgi
 /attachments
+/static/docs/IMGT*
