@@ -92,6 +92,9 @@ from forms.gene_description_form import *
 from forms.gene_description_notes_form import *
 from forms.sequence_view_form import *
 from forms.primer_set_edit_form import *
+from forms.genotype_stats_form import *
+
+from genotype_stats import *
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -1465,7 +1468,7 @@ def remove_test():
 # Temp route to convert attachments to files
 @app.route('/convert_attachments', methods=['GET'])
 @login_required
-def convert_files():
+def convert_attachments():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
@@ -1495,3 +1498,16 @@ def convert_files():
                         app.logger.error(format_exc())
 
     return('Attachments converted.')
+
+@app.route('/genotype_statistics', methods=['GET', 'POST'])
+def genotype_statistics():
+    form = GeneStatsForm()
+    species = db.session.query(Committee.species).all()
+    form.species.choices = [(s[0],s[0]) for s in species]
+
+    if request.method == 'POST':
+        if form.validate():
+            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data)
+            return render_template('genotype_statistics.html', form=form, tables=tables)
+
+    return render_template('genotype_statistics.html', form=form, tables=None)
