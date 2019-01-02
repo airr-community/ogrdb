@@ -101,7 +101,7 @@ def generate_stats(species, locus, sequence_type, min_freq, min_occ):
                 stats[gen.sequence_id]['unmutated_freq'].append(gen.unmutated_frequency)
 
     for (k, stat) in stats.items():
-        stats[k]['unmutated_freq'] = sum(stat['unmutated_freq'])/max(len(stat['unmutated_freq']),1)
+        stats[k]['unmutated_freq'] = round(sum(stat['unmutated_freq'])/max(len(stat['unmutated_freq']),1), 2)
 
     ret = []
     for(k, stat) in stats.items():
