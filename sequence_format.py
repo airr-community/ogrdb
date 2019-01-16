@@ -64,7 +64,7 @@ def format_imgt_v(seq, width):
 def splitlines(report, maxlength, label_cols):
     """
     Split the report (which is assumed to consist of lines of equal length) into a longer report in which each
-    line is maxlength or less. name_cols specifies the width of the label field, which is repeated at the start
+    line is maxlength or less. label_cols specifies the width of the label field, which is repeated at the start
     of each line.
     """
 
@@ -112,3 +112,12 @@ def report_dupe(s1, s1_name, s2, s2_name):
         s2 = s2.ljust(len(s1))
 
     return(s1_name + s1 + '\n' + s2_name + s2)
+
+def format_aln(alignment, name1, name2, width):
+    # Format an alignment returned by Bio.pairwise2: add names to start of each split line
+    lines = alignment.split('\n')
+    ln = max(len(name1), len(name2)) + 1
+    lines[0] = "%-*s" % (ln, name1) + lines[0]
+    lines[1] = "%-*s" % (ln, ' ') + lines[1]
+    lines[2] = "%-*s" % (ln, name2) + lines[2]
+    return(splitlines(lines[0]+'\n'+lines[1]+'\n'+lines[2]+'\n', width, ln))

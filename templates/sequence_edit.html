@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block pagetitle %} Edit Sequence - {{ sequence_name }}{% endblock %}
 
+{% block content %}
+    {% include 'sequence_popup.html' %}
+    {{ super() }}
+{% endblock %}
+
 {% block c_body %}
 
 <form action="{{ url_for('edit_sequence', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
@@ -26,7 +31,12 @@
             <div role="tabpanel" class="tab-pane" id="inf">
                 <div class="row">
                     <h3 class="col-sm-offset-1 col-sm-11">Inferences</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Inferences on which the sequence is based:</p>
+                    <p class="col-sm-offset-1 col-sm-11">The table below lists the submissions, and the inferences within them, on which this published sequence should be based.
+                    The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
+                    over time as additional inferences are submitted. </p>
+                    <p class="col-sm-offset-1 col-sm-11">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
+                    tick or cross will provide an alignment. Mismatches may indicate errors, but may be caused, for example, by the inclusion of leader sequences, or nucleotides in the inference
+                    which do not in IARC's opinion have sufficient evidence for inclusion in the sequence.</p>
                     <div class="col-sm-10 col-sm-offset-1">
                         <div class="form-group">
                             {{ tables['inferred_sequence'] }}
@@ -112,6 +122,7 @@
 {% block scripts %}
     {{ super() }}
     <script src="/static/script/helpers.js"></script>
+
 
     <script>
 
@@ -303,5 +314,6 @@
 
     </script>
 
+    {% include 'sequence_popup_script.html' %}
 
 {% endblock %}

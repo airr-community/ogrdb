@@ -137,6 +137,14 @@ gtgtattactgtgcgagaga""")
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
 
+    # View an alignment
+
+    wait.until(EC.element_to_be_clickable((By.ID, 'aln_view'))).click()
+    time.sleep(3)
+
+    wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
+    time.sleep(3)
+
     # Add some acknowledgements
 
     driver.find_element_by_xpath('//*[@id="tab-ack"]').click()

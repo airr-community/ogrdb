@@ -13,12 +13,31 @@ from db.styled_table import *
 from db.gene_description_db import *
 from sequence_format import *
 from flask import Markup
+from Bio import pairwise2
+from Bio.pairwise2 import format_alignment
+from sequence_format import *
 
 
 class InferredSequenceTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         contents = '<button type="button" class="delbutton btn btn-xs text-danger icon_back" data-id="%s" data-inf="%s" id="%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
         return(contents)
+
+class InferredSequenceTableMatchCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        if item['gene_sequence'] == item['nt_sequence']:
+            icon = 'glyphicon-ok'
+            colour = 'text-info'
+        else:
+            icon = 'glyphicon-remove'
+            colour = 'text-danger'
+
+        # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
+        alignments = pairwise2.align.globalms(item['gene_sequence'], item['nt_sequence'], 2, -1, -2, -1, one_alignment_only=True)
+        alignment = format_aln(format_alignment(*alignments[0]), 'Sequence', item['sequence_name'], 50)
+        content =  Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon %s"></span>&nbsp;</button>' \
+            % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
+        return(content)
 
 class SubLinkCol(StyledCol):
     def td_format(self, content):
@@ -35,7 +54,6 @@ def make_InferredSequence_table(results, private = False, classes=()):
     ret = t(results, classes=classes)
     return ret
 
-
 class MessageHeaderCol(StyledCol):
     def td_contents(self, item, attr_list):
         return "<strong>%s</strong><br><small>%s</small>" % (item.author, item.date)
@@ -44,12 +62,15 @@ class MessageBodyCol(StyledCol):
     def td_contents(self, item, attr_list):
         return Markup(safe_textile(item.body)) if item.parent is not None else "<strong>%s</strong><br>%s" % (item.title, Markup(safe_textile(item.body)))
 
-def setup_inferred_sequence_table(seqs, id, action=True):
+def setup_inferred_sequence_table(seqs, gene_desc, action=True):
     results = []
     for seq in seqs:
-        results.append({'submission_id': seq.submission.submission_id, 'sequence_name': seq.sequence_details.sequence_id, 'id': id,
-                        'sequence_id': seq.id, 'subject_id': seq.genotype_description.genotype_subject_id, 'genotype_name': seq.genotype_description.genotype_name})
+        results.append({'submission_id': seq.submission.submission_id, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': gene_desc.sequence.replace('.', '').lower() if gene_desc.sequence else '',
+                        'sequence_id': seq.id, 'nt_sequence': seq.sequence_details.nt_sequence.lower() if seq.sequence_details.nt_sequence else '', 'subject_id': seq.genotype_description.genotype_subject_id,
+                        'genotype_name': seq.genotype_description.genotype_name, 'allele_name': gene_desc.description_id})
     table = make_InferredSequence_table(results)
+    table.add_column('match', InferredSequenceTableMatchCol('Sequence Match', tooltip="Ticked if the sequence exactly matches this inference. Click for alignment."))
+
     if action:
         table.add_column('action', InferredSequenceTableActionCol(''))
         table._cols.move_to_end('action', last=False)
@@ -85,7 +106,7 @@ def setup_matching_submissions_table(seq):
 
 def setup_sequence_edit_tables(db, seq):
     tables = {}
-    tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id)
+    tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
     tables['matches'] = setup_matching_submissions_table(seq)
 

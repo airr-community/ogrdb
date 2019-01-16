@@ -74,7 +74,7 @@ def setup_sequence_view_tables(db, seq, private):
             if field['value'] is not None and len(field['value']) > 0:
                 field['value'] = Markup(safe_textile(field['value']))
 
-    tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq.id, action=False)
+    tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
     tables['matches'] = setup_matching_submissions_table(seq) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
