@@ -106,6 +106,11 @@ from custom_logging import init_logging
 
 init_logging(app, mail)
 
+# Read IMGT germline reference sets
+
+from imgt.imgt_ref import init_imgt_ref
+imgt_reference_genes = init_imgt_ref()
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # Add the test role if we are in UAT
@@ -1508,7 +1513,7 @@ def genotype_statistics():
 
     if request.method == 'POST':
         if form.validate():
-            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data)
+            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data, imgt_reference_genes)
             return render_template('genotype_statistics.html', form=form, tables=tables)
 
     return render_template('genotype_statistics.html', form=form, tables=None)

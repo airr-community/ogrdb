@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-# Calculate statistcs based on published genotypes
+# Calculate statistics based on published genotypes
 
 from collections import OrderedDict
 
@@ -47,21 +47,15 @@ def parse_name(name):
     return(gene_subgroup, subgroup_designation, allele_designation)
 
 
-def read_reference(species, locus, sequence_type):
-    records = {}
+def generate_stats(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes):
+    if species not in imgt_reference_genes:
+        return (0, None)
 
-    locus = locus + sequence_type
+    ref = []
 
-    for rec in SeqIO.parse('static/docs/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP', 'fasta'):
-        rd = rec.description.split('|')
-        if rd[2] == 'Homo sapiens' and locus in rd[1]:
-            records[rd[1]] = rec.seq
-
-    return records
-
-
-def generate_stats(species, locus, sequence_type, min_freq, min_occ):
-    ref = read_reference(species, locus, sequence_type)
+    for gene in imgt_reference_genes[species].keys():
+        if locus in gene and gene[3] == sequence_type:
+            ref.append(gene)
 
     # Get unique list of genotype descriptions that underlie affirmed inferences
 
@@ -85,7 +79,7 @@ def generate_stats(species, locus, sequence_type, min_freq, min_occ):
 
     stats = {}
 
-    for (name, seq) in ref.items():
+    for name in ref:
         stats[name] = {'occurrences': 0, 'unmutated_freq': [], 'gene': name}
 
     stats = OrderedDict(sorted(stats.items(), key=lambda name: parse_name(name[0])[2]))

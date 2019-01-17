@@ -33,9 +33,9 @@ def make_GeneStats_table_table(results, classes=()):
     return ret
 
 
-def setup_gene_stats_tables(species, locus, sequence_type, min_freq, min_occ):
+def setup_gene_stats_tables(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes):
     ret = {}
-    (ret['count'], stats) = generate_stats(species, locus, sequence_type, min_freq, min_occ)
+    (ret['count'], stats) = generate_stats(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes)
 
     if ret['count'] == 0:
         ret['gene_table'] = None
