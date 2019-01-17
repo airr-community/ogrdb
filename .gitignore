@@ -13,3 +13,4 @@ ogre.wsgi
 /attachments
 /static/docs/IMGT*
 /imgt/imgt_files
+/imgt/track_imgt_config.yaml
