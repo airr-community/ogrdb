@@ -12,5 +12,6 @@ docs/_downloads/
 ogre.wsgi
 /attachments
 /static/docs/IMGT*
+/static/docs/igpdb*
 /imgt/imgt_files
 /imgt/track_imgt_config.yaml
