@@ -284,8 +284,25 @@ def sub_edit_gen():
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
     wait.until(EC.element_to_be_clickable((By.ID,'download_genotype')))
-    driver.execute_script("window.history.go(-1)")
-    wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
+
+    wait.until(EC.element_to_be_clickable((By.ID, 'btn_view_seq'))).click()
+    time.sleep(3)
+
+    wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
+    time.sleep(3)
+
+    wait.until(EC.element_to_be_clickable((By.ID, 'btn_view_check'))).click()
+    time.sleep(3)
+
+    wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
+    time.sleep(3)
+
+    driver.find_element_by_id('occ_threshold').send_keys('10000')
+    driver.find_element_by_id('update').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'download_genotype')))
+    time.sleep(3)
+
+    driver.execute_script("window.history.go(-2)")
 
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_gen")]')
     assert(len(x) == nitems)

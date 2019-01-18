@@ -9,6 +9,7 @@ from wtforms.validators import NumberRange
 from wtforms import SelectField, SubmitField, DecimalField, IntegerField
 from db.styled_table import *
 from flask_table import create_table
+from imgt.imgt_ref import imgt_reference_genes
 
 from genotype_stats import generate_stats
 
@@ -33,9 +34,9 @@ def make_GeneStats_table_table(results, classes=()):
     return ret
 
 
-def setup_gene_stats_tables(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes):
+def setup_gene_stats_tables(species, locus, sequence_type, min_freq, min_occ):
     ret = {}
-    (ret['count'], stats) = generate_stats(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes)
+    (ret['count'], stats) = generate_stats(species, locus, sequence_type, min_freq, min_occ)
 
     if ret['count'] == 0:
         ret['gene_table'] = None

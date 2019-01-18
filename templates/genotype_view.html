@@ -9,36 +9,72 @@
 
 {% block c_body %}
 
-<ul class="nav nav-tabs">
-    <li><a href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
-    <li><a href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
-    {% if reviewer %}
-    <li><a href="#review">Review</a></li>
-    {% endif %}
-</ul>
+    <ul class="nav nav-tabs">
+        <li><a href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
+        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
+        {% if reviewer %}
+        <li><a href="#review">Review</a></li>
+        {% endif %}
+    </ul>
 
 
-        <div class="table">
-            {{ tables['desc'] }}
-        </div>
-
+    <form action="{{ url_for(this_link, id=id) }}" method="POST" name="form" class="form-horizontal">
         <div class="row col-sm-offset-1">
-            <div class="btn-toolbar">
-                <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
-                <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-default" role="button" id="download_genotype">Download</a>
-                <button class="tablebutton btn btn-default" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
+
+            <div class="col-sm-6">
+                <div class="table">
+                    {{ tables['desc'] }}
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                    <table>
+                        <thead>
+                            <tr><th class="col-sm-3 view-table-row"> </th></tr>
+                        </thead>
+                    </table>
+                    <div class="form-group">
+                    {{ form.hidden_tag() }}
+
+                    {{ render_narrow_field_with_errors(form.occ_threshold, class="form-control") }}
+                    {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
+                    {{ render_narrow_field_with_errors(form.sub_only, class="checkbox") }}
+                    </div>
             </div>
         </div>
 
-        <div class="table pad">
-            {{ tables['genotype'] | safe}}
+        <div class="row col-sm-offset-1">
+
+            <div class="col-sm-6">
+                <div class="btn-toolbar">
+                    <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
+                    <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-default" role="button" id="download_genotype">Download</a>
+                    <button class="tablebutton btn btn-default" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                    <div class="form-group">
+                        {{ form.update(class="btn btn-success col-sm-offset-2") }}
+                    </div>
+            </div>
         </div>
+    </form>
+
+    <div class="row col-sm-offset-1">
+        <p>Allele names in <em>italic</em> are not listed in the reference set. Allele names in <strong>bold</strong> are put forward in the submission for consideration as inferred sequences.</p>
+        <p>A cross in the Sequence column indicates that the sequence listed in the genotype does not match the sequence of the corresponding allele in the reference set.</p>
+        <p>An information icon in the Sequence column alerts you to other information on this sequence - hover over for details.</p>
+    </div>
+
+    <div class="table pad">
+        {{ tables['genotype'] | safe}}
+    </div>
 {% endblock %}
 
 

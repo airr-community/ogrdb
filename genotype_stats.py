@@ -13,6 +13,8 @@ from app import db
 
 from db.submission_db import *
 from db.gene_description_db import *
+from imgt.imgt_ref import imgt_reference_genes
+
 
 def parse_name(name):
     allele_designation = ''
@@ -47,13 +49,14 @@ def parse_name(name):
     return(gene_subgroup, subgroup_designation, allele_designation)
 
 
-def generate_stats(species, locus, sequence_type, min_freq, min_occ, imgt_reference_genes):
-    if species not in imgt_reference_genes:
+def generate_stats(species, locus, sequence_type, min_freq, min_occ):
+    imgt_ref = imgt_reference_genes()
+    if species not in imgt_ref:
         return (0, None)
 
     ref = []
 
-    for gene in imgt_reference_genes[species].keys():
+    for gene in imgt_ref[species].keys():
         if locus in gene and gene[3] == sequence_type:
             ref.append(gene)
 

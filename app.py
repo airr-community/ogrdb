@@ -93,6 +93,7 @@ from forms.gene_description_notes_form import *
 from forms.sequence_view_form import *
 from forms.primer_set_edit_form import *
 from forms.genotype_stats_form import *
+from forms.genotype_view_options_form import *
 
 from genotype_stats import *
 
@@ -108,8 +109,9 @@ init_logging(app, mail)
 
 # Read IMGT germline reference sets
 
-from imgt.imgt_ref import init_imgt_ref
-imgt_reference_genes = init_imgt_ref()
+from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref
+init_imgt_ref()
+init_igpdb_ref()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -651,12 +653,12 @@ def check_genotype_description_view(id):
 
     return desc
 
-@app.route('/genotype_e/<id>')
+@app.route('/genotype_e/<id>', methods=['GET', 'POST'])
 def genotype_e(id):
     return genotype(id, True)
 
 # 'editable' parameter indicates whether links back to the submission should be editable or not
-@app.route('/genotype/<id>')
+@app.route('/genotype/<id>', methods=['GET', 'POST'])
 def genotype(id, editable=False):
     desc = check_genotype_description_view(id)
     sub = desc.submission
@@ -664,13 +666,28 @@ def genotype(id, editable=False):
     if desc is None:
         return redirect('/')
 
+    form = GenotypeViewOptionsForm()
     tables = {}
     tables['desc'] = make_GenotypeDescription_view(desc, False)
     tables['desc'].items.append({"item": "Tool/Settings", "value": desc.inference_tool.tool_settings_name, "tooltip": ""})
     tables['genotype'] = setup_gv_table(desc)
     fasta = setup_gv_fasta(desc)
     submission_link = 'edit_submission' if editable else 'submission'
-    return render_template('genotype_view.html', desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link)
+    this_link = 'genotype_e' if editable else 'genotype'
+
+    if request.method == 'POST':
+        if form.validate():
+            new_items = []
+            for item in tables['genotype'].items:
+                if form.sub_only.data:
+                    if len(item.inferred_sequences) == 0:
+                        continue
+                if item.sequences < form.occ_threshold.data or item.unmutated_frequency < form.freq_threshold.data:
+                    continue
+                new_items.append(item)
+            tables['genotype'].items = new_items
+
+    return render_template('genotype_view.html', form=form, desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link, this_link=this_link)
 
 @app.route('/download_genotype/<id>')
 def download_genotype(id):
@@ -1513,7 +1530,7 @@ def genotype_statistics():
 
     if request.method == 'POST':
         if form.validate():
-            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data, imgt_reference_genes)
+            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data)
             return render_template('genotype_statistics.html', form=form, tables=tables)
 
     return render_template('genotype_statistics.html', form=form, tables=None)
