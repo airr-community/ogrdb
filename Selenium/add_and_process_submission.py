@@ -145,7 +145,7 @@ def sub_edit_rep(sub_id):
     driver.find_element_by_id("sequencing_platform").send_keys('Illumina MiSeq')
     driver.find_element_by_id("read_length").send_keys('250x250bp')
 
-    driver.find_element_by_name("save_btn").click()
+    driver.find_element_by_name("save_close_btn").click()
     driver.get(host_address + "edit_submission/" + sub_id)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 
@@ -209,7 +209,7 @@ def sub_edit_notes(sub_id):
 
     driver.find_element_by_id('notes_attachment').send_keys("D:\\Research\\ogre\\testfiles\\genotype_1.csv")
 
-    driver.find_element_by_name("save_btn").click()
+    driver.find_element_by_name("save_close_btn").click()
     driver.get(host_address + "edit_submission/" + sub_id)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 

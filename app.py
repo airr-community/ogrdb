@@ -256,7 +256,7 @@ def edit_submission(id):
     missing_sequence_error = False
     validation_result = ValidationResult()
     try:
-        if ('save_btn' in request.form or 'submit_btn' in request.form):
+        if ('save_btn' in request.form or 'save_close_btn' or 'submit_btn' in request.form):
             if not form.validate():
                 if 'submit_btn' in request.form:
                     raise ValidationError()
@@ -297,7 +297,7 @@ def edit_submission(id):
         # The main problem is that not all object attributes are represented in the form, for example submission_id
         # if these were present as hidden fields, maybe we could use process()
 
-        if ('save_btn' in request.form or 'submit_btn' in request.form):
+        if ('save_btn' in request.form or 'save_close_btn' or 'submit_btn' in request.form):
             for (k, v) in request.form.items():
                 if hasattr(sub, k):
                     setattr(sub, k, v)
@@ -331,7 +331,12 @@ def edit_submission(id):
             return redirect(url_for(validation_result.route, id = validation_result.id))
         if validation_result.tag:
             return redirect(url_for('edit_submission', id=id, _anchor=validation_result.tag))
-        return redirect(url_for('submissions'))
+
+        if 'save_btn' in request.form:
+            tag = request.form['current_tab'].split('#')[1] if '#' in request.form['current_tab'] else '#sub'
+            return redirect(url_for('edit_submission', id=id, _anchor=tag))
+        else:
+            return redirect(url_for('submissions'))
 
     except ValidationError as e:
         # If we don't have a tag, find an error to jump to

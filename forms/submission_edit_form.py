@@ -26,6 +26,7 @@ from sys import exc_info
 from get_pmid_details import get_pmid_details
 from collections import namedtuple
 from custom_validators import ValidNucleotideSequence, ValidOrcidID
+from wtforms import HiddenField
 
 class EditablePubIdTable(EditableTable):
     def check_add_item(self, request, db):
@@ -187,6 +188,12 @@ def process_table_updates(tables, request, db):
     return validation_result
 
 
+# Hidden fields to retain form state
+class HiddenSubFieldsForm(FlaskForm):
+    current_tab = HiddenField('Tab')
+
+
+
 def setup_submission_edit_forms_and_tables(sub, db):
     tables = {}
 
@@ -204,6 +211,8 @@ def setup_submission_edit_forms_and_tables(sub, db):
 
     repertoire_form = RepertoireForm(obj = sub.repertoire[0])
     notes_entry_form = NotesEntryForm(obj = sub.notes_entries[0])
+
+    hidden_fields_form = HiddenSubFieldsForm()
 
     # Remove tool, genotype and inferred sequence entries that have no names. These are new entries that the user backed out of,
     # either by pressing cancel or by navigating away from the edit page.
@@ -229,7 +238,7 @@ def setup_submission_edit_forms_and_tables(sub, db):
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype_e', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
 
-    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form)
+    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form, hidden_fields_form)
     return (tables, form)
 
 
