@@ -193,7 +193,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
                 item['value'] = 'No notes provided'
 
     for item in tables['repertoire'].items:
-        if item['item'] == 'Dataset URL' and len(item['value']) > 0:
+        if item['item'] == 'Dataset URL' and item['value'] is not None and len(item['value']) > 0:
                 item['value'] = Markup('<a href=%s>%s</a>' % (item['value'],item['value']))
 
     t = make_InferenceTool_table(sub.inference_tools)
