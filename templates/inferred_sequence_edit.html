@@ -9,11 +9,29 @@
 
             {{ form.hidden_tag() }}
 
+            <div class="row">
             {% include 'inferred_sequence_form.html' %}
+            </div>
 
-            <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-1" id="save_sequence">
-            {{ form.cancel(class="btn btn-cancel") }}
+            {% if ncbi %}
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        {{ srr_table }}
+                    </div>
+                </div>
+
+                <div class="row col-sm-offset-3">
+                    <p >(Details will be updated from NCBI when you save)</p>
+                </div>
+            {% endif %}
+
+            <div class="row col-sm-offset-2">
+                <input type="submit" value="Save" class="btn btn-default  col-sm-offset-1" name="save_sequence" id="save_sequence">
+                <input type="submit" value="Save & Close" class="btn btn-default" name="save_close_sequence" id="save_close_sequence">
+                {{ form.cancel(class="btn btn-cancel") }}
+            </div>
 </form>
+
 
 {% endblock %}
 

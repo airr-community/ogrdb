@@ -20,6 +20,8 @@ class InferredSequence(db.Model, InferredSequenceMixin):
     genotype_id = db.Column(db.Integer, db.ForeignKey('genotype_description.id'))
     genotype_description = db.relationship('GenotypeDescription', backref = 'inferred_sequences')
     seq_accession_no = db.Column(db.String(1000))
+    seq_record_title = db.Column(db.String(1000))
+    ncbi_hash = db.Column(db.String(1000))
     deposited_version = db.Column(db.String(1000))
     run_ids = db.Column(db.String(1000))
     inferred_extension = db.Column(db.Boolean)
@@ -35,6 +37,8 @@ def save_InferredSequence(db, object, form, new=False):
     object.sequence_id = form.sequence_id.data
     object.genotype_id = form.genotype_id.data
     object.seq_accession_no = form.seq_accession_no.data
+    object.seq_record_title = form.seq_record_title.data
+    object.ncbi_hash = form.ncbi_hash.data
     object.deposited_version = form.deposited_version.data
     object.run_ids = form.run_ids.data
     object.inferred_extension = form.inferred_extension.data
@@ -54,6 +58,8 @@ def save_InferredSequence(db, object, form, new=False):
 
 def populate_InferredSequence(db, object, form):   
     form.seq_accession_no.data = object.seq_accession_no
+    form.seq_record_title.data = object.seq_record_title
+    form.ncbi_hash.data = object.ncbi_hash
     form.deposited_version.data = object.deposited_version
     form.run_ids.data = object.run_ids
     form.inferred_extension.data = object.inferred_extension
@@ -69,6 +75,8 @@ def populate_InferredSequence(db, object, form):
 
 def copy_InferredSequence(c_from, c_to):   
     c_to.seq_accession_no = c_from.seq_accession_no
+    c_to.seq_record_title = c_from.seq_record_title
+    c_to.ncbi_hash = c_from.ncbi_hash
     c_to.deposited_version = c_from.deposited_version
     c_to.run_ids = c_from.run_ids
     c_to.inferred_extension = c_from.inferred_extension
@@ -98,8 +106,9 @@ class InferredSequence_view(Table):
 def make_InferredSequence_view(sub, private = False):
     ret = InferredSequence_view([])
     ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository (e.g. BK010573)", "field": "seq_accession_no"})
+    ret.items.append({"item": "Record Title", "value": sub.seq_record_title, "tooltip": "Title of sequence record in the repository", "field": "seq_record_title"})
     ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository (e.g. 1)", "field": "deposited_version"})
-    ret.items.append({"item": "Select sets", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the select set(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)", "field": "run_ids"})
+    ret.items.append({"item": "Select sets", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)", "field": "run_ids"})
     ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence", "field": "inferred_extension"})
     ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)", "field": "ext_3prime"})
     ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "start_3prime_ext"})

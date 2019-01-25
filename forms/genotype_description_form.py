@@ -5,11 +5,13 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class GenotypeDescriptionForm(FlaskForm):
     genotype_name = StringField('Genotype Name', [validators.Length(max=255), NonEmpty()], description="Descriptive name for this genotype")
     genotype_subject_id = StringField('Subject ID', [validators.Length(max=255), NonEmpty()], description="Identifier of the subject from which this genotype was inferred")
     genotype_biosample_ids = StringField('Sample IDs', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)")
+    genotype_run_ids = StringField('Sequence Sets', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)")
+    gen_ncbi_hash = HiddenField('gen_ncbi_hash', [validators.Length(max=255)], description="md5 sum of details passed to ncbi")
     inference_tool_id = SelectField('Inference Tool', [validators.Optional()], choices=[])
     genotype_file = FileField('Genotype File', description="CSV file containing genotype information")
     genotype_filename = StringField('Genotype Filename', [validators.Length(max=255)], description="Name of the uploaded file from which the genotype was read")

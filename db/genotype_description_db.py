@@ -16,6 +16,8 @@ class GenotypeDescription(db.Model, GenotypeDescriptionMixin):
     genotype_name = db.Column(db.String(1000))
     genotype_subject_id = db.Column(db.String(1000))
     genotype_biosample_ids = db.Column(db.String(255))
+    genotype_run_ids = db.Column(db.String(1000))
+    gen_ncbi_hash = db.Column(db.String(1000))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'genotype_descriptions')
     inference_tool_id = db.Column(db.Integer, db.ForeignKey('inference_tool.id'))
@@ -28,6 +30,8 @@ def save_GenotypeDescription(db, object, form, new=False):
     object.genotype_name = form.genotype_name.data
     object.genotype_subject_id = form.genotype_subject_id.data
     object.genotype_biosample_ids = form.genotype_biosample_ids.data
+    object.genotype_run_ids = form.genotype_run_ids.data
+    object.gen_ncbi_hash = form.gen_ncbi_hash.data
     object.inference_tool_id = form.inference_tool_id.data
     object.genotype_filename = form.genotype_filename.data
 
@@ -42,6 +46,8 @@ def populate_GenotypeDescription(db, object, form):
     form.genotype_name.data = object.genotype_name
     form.genotype_subject_id.data = object.genotype_subject_id
     form.genotype_biosample_ids.data = object.genotype_biosample_ids
+    form.genotype_run_ids.data = object.genotype_run_ids
+    form.gen_ncbi_hash.data = object.gen_ncbi_hash
     form.genotype_file.data = object.genotype_file
     form.genotype_filename.data = object.genotype_filename
 
@@ -52,6 +58,8 @@ def copy_GenotypeDescription(c_from, c_to):
     c_to.genotype_name = c_from.genotype_name
     c_to.genotype_subject_id = c_from.genotype_subject_id
     c_to.genotype_biosample_ids = c_from.genotype_biosample_ids
+    c_to.genotype_run_ids = c_from.genotype_run_ids
+    c_to.gen_ncbi_hash = c_from.gen_ncbi_hash
     c_to.genotype_file = c_from.genotype_file
     c_to.genotype_filename = c_from.genotype_filename
 
@@ -79,6 +87,7 @@ def make_GenotypeDescription_view(sub, private = False):
     ret.items.append({"item": "Genotype Name", "value": sub.genotype_name, "tooltip": "Descriptive name for this genotype", "field": "genotype_name"})
     ret.items.append({"item": "Subject ID", "value": sub.genotype_subject_id, "tooltip": "Identifier of the subject from which this genotype was inferred", "field": "genotype_subject_id"})
     ret.items.append({"item": "Sample IDs", "value": sub.genotype_biosample_ids, "tooltip": "Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)", "field": "genotype_biosample_ids"})
+    ret.items.append({"item": "Sequence Sets", "value": sub.genotype_run_ids, "tooltip": "Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)", "field": "genotype_run_ids"})
     ret.items.append({"item": "Genotype Filename", "value": sub.genotype_filename, "tooltip": "Name of the uploaded file from which the genotype was read", "field": "genotype_filename"})
     return ret
 

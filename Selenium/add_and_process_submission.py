@@ -139,9 +139,10 @@ def sub_edit_rep(sub_id):
     driver.find_element_by_xpath('//*[@id="tab-rep"]').click()
 
     wait.until(EC.element_to_be_clickable((By.ID,"repository_name")))
-    driver.find_element_by_id("repository_name").send_keys('NIH')
-    driver.find_element_by_id("rep_accession_no").send_keys('SRA'+ random_chars(size = 5, chars=string.digits))
-    driver.find_element_by_id("dataset_url").send_keys('https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=ERP108969')
+    Select(driver.find_element_by_id("repository_select")).select_by_visible_text('NCBI SRA')
+#    driver.find_element_by_id("repository_name").send_keys('EBI')
+    driver.find_element_by_id("rep_accession_no").send_keys('PRJNA336331')
+#    driver.find_element_by_id("dataset_url").send_keys('https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=ERP108969')
     driver.find_element_by_id("sequencing_platform").send_keys('Illumina MiSeq')
     driver.find_element_by_id("read_length").send_keys('250x250bp')
 
@@ -263,13 +264,16 @@ def sub_edit_gen():
         wait.until(EC.element_to_be_clickable((By.ID,'genotype_name')))
         driver.find_element_by_id('genotype_name').send_keys(random_proper())
         driver.find_element_by_id('genotype_subject_id').send_keys(random_chars(size=random.randint(1,4), chars=string.digits))
-        ids = ','.join(['SAMN' + random_chars(size=8, chars=string.digits) for _ in range(random.randint(1,10))])
-        driver.find_element_by_id('genotype_biosample_ids').send_keys(ids)
+#        ids = ','.join(['SAMN' + random_chars(size=8, chars=string.digits) for _ in range(random.randint(1,10))])
+        driver.find_element_by_id('genotype_biosample_ids').send_keys('SAMN06821252, SAMN06821254;SAMN06821255')
+        driver.find_element_by_id('genotype_run_ids').send_keys('SRR8298725 SRR8298725')
         sel = Select(driver.find_element_by_id('inference_tool_id'))
         opts = sel.options
         opts[random.randint(0,len(opts)-1)].click()
         driver.find_element_by_id('genotype_file').send_keys("D:\\Research\\ogre\\testfiles\\genotype_1.csv")
         driver.find_element_by_id('save_genotype').click()
+        time.sleep(3)
+        wait.until(EC.element_to_be_clickable((By.ID,'save_close_genotype'))).click()
         wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_genotype")]')
@@ -277,7 +281,7 @@ def sub_edit_gen():
     x[random.randint(0,nitems-1)].click()
     wait.until(EC.element_to_be_clickable((By.ID,'genotype_name')))
     driver.find_element_by_id('genotype_name').send_keys(random_proper())
-    driver.find_element_by_id('save_genotype').click()
+    driver.find_element_by_id('save_close_genotype').click()
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "genotype_e/")]')
@@ -330,11 +334,11 @@ def sub_edit_seq():
         opts[random.randint(0,len(opts)-1)].click()
         time.sleep(4)
 
-        driver.find_element_by_id('seq_accession_no').send_keys('SRX' + random_chars(size=8, chars=string.digits))
+        driver.find_element_by_id('seq_accession_no').send_keys('MH779621')
         driver.find_element_by_id('deposited_version').send_keys(random_chars(size=2, chars=string.digits))
-        ids = ','.join(['SRR' + random_chars(size=8, chars=string.digits) for _ in range(random.randint(1,10))])
-        driver.find_element_by_id('run_ids').send_keys(ids)
-
+#        ids = ','.join(['SRR' + random_chars(size=8, chars=string.digits) for _ in range(random.randint(1,10))])
+        driver.find_element_by_id('run_ids').send_keys('SRR7154789, SRR7154790, SRR7154791')
+        time.sleep(2)
         wait.until(EC.element_to_be_clickable((By.ID,'sequence_id')))
         sel = Select(driver.find_element_by_id('sequence_id'))
         opts = sel.options
@@ -359,14 +363,17 @@ def sub_edit_seq():
         wait.until(EC.element_to_be_clickable((By.ID,'sequence_id')))
         time.sleep(2)
         driver.find_element_by_id('save_sequence').click()
+        time.sleep(2)
+        wait.until(EC.element_to_be_clickable((By.ID,'save_close_sequence'))).click()
         wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_inferred")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
     wait.until(EC.element_to_be_clickable((By.ID,'seq_accession_no')))
-    driver.find_element_by_id('seq_accession_no').send_keys('SRX' + random_chars(size=8, chars=string.digits))
-    driver.find_element_by_id('save_sequence').click()
+#    driver.find_element_by_id('seq_accession_no').send_keys(', MH779622')
+    time.sleep(2)
+    driver.find_element_by_id('save_close_sequence').click()
     wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
     time.sleep(3)

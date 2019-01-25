@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class JournalEntryForm(FlaskForm):
     title = StringField('Note title', [validators.Length(max=255), NonEmpty()], description="title of entry")
     body = TextAreaField('Note', [validators.Length(max=10000), NonEmpty()], description="body text of entry")

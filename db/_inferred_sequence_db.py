@@ -24,3 +24,6 @@ class InferredSequenceMixin:
                 except:
                     continue
 
+    def delete_dependencies(self, db):
+        for rec in self.record_set:
+            db.session.delete(rec)

@@ -58,6 +58,8 @@ def main(argv):
     write_model(schema, 'Primer', 'db/primer_db.py')
     write_flaskform(schema, 'Primer', 'forms/primer_form.py')
     write_inp(schema, 'Primer', 'templates/primer_form.html')
+    write_model(schema, 'RecordSet', 'db/record_set_db.py')
+    write_model(schema, 'SampleName', 'db/sample_name_db.py')
 
 # Merge markup properties with schema
 # In the event of a conflict, markup always wins. Otherwise properties are merged.
@@ -167,6 +169,8 @@ class %s(db.Model):
                         rel = schema[section]['properties'][sc_item]['many-relationship']
                         fo.write("\n    %s = db.relationship('%s', secondary = %s, backref = db.backref('%s', lazy='dynamic'))" % (sc_item, rel[0], sc_item +'_'+ rel[1], rel[1]))
                 elif type == 'string':
+                    fo.write("    %s = db.Column(db.String(1000))" % sc_item)
+                elif type == 'hidden':
                     fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'date':
                     fo.write("    %s = db.Column(db.DateTime)" % sc_item)
@@ -313,10 +317,11 @@ def copy_%s(c_from, c_to):
         fo.write('def make_%s_view(sub, private = False):\n    ret = %s_view([])\n' % (section, section))
 
         for sc_item in schema[section]['properties']:
-            if 'ignore' in schema[section]['properties'][sc_item] \
-                    or ('hide' in schema[section]['properties'][sc_item] and not 'inview' in schema[section]['properties'][sc_item])\
-                    or 'foreign_key' in schema[section]['properties'][sc_item]\
-                    or schema[section]['properties'][sc_item]['type'] == 'blob':        # don't put blobs in the view
+            if 'ignore' in schema[section]['properties'][sc_item] or \
+                    ('hide' in schema[section]['properties'][sc_item] and not 'inview' in schema[section]['properties'][sc_item]) or \
+                    'foreign_key' in schema[section]['properties'][sc_item] or \
+                    schema[section]['properties'][sc_item]['type'] == 'blob' or \
+                    schema[section]['properties'][sc_item]['type'] == 'hidden':
                 continue
             if 'private' in schema[section]['properties'][sc_item]:
                 fo.write('    if private:\n    ')
@@ -336,7 +341,7 @@ def write_flaskform(schema, section, outfile, append=False):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class %sForm(FlaskForm):
 """ % (section, section))
         for sc_item in schema[section]['properties']:
@@ -364,6 +369,8 @@ class %sForm(FlaskForm):
                         fo.write("    %s = SelectField('%s', choices=%s%s)" % (sc_item, label, repr(choices), description))
                 elif type == 'string':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
+                elif type == 'hidden':
+                    fo.write("    %s = HiddenField('%s', [validators.Length(max=255)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'date':
                     fo.write("    %s = DateField('%s'%s)" % (sc_item, label, description))
                 elif type == 'email_address':

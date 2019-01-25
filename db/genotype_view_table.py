@@ -49,7 +49,15 @@ class SeqCol(StyledCol):
                     bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IGPDB gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
                     break
 
-        return bt_view + bt_check + bt_igpdb
+        bt_imgt = ''
+
+        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+            for k,v in imgt_ref[item.genotype_description.submission.species].items():
+                if item.nt_sequence.lower() == v:
+                    bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
+                    break
+
+        return bt_view + bt_check + bt_igpdb + bt_imgt
 
 class GenTitleCol(StyledCol):
     def td_contents(selfself, item, attr_list):

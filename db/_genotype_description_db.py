@@ -11,6 +11,9 @@ class GenotypeDescriptionMixin:
         # genotype records
         for g in self.genotypes:
             db.session.delete(g)
-        # inferred sequences
-        for s in self.inferred_sequences:
+        # sample ids
+        for s in self.sample_names:
             db.session.delete(s)
+        #record sets
+        for r in self.record_set:
+            db.session.delete(r)

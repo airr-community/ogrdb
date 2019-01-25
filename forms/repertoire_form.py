@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class PubIdForm(FlaskForm):
     pubmed_id = StringField('PubMed ID', [validators.Length(max=255)], description="PubMed ID (e.g. 26543)")
 
@@ -17,7 +17,7 @@ class PubIdForm(FlaskForm):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class AcknowledgementsForm(FlaskForm):
     ack_name = StringField('Name', [validators.Length(max=255)], description="Name of individual to be acknowledged as contributing to this work")
     ack_institution_name = StringField('Institution', [validators.Length(max=255)], description="Individual's department and institution name")
@@ -31,12 +31,13 @@ class AcknowledgementsForm(FlaskForm):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class RepertoireForm(FlaskForm):
-    repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)")
-    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)")
+    repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)")
+    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)")
+    rep_title = StringField('Project/Study Title', [validators.Length(max=255)], description="Title as listed in the repository")
     dataset_url = StringField('Dataset URL', [validators.Length(max=255), validators.URL()], description="URL of the study or project within the repository")
-    miairr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the repertoire dataset and associated metadata is available in MiAIRR format")
+    miairr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the annotated reads and associated metadata is available in MiAIRR format")
     miairr_link = StringField('MiAIRR URL', [validators.Length(max=255), validators.Optional(), validators.URL()], description="Link to MiAIRR metadata, if available")
     sequencing_platform = StringField('Sequencing Platform', [validators.Length(max=255), NonEmpty()], description="Designation of sequencing instrument used")
     read_length = StringField('Read Length', [validators.Length(max=255), NonEmpty()], description="Read length in bases for each direction")

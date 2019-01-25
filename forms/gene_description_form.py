@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class GeneDescriptionForm(FlaskForm):
     author = StringField('Curator', [validators.Length(max=255)], description="Curator of this sequence record")
     lab_address = StringField('Curator address', [validators.Length(max=255)], description="Institution and full address of corresponding author")

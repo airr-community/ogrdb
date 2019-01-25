@@ -14,6 +14,14 @@ from traceback import format_exc
 class SubmissionMixin:
     def delete_dependencies(self, db):
         # repertoire and everything downstream
+        for i in self.inferred_sequences:
+            i.delete_dependencies(db)
+            db.session.delete(i)
+
+        for d in self.genotype_descriptions:
+            d.delete_dependencies(db)
+            db.session.delete(d)
+
         for r in self.repertoire:
             r.delete_dependencies(db)
             db.session.delete(r)
@@ -29,9 +37,6 @@ class SubmissionMixin:
         for j in self.journal_entries:
             db.session.delete(j)
 
-        for d in self.genotype_descriptions:
-            d.delete_dependencies(db)
-            db.session.delete(d)
 
         # associated files
         try:

@@ -168,16 +168,20 @@ Repertoire:
             ignore: true
         repository_name:
             type: string
-            description: Name of the repository holding the sequence dataset (e.g. NIH SRA, or ENA)
+            description: Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)
             completed_by: submitter
             label: Repository
             nonblank: true
         rep_accession_no:
             type: string
-            description: Accession number or serial number within the repository - NIH Project or ENA Study (e.g. SRP081761)
+            description: Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)
             completed_by: submitter
             label: Accession Number
             nonblank: true
+        rep_title:
+            type: string
+            description: Title as listed in the repository
+            label: Project/Study Title
         dataset_url:
             type: url
             description: URL of the study or project within the repository
@@ -185,7 +189,7 @@ Repertoire:
             label: Dataset URL
         miairr_compliant:
             type: [Yes, No]
-            description: Yes if the repertoire dataset and associated metadata is available in MiAIRR format
+            description: Yes if the annotated reads and associated metadata is available in MiAIRR format
             completed_by: submitter
             label: MiAIRR Compliant?
         miairr_link:
@@ -419,6 +423,14 @@ InferredSequence:
             completed_by: submitter
             label: Accession Number
             nonblank: true
+        seq_record_title:
+            type: string
+            description: Title of sequence record in the repository
+            label: Record Title
+            readonly: true
+        ncbi_hash:
+            type: hidden
+            description: md5 sum of details passed to ncbi
         deposited_version:
             type: string
             description: Version number of the sequence within the repository (e.g. 1)
@@ -426,7 +438,7 @@ InferredSequence:
             label: Version
         run_ids:
             type: string
-            description: Comma-separated list of accession number(s) of the select set(s) listing the raw sequences from which this inference was made (e.g. SRR7154792)
+            description: Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)
             completed_by: submitter
             label: Select sets
             nonblank: true
@@ -465,6 +477,38 @@ InferredSequence:
             description: End co-ordinate of 5\' extension (if any) in IMGT numbering
             nonblank: false
 
+# Collections of records from a sequencing run that pertain to a particular inference
+RecordSet:
+    discriminator: AIRR
+    description: Record sets pertaining to a particular inference
+    type: object
+    occurrence: multiple
+    properties:
+        rec_accession_no:
+            type: string
+            description:  Accession number of the record set within the repository (eg SRR7663069)
+            label: Accession Number
+            tableview: true
+        rec_record_title:
+            type: string
+            description: Title of sequence record in the repository
+            label: Record TItle
+            tableview: true
+        rec_url:
+            type: string
+            description: URL to record in NCBI
+            label: URL
+        inferred_sequence_id:
+            type: integer
+            hide: true
+            foreign_key: inferred_sequence.id
+            relationship: [inferred_sequence, InferredSequence, record_set]
+        genotype_description_id:
+            type: integer
+            hide: true
+            foreign_key: genotype_description.id
+            relationship: [genotype_description, GenotypeDescription, record_set]
+
 
 # V-Gene Genotype, for each subject referenced in the set of inferred sequences
 GenotypeDescription:
@@ -493,6 +537,14 @@ GenotypeDescription:
             completed_by: submitter
             label: Sample IDs
             nonblank: true
+        genotype_run_ids:
+            type: string
+            description: Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)
+            label: Sequence Sets
+            nonblank: true
+        gen_ncbi_hash:
+            type: hidden
+            description: md5 sum of details passed to ncbi
         submission_id:
             type: integer
             hide: true
@@ -513,6 +565,34 @@ GenotypeDescription:
             tableview: true
             readonly: true
             label: Genotype Filename
+
+# Sample(s) from which a specific genotype was derived
+SampleName:
+    discriminator: AIRR
+    description: Samples from which a genotype was derived
+    type: object
+    occurrence: multiple
+    properties:
+        sam_accession_no:
+            type: string
+            description:  Accession number of the record set within the repository (eg SAMN06821283)
+            label: Accession Number
+            tableview: true
+        sam_record_title:
+            type: string
+            description: Title of sequence record in the repository
+            label: Record TItle
+            tableview: true
+        sam_url:
+            type: string
+            description: URL to record in NCBI
+            label: URL
+        genotype_description_id:
+            type: integer
+            hide: true
+            foreign_key: genotype_description.id
+            relationship: [genotype_description, GenotypeDescription, sample_names]
+
 
 
 Genotype:

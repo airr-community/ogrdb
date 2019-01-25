@@ -44,8 +44,9 @@
 
     <div role="tabpanel" class="tab-pane" id="rep">
         <h3>Repertoire Details</h3>
-        <p>Please provide details of the repertoire from which the inferences are based. This should correspond, for example, to an NIH Project or an ENA study. It must be deposited in a public repository.</p>
-        {% include 'repertoire_form.html' %}
+        <p>Please provide details of the repertoire from which the inferences are based. This should correspond, for example, to an NCBI BioProject or an ENA study. It must be deposited in a public repository.</p>
+        <p>Please reference NCBI SRA as the repository and provide NCBI accession numbers in the submission if possible, as OGRDB can validate them and will be able to provide supplementary information.</p>
+        {% include 'repertoire_edit_form.html' %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="primer_sets">
@@ -126,6 +127,7 @@
         }
 
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+        $("#current_tab").val('#' + anchor)
     };
 
     {% if jump %}
@@ -139,6 +141,8 @@
 
     $(document).ready(function ()
     {
+        update_repository_fields();
+
         if(jump != '') {
             window.location.hash = "";
             window.location.hash = "#" + jump
@@ -175,16 +179,11 @@
                 msg.append('<p>Any data or information uploaded to this site is deposited under a <br><a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode" target="_blank">CC0 (Creative Commons 0) license</a></p>')
                 msg.append('<label><input type="checkbox" value="" id="accept-licence">I agree</label>');
                 msg.append('</div>');
-//                msg.append('<div class="checkbox">');
-//                msg.append('<label><input type="checkbox" value="" id="accept-legal">I confirm that what I\'m doing is legal and ethical</label>');
-//                msg.append('</div>');
 
                 var dlg_submit_btn = this_dialog.getButton('submitdlg-submit-btn');
 
                 msg.find('input').change({dlg_submit_btn: dlg_submit_btn}, function(event) {
-                    if(document.getElementById("accept-licence").checked
-//                        && document.getElementById("accept-legal").checked
-                    ) {
+                    if(document.getElementById("accept-licence").checked) {
                         event.data.dlg_submit_btn.enable();
                     } else {
                         event.data.dlg_submit_btn.disable();
@@ -263,7 +262,23 @@
                 }]
             });
         }
-    })
+    });
+
+    // alter repertoire fields depending on repo selected
+
+    $('#repository_select').change(function() {
+        update_repository_fields()
+    });
+
+    function update_repository_fields() {
+        if($('#repository_select').val() === 'Other') {
+            $('#div_other_repo').show();
+            $('#div_ncbi_repo').hide();
+        } else {
+            $('#div_other_repo').hide();
+            $('#div_ncbi_repo').show();
+        }
+    }
 
     </script>
 

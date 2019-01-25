@@ -23,10 +23,10 @@ from forms.inferred_sequence_form import *
 from forms.notes_entry_form import *
 from forms.primer_set_form import *
 from sys import exc_info
-from get_pmid_details import get_pmid_details
+from get_ncbi_details import *
 from collections import namedtuple
 from custom_validators import ValidNucleotideSequence, ValidOrcidID
-from wtforms import HiddenField
+from wtforms import HiddenField, SelectField
 
 class EditablePubIdTable(EditableTable):
     def check_add_item(self, request, db):
@@ -192,6 +192,30 @@ def process_table_updates(tables, request, db):
 class HiddenSubFieldsForm(FlaskForm):
     current_tab = HiddenField('Tab')
 
+# Selector for repo
+class RepoSelectorForm(FlaskForm):
+    repository_select = SelectField("Repository", choices=[('NCBI SRA', 'NCBI SRA'), ('Other', 'Other')])
+
+
+# Validation and completion of NCBI repository data
+def update_sra_rep_details(form):
+    if form.repository_select.data != 'NCBI SRA':
+        return
+
+    form.repository_name.data = 'NCBI SRA'
+
+    if form.rep_accession_no.data[:5] != 'PRJNA':
+        form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143']
+        raise ValueError()
+
+    try:
+        details = get_nih_project_details(form.rep_accession_no.data)
+    except ValueError as e:
+        form.rep_accession_no.errors = [e.args[0]]
+        raise ValueError()
+
+    form.rep_title.data = details['title']
+    form.dataset_url.data = details['url']
 
 
 def setup_submission_edit_forms_and_tables(sub, db):
@@ -213,6 +237,8 @@ def setup_submission_edit_forms_and_tables(sub, db):
     notes_entry_form = NotesEntryForm(obj = sub.notes_entries[0])
 
     hidden_fields_form = HiddenSubFieldsForm()
+
+    repo_selector_form = RepoSelectorForm()
 
     # Remove tool, genotype and inferred sequence entries that have no names. These are new entries that the user backed out of,
     # either by pressing cancel or by navigating away from the edit page.
@@ -238,7 +264,9 @@ def setup_submission_edit_forms_and_tables(sub, db):
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype_e', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
 
-    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form, tables['genotype_description'].form, tables['inferred_sequence'].form, hidden_fields_form)
+    form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form,
+                         tables['genotype_description'].form, tables['inferred_sequence'].form, hidden_fields_form, repo_selector_form)
+
     return (tables, form)
 
 

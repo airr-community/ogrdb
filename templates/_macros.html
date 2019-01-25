@@ -1,5 +1,9 @@
 {% macro render_field(field) %}
-    <div class="form-group">
+    {% if field.type != 'HiddenField' %}
+        <div class="form-group">
+    {% else %}
+        <div class="form-group" style="display: none">
+    {% endif %}
         {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
         <div class="col-sm-6">
             {{ field(**kwargs)|safe }}
@@ -9,7 +13,11 @@
 
 
 {% macro render_static_field(field) %}
-    <div class="form-group">
+    {% if field.type != 'HiddenField' %}
+        <div class="form-group">
+    {% else %}
+        <div class="form-group" style="display: none">
+    {% endif %}
         {% if field.description %}
             {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
         {% else %}
@@ -23,7 +31,11 @@
 
 
 {% macro render_field_with_errors(field) %}
-    <div class="form-group">
+    {% if field.type != 'HiddenField' %}
+        <div class="form-group">
+    {% else %}
+        <div class="form-group" style="display: none">
+    {% endif %}
         {% if field.description %}
             {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
         {% else %}
@@ -45,7 +57,11 @@
 {% endmacro %}
 
 {% macro render_narrow_field_with_errors(field) %}
-    <div class="form-group">
+    {% if field.type != 'HiddenField' %}
+        <div class="form-group">
+    {% else %}
+        <div class="form-group" style="display: none">
+    {% endif %}
         {% if field.description %}
             {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
         {% else %}
@@ -67,7 +83,11 @@
 {% endmacro %}
 
 {% macro render_wide_field_with_errors(field) %}
-    <div class="form-group">
+    {% if field.type != 'HiddenField' %}
+        <div class="form-group">
+    {% else %}
+        <div class="form-group" style="display: none">
+    {% endif %}
         {% if field.description %}
             {{ field.label(class="col-sm-2 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
         {% else %}

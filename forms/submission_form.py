@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
 class SubmissionForm(FlaskForm):
     submission_id = StringField('Submission ID', [validators.Length(max=255)], description="Unique ID assigned by IARC on recipt of submission")
     submission_date = DateField('Submission Date', description="Date submission received")

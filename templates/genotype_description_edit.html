@@ -11,6 +11,23 @@
 
             {% include 'genotype_description_form.html' %}
 
+            {% if ncbi %}
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        {{ sam_table }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        {{ srr_table }}
+                    </div>
+                </div>
+
+                <div class="row col-sm-offset-3">
+                    <p >(Details will be updated from NCBI when you save)</p>
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 <div class="col-sm-8 col-sm-offset-3">
                     <ul class="list-unstyled">
@@ -24,6 +41,7 @@
 
 
             <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" id="save_genotype">
+            <input type="submit" value="Save & Close" class="btn btn-default" id="save_close_genotype"  name="save_close_genotype">
             {{ form.cancel(class="btn btn-cancel") }}
 </form>
 
