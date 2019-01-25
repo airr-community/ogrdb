@@ -163,6 +163,10 @@ def setup_matching_sequences_table(sub):
 
 
 def setup_submission_view_forms_and_tables(sub, db, private):
+    if len(sub.repertoire) == 0:
+        sub.repertoire.append(Repertoire())
+        db.session.commit()
+
     tables = {}
     tables['submission'] = make_Submission_view(sub, private)
     tables['ack'] = make_Acknowledgements_table(sub.acknowledgements)
