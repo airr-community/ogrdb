@@ -66,6 +66,7 @@
         </div>
     </form>
 
+    {% if ncbi %}
     <div class="row col-sm-offset-1">
         <div class="col-sm-5">
             {{ sam_table }}
@@ -74,6 +75,7 @@
             {{ srr_table }}
         </div>
     </div>
+    {% endif %}
 
     <div class="row col-sm-offset-1">
         <p>Allele names in <em>italic</em> are not listed in the reference set. Allele names in <strong>bold</strong> are put forward in the submission for consideration as inferred sequences.</p>

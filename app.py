@@ -727,7 +727,7 @@ def genotype(id, editable=False):
                 new_items.append(item)
             tables['genotype'].items = new_items
 
-    return render_template('genotype_view.html', form=form, desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link, this_link=this_link, srr_table=srr_table, sam_table=sam_table)
+    return render_template('genotype_view.html', form=form, desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link, this_link=this_link, srr_table=srr_table, sam_table=sam_table, ncbi=ncbi)
 
 @app.route('/download_genotype/<id>')
 def download_genotype(id):
