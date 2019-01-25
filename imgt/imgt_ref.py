@@ -40,6 +40,7 @@ def init_imgt_ref():
     #
 
     imgt_reference_genes['Human'] = imgt_reference_genes['Homo sapiens']
+    imgt_reference_genes['Test'] = imgt_reference_genes['Homo sapiens']
 
 def imgt_reference_genes():
     global imgt_reference_genes
