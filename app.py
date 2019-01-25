@@ -781,17 +781,18 @@ def inferred_sequence(id):
         return redirect('/')
 
     sub = seq.submission
+    ncbi =  sub.repertoire[0].repository_name == 'NCBI SRA'
 
     table = make_InferredSequence_view(seq)
     srr_table = LinkedRecordSet_table(seq.record_set)
 
     for i in range(len(table.items)-1, -1, -1):
-        if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?' or table.items[i]['item'] == 'Select sets':
+        if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?' or (table.items[i]['item'] == 'Select sets' and ncbi):
             del(table.items[i])
-        elif table.items[i]['item'] == 'Accession Number' and sub.repertoire[0].repository_name == 'NCBI SRA':
+        elif table.items[i]['item'] == 'Accession Number' and ncbi:
             table.items[i]['value'] = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (table.items[i]['value'], table.items[i]['value']))
 
-    return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id, srr_table = srr_table)
+    return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id, srr_table = srr_table, ncbi=ncbi)
 
 
 def check_inferred_sequence_edit(id):

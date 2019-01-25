@@ -11,11 +11,13 @@
             {{ table }}
         </div>
 
+        {% if ncbi %}
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
                 {{ srr_table }}
             </div>
         </div>
+        {% endif %}
 
         <div class="row col-sm-offset-1">
                 <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
