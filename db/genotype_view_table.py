@@ -42,7 +42,7 @@ class SeqCol(StyledCol):
 
         bt_igpdb = ''
 
-        if item.genotype_description.submission.species == 'Human' and item.sequence_id not in imgt_ref['Human']:
+        if item.genotype_description.submission.species == 'Human':
             igpdb_genes = igpdb_ref()
             for k,v in igpdb_genes.items():
                 if item.nt_sequence.lower() == v:
