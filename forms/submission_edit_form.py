@@ -206,13 +206,13 @@ def update_sra_rep_details(form):
 
     if form.rep_accession_no.data[:5] != 'PRJNA':
         form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143']
-        raise ValueError()
+        raise ValidationError()
 
     try:
         details = get_nih_project_details(form.rep_accession_no.data)
     except ValueError as e:
         form.rep_accession_no.errors = [e.args[0]]
-        raise ValueError()
+        raise ValidationError()
 
     form.rep_title.data = details['title']
     form.dataset_url.data = details['url']
