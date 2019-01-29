@@ -722,7 +722,7 @@ def genotype(id, editable=False):
                 if form.sub_only.data:
                     if len(item.inferred_sequences) == 0:
                         continue
-                if item.sequences < form.occ_threshold.data or item.unmutated_frequency < form.freq_threshold.data:
+                if (item.sequences is None or item.sequences < form.occ_threshold.data) or (item.unmutated_frequency is None or item.unmutated_frequency < form.freq_threshold.data):
                     continue
                 new_items.append(item)
             tables['genotype'].items = new_items
