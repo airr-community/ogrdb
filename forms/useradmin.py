@@ -18,8 +18,7 @@ from db.repertoire_db import Repertoire
 
 class AdminView(ModelView):
     def is_accessible(self):
-#        return current_user.has_role('Admin')
-        return True
+        return current_user.has_role('Admin')
 
 class UserView(AdminView):
     column_exclude_list = ('password')
