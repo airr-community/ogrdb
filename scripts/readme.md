@@ -11,7 +11,8 @@ of any particular inference tool. This version is specific to the IGHV genotype 
 * They must be IMGT-aligned
 * The header can either be in IMGT's germline library format, or simply consist of the allele name
 * The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP)
-  and used as-is: the script will filter out the records for the nominated species
+  and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes frequently, please make sure that 
+  the same version is used by the inference tool and by this script.
 
 *Inferred_file - FASTA file containing the novel alleles inferred by the tool*   
 * Sequences must be IMGT-aligned
