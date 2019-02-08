@@ -4,6 +4,7 @@
 __pycache__
 secret.cfg
 secret*.cfg
+backup.sql
 app.log
 migrations/*
 Selenium/*.log
