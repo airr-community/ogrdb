@@ -1,3 +1,4 @@
 IMGT_REF_GAPPED.fasta
 .Rhistory
-*_ogrdb_report.csv
+*.csv
+*.pdf
