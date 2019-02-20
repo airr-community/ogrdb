@@ -649,12 +649,12 @@ Genotype:
             completed_by: submitter            
             tableview: true
             label: AA Substs
-        unmutated_frequency:
+        assigned_unmutated_frequency:
             type: number
-            description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
+            description: The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100
             completed_by: submitter
             tableview: true
-            label: Unmutated Freq
+            label: Unmutated % (allele)
         unmutated_sequences:
             type: integer
             description: The number of sequences exactly matching this unmutated sequence
@@ -673,6 +673,12 @@ Genotype:
             completed_by: submitter
             tableview: true
             label: Allelic %
+        unmutated_frequency:
+            type: number
+            description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
+            completed_by: submitter
+            tableview: true
+            label: Unmutated % (genome)
         unique_ds:
             type: integer
             description: For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence

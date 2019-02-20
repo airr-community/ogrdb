@@ -7,7 +7,7 @@
 #
 # Command Syntax:
 #
-# Rscript genotype_statistics.R <ref_library> <species> <filename> (with no extension on <filename>)
+# Rscript genotype_statistics.R <ref_library> <species> <filename> [<haplotype-allele>]
 #
 # <ref_library> - IMGT-aligned reference genes in FASTA format. Header can either be in IMGT's germline library format,
 # or simply the allele name. Reference genes in this file MUST correspond to those used to annotate the reads.
@@ -15,9 +15,11 @@
 # and used as-is: the script will filter out the records for the nominated species.
 #
 # <species> This field must be present but is only used to filter records from an IMGT style reference library. It should contain the
-# species name used in field 3 of the header, with spaces removed, e.g. Homosapiens for Human.
+# species name used in field 3 of the IMGT germline header, with spaces removed, e.g. Homosapiens for Human.
 #
 # <filename> - annotated reads in either AIRR or CHANGEO format. The format is detected by the script.
+#
+# <halplotype-gene> - optional argument. If present, the haplotyping columns will be completed based on the usage of the two most frequent alleles of this J-gene
 #
 # AIRR format files must contain the following columns:
 # sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3
@@ -32,6 +34,8 @@
 # The command creates:
 #
 # <filename>_ogrdb_report.csv - this contains the file ready to be uploaded to OGRDB.
+#
+# <filename>_ogrdb_plots.pdf - plots showing distribution of close variants of inferred genes, and potential for haplotype analysis
 
 
 library(tigger)
@@ -39,27 +43,37 @@ library(alakazam)
 library(tidyr)
 library(dplyr)
 library(stringr)
+library(grid)
+library(gridExtra)
 
 
 args = commandArgs(trailingOnly=TRUE)
 
-if(length(args) > 0) {
+if(length(args) > 3) {
   ref_filename = args[1]
   species = args[2]
   inferred_filename = args[3]
   filename = args[4]
-} else {
+  hap_gene = NA
+  
+  if(length(args >4)) {
+    hap_gene = args[5]
+  }
+} else 
+  {   # for R Studio Source
   work_dir = 'D:/Research/ogre/scripts'
   setwd(work_dir)
   
   ref_filename = 'IMGT_REF_GAPPED.fasta'
   species = 'Homosapiens'
-  inferred_filename = 'TWO01A - naive_novel.fasta'
-  filename = 'TWO01A - naive_genotyped.tsv'
+  inferred_filename = 'TWO01A_naive_novel.fasta'
+  filename = 'TWO01A_naive_genotyped.tsv'
+  hap_gene = 'IGHJ6'
 } 
 
 file_prefix = strsplit(filename, '.', fixed=T)[[1]][1]
 
+pdf(NULL) # this seems to stop an empty Rplots.pdf from being created. I don't know why.
 
 # count unique J and D calls
 unique_calls = function(gene, segment, seqs) {
@@ -198,7 +212,9 @@ ref_genes = ref_genes[grepl('IGHV|IGHJ|IGHD', names(ref_genes))]
 
 
 #remove sequences with ambiguous V-calls
+
 s = s[!grepl(',', s$V_CALL_GENOTYPED),]
+
 
 # get the genotype and novel alleles in this set
 
@@ -209,13 +225,14 @@ genotype_alleles = genotype_alleles[!(genotype_alleles %in% names(inferred_seqs)
 genotype_seqs = lapply(genotype_alleles, function(x) {ref_genes[x]})
 genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, names(inferred_seqs)))
 
+
 # Check we have sequences for all alleles named in the reads - either from the reference set or from the inferred sequences
 # otherwise - one of these two is incomplete!
-
 
 if(any(is.na(genotype_db))) {
   stop(paste0("Sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file."))
 }
+
 
 # unmutated count for each allele
 s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT, s$V_CALL_GENOTYPED, genotype_db))
@@ -241,6 +258,8 @@ genotype$unique_ds = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='D_
 genotype$unique_js = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='J_CALL', seqs=s)
 genotype$unique_cdr3s = sapply(genotype$V_CALL_GENOTYPED, unique_cdrs, segment='CDR3_IMGT', seqs=s)
 
+genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/genotype$sequences, digits=2)
+
 # closest in genotype and in reference (inferred alleles only)
 
 if (length(inferred_seqs) == 0) {
@@ -262,22 +281,181 @@ if (length(inferred_seqs) == 0) {
   genotype = merge(genotype, nearest_ref, by='V_CALL_GENOTYPED', all.x=T)
 }
 
-
 genotype$nt_sequence = sapply(genotype$V_CALL_GENOTYPED, function(x) genotype_db[x][[1]])
 
 genotype = rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=reference_closest, closest_host=host_closest, 
                    nt_diff=reference_difference, nt_substitutions=reference_nt_diffs, aa_diff=reference_aa_difference,
                    aa_substitutions=reference_aa_subs)
+
 genotype$unmutated_umis = ''
+genotype = unnest(genotype)
+
+# Postpone writing the genotype file until haplotyping analysis is complete...
+
+# bar charts for novel alleles
+
+plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
+  g = genotype[genotype$sequence_id==allele,]
+  recs = s[s$V_CALL_GENOTYPED==allele,]
+  #recs$perc_diff = as.integer(recs$V_MUT_NC * 100 / nchar(inferred_seqs[allele]))
+  #recs = recs[recs$perc_diff < 20,]
+  recs = recs[recs$V_MUT_NC < 21,]
+  
+  label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches\n',
+                      g$unique_cdr3s, ' unique CDR3\n',
+                      g$unique_js, ' unique J')
+  
+  g = ggplot(data=recs, aes(x=V_MUT_NC)) + 
+    geom_bar(width=1.0) +
+    labs(x='Nucleotide Difference', 
+         y='Frequency', 
+         title=paste0('Gene ', allele),
+         subtitle=paste0(g$sequences, ' sequences assigned')) +
+    theme_classic(base_size=12) +
+    theme(aspect.ratio = 1/1) +
+    geom_label(label=label_text, aes(x=Inf,y=Inf,hjust=1,vjust=1), size=2)
+  
+  return(ggplotGrob(g))
+}
+
+barplot_grobs = lapply(names(inferred_seqs), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+
+
+# J-allele usage and haplotype plots
+
+sj = s[!grepl(',', s$J_CALL),]            # unique J-calls only
+sj$j_gene = sapply(sj$J_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[1]]})
+sj$j_allele = sapply(sj$J_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[2]]})
+
+su = select(sj, J_CALL, j_gene, j_allele)
+j_genes = sort(unlist(unique(su$j_gene)))
+
+
+# calc percentage of each allele in a gene
+allele_props = function(gene, su) {
+  alleles = su %>% filter(j_gene==gene) %>% group_by(j_allele) %>% summarise(count=n())
+  alleles$j_gene = gene
+  total = sum(alleles$count)
+  alleles$percent = 100*alleles$count/total
+  return(alleles)
+} 
+
+j_props = do.call('rbind', lapply(j_genes, allele_props, su=su))
+
+j_allele_plot = ggplot() + geom_bar(aes(y=percent, x=j_gene, fill=j_allele), data=j_props, stat='identity') + 
+  labs(x='J Gene', 
+       y='Allele %', 
+       title='J Allele Usage') +
+  theme_classic(base_size=15) +
+  theme(legend.title = element_blank(), plot.margin=margin(1,4,19,4, 'cm'), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5))
+
+
+# a reasonable order for the v-alleles
+
+numify = function(gene) {
+  gg = strsplit(gsub('IGHV', '', gene, fixed=T), split='-', fixed=T)
+  gs = c(gg[[1]][[1]])
+  gg = strsplit(gg[[1]][[2]], split='*', fixed=T)
+  gs = c(gs, gg[[1]])
+
+  for(i in 1:3) {
+    gs[i] = str_pad(gs[i], 4, pad = "0")
+  }
+  
+  return(paste0(gs, collapse=''))
+}
+
+sj = sj[!grepl(',', sj$V_CALL_GENOTYPED),]        # remove ambiguous V-calls
+all_v = data.frame(gene=unique(sj$V_CALL_GENOTYPED), stringsAsFactors = F)
+all_v$order = sapply(all_v$gene, numify)
+all_v = all_v[order(all_v$order),]
+sj$V_CALL_GENOTYPED = factor(sj$V_CALL_GENOTYPED, all_v$gene)
+
+
+# differential plot by allele usage - if we have good alleles for this gene
+
+plot_differential = function(gene, j_props, sj) {
+  jp = j_props[j_props$j_gene==gene,]
+  jp = jp[order(jp$percent, decreasing=T),]
+  
+  if(nrow(jp) < 2 || jp[1,]$percent > 75 || jp[2,]$percent < 20) {
+    return(NA)
+  }
+  
+  a1 = jp[1,]$j_allele
+  a2 = jp[2,]$j_allele
+  recs = sj %>% filter(j_gene==gene) %>% filter(j_allele==a1 | j_allele==a2)
+  recs = recs %>% select(V_CALL_GENOTYPED, j_allele) %>% group_by(V_CALL_GENOTYPED, j_allele) %>% summarise(count=n())
+  recs$pos = sapply(recs$j_allele, function(x) {if(x==a1) {1} else {-1}})
+  recs$count = recs$count * recs$pos
+  g = ggplot(recs, aes(x=V_CALL_GENOTYPED,y=count, fill=j_allele)) + 
+      geom_bar(stat='identity', position='identity') +
+      labs(x='', 
+         y='Count', 
+         title=paste0('Sequence Count by ', gene, ' allele usage')) +
+      theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+          panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
+          axis.text=element_text(size=8), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
+          plot.margin=margin(1,1,15,1, 'cm')) +
+      scale_fill_discrete(name  ="J- Allele")
+  return(ggplotGrob(g))
+}
+
+haplo_grobs = lapply(j_genes, plot_differential, j_props=j_props, sj=sj)
+haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
+
+
+# Save all graphics to plot file
+
+pdf(paste0(file_prefix, '_ogrdb_plots.pdf'), width=210/25,height=297/25)  
+x=print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
+grid.arrange(j_allele_plot)
+x=print(marrangeGrob(haplo_grobs, nrow=1, ncol=1,top=NULL))
+dev.off()
+
+
+
+# Haplotyping analysis for genotype file
+
 genotype$haplotyping_gene = ''
 genotype$haplotyping_ratio = ''
 
-genotype = unnest(genotype)
+if(!is.na(hap_gene)) {
+  jp = j_props[j_props$j_gene==hap_gene,]
+  jp = jp[order(jp$percent, decreasing=T),]
+  
+  if(nrow(jp) < 2 || jp[1,]$percent > 75 || jp[2,]$percent < 20 || (jp[1,]$percent+jp[2,]$percent < 90)) {
+    print(paste0('Alellelic ratio is unsuitable for haplotyping analysis based on ', hap_gene))
+  } else
+  {
+    genotype$haplotyping_gene = hap_gene
+    genotype = select(genotype, -c(haplotyping_ratio))
+    
+    a1 = jp[1,]$j_allele
+    a2 = jp[2,]$j_allele
+    print(paste0('Haplotyping analysis is based on gene ', hap_gene, ' alleles ', a1, ':', a2))
+    recs = sj %>% filter(j_gene==hap_gene) %>% filter(j_allele==a1 | j_allele==a2)
+    recs = recs %>% select(sequence_id=V_CALL_GENOTYPED, j_allele) %>% group_by(sequence_id, j_allele) %>% summarise(count=n()) %>% spread(j_allele, count)
+    recs[is.na(recs)] = 0
+    names(recs) = c('sequence_id', 'a1', 'a2')
+    recs$totals = recs$a1 + recs$a2
+    recs$a1 = round(100 * recs$a1/ recs$totals, 0)    
+    recs$a2 = round(100 * recs$a2/ recs$totals, 0)
+    recs$haplotyping_ratio = paste0(' ', recs$a1, ':', recs$a2, ' ')
+    recs = recs %>% select(sequence_id, haplotyping_ratio)
+    genotype = merge(genotype, recs)
+  }
+}
+  
+  
+  
+
+# Save Genotype file
+
 g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_substitutions, aa_diff,
-           aa_substitutions, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_ds,
+           aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_ds,
            unique_js,unique_cdr3s, haplotyping_gene, haplotyping_ratio, nt_sequence)
 g[is.na(g)] = ''
 
-write.csv(g, paste0(file_prefix, '_ogrdb_report.csv'))
-
+write.csv(g, paste0(file_prefix, '_ogrdb_report.csv'), row.names=F)
 

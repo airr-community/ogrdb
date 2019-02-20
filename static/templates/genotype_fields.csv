@@ -15,6 +15,7 @@
 ,nt_substitutions,"For inferred alleles,  comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele.  Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes."
 ,aa_diff,"For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele"
 ,aa_substitutions,"For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes."
+,assigned_unmutated_frequency,"The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100"
 ,unmutated_frequency,"The number of sequences exactly matching this sequence divided by the number of sequences exactly matching any allele of any gene, *100"
 ,unmutated_sequences,The number of records in the sequence dataset exactly matching this unmutated sequence 
 ,unmutated_umis,The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
