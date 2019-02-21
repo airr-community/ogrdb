@@ -19,10 +19,11 @@ class Genotype(db.Model):
     nt_substitutions = db.Column(db.String(1000))
     aa_diff = db.Column(db.Integer)
     aa_substitutions = db.Column(db.String(1000))
-    unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
+    assigned_unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
     unmutated_sequences = db.Column(db.Integer)
     unmutated_umis = db.Column(db.Integer)
     allelic_percentage = db.Column(db.Numeric(precision=(12,2)))
+    unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
     unique_ds = db.Column(db.Integer)
     unique_js = db.Column(db.Integer)
     unique_cdr3s = db.Column(db.Integer)
@@ -42,10 +43,11 @@ def save_Genotype(db, object, form, new=False):
     object.nt_substitutions = form.nt_substitutions.data
     object.aa_diff = form.aa_diff.data
     object.aa_substitutions = form.aa_substitutions.data
-    object.unmutated_frequency = form.unmutated_frequency.data
+    object.assigned_unmutated_frequency = form.assigned_unmutated_frequency.data
     object.unmutated_sequences = form.unmutated_sequences.data
     object.unmutated_umis = form.unmutated_umis.data
     object.allelic_percentage = form.allelic_percentage.data
+    object.unmutated_frequency = form.unmutated_frequency.data
     object.unique_ds = form.unique_ds.data
     object.unique_js = form.unique_js.data
     object.unique_cdr3s = form.unique_cdr3s.data
@@ -69,10 +71,11 @@ def populate_Genotype(db, object, form):
     form.nt_substitutions.data = object.nt_substitutions
     form.aa_diff.data = object.aa_diff
     form.aa_substitutions.data = object.aa_substitutions
-    form.unmutated_frequency.data = object.unmutated_frequency
+    form.assigned_unmutated_frequency.data = object.assigned_unmutated_frequency
     form.unmutated_sequences.data = object.unmutated_sequences
     form.unmutated_umis.data = object.unmutated_umis
     form.allelic_percentage.data = object.allelic_percentage
+    form.unmutated_frequency.data = object.unmutated_frequency
     form.unique_ds.data = object.unique_ds
     form.unique_js.data = object.unique_js
     form.unique_cdr3s.data = object.unique_cdr3s
@@ -92,10 +95,11 @@ def copy_Genotype(c_from, c_to):
     c_to.nt_substitutions = c_from.nt_substitutions
     c_to.aa_diff = c_from.aa_diff
     c_to.aa_substitutions = c_from.aa_substitutions
-    c_to.unmutated_frequency = c_from.unmutated_frequency
+    c_to.assigned_unmutated_frequency = c_from.assigned_unmutated_frequency
     c_to.unmutated_sequences = c_from.unmutated_sequences
     c_to.unmutated_umis = c_from.unmutated_umis
     c_to.allelic_percentage = c_from.allelic_percentage
+    c_to.unmutated_frequency = c_from.unmutated_frequency
     c_to.unique_ds = c_from.unique_ds
     c_to.unique_js = c_from.unique_js
     c_to.unique_cdr3s = c_from.unique_cdr3s
@@ -115,10 +119,11 @@ class Genotype_table(StyledTable):
     nt_substitutions = StyledCol("NT Substs", tooltip="For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.")
     aa_diff = StyledCol("AA Diffs", tooltip="For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele")
     aa_substitutions = StyledCol("AA Substs", tooltip="For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.")
-    unmutated_frequency = StyledCol("Unmutated Freq", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100")
+    assigned_unmutated_frequency = StyledCol("Unmutated % (allele)", tooltip="The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100")
     unmutated_sequences = StyledCol("Unmutated Seqs", tooltip="The number of sequences exactly matching this unmutated sequence")
     unmutated_umis = StyledCol("Unmutated UMIs", tooltip="The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)")
     allelic_percentage = StyledCol("Allelic %", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100")
+    unmutated_frequency = StyledCol("Unmutated % (genome)", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100")
     unique_ds = StyledCol("Unique Ds", tooltip="For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence")
     unique_js = StyledCol("Unique Js", tooltip="For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence")
     unique_cdr3s = StyledCol("Unique CDR3s", tooltip="Number of unique CDR3s found associated with an inferred V sequence")
@@ -146,10 +151,11 @@ def make_Genotype_view(sub, private = False):
     ret.items.append({"item": "NT Substs", "value": sub.nt_substitutions, "tooltip": "For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.", "field": "nt_substitutions"})
     ret.items.append({"item": "AA Diffs", "value": sub.aa_diff, "tooltip": "For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele", "field": "aa_diff"})
     ret.items.append({"item": "AA Substs", "value": sub.aa_substitutions, "tooltip": "For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.", "field": "aa_substitutions"})
-    ret.items.append({"item": "Unmutated Freq", "value": sub.unmutated_frequency, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100", "field": "unmutated_frequency"})
+    ret.items.append({"item": "Unmutated % (allele)", "value": sub.assigned_unmutated_frequency, "tooltip": "The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100", "field": "assigned_unmutated_frequency"})
     ret.items.append({"item": "Unmutated Seqs", "value": sub.unmutated_sequences, "tooltip": "The number of sequences exactly matching this unmutated sequence", "field": "unmutated_sequences"})
     ret.items.append({"item": "Unmutated UMIs", "value": sub.unmutated_umis, "tooltip": "The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)", "field": "unmutated_umis"})
     ret.items.append({"item": "Allelic %", "value": sub.allelic_percentage, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100", "field": "allelic_percentage"})
+    ret.items.append({"item": "Unmutated % (genome)", "value": sub.unmutated_frequency, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100", "field": "unmutated_frequency"})
     ret.items.append({"item": "Unique Ds", "value": sub.unique_ds, "tooltip": "For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence", "field": "unique_ds"})
     ret.items.append({"item": "Unique Js", "value": sub.unique_js, "tooltip": "For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence", "field": "unique_js"})
     ret.items.append({"item": "Unique CDR3s", "value": sub.unique_cdr3s, "tooltip": "Number of unique CDR3s found associated with an inferred V sequence", "field": "unique_cdr3s"})

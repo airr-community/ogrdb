@@ -1535,39 +1535,22 @@ def remove_test():
     flash("Test records removed.")
     return redirect('/')
 
-# Temp route to convert attachments to files
-@app.route('/convert_attachments', methods=['GET'])
+# Temp route to update genotypes
+@app.route('/tidy_genotype', methods=['GET'])
 @login_required
-def convert_attachments():
+def tidy_genotype():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    subs = db.session.query(Submission).all()
-    for sub in subs:
-        dirname = attach_path + sub.submission_id
-        if not isdir(dirname):
-            mkdir(dirname)
+    genotypes = db.session.query(Genotype).all()
+    for item in genotypes:
+        # fix legacy entries that are missying the allele unmutated frequency
+        if item.assigned_unmutated_frequency is None and (item.unmutated_sequences is not None and item.sequences is not None):
+            item.assigned_unmutated_frequency = round(100*item.unmutated_sequences/item.sequences,2)
 
-            if sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0:
-                try:
-                    with open(dirname + '/attachment_%s' % sub.submission_id, 'wb') as fo:
-                        fo.write(sub.notes_entries[0].notes_attachment)
-                except:
-                    info = sys.exc_info()
-                    flash('Error saving attachment: %s' % (info[1]))
-                    app.logger.error(format_exc())
+    db.session.commit()
 
-            for desc in sub.genotype_descriptions:
-                if desc.genotype_filename is not None and len(desc.genotype_filename) > 0:
-                    try:
-                        with open(dirname + '/genotype_%s.csv' % desc.id, 'w', newline = '') as fo:
-                            fo.write(desc.genotype_file.decode("utf-8"))
-                    except:
-                        info = sys.exc_info()
-                        flash('Error saving genotype: %s' % (info[1]))
-                        app.logger.error(format_exc())
-
-    return('Attachments converted.')
+    return('Genotypes tidied.')
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])
 def genotype_statistics():
