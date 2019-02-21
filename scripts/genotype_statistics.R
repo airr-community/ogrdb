@@ -288,6 +288,8 @@ genotype = rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=refe
                    aa_substitutions=reference_aa_subs)
 
 genotype$unmutated_umis = ''
+genotype$nt_sequence = gsub('-', '', genotype$nt_sequence, fixed=T)
+genotype$nt_sequence = gsub('.', '', genotype$nt_sequence, fixed=T)
 genotype = unnest(genotype)
 
 # Postpone writing the genotype file until haplotyping analysis is complete...
