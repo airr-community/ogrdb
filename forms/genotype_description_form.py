@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class GenotypeDescriptionForm(FlaskForm):
     genotype_name = StringField('Genotype Name', [validators.Length(max=255), NonEmpty()], description="Descriptive name for this genotype")
     genotype_subject_id = StringField('Subject ID', [validators.Length(max=255), NonEmpty()], description="Identifier of the subject from which this genotype was inferred")

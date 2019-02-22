@@ -8,8 +8,9 @@
 
 from shutil import rmtree
 from sys import exc_info
-from app import app
+from app import app, attach_path
 from traceback import format_exc
+from os import path
 
 class SubmissionMixin:
     def delete_dependencies(self, db):
@@ -27,6 +28,8 @@ class SubmissionMixin:
             db.session.delete(r)
 
         for n in self.notes_entries:
+            for a in n.attached_files:
+                db.session.delete(a)
             db.session.delete(n)
 
         # acknowledgements
@@ -40,7 +43,8 @@ class SubmissionMixin:
 
         # associated files
         try:
-            rmtree('attachments/' + self.submission_id)
+            if path.exists(attach_path + self.submission_id):
+                rmtree(attach_path + self.submission_id)
         except:
             app.logger.error(format_exc())
 

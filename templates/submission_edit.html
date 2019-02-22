@@ -84,14 +84,11 @@
         {% include 'notes_entry_form.html' %}
 
         {% if attachment %}
-            <div class="form-group">
-                <div class="form-control-label col-sm-2 col-sm-offset-3">
-                    <a class="btn btn-default" role="button" href="{{ url_for('download_submission_attachment', id=id) }}">Download Attachment</a>
-                </div>
-                <div class="form-control-label col-sm-2">
-                    <button type="button" class="btn btn-warning" onclick="delete_attachment()" name="del_att_btn">Delete Attachment</button>
-                </div>
-            </div>
+             <div class="row">
+                 <div class="col-sm-8 col-sm-offset-2">
+                    {{ tables['attachments'] }}
+                 </div>
+             </div>
         {% endif %}
 
     </div>

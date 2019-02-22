@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class InferenceToolForm(FlaskForm):
     tool_settings_name = StringField('Tool/Settings Name', [validators.Length(max=255), NonEmpty()], description="Descriptive name for this combination of tool and settings")
     tool_name = StringField('Tool Name', [validators.Length(max=255), NonEmpty()], description="Name of the inference tool")

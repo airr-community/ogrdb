@@ -7,8 +7,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, validators, MultipleFileField
 class GeneDescriptionNotesForm(FlaskForm):
     notes = TextAreaField('Notes', [], description="Notes")
+    notes_attachment = MultipleFileField('Attachments', description="File attachments")
 
 

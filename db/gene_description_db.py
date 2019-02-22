@@ -31,6 +31,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     release_version = db.Column(db.Integer)
     release_date = db.Column(db.DateTime)
     release_description = db.Column(db.Text())
+
     organism = db.Column(db.String(1000))
     sequence_name = db.Column(db.String(1000))
     imgt_name = db.Column(db.String(1000))
@@ -76,44 +77,6 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
 
 
 def save_GeneDescription(db, object, form, new=False):   
-    object.author = form.author.data
-    object.lab_address = form.lab_address.data
-    object.sequence_name = form.sequence_name.data
-    object.imgt_name = form.imgt_name.data
-    object.alt_names = form.alt_names.data
-    object.locus = form.locus.data
-    object.sequence_type = form.sequence_type.data
-    object.functional = form.functional.data
-    object.inference_type = form.inference_type.data
-    object.affirmation_level = form.affirmation_level.data
-    object.status = form.status.data
-    object.gene_subgroup = form.gene_subgroup.data
-    object.subgroup_designation = form.subgroup_designation.data
-    object.allele_designation = form.allele_designation.data
-    object.sequence = form.sequence.data
-    object.coding_seq_imgt = form.coding_seq_imgt.data
-    object.codon_frame = form.codon_frame.data
-    object.j_cdr3_end = form.j_cdr3_end.data
-    object.utr_5_prime_start = form.utr_5_prime_start.data
-    object.utr_5_prime_end = form.utr_5_prime_end.data
-    object.l_region_start = form.l_region_start.data
-    object.l_region_end = form.l_region_end.data
-    object.v_rs_start = form.v_rs_start.data
-    object.v_rs_end = form.v_rs_end.data
-    object.d_rs_3_prime_start = form.d_rs_3_prime_start.data
-    object.d_rs_3_prime_end = form.d_rs_3_prime_end.data
-    object.d_rs_5_prime_start = form.d_rs_5_prime_start.data
-    object.d_rs_5_prime_end = form.d_rs_5_prime_end.data
-    object.j_rs_start = form.j_rs_start.data
-    object.j_rs_end = form.j_rs_end.data
-    object.paralogs = form.paralogs.data
-    object.inferred_extension = form.inferred_extension.data
-    object.ext_3prime = form.ext_3prime.data
-    object.start_3prime_ext = form.start_3prime_ext.data
-    object.end_3prime_ext = form.end_3prime_ext.data
-    object.ext_5prime = form.ext_5prime.data
-    object.start_5prime_ext = form.start_5prime_ext.data
-    object.end_5prime_ext = form.end_5prime_ext.data
 
     if new:
         db.session.add(object)
@@ -171,6 +134,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.release_version = c_from.release_version
     c_to.release_date = c_from.release_date
     c_to.release_description = c_from.release_description
+    c_to.notes_attachment = c_from.notes_attachment
     c_to.organism = c_from.organism
     c_to.sequence_name = c_from.sequence_name
     c_to.imgt_name = c_from.imgt_name

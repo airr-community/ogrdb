@@ -2,3 +2,18 @@
 
     {{ render_wide_field_with_errors(form.notes, class="form-control", rows="20") }}
 
+    {{ render_field_with_errors(form.notes_attachment, class="form-control") }}
+
+    <div class="form-group ">
+        <div class="col-sm-2 col-sm-offset-3">
+            <input type="submit" value="Upload" class="btn btn-default tablebutton" id="upload_btn" name="upload_btn">
+        </div>
+    </div>
+
+    {% if attachment %}
+         <div class="row">
+             <div class="col-sm-8 col-sm-offset-2">
+                {{ tables['attachments'] }}
+             </div>
+         </div>
+    {% endif %}

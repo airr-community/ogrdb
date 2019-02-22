@@ -21,9 +21,6 @@ class RecordSet(db.Model):
 
 
 def save_RecordSet(db, object, form, new=False):   
-    object.rec_accession_no = form.rec_accession_no.data
-    object.rec_record_title = form.rec_record_title.data
-    object.rec_url = form.rec_url.data
 
     if new:
         db.session.add(object)

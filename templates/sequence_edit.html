@@ -312,6 +312,27 @@
         }
     });
 
+    function delete_warn(route, message) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete Submission?',
+            message: message,
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Delete',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: route,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
     </script>
 
     {% include 'sequence_popup_script.html' %}

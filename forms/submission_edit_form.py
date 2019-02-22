@@ -14,6 +14,7 @@ from db.editable_table import *
 from db.inferred_sequence_db import *
 from db.notes_entry_db import *
 from db.primer_set_db import *
+from db.attached_file_db import *
 from forms.repertoire_form import *
 from forms.submission_form import *
 from forms.inference_tool_form import *
@@ -22,6 +23,7 @@ from forms.aggregate_form import *
 from forms.inferred_sequence_form import *
 from forms.notes_entry_form import *
 from forms.primer_set_form import *
+from forms.attached_file_form import *
 from sys import exc_info
 from get_ncbi_details import *
 from collections import namedtuple
@@ -112,6 +114,11 @@ class EditableInferenceToolTable(EditableTable):
             self.table = make_Acknowledgements_table(self.items)
             db.session.commit()
             return (True, 'edit_tool', t.id)
+        return (False, None, None)
+
+
+class EditableAttachedFileTable(EditableTable):
+    def check_add_item(self, request, db):
         return (False, None, None)
 
 
@@ -263,6 +270,7 @@ def setup_submission_edit_forms_and_tables(sub, db):
     tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool', delete_route='delete_tool', delete_message='Are you sure you wish to delete the tool settings and any associated genotypes?')
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype_e', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')
     tables['inferred_sequence'] = EditableInferredSequenceTable(make_InferredSequence_table(sub.inferred_sequences), 'inferred_sequence', InferredSequenceForm, sub.inferred_sequences, legend='Add Inferred Sequence', edit_route='edit_inferred_sequence')
+    tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(sub.notes_entries[0].attached_files), 'attached_files', AttachedFileForm, sub.notes_entries[0].attached_files, legend='Attachments', delete_route='delete_submission_attachment', delete_message='Are you sure you wish to delete the attachment?', download_route='download_submission_attachment')
 
     form = AggregateForm(submission_form, repertoire_form, notes_entry_form, tables['pubmed_table'].form, tables['primer_sets'].form, tables['ack'].form, tables['tools'].form,
                          tables['genotype_description'].form, tables['inferred_sequence'].form, hidden_fields_form, repo_selector_form)

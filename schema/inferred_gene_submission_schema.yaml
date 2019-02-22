@@ -86,18 +86,41 @@ NotesEntry:
             rows: 20
             width: wide
         notes_attachment:
-            type: blob
-            description: File attachment from submitter accompanying submission
-            label: Attachment
+            type: multifile
+            description: File attachments from submitter accompanying submission
+            label: Attachments
         notes_attachment_filename:
             type: string
             description: File attachment name
             label: Attachment File Name
-            readonly: true
+            hide: true
         submission_id:
             type: integer
             foreign_key: submission.id
             relationship: [submission, Submission, notes_entries]
+            hide: true
+
+
+AttachedFile:
+    discriminator: AIRR
+    description: File attached to submission or other items
+    type: object
+    properties:
+        filename:
+            type: string
+            description: Filename as provided by user
+            label: Attachment File Name
+            readonly: true
+            tableview: true
+        notes_id:
+            type: integer
+            foreign_key: notes_entry.id
+            relationship: [notes_entry, NotesEntry, attached_files]
+            hide: true
+        gene_description_id:
+            type: integer
+            foreign_key: gene_description.id
+            relationship: [gene_description, GeneDescription, attached_files]
             hide: true
 
 
@@ -556,7 +579,7 @@ GenotypeDescription:
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
             label: Inference Tool
         genotype_file:
-            type: blob
+            type: file
             description: CSV file containing genotype information
             label: Genotype File
         genotype_filename:
@@ -759,6 +782,13 @@ GeneDescription:
             type: text
             description: Brief descriptive notes of the reason for this release and the changes embodied
             label: Release Notes
+            hide: true
+            rows: 10
+            inview: true
+        notes_attachment:
+            type: multifile
+            description: File attachments from submitter accompanying submission
+            label: Attachments
             hide: true
             rows: 10
             inview: true

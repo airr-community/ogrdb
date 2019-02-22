@@ -35,25 +35,6 @@ class Genotype(db.Model):
 
 
 def save_Genotype(db, object, form, new=False):   
-    object.sequence_id = form.sequence_id.data
-    object.sequences = form.sequences.data
-    object.closest_reference = form.closest_reference.data
-    object.closest_host = form.closest_host.data
-    object.nt_diff = form.nt_diff.data
-    object.nt_substitutions = form.nt_substitutions.data
-    object.aa_diff = form.aa_diff.data
-    object.aa_substitutions = form.aa_substitutions.data
-    object.assigned_unmutated_frequency = form.assigned_unmutated_frequency.data
-    object.unmutated_sequences = form.unmutated_sequences.data
-    object.unmutated_umis = form.unmutated_umis.data
-    object.allelic_percentage = form.allelic_percentage.data
-    object.unmutated_frequency = form.unmutated_frequency.data
-    object.unique_ds = form.unique_ds.data
-    object.unique_js = form.unique_js.data
-    object.unique_cdr3s = form.unique_cdr3s.data
-    object.haplotyping_gene = form.haplotyping_gene.data
-    object.haplotyping_ratio = form.haplotyping_ratio.data
-    object.nt_sequence = form.nt_sequence.data
 
     if new:
         db.session.add(object)

@@ -18,8 +18,6 @@ class Primer(db.Model):
 
 
 def save_Primer(db, object, form, new=False):   
-    object.primer_name = form.primer_name.data
-    object.primer_seq = form.primer_seq.data
 
     if new:
         db.session.add(object)

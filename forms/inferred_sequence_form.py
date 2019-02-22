@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class InferredSequenceForm(FlaskForm):
     sequence_id = SelectField('sequence_id', [validators.Optional()], choices=[], description="Identifier of the sequence within the genotype")
     genotype_id = SelectField('genotype_id', [validators.Optional()], choices=[], description="Identifier of the genotype from which these sequences were inferred")

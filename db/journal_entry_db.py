@@ -25,8 +25,6 @@ class JournalEntry(db.Model):
 
 
 def save_JournalEntry(db, object, form, new=False):   
-    object.title = form.title.data
-    object.body = form.body.data
 
     if new:
         db.session.add(object)

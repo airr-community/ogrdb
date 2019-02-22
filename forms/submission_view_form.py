@@ -24,10 +24,12 @@ from db.notes_entry_db import *
 from db.primer_set_db import *
 from db.primer_db import *
 from db.gene_description_db import *
+from db.attached_file_db import *
 
-from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol, SubjCol
+from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol, SubjCol, EditableAttachedFileTable
 from forms.journal_entry_form import JournalEntryForm
 from forms.aggregate_form import AggregateForm
+from forms.attached_file_form import *
 
 class HiddenReturnForm(FlaskForm):
     type = StringField('Type')
@@ -174,6 +176,7 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['pub'] = make_PubId_table(sub.repertoire[0].pub_ids)
     tables['submission_notes'] = make_NotesEntry_view(sub.notes_entries[0])
     tables['matches'] = setup_matching_sequences_table(sub) if private else None
+    tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(sub.notes_entries[0].attached_files), 'attached_files', AttachedFileForm, sub.notes_entries[0].attached_files, legend='Attachments', delete=False, download_route='download_submission_attachment')
 
     tables['primer_sets'] = []
     for set in sub.repertoire[0].primer_sets:

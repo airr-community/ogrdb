@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class PubIdForm(FlaskForm):
     pubmed_id = StringField('PubMed ID', [validators.Length(max=255)], description="PubMed ID (e.g. 26543)")
 
@@ -17,7 +17,7 @@ class PubIdForm(FlaskForm):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class AcknowledgementsForm(FlaskForm):
     ack_name = StringField('Name', [validators.Length(max=255)], description="Name of individual to be acknowledged as contributing to this work")
     ack_institution_name = StringField('Institution', [validators.Length(max=255)], description="Individual's department and institution name")
@@ -31,7 +31,7 @@ class AcknowledgementsForm(FlaskForm):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class RepertoireForm(FlaskForm):
     repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)")
     rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)")

@@ -4,9 +4,11 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from forms.submission_edit_form import EditableAckTable
+from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable
 from db.repertoire_db import make_Acknowledgements_table
+from db.attached_file_db import *
 from forms.repertoire_form import AcknowledgementsForm
+from forms.attached_file_form import *
 from textile_filter import *
 from flask import url_for
 from db.styled_table import *
@@ -109,6 +111,7 @@ def setup_sequence_edit_tables(db, seq):
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
     tables['matches'] = setup_matching_submissions_table(seq)
+    tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete_route='delete_sequence_attachment', delete_message='Are you sure you wish to delete the attachment?', download_route='download_sequence_attachment')
 
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []

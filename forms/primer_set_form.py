@@ -5,7 +5,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class PrimerSetForm(FlaskForm):
     primer_set_name = StringField('Primer Set Name', [validators.Length(max=255), NonEmpty()], description="Primer Set name or quick description")
     primer_set_notes = TextAreaField('Primer Set Notes', [validators.Length(max=10000)], description="Notes on Primer Set purpose/usage")

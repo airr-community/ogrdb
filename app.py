@@ -78,6 +78,7 @@ from db.primer_set_db import *
 from db.primer_db import *
 from db.record_set_db import *
 from db.sample_name_db import *
+from db.attached_file_db import *
 
 import db_events
 
@@ -215,6 +216,7 @@ def new_submission():
         if form.validate():
             sub = Submission()
             sub.owner = current_user
+            sub.submission_status = 'draft'
             save_Submission(db, sub, form, True)
             sub.submission_id = "S%05d" % sub.id
             db.session.commit()
@@ -244,6 +246,28 @@ def check_sub_view(id):
         return None
     return sub
 
+def check_sub_attachment_edit(id):
+    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    sub = af.notes_entry.submission
+    if not sub.can_edit(current_user):
+        flash('You do not have rights to delete that attachment')
+        return None
+    return af
+
+
+def check_sub_attachment_view(id):
+    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    sub = af.notes_entry.submission
+    if not sub.can_see(current_user):
+        flash('You do not have rights to download that attachment')
+        return None
+    return af
 
 @app.route('/edit_submission/<id>', methods=['GET', 'POST'])
 @login_required
@@ -251,13 +275,14 @@ def edit_submission(id):
     sub = check_sub_edit(id)
     if sub is None:
         return redirect('/submissions')
+
     (tables, form) = setup_submission_edit_forms_and_tables(sub, db)
 
     if request.method == 'GET':
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
         form.repository_select.data = 'NCBI SRA' if sub.repertoire[0].repository_name == 'NCBI SRA' else 'Other'
-        return render_template('submission_edit.html', form = form, id=id, tables=tables, attachment=sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0)
+        return render_template('submission_edit.html', form = form, id=id, tables=tables, attachment=len(sub.notes_entries[0].attached_files) > 0)
 
     missing_sequence_error = False
     validation_result = ValidationResult()
@@ -307,7 +332,7 @@ def edit_submission(id):
         # The main problem is that not all object attributes are represented in the form, for example submission_id
         # if these were present as hidden fields, maybe we could use process()
 
-        if ('save_btn' in request.form or 'save_close_btn' or 'submit_btn' in request.form):
+        if ('save_btn' in request.form or 'save_close_btn' or 'submit_btn' in request.form or 'upload_btn' in request.form):
             for (k, v) in request.form.items():
                 if hasattr(sub, k):
                     setattr(sub, k, v)
@@ -323,20 +348,30 @@ def edit_submission(id):
             db.session.commit()
 
             if 'notes_attachment' in request.files:
-                sub.notes_entries[0].notes_attachment_filename = request.files['notes_attachment'].filename
-                dirname = attach_path + sub.submission_id
+                for file in form.notes_attachment.data:
+                    af = None
+                    for at in sub.notes_entries[0].attached_files:
+                        if at.filename == file.filename:
+                            af = at
+                            break
+                    if af is None:
+                        af = AttachedFile()
+                    af.notes_entry = sub.notes_entries[0]
+                    af.filename  = file.filename
+                    db.session.add(af)
+                    db.session.commit()
+                    dirname = attach_path + sub.submission_id
 
-                try:
-                    if not isdir(dirname):
-                        mkdir(dirname)
-                    with open(dirname + '/attachment_%s' % sub.submission_id, 'wb') as fo:
-                        fo.write(request.files['notes_attachment'].read())
-                except:
-                    info = sys.exc_info()
-                    flash('Error saving attachment: %s' % (info[1]))
-                    app.logger.error(format_exc())
-                    return redirect(url_for('edit_submission', id=sub.submission_id))
-
+                    try:
+                        if not isdir(dirname):
+                            mkdir(dirname)
+                        with open(dirname + '/multi_attachment_%s' % af.id, 'wb') as fo:
+                            fo.write(file.stream.read())
+                    except:
+                        info = sys.exc_info()
+                        flash('Error saving attachment: %s' % (info[1]))
+                        app.logger.error(format_exc())
+                        return redirect(url_for('edit_submission', id=sub.submission_id))
 
             if 'notes_text' in request.form:
                 sub.notes_entries[0].notes_text = request.form['notes_text'].encode('utf-8')
@@ -349,7 +384,7 @@ def edit_submission(id):
         if validation_result.tag:
             return redirect(url_for('edit_submission', id=id, _anchor=validation_result.tag))
 
-        if 'save_btn' in request.form:
+        if 'save_btn' in request.form or 'upload_btn' in request.form:
             tag = request.form['current_tab'].split('#')[1] if '#' in request.form['current_tab'] else '#sub'
             return redirect(url_for('edit_submission', id=id, _anchor=tag))
         else:
@@ -379,40 +414,42 @@ def edit_submission(id):
 
 @app.route('/download_submission_attachment/<id>')
 def download_submission_attachment(id):
-    sub = check_sub_view(id)
-    if sub is None:
+    att = check_sub_attachment_view(id)
+    if att is None:
         return redirect('/')
 
-    if sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0:
-        try:
-            dirname = attach_path + sub.submission_id
-            with open(dirname + '/attachment_%s' % sub.submission_id, 'rb') as fi:
-                return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % sub.notes_entries[0].notes_attachment_filename})
-        except:
-            info = sys.exc_info()
-            flash('Error retrieving attachment: %s' % (info[1]))
-            app.logger.error(format_exc())
+    sub = att.notes_entry.submission
+
+    try:
+        dirname = attach_path + sub.submission_id
+        with open(dirname + '/multi_attachment_%s' % att.id, 'rb') as fi:
+            return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % att.filename})
+    except:
+        info = sys.exc_info()
+        flash('Error retrieving attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
 
     return redirect('/')
 
 
 @app.route('/delete_submission_attachment/<id>', methods=['POST'])
 def delete_submission_attachment(id):
-    sub = check_sub_edit(id)
-    if sub is None:
+    att = check_sub_attachment_edit(id)
+    if att is None:
         return redirect('/')
 
-    sub.notes_entries[0].notes_attachment_filename = ''
-    db.session.commit()
+    sub = att.notes_entry.submission
 
     try:
         dirname = attach_path + sub.submission_id
-        remove(dirname + '/attachment_%s' % sub.submission_id)
+        remove(dirname + '/multi_attachment_%s' % att.id)
     except:
         info = sys.exc_info()
         flash('Error deleting attachment: %s' % (info[1]))
         app.logger.error(format_exc())
 
+    db.session.delete(att)
+    db.session.commit()
     return ''
 
 
@@ -939,6 +976,30 @@ def check_seq_edit(id):
         flash('Error : exception %s with message %s' % (exc_type, exc_value))
         return None
 
+def check_seq_attachment_edit(id):
+    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    seq = af.gene_description
+    if not seq.can_edit(current_user):
+        flash('You do not have rights to delete that attachment')
+        return None
+    return af
+
+
+def check_seq_attachment_view(id):
+    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    seq = af.gene_description
+    if not seq.can_see(current_user):
+        flash('You do not have rights to download that attachment')
+        return None
+    return af
+
+
 def check_seq_draft(id):
     try:
         desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
@@ -1283,11 +1344,40 @@ def edit_sequence(id):
                         form.inferred_extension.errors.append('Please specify an extension at at least one end')
                         raise ValidationError()
 
+                if 'notes_attachment' in request.files:
+                    for file in form.notes_attachment.data:
+                        af = None
+                        for at in seq.attached_files:
+                            if at.filename == file.filename:
+                                af = at
+                                break
+                        if af is None:
+                            af = AttachedFile()
+                        af.gene_description = seq
+                        af.filename  = file.filename
+                        db.session.add(af)
+                        db.session.commit()
+                        dirname = attach_path + seq.description_id
+
+                        try:
+                            if not isdir(dirname):
+                                mkdir(dirname)
+                            with open(dirname + '/multi_attachment_%s' % af.id, 'wb') as fo:
+                                fo.write(file.stream.read())
+                        except:
+                            info = sys.exc_info()
+                            flash('Error saving attachment: %s' % (info[1]))
+                            app.logger.error(format_exc())
+                            return redirect(url_for('edit_submission', id=seq.id))
+
                 seq.notes = form.notes.data      # this was left out of the form definition in the schema so it could go on its own tab
                 save_GeneDescription(db, seq, form)
 
                 if 'add_inference_btn' in request.form:
                     return redirect(url_for('seq_add_inference', id=id))
+
+                if 'upload_btn' in request.form:
+                    return redirect(url_for('edit_sequence', id=id, _anchor='note'))
 
                 if form.action.data == 'published':
                     old_seq = db.session.query(GeneDescription).filter_by(description_id = seq.description_id, status='published').one_or_none()
@@ -1326,7 +1416,7 @@ def edit_sequence(id):
                     return redirect('/sequences')
 
             except ValidationError:
-                return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version)
+                return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version, attachment=len(seq.attached_files) > 0)
 
             if validation_result.tag:
                 return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
@@ -1336,9 +1426,50 @@ def edit_sequence(id):
         else:
             for field in tables['ack'].form:
                 if len(field.errors) > 0:
-                    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version)
+                    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version, attachment=len(seq.attached_files) > 0)
 
-    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version)
+    return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version, attachment=len(seq.attached_files) > 0)
+
+@app.route('/download_sequence_attachment/<id>')
+def download_sequence_attachment(id):
+    att = check_seq_attachment_view(id)
+    if att is None:
+        return redirect('/')
+
+    seq = att.gene_description
+
+    try:
+        dirname = attach_path + seq.description_id
+        with open(dirname + '/multi_attachment_%s' % att.id, 'rb') as fi:
+            return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % att.filename})
+    except:
+        info = sys.exc_info()
+        flash('Error retrieving attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    return redirect('/')
+
+
+@app.route('/delete_sequence_attachment/<id>', methods=['POST'])
+def delete_sequence_attachment(id):
+    att = check_seq_attachment_edit(id)
+    if att is None:
+        return redirect('/')
+
+    seq = att.gene_description
+
+    try:
+        dirname = attach_path + seq.description_id
+        remove(dirname + '/multi_attachment_%s' % att.id)
+    except:
+        info = sys.exc_info()
+        flash('Error deleting attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    db.session.delete(att)
+    db.session.commit()
+    return ''
+
 
 
 @app.route('/delete_sequence/<id>', methods=['POST'])
@@ -1551,6 +1682,36 @@ def tidy_genotype():
     db.session.commit()
 
     return('Genotypes tidied.')
+
+# Temp route to change file handling
+from shutil import copyfile
+@app.route('/convert_attachments', methods=['GET'])
+@login_required
+def convert_attachments():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    ret = ""
+
+    notes = db.session.query(NotesEntry).all()
+    for note in notes:
+        if note.notes_attachment_filename:
+            try:
+                af = AttachedFile()
+                af.filename = note.notes_attachment_filename
+                af.notes_entry = note
+                db.session.add(af)
+                db.session.commit()
+                dirname = attach_path + note.submission.submission_id
+                old_filename = dirname + '/attachment_%s' % note.submission.submission_id
+                new_filename = dirname + '/multi_attachment_%s' % af.id
+                copyfile(old_filename, new_filename)
+                ret += 'Copied file %s to %s<br>' % (old_filename, new_filename)
+            except:
+                ret += 'Error processing note %d' %note.id
+
+    return(ret + '<br>Attachments copied.')
+
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])
 def genotype_statistics():

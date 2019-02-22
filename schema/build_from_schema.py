@@ -60,6 +60,8 @@ def main(argv):
     write_inp(schema, 'Primer', 'templates/primer_form.html')
     write_model(schema, 'RecordSet', 'db/record_set_db.py')
     write_model(schema, 'SampleName', 'db/sample_name_db.py')
+    write_model(schema, 'AttachedFile', 'db/attached_file_db.py')
+    write_flaskform(schema, 'AttachedFile', 'forms/attached_file_form.py')
 
 # Merge markup properties with schema
 # In the event of a conflict, markup always wins. Otherwise properties are merged.
@@ -207,8 +209,10 @@ class %s(db.Model):
                     fo.write("    %s = db.Column(db.String(1000))" % sc_item)
                 elif type == 'text':
                     fo.write("    %s = db.Column(db.Text())" % sc_item)
-                elif type == 'blob':
-                    fo.write("    %s = db.Column(db.LargeBinary(length=(2**32)-1))" % sc_item)
+                elif type == 'file':
+                    pass
+                elif type == 'multifile':
+                    pass
                 elif type == 'ORCID ID':
                     fo.write("    %s = db.Column(db.String(255))" % sc_item)
                 elif type == 'ambiguous nucleotide sequence':
@@ -231,10 +235,6 @@ def save_%s(db, object, form, new=False):
             if 'ignore' in schema[section]['properties'][sc_item] \
                     or 'hide' in schema[section]['properties'][sc_item]:
                 continue
-
-            # write blobs by outside this function using read() - should only do this at download time
-            if schema[section]['properties'][sc_item]['type'] != 'blob':
-                fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
 
         fo.write(
 """
@@ -320,7 +320,8 @@ def copy_%s(c_from, c_to):
             if 'ignore' in schema[section]['properties'][sc_item] or \
                     ('hide' in schema[section]['properties'][sc_item] and not 'inview' in schema[section]['properties'][sc_item]) or \
                     'foreign_key' in schema[section]['properties'][sc_item] or \
-                    schema[section]['properties'][sc_item]['type'] == 'blob' or \
+                    schema[section]['properties'][sc_item]['type'] == 'file' or \
+                    schema[section]['properties'][sc_item]['type'] == 'multifile' or \
                     schema[section]['properties'][sc_item]['type'] == 'hidden':
                 continue
             if 'private' in schema[section]['properties'][sc_item]:
@@ -341,7 +342,7 @@ def write_flaskform(schema, section, outfile, append=False):
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class %sForm(FlaskForm):
 """ % (section, section))
         for sc_item in schema[section]['properties']:
@@ -407,8 +408,10 @@ class %sForm(FlaskForm):
                     fo.write("    %s = StringField('%s', [validators.Optional(), ValidOrcidID()%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'ambiguous nucleotide sequence':
                     fo.write("    %s = StringField('%s', [ValidNucleotideSequence(ambiguous=True)%s]%s)" % (sc_item, label, nonblank, description))
-                elif type == 'blob':
+                elif type == 'file':
                     fo.write("    %s = FileField('%s'%s)" % (sc_item, label, description))
+                elif type == 'multifile':
+                    fo.write("    %s = MultipleFileField('%s'%s)" % (sc_item, label, description))
                 else:
                     raise (ValueError('Unrecognised type: %s' % type))
                 fo.write("\n")

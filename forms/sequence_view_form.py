@@ -9,6 +9,9 @@
 from db.gene_description_db import *
 from db.repertoire_db import make_Acknowledgements_table
 from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table
+from db.attached_file_db import *
+from forms.submission_edit_form import *
+from forms.attached_file_form import *
 from sequence_format import *
 from copy import deepcopy
 from textile_filter import safe_textile
@@ -78,7 +81,7 @@ def setup_sequence_view_tables(db, seq, private):
     tables['matches'] = setup_matching_submissions_table(seq) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
-
+    tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete=False, download_route='download_sequence_attachment')
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []
 

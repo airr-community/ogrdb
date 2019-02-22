@@ -20,8 +20,6 @@ class PrimerSet(db.Model, PrimerSetMixin):
 
 
 def save_PrimerSet(db, object, form, new=False):   
-    object.primer_set_name = form.primer_set_name.data
-    object.primer_set_notes = form.primer_set_notes.data
 
     if new:
         db.session.add(object)

@@ -5,10 +5,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators
+from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class NotesEntryForm(FlaskForm):
     notes_text = TextAreaField('Notes', [validators.Length(max=10000)], description="Notes from submitter accompanying submission")
-    notes_attachment = FileField('Attachment', description="File attachment from submitter accompanying submission")
-    notes_attachment_filename = StringField('Attachment File Name', [validators.Length(max=255)], description="File attachment name")
+    notes_attachment = MultipleFileField('Attachments', description="File attachments from submitter accompanying submission")
 
 
