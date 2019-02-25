@@ -22,11 +22,18 @@ class GenotypeDescription(db.Model, GenotypeDescriptionMixin):
     submission = db.relationship('Submission', backref = 'genotype_descriptions')
     inference_tool_id = db.Column(db.Integer, db.ForeignKey('inference_tool.id'))
     inference_tool = db.relationship('InferenceTool', backref = 'genotype_descriptions')
-
     genotype_filename = db.Column(db.String(1000))
 
 
+
 def save_GenotypeDescription(db, object, form, new=False):   
+    object.genotype_name = form.genotype_name.data
+    object.genotype_subject_id = form.genotype_subject_id.data
+    object.genotype_biosample_ids = form.genotype_biosample_ids.data
+    object.genotype_run_ids = form.genotype_run_ids.data
+    object.gen_ncbi_hash = form.gen_ncbi_hash.data
+    object.inference_tool_id = form.inference_tool_id.data
+    object.genotype_filename = form.genotype_filename.data
 
     if new:
         db.session.add(object)
@@ -41,7 +48,6 @@ def populate_GenotypeDescription(db, object, form):
     form.genotype_biosample_ids.data = object.genotype_biosample_ids
     form.genotype_run_ids.data = object.genotype_run_ids
     form.gen_ncbi_hash.data = object.gen_ncbi_hash
-    form.genotype_file.data = object.genotype_file
     form.genotype_filename.data = object.genotype_filename
 
 
@@ -53,7 +59,6 @@ def copy_GenotypeDescription(c_from, c_to):
     c_to.genotype_biosample_ids = c_from.genotype_biosample_ids
     c_to.genotype_run_ids = c_from.genotype_run_ids
     c_to.gen_ncbi_hash = c_from.gen_ncbi_hash
-    c_to.genotype_file = c_from.genotype_file
     c_to.genotype_filename = c_from.genotype_filename
 
 

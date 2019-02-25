@@ -77,6 +77,43 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
 
 
 def save_GeneDescription(db, object, form, new=False):   
+    object.author = form.author.data
+    object.lab_address = form.lab_address.data
+    object.sequence_name = form.sequence_name.data
+    object.imgt_name = form.imgt_name.data
+    object.alt_names = form.alt_names.data
+    object.locus = form.locus.data
+    object.sequence_type = form.sequence_type.data
+    object.functional = form.functional.data
+    object.inference_type = form.inference_type.data
+    object.affirmation_level = form.affirmation_level.data
+    object.gene_subgroup = form.gene_subgroup.data
+    object.subgroup_designation = form.subgroup_designation.data
+    object.allele_designation = form.allele_designation.data
+    object.sequence = form.sequence.data
+    object.coding_seq_imgt = form.coding_seq_imgt.data
+    object.codon_frame = form.codon_frame.data
+    object.j_cdr3_end = form.j_cdr3_end.data
+    object.utr_5_prime_start = form.utr_5_prime_start.data
+    object.utr_5_prime_end = form.utr_5_prime_end.data
+    object.l_region_start = form.l_region_start.data
+    object.l_region_end = form.l_region_end.data
+    object.v_rs_start = form.v_rs_start.data
+    object.v_rs_end = form.v_rs_end.data
+    object.d_rs_3_prime_start = form.d_rs_3_prime_start.data
+    object.d_rs_3_prime_end = form.d_rs_3_prime_end.data
+    object.d_rs_5_prime_start = form.d_rs_5_prime_start.data
+    object.d_rs_5_prime_end = form.d_rs_5_prime_end.data
+    object.j_rs_start = form.j_rs_start.data
+    object.j_rs_end = form.j_rs_end.data
+    object.paralogs = form.paralogs.data
+    object.inferred_extension = form.inferred_extension.data
+    object.ext_3prime = form.ext_3prime.data
+    object.start_3prime_ext = form.start_3prime_ext.data
+    object.end_3prime_ext = form.end_3prime_ext.data
+    object.ext_5prime = form.ext_5prime.data
+    object.start_5prime_ext = form.start_5prime_ext.data
+    object.end_5prime_ext = form.end_5prime_ext.data
 
     if new:
         db.session.add(object)
@@ -96,7 +133,6 @@ def populate_GeneDescription(db, object, form):
     form.functional.data = object.functional
     form.inference_type.data = object.inference_type
     form.affirmation_level.data = object.affirmation_level
-    form.status.data = object.status
     form.gene_subgroup.data = object.gene_subgroup
     form.subgroup_designation.data = object.subgroup_designation
     form.allele_designation.data = object.allele_designation
@@ -134,7 +170,6 @@ def copy_GeneDescription(c_from, c_to):
     c_to.release_version = c_from.release_version
     c_to.release_date = c_from.release_date
     c_to.release_description = c_from.release_description
-    c_to.notes_attachment = c_from.notes_attachment
     c_to.organism = c_from.organism
     c_to.sequence_name = c_from.sequence_name
     c_to.imgt_name = c_from.imgt_name
@@ -213,7 +248,6 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
     ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})
-    ret.items.append({"item": "Status", "value": sub.status, "tooltip": "Status of record", "field": "status"})
     ret.items.append({"item": "Gene Subgroup", "value": sub.gene_subgroup, "tooltip": "Gene subgroup (family), as (and if) identified for this species and gene", "field": "gene_subgroup"})
     ret.items.append({"item": "Gene Designation", "value": sub.subgroup_designation, "tooltip": "Gene designation within this subgroup", "field": "subgroup_designation"})
     ret.items.append({"item": "Allele Designation", "value": sub.allele_designation, "tooltip": "Allele designation", "field": "allele_designation"})

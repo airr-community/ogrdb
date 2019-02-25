@@ -19,6 +19,9 @@ class SampleName(db.Model):
 
 
 def save_SampleName(db, object, form, new=False):   
+    object.sam_accession_no = form.sam_accession_no.data
+    object.sam_record_title = form.sam_record_title.data
+    object.sam_url = form.sam_url.data
 
     if new:
         db.session.add(object)

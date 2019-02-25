@@ -578,16 +578,16 @@ GenotypeDescription:
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
             label: Inference Tool
-        genotype_file:
-            type: file
-            description: CSV file containing genotype information
-            label: Genotype File
         genotype_filename:
             type: string
             description: Name of the uploaded file from which the genotype was read
             tableview: true
             readonly: true
             label: Genotype Filename
+        genotype_file:
+            type: file
+            description: CSV file containing genotype information
+            label: Genotype File
 
 # Sample(s) from which a specific genotype was derived
 SampleName:
@@ -790,8 +790,7 @@ GeneDescription:
             description: File attachments from submitter accompanying submission
             label: Attachments
             hide: true
-            rows: 10
-            inview: true
+            nocopy: 10
         organism:
             type: string
             description: Binomial designation of subject's species
@@ -846,6 +845,7 @@ GeneDescription:
             description: Status of record
             label: Status
             width: narrow
+            hide: true
             tableview: true
         gene_subgroup:
             type: string

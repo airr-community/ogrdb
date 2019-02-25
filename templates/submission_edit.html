@@ -83,6 +83,12 @@
         <p>Formatting available: *<b>bold</b>*, _<i>italic</i>_, * bulleted list</p>
         {% include 'notes_entry_form.html' %}
 
+        <div class="form-group ">
+            <div class="col-sm-2 col-sm-offset-3">
+                <input type="submit" value="Upload" class="btn btn-default tablebutton" id="upload_btn" name="upload_btn">
+            </div>
+        </div>
+
         {% if attachment %}
              <div class="row">
                  <div class="col-sm-8 col-sm-offset-2">

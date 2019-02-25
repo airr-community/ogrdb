@@ -16,7 +16,6 @@
     <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
     <li role="presentation"><a href="#primer_sets" aria-controls="primer_sets" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
-    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
     <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
     <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
     {% if reviewer %}
@@ -28,6 +27,10 @@
     <div role="tabpanel" class="tab-pane active" id="sub">
         <h3>Submission Details</h3>
         {{ tables['submission'] }}
+
+        <h3>Genotypes</h3>
+        <p>Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.</p>
+        {{ tables['genotype_description'] }}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="ack">
@@ -60,12 +63,6 @@
         <p>Details of the inference tools and settings used to infer novel alleles.  Each combination
         of tool and setting is listed here, and provided with a descriptive name.</p>
         {{ tables['inference_tool'] }}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="genotype_description">
-        <h3>Genotypes</h3>
-        <p>Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.</p>
-        {{ tables['genotype_description'] }}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="inferred_sequence">

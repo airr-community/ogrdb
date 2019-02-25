@@ -19,6 +19,7 @@ class NotesEntry(db.Model):
 
 
 def save_NotesEntry(db, object, form, new=False):   
+    object.notes_text = form.notes_text.data
 
     if new:
         db.session.add(object)
@@ -29,14 +30,12 @@ def save_NotesEntry(db, object, form, new=False):
 
 def populate_NotesEntry(db, object, form):   
     form.notes_text.data = object.notes_text
-    form.notes_attachment.data = object.notes_attachment
 
 
 
 
 def copy_NotesEntry(c_from, c_to):   
     c_to.notes_text = c_from.notes_text
-    c_to.notes_attachment = c_from.notes_attachment
     c_to.notes_attachment_filename = c_from.notes_attachment_filename
 
 

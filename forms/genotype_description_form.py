@@ -13,7 +13,7 @@ class GenotypeDescriptionForm(FlaskForm):
     genotype_run_ids = StringField('Sequence Sets', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)")
     gen_ncbi_hash = HiddenField('gen_ncbi_hash', [validators.Length(max=255)], description="md5 sum of details passed to ncbi")
     inference_tool_id = SelectField('Inference Tool', [validators.Optional()], choices=[])
-    genotype_file = FileField('Genotype File', description="CSV file containing genotype information")
     genotype_filename = StringField('Genotype Filename', [validators.Length(max=255)], description="Name of the uploaded file from which the genotype was read")
+    genotype_file = FileField('Genotype File', description="CSV file containing genotype information")
 
 

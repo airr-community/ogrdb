@@ -27,6 +27,14 @@ class Submission(db.Model, SubmissionMixin):
 
 
 def save_Submission(db, object, form, new=False):   
+    object.submission_id = form.submission_id.data
+    object.submission_date = form.submission_date.data
+    object.submission_status = form.submission_status.data
+    object.submitter_name = form.submitter_name.data
+    object.submitter_address = form.submitter_address.data
+    object.submitter_email = form.submitter_email.data
+    object.species = form.species.data
+    object.population_ethnicity = form.population_ethnicity.data
 
     if new:
         db.session.add(object)

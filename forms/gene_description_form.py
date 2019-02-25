@@ -17,7 +17,6 @@ class GeneDescriptionForm(FlaskForm):
     functional = BooleanField('Functional', [], description="Functional")
     inference_type = SelectField('Inference Type', choices=[('Genomic and Rearranged', 'Genomic and Rearranged'), ('Genomic Only', 'Genomic Only'), ('Rearranged Only', 'Rearranged Only')], description="Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)")
     affirmation_level = SelectField('Affirmation Level', choices=[('0', '0'), ('1', '1'), ('2', '2'), ('3', '3')], description="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
-    status = SelectField('Status', choices=[('published', 'published'), ('draft', 'draft'), ('retired', 'retired'), ('withdrawn', 'withdrawn')], description="Status of record")
     gene_subgroup = StringField('Gene Subgroup', [validators.Length(max=255)], description="Gene subgroup (family), as (and if) identified for this species and gene")
     subgroup_designation = StringField('Gene Designation', [validators.Length(max=255)], description="Gene designation within this subgroup")
     allele_designation = StringField('Allele Designation', [validators.Length(max=255)], description="Allele designation")

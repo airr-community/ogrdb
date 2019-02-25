@@ -1,0 +1,3 @@
+Dear IARC {{ sequence.organism }} Committee Member,
+
+The published sequence {{  url_for('sequence', id=sequence.description_id, _external=True) }} has been withdrawn by {{ reviewer.name }}.

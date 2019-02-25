@@ -21,6 +21,7 @@ class PubId(db.Model):
 
 
 def save_PubId(db, object, form, new=False):   
+    object.pubmed_id = form.pubmed_id.data
 
     if new:
         db.session.add(object)
@@ -77,6 +78,9 @@ class Acknowledgements(db.Model):
 
 
 def save_Acknowledgements(db, object, form, new=False):   
+    object.ack_name = form.ack_name.data
+    object.ack_institution_name = form.ack_institution_name.data
+    object.ack_ORCID_id = form.ack_ORCID_id.data
 
     if new:
         db.session.add(object)
@@ -143,6 +147,15 @@ class Repertoire(db.Model, RepertoireMixin):
 
 
 def save_Repertoire(db, object, form, new=False):   
+    object.repository_name = form.repository_name.data
+    object.rep_accession_no = form.rep_accession_no.data
+    object.rep_title = form.rep_title.data
+    object.dataset_url = form.dataset_url.data
+    object.miairr_compliant = form.miairr_compliant.data
+    object.miairr_link = form.miairr_link.data
+    object.sequencing_platform = form.sequencing_platform.data
+    object.read_length = form.read_length.data
+    object.primers_overlapping = form.primers_overlapping.data
 
     if new:
         db.session.add(object)

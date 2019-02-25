@@ -23,6 +23,11 @@ class InferenceTool(db.Model, InferenceToolMixin):
 
 
 def save_InferenceTool(db, object, form, new=False):   
+    object.tool_settings_name = form.tool_settings_name.data
+    object.tool_name = form.tool_name.data
+    object.tool_version = form.tool_version.data
+    object.tool_starting_database = form.tool_starting_database.data
+    object.tool_settings = form.tool_settings.data
 
     if new:
         db.session.add(object)

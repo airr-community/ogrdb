@@ -1,0 +1,4 @@
+<p>Dear IARC {{ sequence.organism }} Committee Member,</p>
+
+<p><a href="{{  url_for('sequence', id=sequence.description_id, _external=True) }}">The published sequence {{ sequence.sequence_name }}</a> has been withdrawn by {{ reviewer.name }}.</p>
+

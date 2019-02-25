@@ -1526,10 +1526,36 @@ def draft_sequence(id):
 def withdraw_sequence(id):
     seq = check_seq_withdraw(id)
     if seq is not None:
+        add_history(current_user, 'Published version %s withdrawn' % seq.release_version, seq, db, body = '')
+        send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_withdrawn', reviewer=current_user, user_name=seq.author, sequence=seq, comment='')
         seq.status = 'withdrawn'
         db.session.commit()
         seq.duplicate_sequences = list()
         flash('Sequence %s withdrawn' % seq.sequence_name)
+
+        related_subs = []
+        for inf in seq.inferred_sequences:
+            related_subs.append(inf.submission)
+
+        # un-publish any related submissions that now don't have published sequences
+
+        published_seqs = db.session.query(GeneDescription).filter_by(organism=seq.organism, status='published').all()
+
+        for related_sub in related_subs:
+            other_published = False
+            for ps in published_seqs:
+                for inf in ps.inferred_sequences:
+                    if inf.submission == related_sub:
+                        other_published = True
+                        break
+
+            if not other_published:
+                related_sub.submission_status = 'reviewing'
+                related_sub.public = False
+                add_history(current_user, 'Status changed from published to reviewing as submission %s was withdrawn.' % seq.description_id, related_sub, db, body = '')
+
+        db.session.commit()
+
     return ''
 
 

@@ -66,8 +66,8 @@ if(length(args) > 3) {
   
   ref_filename = 'IMGT_REF_GAPPED.fasta'
   species = 'Homosapiens'
-  inferred_filename = 'TWO01A_naive_novel.fasta'
-  filename = 'TWO01A_naive_genotyped.tsv'
+  inferred_filename = 'TW01A_B_memory.igblast.airr_novel.fasta'
+  filename = 'TW01A_B_memory.igblast.airr_genotyped.tsv'
   hap_gene = 'IGHJ6'
 } 
 
@@ -215,6 +215,9 @@ ref_genes = ref_genes[grepl('IGHV|IGHJ|IGHD', names(ref_genes))]
 
 s = s[!grepl(',', s$V_CALL_GENOTYPED),]
 
+# remove sequences with ambiguous nucleotide calls
+
+#s = s[!grepl('[nN]', s$SEQUENCE_IMGT),]
 
 # get the genotype and novel alleles in this set
 

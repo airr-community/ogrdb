@@ -232,9 +232,13 @@ def save_%s(db, object, form, new=False):
 """ % (section))
 
         for sc_item in schema[section]['properties']:
-            if 'ignore' in schema[section]['properties'][sc_item] \
-                    or 'hide' in schema[section]['properties'][sc_item]:
+            if 'ignore' in schema[section]['properties'][sc_item] or \
+                     'hide' in schema[section]['properties'][sc_item] or \
+                     schema[section]['properties'][sc_item]['type'] == 'file' or \
+                     schema[section]['properties'][sc_item]['type'] == 'multifile':
                 continue
+
+            fo.write("    object.%s = form.%s.data\n" % (sc_item, sc_item))
 
         fo.write(
 """
@@ -255,6 +259,8 @@ def populate_%s(db, object, form):
         for sc_item in schema[section]['properties']:
             if 'ignore' in schema[section]['properties'][sc_item] \
                     or 'hide' in schema[section]['properties'][sc_item] \
+                    or schema[section]['properties'][sc_item]['type'] == 'file' \
+                    or schema[section]['properties'][sc_item]['type'] == 'multifile' \
                     or 'relationship' in schema[section]['properties'][sc_item]:   # relationship selectors are too complex to auto-generate
                 continue
 
@@ -277,6 +283,8 @@ def copy_%s(c_from, c_to):
                     or 'nocopy' in schema[section]['properties'][sc_item] \
                     or 'many-relationship' in schema[section]['properties'][sc_item] \
                     or 'self-relationship' in schema[section]['properties'][sc_item] \
+                    or schema[section]['properties'][sc_item]['type'] == 'file' \
+                    or schema[section]['properties'][sc_item]['type'] == 'multifile' \
                     or 'relationship' in schema[section]['properties'][sc_item]:
                 continue
 

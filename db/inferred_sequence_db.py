@@ -34,6 +34,20 @@ class InferredSequence(db.Model, InferredSequenceMixin):
 
 
 def save_InferredSequence(db, object, form, new=False):   
+    object.sequence_id = form.sequence_id.data
+    object.genotype_id = form.genotype_id.data
+    object.seq_accession_no = form.seq_accession_no.data
+    object.seq_record_title = form.seq_record_title.data
+    object.ncbi_hash = form.ncbi_hash.data
+    object.deposited_version = form.deposited_version.data
+    object.run_ids = form.run_ids.data
+    object.inferred_extension = form.inferred_extension.data
+    object.ext_3prime = form.ext_3prime.data
+    object.start_3prime_ext = form.start_3prime_ext.data
+    object.end_3prime_ext = form.end_3prime_ext.data
+    object.ext_5prime = form.ext_5prime.data
+    object.start_5prime_ext = form.start_5prime_ext.data
+    object.end_5prime_ext = form.end_5prime_ext.data
 
     if new:
         db.session.add(object)
