@@ -467,12 +467,12 @@ def delete_submission(id):
 @app.route('/submission/<id>', methods=['GET', 'POST'])
 def submission(id):
     sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
-    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
     if sub is None or not (sub.can_see(current_user) or current_user.has_role('Admin')):
         flash('Submission not found')
         return redirect('/submissions')
 
     (form, tables) = setup_submission_view_forms_and_tables(sub, db, sub.can_see_private(current_user))
+    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
 
     if request.method == 'GET':
         return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump="", status=sub.submission_status, attachment=sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0)
