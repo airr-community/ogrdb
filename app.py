@@ -475,7 +475,7 @@ def submission(id):
     reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
 
     if request.method == 'GET':
-        return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump="", status=sub.submission_status, attachment=sub.notes_entries[0].notes_attachment_filename is not None and len(sub.notes_entries[0].notes_attachment_filename) > 0)
+        return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump="", status=sub.submission_status, attachment=len(sub.notes_entries[0].attached_files) > 0)
     else:
         if not reviewer:
             flash('Submission not found')
