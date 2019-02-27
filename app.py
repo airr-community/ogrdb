@@ -1721,7 +1721,7 @@ def convert_attachments():
 
     notes = db.session.query(NotesEntry).all()
     for note in notes:
-        if note.notes_attachment_filename:
+        if note.notes_attachment_filename and len(note.attached_files) == 0:
             try:
                 af = AttachedFile()
                 af.filename = note.notes_attachment_filename
