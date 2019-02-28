@@ -54,8 +54,8 @@
             <div class="col-sm-6">
                 <div class="btn-toolbar">
                     <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
+                    <button type="button" class="tablebutton btn btn-default" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
                     <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-default" role="button" id="download_genotype">Download</a>
-                    <button class="tablebutton btn btn-default" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
                 </div>
             </div>
             <div class="col-sm-6">
