@@ -1,20 +1,20 @@
 # Creating Genotype Statistics
 
-genotype_statistics.R can be used to create a Genotype File for upload to OGRDB. The script is independent 
+`genotype_statistics.R` can be used to create a Genotype File for upload to OGRDB. The script is independent 
 of any particular inference tool. This version is specific to the IGHV genotype and inferences.
 
 ### Prerequisites
 
-*Germline_file - FASTA file containing the IGHV germline sequences provided as input to the inference tool.* 
+*Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
 
 * Sequences must correspond exactly to those used by the tool.
 * They must be IMGT-aligned
 * The header can either be in IMGT's germline library format, or simply consist of the allele name
 * The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP)
-  and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes frequently, please make sure that 
+  and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes from time to time, please make sure that 
   the same version is used by the inference tool and by this script.
 
-*Inferred_file - FASTA file containing the novel alleles inferred by the tool*   
+*Inferred_file - FASTA file containing the inferred novel alleles*   
 * Sequences must be IMGT-aligned
 * The header should simply consist of the allele name as assigned by the tool.
 
@@ -49,7 +49,7 @@ it should contain the species name used in field 3 of the header, with spaces re
 ### Output
 
 * `<read_file>_ogrdb_report.csv` - the Genotype File ready to be uploaded to OGRDB.
-* `<read_file\>_ogrdb_plots.csv` - plots (see next section for details). 
+* `<read_file>_ogrdb_plots.csv` - plots (see next section for details). 
 
 Please upload the plots file as an attachment to the Notes section of your OGRDB submission.
 
@@ -57,7 +57,8 @@ Please upload the plots file as an attachment to the Notes section of your OGRDB
 ### Plots
 
 The script produces the following plots:
-* For each inferred allele, a histogram showing the number of mutated and unmutated sequences
+* For each allele used in the the read file, a histogram showing the number of mutated and unmutated sequences
+* Barcharts showing nucleotide usage at locations in the IMGT-aligned sequence: both across the sequence as a whole, and in more detail at the 3' end
 * A barchart showing usage of the alleles of each J-gene, across the whole genotype. This can be used to identify a suitable J-gene for haplotyping analysis.
 * For each potential J-gene haplotyping candidate, a plot comparing the usage of the two most frequently used alleles of that gene.
 
@@ -69,10 +70,25 @@ will be appropriately populated.
 
 ### Example
 
-To complete an analysis using the suppliued example file, please [download](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP) 
+To complete an analysis using the supplied example file, please [download](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP) 
 the IMGT germline file and name it IMGT_REF_GAPPED.fasta. Then run the command
 
 > Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
+
+### Usage Notes - TiGGER
+
+These notes are indicative only and are not intended to discount other approaches. Notes for other tools will follow.
+
+
+* Use `findNovelAlleles` to identify novel alleles in a Change-O-formatted data set. Write these to a FASTA file. 
+* Use `inferGenotype` or `inferGenotypeBayesian` to infer the genotype.
+* Use `reassignAlleles` to correct allele calls in the data set, based on the inferred genotype
+* Provide the resulting Change-O file, together with the FASTA file containing the novel alleles, to `genotype_statistics.R`.
+
+Note that `inferGenotype` will not necessarily include every inferred allele produced by `findNovelAlleles` in the genotype that it produces. Only those
+alleles included in the genotype will be considered by `genotype_statistics.R` because, leaving other considerations aside, no sequences are assigned to other alleles.
+
+TIgGER provides additonal information, including its own plots and statistics We encourage you to take these into consideration, and to upload them as attachments to your submission if they are informative.
 
 ### Acknowledgements
 
