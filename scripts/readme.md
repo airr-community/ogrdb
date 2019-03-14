@@ -75,7 +75,7 @@ the IMGT germline file and name it IMGT_REF_GAPPED.fasta. Then run the command
 
 > Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
 
-### Usage Notes - TiGGER
+### Usage Notes - TIgGER
 
 These notes are indicative only and are not intended to discount other approaches. Notes for other tools will follow.
 
