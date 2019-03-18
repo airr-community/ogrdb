@@ -16,7 +16,6 @@
     <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
     <li role="presentation"><a href="#primer_sets" aria-controls="primer_sets" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
     <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
-    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
     <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
     {% if reviewer %}
     <li role="presentation"><a href="#review" aria-controls="review" role="tab" data-toggle="tab" id="tab-rev">Review</a></li>
@@ -27,6 +26,22 @@
     <div role="tabpanel" class="tab-pane active" id="sub">
         <h3>Submission Details</h3>
         {{ tables['submission'] }}
+
+        <h3>Inferred Sequences</h3>
+        <p>The inferred novel alleles from each genotype that are submitted for review. This table lists all inferences put forward by the submitter. Where IARC has
+        affirmed a sequence based on an inference, the corresponding sequence record will be listed in the Published column. Inferences for which no published
+        sequence is shown have not been affirmed.</p>
+        {% if reviewer %}
+            {{ tables['iarc_inferred_sequence'] }}
+        {% else %}
+            {{ tables['inferred_sequence'] }}
+        {% endif %}
+
+        {% if reviewer and tables['matches'] %}
+            <h3>Unreferenced Matches in Published Sequences</h3>
+            <p>Matching or near-matching inferred sequences in published sequences not currently referencing this submission (this section is only visible to reviewers):</p>
+                    {{ tables['matches'] }}
+        {% endif %}
 
         <h3>Genotypes</h3>
         <p>Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.</p>
@@ -63,24 +78,6 @@
         <p>Details of the inference tools and settings used to infer novel alleles.  Each combination
         of tool and setting is listed here, and provided with a descriptive name.</p>
         {{ tables['inference_tool'] }}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="inferred_sequence">
-        <h3>Inferred Sequences</h3>
-        <p>The inferred novel alleles from each genotype that are submitted for review. This table lists all inferences put forward by the submitter. Where IARC has
-        affirmed a sequence based on an inference, the corresponding sequence record will be listed in the Published column. Inferences for which no published
-        sequence is shown have not been affirmed.</p>
-        {% if reviewer %}
-            {{ tables['iarc_inferred_sequence'] }}
-        {% else %}
-            {{ tables['inferred_sequence'] }}
-        {% endif %}
-
-        {% if reviewer and tables['matches'] %}
-            <h3>Unreferenced Matches in Published Sequences</h3>
-            <p>Matching or near-matching inferred sequences in published sequences not currently referencing this submission (this section is only visible to reviewers):</p>
-                    {{ tables['matches'] }}
-        {% endif %}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="notes">
