@@ -33,8 +33,8 @@ from flask_wtf.file import FileField
 from custom_validators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class RepertoireForm(FlaskForm):
-    repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)")
-    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)")
+    repository_name = StringField('Repository', [validators.Length(max=255), NonEmpty()], description="Name of the repository holding the sequence dataset.")
+    rep_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number or serial number within the repository. For NCBI please provide the NCBI BioProject (e.g. PRJNA349143)")
     rep_title = StringField('Project/Study Title', [validators.Length(max=255)], description="Title as listed in the repository")
     dataset_url = StringField('Dataset URL', [validators.Length(max=255), validators.URL()], description="URL of the study or project within the repository")
     miairr_compliant = SelectField('MiAIRR Compliant?', choices=[('Yes', 'Yes'), ('No', 'No')], description="Yes if the annotated reads and associated metadata is available in MiAIRR format")

@@ -191,13 +191,13 @@ Repertoire:
             ignore: true
         repository_name:
             type: string
-            description: Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)
+            description: Name of the repository holding the sequence dataset.
             completed_by: submitter
             label: Repository
             nonblank: true
         rep_accession_no:
             type: string
-            description: Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)
+            description: Accession number or serial number within the repository. For NCBI please provide the NCBI BioProject (e.g. PRJNA349143)
             completed_by: submitter
             label: Accession Number
             nonblank: true

@@ -201,7 +201,7 @@ class HiddenSubFieldsForm(FlaskForm):
 
 # Selector for repo
 class RepoSelectorForm(FlaskForm):
-    repository_select = SelectField("Repository", choices=[('NCBI SRA', 'NCBI SRA'), ('Other', 'Other')])
+    repository_select = SelectField("Repository", choices=[('NCBI SRA', 'NCBI SRA'), ('Other', 'Other')], description="Name of the repository holding the sequence dataset. Please use NCBI SRA wherever possible")
 
 
 # Validation and completion of NCBI repository data
@@ -230,6 +230,7 @@ def setup_submission_edit_forms_and_tables(sub, db):
 
     if len(sub.repertoire) == 0:
         sub.repertoire.append(Repertoire())
+        sub.repertoire[0].repository_name = 'NCBI SRA'
         db.session.commit()
 
     if len(sub.notes_entries) == 0:

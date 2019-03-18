@@ -207,8 +207,8 @@ class Repertoire_view(Table):
 
 def make_Repertoire_view(sub, private = False):
     ret = Repertoire_view([])
-    ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset (e.g. NCBI SRA, or ENA)", "field": "repository_name"})
-    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository. FOr NCBI please provide the NCBI BioProject (e.g. PRJNA349143)", "field": "rep_accession_no"})
+    ret.items.append({"item": "Repository", "value": sub.repository_name, "tooltip": "Name of the repository holding the sequence dataset.", "field": "repository_name"})
+    ret.items.append({"item": "Accession Number", "value": sub.rep_accession_no, "tooltip": "Accession number or serial number within the repository. For NCBI please provide the NCBI BioProject (e.g. PRJNA349143)", "field": "rep_accession_no"})
     ret.items.append({"item": "Project/Study Title", "value": sub.rep_title, "tooltip": "Title as listed in the repository", "field": "rep_title"})
     ret.items.append({"item": "Dataset URL", "value": sub.dataset_url, "tooltip": "URL of the study or project within the repository", "field": "dataset_url"})
     ret.items.append({"item": "MiAIRR Compliant?", "value": sub.miairr_compliant, "tooltip": "Yes if the annotated reads and associated metadata is available in MiAIRR format", "field": "miairr_compliant"})
