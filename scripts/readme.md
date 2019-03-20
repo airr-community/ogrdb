@@ -1,7 +1,21 @@
-# Creating Genotype Statistics
+# The OGRDB Genotype File
 
-`genotype_statistics.R` can be used to create a Genotype File for upload to OGRDB. The script is independent 
-of any particular inference tool. This version is specific to the IGHV genotype and inferences.
+## Submission Requirements
+
+As part of a submission, you will need to upload one or more inferred genotypes to OGRDB. The genotype is uploaded as 
+a comma-separated-variable (CSV) file. You can download:
+
+- A [blank template](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_template.csv)
+- An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
+- [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
+
+At the moment, OGRDB only accepts submissions of inferred human IGHV genes. The definitions and associated tools will be updated as the scope of accepted 
+inferences is widened.
+
+## Creating the Genotype File with genotype_statistics.R
+
+[genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
+of any particular inference tool.  
 
 ### Prerequisites
 
