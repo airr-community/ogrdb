@@ -16,7 +16,8 @@ inferences is widened.
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
 of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
-([example]()) 
+([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the genotype and report to assess the quality of 
+any inferred genotype, even if you don't wish to submit it to OGRDB.
 
 ### Prerequisites
 
