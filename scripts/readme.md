@@ -15,7 +15,8 @@ inferences is widened.
 ## Creating the Genotype File with genotype_statistics.R
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
-of any particular inference tool.  
+of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
+([example]()) 
 
 ### Prerequisites
 
