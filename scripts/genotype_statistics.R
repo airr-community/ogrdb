@@ -150,11 +150,11 @@ getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name) {
   }          
   
   if (hasNonImgtGaps(ref_imgt)) {
-    warning(paste0("Non codon-aligned gaps were found in reference sequence ", ref_name))
+    cat(paste0("Non codon-aligned gaps were found in reference sequence ", ref_name))
   }
   
   if (hasNonImgtGaps(novel_imgt)) {
-    warning(paste0("Non codon-aligned gaps were found in novel sequence ", seq_name))
+    cat(paste0("Non codon-aligned gaps were found in novel sequence ", seq_name))
   }
   
   ref_imgt <- alakazam::translateDNA(ref_imgt)
@@ -257,7 +257,7 @@ genotype_alleles = unique(s$V_CALL_GENOTYPED)
 missing = inferred_seqs[!(names(inferred_seqs) %in% genotype_alleles)]
 
 if(length(missing) >= 1) {
-  warning(paste('Novel sequence(s)', paste0(names(missing), collapse=' '), 'are not listed in the genotype and will be ignored.', sep=' '))
+  cat(paste('Novel sequence(s)', paste0(names(missing), collapse=' '), 'are not listed in the genotype and will be ignored.', sep=' '))
   inferred_seqs = inferred_seqs[(names(inferred_seqs) %in% genotype_alleles)]
 }
 
@@ -301,7 +301,7 @@ genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/g
 # closest in genotype and in reference (inferred alleles only)
 
 if (length(inferred_seqs) == 0) {
-  warning('Warning - no inferred sequences found.')
+  cat('Warning - no inferred sequences found.')
   
   genotype$reference_closest = NA
   genotype$host_closest = NA
@@ -329,6 +329,23 @@ genotype$unmutated_umis = ''
 genotype$nt_sequence = gsub('-', '', genotype$nt_sequence, fixed=T)
 genotype$nt_sequence = gsub('.', '', genotype$nt_sequence, fixed=T)
 genotype = unnest(genotype)
+
+# Check for duplicate germline sequences
+
+concat_names = function(x) {
+  paste(x, collapse=', ')
+}
+
+warn_dupes = function(x) {
+  cat(paste0('Warning: ', x, ' have identical germline sequences.\n'))
+}
+
+dupes = aggregate(genotype["sequence_id"], by=genotype["nt_sequence"], FUN=concat_names)
+dupes = dupes$sequence_id[grepl(',', dupes$sequence_id, fixed=T)]
+
+if(length(dupes) > 0) {
+  x = lapply(dupes, warn_dupes)  
+}
 
 # Postpone writing the genotype file until haplotyping analysis is complete...
 
@@ -526,7 +543,7 @@ if(!is.na(hap_gene)) {
   jp = jp[order(jp$percent, decreasing=T),]
   
   if(nrow(jp) < 2 || jp[1,]$percent > 75 || jp[2,]$percent < 20 || (jp[1,]$percent+jp[2,]$percent < 90)) {
-    print(paste0('Alellelic ratio is unsuitable for haplotyping analysis based on ', hap_gene))
+    cat(paste0('Alellelic ratio is unsuitable for haplotyping analysis based on ', hap_gene))
   } else
   {
     genotype$haplotyping_gene = hap_gene
@@ -534,7 +551,7 @@ if(!is.na(hap_gene)) {
     
     a1 = jp[1,]$j_allele
     a2 = jp[2,]$j_allele
-    print(paste0('Haplotyping analysis is based on gene ', hap_gene, ' alleles ', a1, ':', a2))
+    cat(paste0('Haplotyping analysis is based on gene ', hap_gene, ' alleles ', a1, ':', a2))
     recs = sj %>% filter(j_gene==hap_gene) %>% filter(j_allele==a1 | j_allele==a2)
     recs = recs %>% select(sequence_id=V_CALL_GENOTYPED, j_allele) %>% group_by(sequence_id, j_allele) %>% summarise(count=n()) %>% spread(j_allele, count)
     recs[is.na(recs)] = 0
