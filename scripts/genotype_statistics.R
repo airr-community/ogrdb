@@ -506,9 +506,9 @@ haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
 # Save all graphics to plot file
 
 pdf(paste0(file_prefix, '_ogrdb_plots.pdf'), width=210/25,height=297/25)  
-x = print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
 x=print(marrangeGrob(end_composition_grobs, nrow=3, ncol=2,top=NULL))
 x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+x = print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
 #x=print(marrangeGrob(snap_composition_grobs, nrow=3, ncol=1,top=NULL))
 grid.arrange(j_allele_plot)
 x=print(marrangeGrob(haplo_grobs, nrow=1, ncol=1,top=NULL))
