@@ -23,8 +23,8 @@ class GeneDescriptionMixin:
 
     def can_edit(self, user):
         return(user.is_authenticated and
-            #(user.has_role('Admin') or
-             (user.has_role(self.organism) and self.status == 'draft'))
+            ((user.has_role('Admin') or
+            (user.has_role(self.organism) and self.status == 'draft'))))
 
     def can_draft(self, user):
         return(user.is_authenticated and
