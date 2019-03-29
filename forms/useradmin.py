@@ -14,6 +14,18 @@ from db.submission_db import Submission
 from db.gene_description_db import GeneDescription
 from db.misc_db import *
 from db.repertoire_db import Repertoire
+from db.attached_file_db import AttachedFile
+from db.genotype_description_db import GenotypeDescription
+from db.inference_tool_db import InferenceTool
+from db.inferred_sequence_db import InferredSequence
+from db.journal_entry_db import JournalEntry
+from db.notes_entry_db import NotesEntry
+from db.primer_db import Primer
+from db.primer_set_db import PrimerSet
+from db.record_set_db import RecordSet
+from db.sample_name_db import SampleName
+
+
 
 
 class AdminView(ModelView):
@@ -29,4 +41,14 @@ admin_obj.add_view(AdminView(Role, db.session))
 admin_obj.add_view(AdminView(Committee, db.session))
 admin_obj.add_view(AdminView(Submission, db.session))
 admin_obj.add_view(AdminView(Repertoire, db.session))
+admin_obj.add_view(AdminView(PrimerSet, db.session))
+admin_obj.add_view(AdminView(Primer, db.session))
+admin_obj.add_view(AdminView(InferenceTool, db.session))
+admin_obj.add_view(AdminView(GenotypeDescription, db.session))
 admin_obj.add_view(AdminView(GeneDescription, db.session))
+admin_obj.add_view(AdminView(NotesEntry, db.session))
+admin_obj.add_view(AdminView(AttachedFile, db.session))
+admin_obj.add_view(AdminView(JournalEntry, db.session))
+admin_obj.add_view(AdminView(RecordSet, db.session))
+admin_obj.add_view(AdminView(SampleName, db.session))
+admin_obj.add_view(AdminView(InferredSequence, db.session))
