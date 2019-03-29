@@ -59,7 +59,7 @@ class SubmissionMixin:
 
     def can_edit(self, user):
         return(user.is_authenticated and
-                (user.has_role('Admin') or
+                (user.has_role('AdminEdit') or
                 (self.owner == user and self.submission_status == 'draft')))
 
     def can_see_private(self, user):
