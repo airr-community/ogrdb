@@ -71,8 +71,8 @@ def sub_add_and_process():
     x = driver.find_elements(By.CLASS_NAME, "form-control-static")
     sub_id = x[0].text
 
-    sub_edit_ack()
     sub_edit_rep(sub_id)
+    sub_edit_ack()
     sub_edit_notes(sub_id)
     sub_edit_pri()
     sub_edit_inf()
@@ -136,9 +136,10 @@ def sub_edit_ack():
 
 
 def sub_edit_rep(sub_id):
+    time.sleep(2)
     driver.find_element_by_xpath('//*[@id="tab-rep"]').click()
 
-    wait.until(EC.element_to_be_clickable((By.ID,"repository_name")))
+    wait.until(EC.element_to_be_clickable((By.ID,"repository_select")))
     Select(driver.find_element_by_id("repository_select")).select_by_visible_text('NCBI SRA')
 #    driver.find_element_by_id("repository_name").send_keys('EBI')
     driver.find_element_by_id("rep_accession_no").send_keys('PRJNA336331')
