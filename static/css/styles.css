@@ -286,22 +286,24 @@ div.menu {
     margin-right: 2%;
 }
 
+
 .th_back {
     border-bottom: 1px solid black !important;
 }
 
 th.rotate {
   /* Something you can count on */
-  height: 200px;
+  height: 250px;
   white-space: nowrap;
   vertical-align: middle !important;
   text-align: right !important;
+  background-color: white;
 }
 
 th.rotate > div {
   transform:
     /* Magic Numbers */
-    translate(0px, 70px)
+    translate(0px, 120px)
     /* 45 is really 360 - 45 */
     rotate(270deg);
   width: 20px;

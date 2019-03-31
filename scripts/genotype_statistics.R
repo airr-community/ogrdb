@@ -296,6 +296,11 @@ genotype$unique_ds = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='D_
 genotype$unique_js = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='J_CALL', seqs=s)
 genotype$unique_cdr3s = sapply(genotype$V_CALL_GENOTYPED, unique_cdrs, segment='CDR3_IMGT', seqs=s)
 
+su=s[s$V_MUT_NC==0,]
+genotype$unique_ds_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='D_CALL', seqs=su)
+genotype$unique_js_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='J_CALL', seqs=su)
+genotype$unique_cdr3s_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_cdrs, segment='CDR3_IMGT', seqs=su)
+
 genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/genotype$sequences, digits=2)
 
 # closest in genotype and in reference (inferred alleles only)
@@ -322,7 +327,7 @@ if (length(inferred_seqs) == 0) {
 genotype$nt_sequence = sapply(genotype$V_CALL_GENOTYPED, function(x) genotype_db[x][[1]])
 
 genotype = rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=reference_closest, closest_host=host_closest, 
-                   nt_diff=reference_difference, nt_substitutions=reference_nt_diffs, aa_diff=reference_aa_difference,
+                   nt_diff=reference_difference, nt_diff_host=host_difference, nt_substitutions=reference_nt_diffs, aa_diff=reference_aa_difference,
                    aa_substitutions=reference_aa_subs)
 
 genotype$unmutated_umis = ''
@@ -570,9 +575,9 @@ if(!is.na(hap_gene)) {
 
 # Save Genotype file
 
-g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_substitutions, aa_diff,
+g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
            aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_ds,
-           unique_js,unique_cdr3s, haplotyping_gene, haplotyping_ratio, nt_sequence)
+           unique_js,unique_cdr3s, unique_ds_unmutated, unique_js_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
 g[is.na(g)] = ''
 
 write.csv(g, paste0(file_prefix, '_ogrdb_report.csv'), row.names=F)

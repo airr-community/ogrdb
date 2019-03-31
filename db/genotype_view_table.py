@@ -11,6 +11,8 @@ from db.styled_table import *
 from Bio import pairwise2
 from Bio.pairwise2 import format_alignment
 from sequence_format import *
+from flask_table import create_table
+
 
 
 class SeqCol(StyledCol):
@@ -70,12 +72,71 @@ class GenTitleCol(StyledCol):
         return Markup(text)
 
 
+# Definitions adapted from the auto-generated tables, to split the view in two
+
+class Genotype_full_table(StyledTable):
+    id = Col("id", show=False)
+    sequence_id = StyledCol("Allele name", tooltip="Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)")
+    sequences = StyledCol("Sequences", tooltip="Overall number of sequences assigned to this allele")
+    unmutated_sequences = StyledCol("Unmutated Seqs", tooltip="The number of sequences exactly matching this unmutated sequence")
+    assigned_unmutated_frequency = StyledCol("Unmutated % within allele", tooltip="The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100")
+    unmutated_umis = StyledCol("Unmutated UMIs", tooltip="The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)")
+    allelic_percentage = StyledCol("Allelic %", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100")
+    unmutated_frequency = StyledCol("Total unmutated population (%)", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100")
+    unique_ds = StyledCol("Unique Ds", tooltip="The number of D allele calls (i.e., unique allelic sequences) associated with this allele")
+    unique_js = StyledCol("Unique Js", tooltip="The number of J allele calls (i.e., unique allelic sequences) associated with this allele")
+    unique_cdr3s = StyledCol("Unique CDR3s", tooltip="The number of unique CDR3s associated with this allele")
+    unique_ds_unmutated = StyledCol("Unique Ds with unmutated", tooltip="The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele")
+    unique_js_unmutated = StyledCol("Unique Js with unmutated", tooltip="The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele")
+    unique_cdr3s_unmutated = StyledCol("Unique CDR3s with unmutated", tooltip="The number of unique CDR3s associated with unmutated sequences of this allele")
+    haplotyping_gene = StyledCol("Haplotyping Gene", tooltip="The gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)")
+    haplotyping_ratio = StyledCol("Haplotyping Ratio", tooltip="The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)")
+
+
+def make_Genotype_full_table(results, private = False, classes=()):
+    t=create_table(base=Genotype_full_table)
+    ret = t(results, classes=classes)
+    return ret
+
+
+class Genotype_novel_table(StyledTable):
+    id = Col("id", show=False)
+    sequence_id = StyledCol("Allele name", tooltip="Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)")
+    sequences = StyledCol("Sequences", tooltip="Overall number of sequences assigned to this allele")
+    closest_reference = StyledCol("Closest Reference", tooltip="For inferred alleles, the closest reference gene and allele")
+    closest_host = StyledCol("Closest in Host", tooltip="For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype")
+    nt_diff = StyledCol("NT Diffs", tooltip="For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele")
+    nt_diff_host = StyledCol("NT Diffs (host)", tooltip="For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele that is in the subject's inferred genotype")
+    nt_substitutions = StyledCol("NT Substs", tooltip="For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.")
+    aa_diff = StyledCol("AA Diffs", tooltip="For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele")
+    aa_substitutions = StyledCol("AA Substs", tooltip="For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.")
+
+
+def make_Genotype_novel_table(results, private = False, classes=()):
+    t=create_table(base=Genotype_novel_table)
+    ret = t(results, classes=classes)
+    return ret
+
+
+
 def setup_gv_table(desc):
-    table = make_Genotype_table(desc.genotypes, False, classes = ['table-bordered'])
+    table = make_Genotype_full_table(desc.genotypes, False, classes = ['table-bordered'])
     table._cols['sequence_id'] = GenTitleCol('Allele name', tooltip='Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)')
     table.rotate_header = True
     table.add_column('nt_sequence', SeqCol('Sequence', tooltip="Click to view or download sequence"))
-    return table
+    table.table_id = 'genotype_table'
+
+    novel = []
+    imgt_ref = imgt_reference_genes()
+    for item in desc.genotypes:
+        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+            novel.append(item)
+
+    inferred_table = make_Genotype_novel_table(novel, False, classes = ['table-bordered'])
+    inferred_table._cols['sequence_id'] = GenTitleCol('Allele name', tooltip='Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)')
+    inferred_table.add_column('nt_sequence', SeqCol('Sequence', tooltip="Click to view or download sequence"))
+
+    return (table, inferred_table)
 
 def setup_gv_fasta(desc):
     f = ''

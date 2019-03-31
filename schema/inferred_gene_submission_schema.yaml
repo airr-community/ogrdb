@@ -644,7 +644,7 @@ Genotype:
             label: Closest Reference
         closest_host:
             type: string
-            description: For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype, as inferred by the tool
+            description: For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype
             completed_by: submitter
             tableview: true
             label: Closest in Host
@@ -653,37 +653,43 @@ Genotype:
             description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
             tableview: true
-            label: NT Diffs
+            label: NT Diffs (reference)
+        nt_diff_host:
+            type: integer
+            description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele that is in the subject's inferred genotype
+            completed_by: submitter
+            tableview: true
+            label: NT Diffs (host)
         nt_substitutions:
             type: string
             description: For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
-            label: NT Substs
+            label: NT Substs (reference)
         aa_diff:
             type: integer
             description: For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele
             completed_by: submitter
             tableview: true
-            label: AA Diffs
+            label: AA Diffs (reference)
         aa_substitutions:
             type: string
             description: For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
             completed_by: submitter            
             tableview: true
-            label: AA Substs
-        assigned_unmutated_frequency:
-            type: number
-            description: The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100
-            completed_by: submitter
-            tableview: true
-            label: Unmutated % (allele)
+            label: AA Substs (reference)
         unmutated_sequences:
             type: integer
             description: The number of sequences exactly matching this unmutated sequence
             completed_by: submitter
             tableview: true
             label: Unmutated Seqs
+        assigned_unmutated_frequency:
+            type: number
+            description: The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100
+            completed_by: submitter
+            tableview: true
+            label: Unmutated % within allele
         unmutated_umis:
             type: integer
             description: The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
@@ -701,34 +707,52 @@ Genotype:
             description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
             completed_by: submitter
             tableview: true
-            label: Unmutated % (genome)
+            label: Total unmutated population (%)
         unique_ds:
             type: integer
-            description: For inferred alleles, the number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence
+            description:  The number of D allele calls (i.e., unique allelic sequences) associated with this allele
             completed_by: submitter
             tableview: true
             label: Unique Ds
         unique_js:
             type: integer
-            description: For inferred alleles, the number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence
+            description:  The number of J allele calls (i.e., unique allelic sequences) associated with this allele
             completed_by: submitter
             tableview: true
             label: Unique Js
         unique_cdr3s:
             type: integer
-            description: Number of unique CDR3s found associated with an inferred V sequence
+            description: The number of unique CDR3s associated with this allele
             completed_by: submitter
             tableview: true
             label: Unique CDR3s
+        unique_ds_unmutated:
+            type: integer
+            description:  The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+            completed_by: submitter
+            tableview: true
+            label: Unique Ds with unmutated
+        unique_js_unmutated:
+            type: integer
+            description:  The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+            completed_by: submitter
+            tableview: true
+            label: Unique Js with unmutated
+        unique_cdr3s_unmutated:
+            type: integer
+            description: The number of unique CDR3s associated with unmutated sequences of this allele
+            completed_by: submitter
+            tableview: true
+            label: Unique CDR3s with unmutated
         haplotyping_gene:
             type: string
-            description: For inferred alleles, the gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)
+            description: The gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)
             completed_by: submitter
             tableview: true
             label: Haplotyping Gene
         haplotyping_ratio:
             type: string
-            description: For inferred alleles, the ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
+            description: The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
             completed_by: submitter
             tableview: true
             label: Haplotyping Ratio

@@ -747,10 +747,11 @@ def genotype(id, editable=False):
                 tables['desc'].items.remove(item)
 
     tables['desc'].items.append({"item": "Tool/Settings", "value": desc.inference_tool.tool_settings_name, "tooltip": ""})
-    tables['genotype'] = setup_gv_table(desc)
+    (tables['genotype'], tables['inferred']) = setup_gv_table(desc)
     fasta = setup_gv_fasta(desc)
     submission_link = 'edit_submission' if editable else 'submission'
     this_link = 'genotype_e' if editable else 'genotype'
+    title = "Genotype '%s' (Submission %s)" % (desc.genotype_name, sub.submission_id)
 
     if request.method == 'POST':
         if form.validate():
@@ -764,7 +765,7 @@ def genotype(id, editable=False):
                 new_items.append(item)
             tables['genotype'].items = new_items
 
-    return render_template('genotype_view.html', form=form, desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link, this_link=this_link, srr_table=srr_table, sam_table=sam_table, ncbi=ncbi)
+    return render_template('genotype_view.html', form=form, desc=desc, tables=tables, id=id, fasta=fasta, reviewer=reviewer, sub_id=sub.submission_id, submission_link=submission_link, this_link=this_link, srr_table=srr_table, sam_table=sam_table, ncbi=ncbi, title=title)
 
 @app.route('/download_genotype/<id>')
 def download_genotype(id):
@@ -1692,51 +1693,35 @@ def remove_test():
     flash("Test records removed.")
     return redirect('/')
 
-# Temp route to update genotypes
-@app.route('/tidy_genotype', methods=['GET'])
+
+# Temp route to shift genotype counts from mutated to unmutated
+@app.route('/tidy_genotype/<id>', methods=['GET'])
 @login_required
-def tidy_genotype():
+def tidy_genotype(id):
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    genotypes = db.session.query(Genotype).all()
-    for item in genotypes:
-        # fix legacy entries that are missying the allele unmutated frequency
-        if item.assigned_unmutated_frequency is None and (item.unmutated_sequences is not None and item.sequences is not None):
-            item.assigned_unmutated_frequency = round(100*item.unmutated_sequences/item.sequences,2)
+    sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
+    if sub is None:
+        flash('Submission not found')
+        return None
+
+    for desc in sub.genotype_descriptions:
+        for gen in desc.genotypes:
+            if gen.unique_ds is not None and gen.unique_ds_unmutated is None:
+                gen.unique_ds_unmutated = gen.unique_ds
+                gen.unique_ds = None
+            if gen.unique_js is not None and gen.unique_js_unmutated is None:
+                gen.unique_js_unmutated = gen.unique_js
+                gen.unique_js = None
+            if gen.unique_cdr3s is not None and gen.unique_cdr3s_unmutated is None:
+                gen.unique_cdr3s_unmutated = gen.unique_cdr3s
+                gen.unique_cdr3s = None
 
     db.session.commit()
 
-    return('Genotypes tidied.')
+    return('Genotype modified.')
 
-# Temp route to change file handling
-from shutil import copyfile
-@app.route('/convert_attachments', methods=['GET'])
-@login_required
-def convert_attachments():
-    if not current_user.has_role('Admin'):
-        return redirect('/')
-
-    ret = ""
-
-    notes = db.session.query(NotesEntry).all()
-    for note in notes:
-        if note.notes_attachment_filename and len(note.attached_files) == 0:
-            try:
-                af = AttachedFile()
-                af.filename = note.notes_attachment_filename
-                af.notes_entry = note
-                db.session.add(af)
-                db.session.commit()
-                dirname = attach_path + note.submission.submission_id
-                old_filename = dirname + '/attachment_%s' % note.submission.submission_id
-                new_filename = dirname + '/multi_attachment_%s' % af.id
-                copyfile(old_filename, new_filename)
-                ret += 'Copied file %s to %s<br>' % (old_filename, new_filename)
-            except:
-                ret += 'Error processing note %d' %note.id
-
-    return(ret + '<br>Attachments copied.')
 
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])

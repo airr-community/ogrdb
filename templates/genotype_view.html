@@ -1,6 +1,6 @@
 {% extends "base_wide.html" %}
 
-{% block pagetitle %} Genotype {% endblock %}
+{% block pagetitle %} {{ title }} {% endblock %}
 
 {% block content %}
     {% include 'sequence_popup.html' %}
@@ -83,6 +83,18 @@
         <p>An information icon in the Sequence column alerts you to other information on this sequence - hover over for details.</p>
     </div>
 
+    <div class="row col-sm-offset-1">
+        <h3> Novel Alleles </h3>
+    </div>
+
+    <div class="table pad">
+        {{ tables['inferred'] | safe}}
+    </div>
+
+    <div class="row col-sm-offset-1">
+        <h3> Genotype </h3>
+    </div>
+
     <div class="table pad">
         {{ tables['genotype'] | safe}}
     </div>
@@ -92,6 +104,7 @@
 {%  block scripts %}
     {{ super() }}
     {% include 'sequence_popup_script.html' %}
+    <script src="/static/script/jquery.stickytableheaders.js"></script>
 
     <script>
     $('#show_all_fasta').on('click', function () {
@@ -108,5 +121,7 @@
             }]
         });
     })
+
+    $('#genotype_table').stickyTableHeaders();
     </script>
 {% endblock %}
