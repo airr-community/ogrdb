@@ -39,10 +39,11 @@ class ValidOrcidID(object):
             raise ValidationError(self.message)
 
 class ValidNucleotideSequence(object):
-    def __init__(self, gapped=False, rna=False, ambiguous=False, message=None, x=False):
+    def __init__(self, gapped=False, rna=False, ambiguous=False, message=None, x=False, dot=False):
         self.permitted = 'ACGU' if rna else 'ACGT'
         self.permitted += 'RYSWKMBDHVN' if ambiguous else ''
         self.permitted += 'X' if x else ''
+        self.permitted += '.' if dot else ''
         self.permitted += '.-' if gapped else ''
 
         if not message:
@@ -62,9 +63,10 @@ class ValidNucleotideSequence(object):
             raise ValidationError(self.message)
 
 class ValidAASequence(object):
-    def __init__(self, gapped=False, message=None, x=False):
+    def __init__(self, gapped=False, message=None, x=False, dot = False):
         self.permitted = 'ACDEFGHIKLMNPQRSTVWY'
         self.permitted += 'X' if x else ''
+        self.permitted += '.' if dot else ''
         self.permitted += '.-' if gapped else ''
 
         if not message:

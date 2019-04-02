@@ -887,7 +887,7 @@ GeneDescription:
             label: Allele Designation
             width: narrow
         sequence:
-            type: IUPAC
+            type: IUPAC DOTTED
             description: nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences
             label: Full Sequence
             rows: 8

@@ -61,6 +61,7 @@ def format_imgt_v(seq, width):
     # this will deliberately truncate at the end of the shortest line - which will never be imgt_leg or imgt_num unless the sequence is longer than it should be...
     return splitlines(imgt_leg + '\n' + imgt_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0)
 
+
 def splitlines(report, maxlength, label_cols):
     """
     Split the report (which is assumed to consist of lines of equal length) into a longer report in which each
@@ -86,21 +87,37 @@ def splitlines(report, maxlength, label_cols):
 
     return "\n".join(["".join(line) for line in outlines])
 
+def rem_trailing_dots(s):
+    trail = ''
+    while(s[-1] == '.'):
+        trail += '-'
+        s = s[:-1]
+
+    return (s, trail)
+
+
 def report_dupe(s1, s1_name, s2, s2_name):
     """
     s1 should be a subset of s2 or vice versa.
     The function returns an 'alignment' in which the common subset is replaced by an ellipsis
     """
+
     if s1 == s2:
         return('Sequences are identical')
-    elif s1 not in s2 and s2 not in s1:
+
+    (s1,s1_trail) = rem_trailing_dots(s1)
+    (s2,s2_trail) = rem_trailing_dots(s2)
+
+    if s1 not in s2 and s2 not in s1:
         return('Sequences do not match')
 
+    common = s1 if s1 in s2 else s2
+    s1 = s1 + s1_trail
+    s2 = s2 + s2_trail
     namelength = max(len(s1_name), len(s2_name)) + 2
     s1_name = s1_name.ljust(namelength)
     s2_name = s2_name.ljust(namelength)
 
-    common = s1 if s1 in s2 else s2
     s1 = s1.replace(common, '...')
     s2 = s2.replace(common, '...')
 

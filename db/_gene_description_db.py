@@ -35,6 +35,7 @@ class GeneDescriptionMixin:
 
     def build_duplicate_list(self, db, new_seq):
         # new_seq is the sequence about to be added to the gene description
+        new_seq = new_seq.replace('.', '')      # ignore leading or trailing dots
         self.duplicate_sequences = list()
         subs = db.session.query(Submission).filter(Submission.submission_status.in_(['reviewing', 'complete']), Submission.species == self.organism).all()
 

@@ -399,6 +399,8 @@ class %sForm(FlaskForm):
                 elif 'IUPAC' in type:
                     if 'GAPPED' in type:
                         fo.write("    %s = TextAreaField('%s', [ValidNucleotideSequence(ambiguous=False, gapped=True)%s]%s)" % (sc_item, label, nonblank, description))
+                    elif 'DOTTED' in type:
+                        fo.write("    %s = TextAreaField('%s', [ValidNucleotideSequence(ambiguous=False, dot=True)%s]%s)" % (sc_item, label, nonblank, description))
                     else:
                         fo.write("    %s = TextAreaField('%s', [ValidNucleotideSequence(ambiguous=False)%s]%s)" % (sc_item, label, nonblank, description))
                 elif type == 'integer':
