@@ -19,7 +19,8 @@ class InferredSequenceMixin:
             for gene in genes:
                 try:
                     if len(gene.sequence) > 0 and len(self.sequence_details.nt_sequence) > 0:
-                        if(gene.sequence in self.sequence_details.nt_sequence or self.sequence_details.nt_sequence in gene.sequence):
+                        g_seq = gene.sequence.replace('.', '')  # ignore trailing .s in published sequences
+                        if(g_seq in self.sequence_details.nt_sequence or self.sequence_details.nt_sequence in g_seq):
                             self.published_duplicates.append(gene)
                 except:
                     continue

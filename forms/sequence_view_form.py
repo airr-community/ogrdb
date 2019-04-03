@@ -58,7 +58,7 @@ def setup_sequence_view_tables(db, seq, private):
 
     if seq.sequence[-1] == '.':
         trailer_text = "A trailing . indicates IARC's opinion that the sequence\n" \
-                   "is likely to contain additional 3' nucelotides for which\n" \
+                   "is likely to contain additional 3' nucleotides for which\n" \
                    "there is insufficient evidence to make an affirmation.\n" \
                    "Please see Notes for details."
     else:
@@ -75,10 +75,10 @@ def setup_sequence_view_tables(db, seq, private):
             if field['value'] is not None and len(field['value']) > 0:
                 if seq.sequence_type == 'V':
                     field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                        % (format_imgt_v(seq.coding_seq_imgt, 52), seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.coding_seq_imgt, 50)))
+                        % (format_imgt_v(seq.coding_seq_imgt, 52) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.coding_seq_imgt, 50)))
                 else:
                     field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s"><span class="glyphicon glyphicon-search" data-toggle="tooltip" title="View"></span>&nbsp;</button>' \
-                        % (format_nuc_sequence(seq.sequence, 50), seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
+                        % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
             else:
                 field['value'] = 'None'
         elif field['field'] == 'release_description':
