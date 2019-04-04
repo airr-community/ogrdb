@@ -12,12 +12,15 @@ a comma-separated-variable (CSV) file. You can download:
 At the moment, OGRDB only accepts submissions of inferred human IGHV genes. The definitions and associated tools will be updated as the scope of accepted 
 inferences is widened.
 
+
 ## Creating the Genotype File with genotype_statistics.R
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
 of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
 ([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the genotype and report to assess the quality of 
 any inferred genotype, even if you don't wish to submit it to OGRDB.
+
+The use of the script with various tools is described at the end of this file.
 
 ### Prerequisites
 
@@ -31,10 +34,15 @@ any inferred genotype, even if you don't wish to submit it to OGRDB.
   the same version is used by the inference tool and by this script.
 
 *Inferred_file - FASTA file containing the inferred novel alleles*   
-* Sequences must be IMGT-aligned
+* Sequences may either be IMGT-aligned or not aligned. If they are not aligned, the script will determine
+the nearest reference gene and use it as a template. If you are not satisfied with the resulting
+alignment, just align the sequence in the inferred file as you prefer. 
+* If a gene with the same name is present in both the germline file and the inferred file,
+its presence in the inferred file will be ignored. This makes it easier to use the script with 
+inference tools that do not write the inferred sequences to a separate file.  
 * The header should simply consist of the allele name as assigned by the tool.
 
-*Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in either MiAIRR or CHANGEO format.*
+*Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in MiAIRR, CHANGEO or IgDiscover format.*
 
 * The format will be determined automatically by the tool.
 * AIRR format files must contain at least the following columns:
@@ -43,10 +51,17 @@ any inferred genotype, even if you don't wish to submit it to OGRDB.
 `SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`
 * In both file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
 (including calls of the novel alleles)
+* For IgDiscover, the file 'final/filtered.tab' should be used.
 
 *R libraries*
 
-The following librfaries are required. They may be installed using the R function `install.packages`: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra`
+The following librfaries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings`
+
+With the exception of Biostrings, they may be installed using the R function `install.packages`. For Biostrings,
+use the following commands from within R:
+
+> source("http://bioconductor.org/biocLite.R")<br>
+> biocLite("Biostrings")
 
 
 ### Usage
@@ -67,6 +82,8 @@ it should contain the species name used in field 3 of the header, with spaces re
 * `<read_file>_ogrdb_report.csv` - the Genotype File ready to be uploaded to OGRDB.
 * `<read_file>_ogrdb_plots.csv` - plots (see next section for details). 
 
+Note that the read_file name is used as a prefix on the output files. They will be written to the directory containing the read file.
+
 Please upload the plots file as an attachment to the Notes section of your OGRDB submission.
 
 
@@ -77,6 +94,8 @@ The script produces the following plots:
 * Barcharts showing nucleotide usage at locations in the IMGT-aligned sequence: both across the sequence as a whole, and in more detail at the 3' end
 * A barchart showing usage of the alleles of each J-gene, across the whole genotype. This can be used to identify a suitable J-gene for haplotyping analysis.
 * For each potential J-gene haplotyping candidate, a plot comparing the usage of the two most frequently used alleles of that gene.
+
+The nucleotide usage plots are not produced from IgDiscover output, as aligned V-sequences are not available.
 
 ### Haplotyping
 
@@ -105,6 +124,18 @@ Note that `inferGenotype` will not necessarily include every inferred allele pro
 alleles included in the genotype will be considered by `genotype_statistics.R` because, leaving other considerations aside, no sequences are assigned to other alleles.
 
 TIgGER provides additonal information, including its own plots and statistics We encourage you to take these into consideration, and to upload them as attachments to your submission if they are informative.
+
+### Usage Notes - IgDiscover
+
+Assuming that you have copied the script file to IgDiscover's `final` directory, the following
+commands will download the IMGT reference file and run the analysis:
+
+```
+$ wget -O imgt_ref.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
+$ unzip final.tab.gz
+$ Rscript genotype_statistics.R imgt_ref.fasta Homosapiens database/V.fasta filtered.tab
+```
+
 
 ### Acknowledgements
 

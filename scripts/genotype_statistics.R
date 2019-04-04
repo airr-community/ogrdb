@@ -19,18 +19,25 @@
 #
 # <inferred_filename> Sequences of inferred novel alleles (FASTA format). Use a dash (-) in place of the filename if there are no novel alleles.
 #
-# <filename> - annotated reads in either AIRR or CHANGEO format. The format is detected by the script.
+# Alleles in this file that are also listed in the reference fill will be ignored. Sequences in this file may either be IMGT-gapped or ungapped.
+# Ungapped sequences will be gapped using the closest sequence in the reference as a model
+#
+# <filename> - annotated reads in AIRR, CHANGEO or IgDiscover format. The format is detected by the script.
 #
 # <halplotype-gene> - optional argument. If present, the haplotyping columns will be completed based on the usage of the two most frequent alleles of this J-gene
 #
 # AIRR format files must contain the following columns:
 # sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3
 #
-# Correspondingly, CHANGEO files must contain the following columns:
+# CHANGEO files must contain the following columns:
 #
 # SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT
 #
-# In both file formats, v_call_genotyped/V_CALL_GENOTYPED should contain the V calls made after the subject's genotype has been inferred
+# IgDiscover files must contain the following columns:
+#
+# name, count, V_gene, D_gene, J_gene, CDR3_nt, V_errors
+#
+# In AIRR and CHANGEO file formats, v_call_genotyped/V_CALL_GENOTYPED/V_gene should contain the V calls made after the subject's genotype has been inferred
 # (including calls of the novel alleles)
 #
 # The command creates:
@@ -42,12 +49,16 @@
 
 library(tigger)
 library(alakazam)
-library(tidyr)
-library(dplyr)
 library(stringr)
 library(grid)
 library(gridExtra)
+library(tidyr)
+library(dplyr)
 
+# to install biostrings:
+# source("http://bioconductor.org/biocLite.R")
+# biocLite("Biostrings")
+library("Biostrings")
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -61,15 +72,14 @@ if(length(args) > 3) {
   if(length(args >4)) {
     hap_gene = args[5]
   }
-} else 
-  {   # for R Studio Source
-  work_dir = 'D:/Research/Rubelt twin study/work/TW05A'
+} else {   # for R Studio Source
+  work_dir = 'D:/Research/Rubelt twin study/igdiscover/TW01A/TW01A'
   setwd(work_dir)
   
-  ref_filename = '../../repo/IMGT_REF_GAPPED.fasta'
+  ref_filename = '../../../repo/IMGT_REF_GAPPED.fasta'
   species = 'Homosapiens'
-  inferred_filename = 'TW05A_novel.fasta'
-  filename = 'TW05A_genotyped.tsv'
+  inferred_filename = 'final/database/V.fasta'
+  filename = 'final/filtered.tab'
   hap_gene = 'IGHJ6'
 } 
 
@@ -140,6 +150,53 @@ hasNonImgtGaps <- function (seq) {
   }
 }
 
+# Use a gapped IMGT 'template' to apply gaps to a similar sequence 
+
+insert_at = function(seq, ins, loc) {
+  if(nchar(seq) >= loc-1) {
+    return(paste0(substr(seq, 1, loc-1), ins, substr(seq, loc, nchar(seq))))
+  }
+  
+  
+  return(seq)
+}
+
+apply_gaps = function(seq, tem) {
+  tem = strsplit(tem, '')[[1]]
+  res = seq
+  
+  for(i in 1:length(tem)) {
+    if(tem[i] == '.') {
+      res = insert_at(res, '.', i)    
+    }
+  }
+  return(res)
+}
+
+# Gap an ungapped sequence, using the closest reference gene as a template
+# This is used to IMGT-gap inferred alleles, where the gapped sequence is not available
+# It assumes full-length sequences and no change in CDR lengths.
+
+imgt_gap = function(seq, name, ref_genes) {
+
+  # Do we need to gap?
+  if(grepl('.', seq, fixed=TRUE))
+    return(seq)
+  
+  # Find the closest reference gene
+  r = data.frame(GENE=names(ref_genes),SEQ=ref_genes, stringsAsFactors = F)
+  r$SEQ = sapply(r$SEQ,str_replace_all,pattern='\\.',replacement='')
+  r$dist=sapply(r$SEQ, pairwiseAlignment, subject=seq, scoreOnly=T)
+  r = r[order(r$dist, decreasing=T),]
+
+  # Gap the sequence
+  tem = ref_genes[r[1,]$GENE]
+  gapped = apply_gaps(seq, tem)
+  cat(paste0('Inferred gene ', name, ' gapped using ', r[1,]$GENE, ': ', gapped,'\n'))
+  return(gapped)
+}
+
+
 # Compare two IMGT gapped sequences and find AA mutations
 getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name) {
   if (grepl("N", ref_imgt)) {
@@ -207,14 +264,26 @@ if('sequence_id' %in% names(s))
 {
   # airr format - convert wanted fields to changeo
   
-  wanted_cols = c('sequence_id', 'v_call_genotyped', 'd_call', 'j_call', 'sequence_alignment', 'cdr3')
   col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
-  
   s = select(seqs, sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3)
+  names(s) = col_names 
+} else if('V_gene' %in% names(s)) {
+  # IgDiscover format
+  s = uncount(s, count)
+  
+  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC')
+  s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors)
   names(s) = col_names 
 }
 
-s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT )
+if('SEQUENCE_IMGT' %in% names(s)) {
+  s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT )
+}
+
+if('SEQUENCE_UNGAPPED' %in% names(s)) {
+  s$SEQUENCE_UNGAPPED = toupper(s$SEQUENCE_UNGAPPED )
+}
+
 s$CDR3_IMGT = toupper(s$CDR3_IMGT)
 
 # get the reference set
@@ -224,6 +293,7 @@ ref_genes = readIgFasta(ref_filename, strip_down_name =F)
 # process IMGT library, if header is in corresponding format
 if(grepl('|', names(ref_genes)[1], fixed=T)) {
   ref_genes = ref_genes[grepl(species, names(ref_genes),fixed=T)]
+  ref_genes = ref_genes[grepl('IGHV', names(ref_genes),fixed=T)]
   
   gene_name = function(full_name) {
     return(strsplit(full_name, '|', fixed=T)[[1]][2])
@@ -249,6 +319,9 @@ if(inferred_filename != '-') {
   inferred_seqs = c()
 }
 
+inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
+inferred_seqs = sapply(inferred_seqs, imgt_gap, name=names(inferred_seqs), ref_genes=ref_genes)
+
 genotype_alleles = unique(s$V_CALL_GENOTYPED)
 
 # Warn if we don't have genotype statistics for any of the inferred alleles
@@ -273,7 +346,11 @@ if(any(is.na(genotype_db))) {
 }
 
 # unmutated count for each allele
-s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT, s$V_CALL_GENOTYPED, genotype_db))
+
+if(!('V_MUT_NC' %in% names(s))) {
+  s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT, s$V_CALL_GENOTYPED, genotype_db))
+}
+
 s0 = s[s$V_MUT_NC == 0,]
 genotype = s0 %>% group_by(V_CALL_GENOTYPED) %>% summarize(unmutated_sequences = n())
 
@@ -314,6 +391,7 @@ if (length(inferred_seqs) == 0) {
   genotype$reference_nt_diffs = NA
   genotype$reference_aa_difference = NA
   genotype$reference_aa_subs = NA
+  genotype$host_difference = NA
 } else {
   nearest_ref = data.frame(t(sapply(seq_along(inferred_seqs), find_nearest, ref_genes=ref_genes, prefix='reference', inferred_seqs=inferred_seqs)))
   nearest_ref$V_CALL_GENOTYPED = names(inferred_seqs)
@@ -324,9 +402,10 @@ if (length(inferred_seqs) == 0) {
   genotype = merge(genotype, nearest_ref, by='V_CALL_GENOTYPED', all.x=T)
 }
 
+
 genotype$nt_sequence = sapply(genotype$V_CALL_GENOTYPED, function(x) genotype_db[x][[1]])
 
-genotype = rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=reference_closest, closest_host=host_closest, 
+genotype = dplyr::rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=reference_closest, closest_host=host_closest, 
                    nt_diff=reference_difference, nt_diff_host=host_difference, nt_substitutions=reference_nt_diffs, aa_diff=reference_aa_difference,
                    aa_substitutions=reference_aa_subs)
 
@@ -411,6 +490,7 @@ label_nuc = function(pos, ref) {
 
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
+# if pos is negative, SEQUENCE_IMGT contains a certain number of trailing nucleotides. Plot them all.
 plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_pos=999) {
   max_pos = nchar(gene_sequences[gene_name])
   
@@ -419,6 +499,7 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   }
   
   max_pos = min(max_pos, end_pos)
+  min_pos = max(pos, 1)
   
   recs = strsplit(s[s$V_CALL_GENOTYPED==gene_name,]$SEQUENCE_IMGT, "")
   
@@ -427,7 +508,7 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   }
   
   ref = strsplit(gene_sequences[gene_name], "")
-  x = do.call('rbind', lapply(seq(pos,max_pos), nucs_at, seqs=recs, filter=filter))
+  x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
 
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
            geom_bar(stat="count") +
@@ -446,15 +527,17 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   return(ggplotGrob(g))
 }
 
-end_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=313, filter=T)
-end_composition_grobs = end_composition_grobs[!is.na(end_composition_grobs)]
+if('SEQUENCE_IMGT' %in% names(s)) {
+  end_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=313, filter=T)
+  end_composition_grobs = end_composition_grobs[!is.na(end_composition_grobs)]
 
-whole_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
-whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
+  whole_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
+  whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
 
-# uncomment to sample an additional region - also uncomment line around 512
-#snap_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=210, end_pos=230, filter=F)
-#snap_composition_grobs = snap_composition_grobs[!is.na(snap_composition_grobs)]
+  # uncomment to sample an additional region - also uncomment line around 512
+  #snap_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=210, end_pos=230, filter=F)
+  #snap_composition_grobs = snap_composition_grobs[!is.na(snap_composition_grobs)]
+}
 
 # J-allele usage and haplotype plots
 
@@ -527,9 +610,11 @@ haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
 
 # Save all graphics to plot file
 
-x=pdf(paste0(file_prefix, '_ogrdb_plots.pdf'), width=210/25,height=297/25)  
-x=print(marrangeGrob(end_composition_grobs, nrow=3, ncol=2,top=NULL))
-x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+x=pdf(paste0(file_prefix, '_ogrdb_plots.pdf'), width=210/25,height=297/25) 
+if('SEQUENCE_IMGT' %in% names(s)) {
+  x=print(marrangeGrob(end_composition_grobs, nrow=3, ncol=2,top=NULL))
+  x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+} 
 x = print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
 #x=print(marrangeGrob(snap_composition_grobs, nrow=3, ncol=1,top=NULL))
 grid.arrange(j_allele_plot)
