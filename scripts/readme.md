@@ -25,6 +25,7 @@ The use of the script with various tools is described at the end of this file.
 ### Prerequisites
 
 *Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
+*Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
 
 * Sequences must correspond exactly to those used by the tool.
 * They must be IMGT-aligned
@@ -60,9 +61,10 @@ The following librfaries are required: `tigger, alakazam, tidyr, dplyr, stringr,
 With the exception of Biostrings, they may be installed using the R function `install.packages`. For Biostrings,
 use the following commands from within R:
 
-> source("http://bioconductor.org/biocLite.R")<br>
-> biocLite("Biostrings")
-
+```
+source("http://bioconductor.org/biocLite.R")<br>
+biocLite("Biostrings")
+```
 
 ### Usage
 
@@ -105,14 +107,18 @@ will be appropriately populated.
 
 ### Example
 
-To complete an analysis using the supplied example file, please [download](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP) 
-the IMGT germline file and name it IMGT_REF_GAPPED.fasta. Then run the command
+To complete an analysis using the supplied example file and a downloaded IMGT reference file, run the following commands:
 
-> Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
+```angular2
+wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
+Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
+``` 
+
+### Usage Notes
+
+Usage notes are indicative only and are not intended to discount other approaches. Notes for other tools will follow.
 
 ### Usage Notes - TIgGER
-
-These notes are indicative only and are not intended to discount other approaches. Notes for other tools will follow.
 
 
 * Use `findNovelAlleles` to identify novel alleles in a Change-O-formatted data set. Write these to a FASTA file. 
@@ -127,13 +133,13 @@ TIgGER provides additonal information, including its own plots and statistics We
 
 ### Usage Notes - IgDiscover
 
-Assuming that you have copied the script file to IgDiscover's `final` directory, the following
+Assuming that you have copied the script file to IgDiscover's `final` directory following an IgDiscover run, the following
 commands will download the IMGT reference file and run the analysis:
 
 ```
-$ wget -O imgt_ref.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
+$ wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
 $ unzip final.tab.gz
-$ Rscript genotype_statistics.R imgt_ref.fasta Homosapiens database/V.fasta filtered.tab
+$ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fasta filtered.tab
 ```
 
 
