@@ -44,13 +44,13 @@ inference tools that do not write the inferred sequences to a separate file.
 
 *Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in MiAIRR, CHANGEO or IgDiscover format.*
 
-* The format will be determined automatically by the tool.
+* The format will be determined automatically by the script.
 * AIRR format files must contain at least the following columns:
 `sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`
 * CHANGEO files must contain at least the following columns:
 `SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`
 * In both file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
-(including calls of the novel alleles)
+(including calls of the novel alleles). Sequences should be IMGT-aligned.
 * For IgDiscover, the file 'final/filtered.tab' should be used.
 
 *R libraries*
