@@ -17,7 +17,7 @@ inferences is widened.
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
 of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
-([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the filee and report to assess the quality of 
+([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
 any inferred genotype, even if you don't wish to submit it to OGRDB.
 
 The use of the script with specific inference tools is described at the end of this file. 
@@ -29,7 +29,7 @@ The use of the script with specific inference tools is described at the end of t
 * Sequences must correspond exactly to those used by the tool.
 * They must be IMGT-aligned
 * The header can either be in IMGT's germline library format, or simply consist of the allele name
-* The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP)
+* The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP)
   and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes from time to time, please make sure that 
   the same version is used by the inference tool and by this script.
 
@@ -109,7 +109,7 @@ will be appropriately populated.
 To complete an analysis using the supplied example file and a downloaded IMGT reference file, run the following commands:
 
 ```angular2
-wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
+wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP
 Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
 ``` 
 
@@ -136,7 +136,7 @@ Assuming that you have copied the script file to IgDiscover's `final` directory 
 commands will download the IMGT reference file and run the analysis:
 
 ```
-$ wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithoutGaps-F+ORF+inframeP
+$ wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP
 $ unzip final.tab.gz
 $ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fasta filtered.tab
 ```
