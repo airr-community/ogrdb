@@ -73,7 +73,7 @@ if(length(args) > 3) {
     hap_gene = args[5]
   }
 } else {   # for R Studio Source
-  work_dir = 'D:/Research/Rubelt twin study/igdiscover/TW01A/TW01A'
+  work_dir = 'D:/Research/Rubelt twin study/igdiscover/TW05B/TW05B'
   setwd(work_dir)
   
   ref_filename = '../../../repo/IMGT_REF_GAPPED.fasta'
@@ -177,22 +177,22 @@ apply_gaps = function(seq, tem) {
 # This is used to IMGT-gap inferred alleles, where the gapped sequence is not available
 # It assumes full-length sequences and no change in CDR lengths.
 
-imgt_gap = function(seq, name, ref_genes) {
+imgt_gap = function(seqname, seqs, ref_genes) {
 
   # Do we need to gap?
-  if(grepl('.', seq, fixed=TRUE))
-    return(seq)
+  if(grepl('.', seqs[seqname], fixed=TRUE))
+    return(seqs[seqname])
   
   # Find the closest reference gene
   r = data.frame(GENE=names(ref_genes),SEQ=ref_genes, stringsAsFactors = F)
   r$SEQ = sapply(r$SEQ,str_replace_all,pattern='\\.',replacement='')
-  r$dist=sapply(r$SEQ, pairwiseAlignment, subject=seq, scoreOnly=T)
+  r$dist=sapply(r$SEQ, pairwiseAlignment, subject=seqs[seqname], scoreOnly=T)
   r = r[order(r$dist, decreasing=T),]
 
   # Gap the sequence
   tem = ref_genes[r[1,]$GENE]
-  gapped = apply_gaps(seq, tem)
-  cat(paste0('Inferred gene ', name, ' gapped using ', r[1,]$GENE, ': ', gapped,'\n'))
+  gapped = apply_gaps(seqs[seqname], tem)
+  cat(paste0('Inferred gene ', seqname, ' gapped using ', r[1,]$GENE, ': ', gapped,'\n'))
   return(gapped)
 }
 
@@ -320,7 +320,7 @@ if(inferred_filename != '-') {
 }
 
 inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
-inferred_seqs = sapply(inferred_seqs, imgt_gap, name=names(inferred_seqs), ref_genes=ref_genes)
+inferred_seqs = sapply(names(inferred_seqs), imgt_gap, seqs=inferred_seqs, ref_genes=ref_genes)
 
 genotype_alleles = unique(s$V_CALL_GENOTYPED)
 
