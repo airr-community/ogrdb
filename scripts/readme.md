@@ -17,14 +17,13 @@ inferences is widened.
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
 of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
-([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the genotype and report to assess the quality of 
+([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the filee and report to assess the quality of 
 any inferred genotype, even if you don't wish to submit it to OGRDB.
 
-The use of the script with various tools is described at the end of this file.
+The use of the script with specific inference tools is described at the end of this file. 
 
 ### Prerequisites
 
-*Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
 *Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
 
 * Sequences must correspond exactly to those used by the tool.
@@ -56,13 +55,13 @@ inference tools that do not write the inferred sequences to a separate file.
 
 *R libraries*
 
-The following librfaries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings`
+The following libraries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings`
 
 With the exception of Biostrings, they may be installed using the R function `install.packages`. For Biostrings,
 use the following commands from within R:
 
 ```
-source("http://bioconductor.org/biocLite.R")<br>
+source("http://bioconductor.org/biocLite.R")
 biocLite("Biostrings")
 ```
 
@@ -84,7 +83,7 @@ it should contain the species name used in field 3 of the header, with spaces re
 * `<read_file>_ogrdb_report.csv` - the Genotype File ready to be uploaded to OGRDB.
 * `<read_file>_ogrdb_plots.csv` - plots (see next section for details). 
 
-Note that the read_file name is used as a prefix on the output files. They will be written to the directory containing the read file.
+Note that the read_file name is used as a prefix to the output file names. They will be written to the directory containing the read file.
 
 Please upload the plots file as an attachment to the Notes section of your OGRDB submission.
 

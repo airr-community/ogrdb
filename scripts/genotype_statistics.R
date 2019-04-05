@@ -269,7 +269,7 @@ if('sequence_id' %in% names(s))
   names(s) = col_names 
 } else if('V_gene' %in% names(s)) {
   # IgDiscover format
-  s = uncount(s, count)
+#  s = uncount(s, count)  for consistency with IgDiscover results, count each unique record in the file only once, regardless of 'count'
   
   col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC')
   s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors)
@@ -440,9 +440,9 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   recs = s[s$V_CALL_GENOTYPED==allele,]
   recs = recs[recs$V_MUT_NC < 21,]
 
-  label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches\n',
-                      g$unique_cdr3s, ' unique CDR3\n',
-                      g$unique_js, ' unique J')
+  label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
+                      g$unique_cdr3s_unmutated, ' unique CDR3\n',
+                      g$unique_js_unmutated, ' unique J')
   
   g = ggplot(data=recs, aes(x=V_MUT_NC)) + 
     geom_bar(width=1.0) +
