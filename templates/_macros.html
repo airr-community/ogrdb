@@ -45,7 +45,7 @@
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-6 col-sm-offset-3 red">
+            <div class="col-sm-6 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>
@@ -71,7 +71,7 @@
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-2 col-sm-offset-3 red">
+            <div class="col-sm-2 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>
@@ -97,7 +97,7 @@
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-9 col-sm-offset-2 red">
+            <div class="col-sm-9 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>

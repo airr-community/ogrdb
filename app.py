@@ -49,6 +49,10 @@ attach_path = app.config['ATTACHPATH'] + '/'
 if not isdir(attach_path):
     mkdir(attach_path)
 
+user_attach_path = attach_path + 'user/'
+if not isdir(user_attach_path):
+    mkdir(user_attach_path)
+
 db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
 #db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
@@ -1732,7 +1736,22 @@ def genotype_statistics():
 
     if request.method == 'POST':
         if form.validate():
-            tables = setup_gene_stats_tables(form.species.data, form.locus.data, form.sequence_type.data, form.freq_threshold.data, form.occ_threshold.data)
-            return render_template('genotype_statistics.html', form=form, tables=tables)
+            tables = setup_gene_stats_tables(form)
+            if current_user.is_authenticated:
+                with open(user_attach_path + '%05d' % current_user.id, 'w', newline='') as fo:
+                    fo.write(tables['raw'])
+                tables['raw'] = ''
+            return render_template('genotype_statistics.html', form=form, tables=tables, logged_in=current_user.is_authenticated)
 
     return render_template('genotype_statistics.html', form=form, tables=None)
+
+@app.route('/download_userfile/<filename>')
+@login_required
+def download_userfile(filename):
+    try:
+        with open(user_attach_path + '%05d' % current_user.id) as fi:
+            return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+    except:
+        flash('File not found')
+
+    return redirect('/')
