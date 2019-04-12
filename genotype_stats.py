@@ -149,6 +149,7 @@ def generate_stats(form):
         for gen in desc.genotypes:
             if gen.sequence_id in stats \
               and (gen.allelic_percentage is None or gen.allelic_percentage==0 or gen.allelic_percentage >= form.allelic_threshold.data) \
+              and (gen.assigned_unmutated_frequency is None or gen.assigned_unmutated_frequency >= form.assigned_unmutated_threshold.data) \
               and (gen.unmutated_frequency is not None and gen.unmutated_frequency >= gene_thresh[gen.sequence_id]):
                 stats[gen.sequence_id]['occurrences'] += 1
                 stats[gen.sequence_id]['unmutated_freq'].append(gen.unmutated_frequency)

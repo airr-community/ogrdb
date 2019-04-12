@@ -14,8 +14,9 @@
 
                 <h4>Purpose</h4>
 
-                <p >This report provides a summary of the reference genes (determined from the IMGT germline library) that have
-                    been identified in genotypes submitted to OGRDB. Only genotypes from which one or more sequences have been affirmed are included.</p>
+                <p >This report lists the number of times that each alelle in the IMGT germline library has been identified
+                in genotypes submitted to OGRDB. Currently only genotypes from which inferred sequences have been affirmed are included.
+                Filtering criteria may be used to remove low-confidence observations. Default settings are suggested by IARC.</p>
 
                 <h4>Species and locus for which the report should be created. </h4>
 
@@ -23,14 +24,19 @@
                 {{ render_field_with_errors(form.locus, class="form-control") }}
                 {{ render_field_with_errors(form.sequence_type, class="form-control") }}
 
-                <h4>Screening Criteria</h4>
-                <p>These criteria are applied to each gene in the available genomes, to determine whether they should be included in the table.</p>
+                <p >An allele is counted as being present in a genotype if it meets the following criteria:</p>
 
-                <p>General criteria determining which genes shoud be counted:</p>
+                <h4>Within-Allele Critera</h4>
+                <p>The allele's sequence count must meet the following thresholds:</p>
+
                 {{ render_field_with_errors(form.allelic_threshold, class="form-control") }}
-                {{ render_narrow_field_with_errors(form.sig_test, class="checkbox") }}
+                {{ render_narrow_field_with_errors(form.assigned_unmutated_threshold, class="checkbox") }}
 
-                <h4>Frequency criteria:</h4>
+                <h4>Within-Genotype Criteria</h4>
+
+                <p>The allele's frequency in the genotype as a whole must meet the following threhold.
+                Allowances can be made for groups of alleles that are known to be present at lower levels:</p>
+
                 {{ render_field_with_errors(form.freq_threshold, class="form-control") }}
                 {{ render_field_with_errors(form.rare_genes, class="form-control") }}
                 {{ render_field_with_errors(form.rare_threshold, class="form-control") }}
@@ -45,13 +51,13 @@
                     <row class="col-sm-10 col-sm-offset-1">
                     {% if logged_in %}
                         <p>You can <a href={{  url_for('download_userfile', filename='genotype_stats.csv')}}>Download</a>
-                            a file listing usage frequency per genotype. The file is filtered to exclude any counts that do not
-                            achieve the minimum allelic percentage you have specified, but contains all usage frequencies regardless of the
-                            filters established above.</p>
+                            a file listing usage frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
+                            but contains all usage frequencies regardless of the Within-Genotype Criteria.</p>
                     {% else %}
-                        <p>Registered users can download a file listing usage in each genotype. Please create an account and log in if you would like to do this.</p>
+                        <p>Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}">log in</a> or <a href="{{ url_for_security('login') }}">log in</a> if you would like to do this.</p>
                     {% endif %}
                         {% if tables['gene_table'] %}
+                            <p>Compiling data from {{ tables['count'] }} published genotypes:</p>
                             {{ tables['gene_table'] }}
                         {% else %}
                             <p>No genotypes were found for that species and locus.</p>
