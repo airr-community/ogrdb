@@ -34,8 +34,9 @@
 
                 <h4>Within-Genotype Criteria</h4>
 
-                <p>The allele's frequency in the genotype as a whole must meet the following threhold.
-                Allowances can be made for groups of alleles that are known to be present at lower levels:</p>
+                <p>Considering all sequences in the genotype that are unmutated compared to their corresponding allele, the proportion
+                    assigned to this allele, expressed as a percentage, must exceed the threshold below.
+                Allowances can be made for groups of alleles that are known generally to be present at lower levels:</p>
 
                 {{ render_field_with_errors(form.freq_threshold, class="form-control") }}
                 {{ render_field_with_errors(form.rare_genes, class="form-control") }}
@@ -51,7 +52,7 @@
                     <row class="col-sm-10 col-sm-offset-1">
                     {% if logged_in %}
                         <p>You can <a href={{  url_for('download_userfile', filename='genotype_stats.csv')}}>Download</a>
-                            a file listing usage frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
+                            a file listing unmutated frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
                             but contains all usage frequencies regardless of the Within-Genotype Criteria.</p>
                     {% else %}
                         <p>Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}">log in</a> or <a href="{{ url_for_security('login') }}">log in</a> if you would like to do this.</p>
