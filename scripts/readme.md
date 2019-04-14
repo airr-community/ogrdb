@@ -141,6 +141,50 @@ $ unzip final.tab.gz
 $ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fasta filtered.tab
 ```
 
+### Usage Notes - partis
+
+Partis normally produces annotation results in YAML format. The R YAML parser was not able to process the size of file produced from a typical annotation run. 
+Partis is capable of providing IMGT-aligned sequences, which are required by genotype_statistics.R, but these are only
+provided in 'presto-output' mode, which is missing other information required by the script: in particular the V-gene sequences of inferred alleles. A python script,
+convert_partis.py, is therefore provided. This will combine output from partis's yaml and presto annotations, producing
+CHANGEO format annotations and a FASTA file of genotype V-sequences. These files can then passed to generate_statistics.R.
+convert_partis.py is written in python 2.7 for compatibility with partis, and can be run from the command line in the same virtual 
+environment.
+
+Usage of convert_partis.py:
+
+```
+python convert_partis.py [-h] partis_yaml partis_tsv ogrdb_recs ogrdb_vs
+
+positional arguments:
+  partis_yaml  .yaml file created by partis
+  partis_tsv   .tsv file created by partis
+  ogrdb_recs   annotation output file (.tsv)
+  ogrdb_vs     v_gene sequences (.fasta)
+
+optional arguments:
+  -h, --help   show this help message and exit
+```
+
+Although partis must be run twice - once without the presto-output option, and once with it - it will use cached information 
+provided other parameters remain the same, so that the overall impact on run time is low. Typical processing steps are shown below.
+Note that --presto-output requires an IMGT-gapped V-gene germline file. This can be extracted from the full germline library downloaded
+from IMGT, but partis will report as an error any duplicated identical sequences: duplicates must be removed from the file
+before processing will complete successfully.
+
+```
+# Run partis to produce annotations in YAML format
+partis annotate --extra-annotation-columns cdr3_seqs:invalid:in_frames:stops --infname TW01A.fasta --outfname TW01A.yaml --n-procs 5
+# Run partis again with additional --presto-output option. This will produce TSV-formatted output from cached data
+partis annotate --extra-annotation-columns cdr3_seqs:invalid:in_frames:stops --infname TW01A.fasta --outfname TW01A.tsv --presto-output \
+ --aligned-germline-fname IMGT_REF_GAPPED_DEDUPED.fasta --n-procs 5
+# Extract and merge required information from YAML and TSV files
+python convert_partis.py TW01A.yaml TW01A.tsv TW01A_OGRDB.tsv TW01A_V_OGRDB.fasta
+# Process the resulting output to produce the genotye file and plots
+Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TW01A_V_OGRDB.fasta TW01A_OGRDB.tsv
+
+```
+
 
 ### Acknowledgements
 

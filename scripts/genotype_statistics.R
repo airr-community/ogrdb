@@ -73,13 +73,13 @@ if(length(args) > 3) {
     hap_gene = args[5]
   }
 } else {   # for R Studio Source
-  work_dir = 'D:/Research/Rubelt twin study/igdiscover/TW05B/TW05B'
+  work_dir = 'D:/Research/partis/TW02A'
   setwd(work_dir)
   
-  ref_filename = '../../../repo/IMGT_REF_GAPPED.fasta'
+  ref_filename = '../../Rubelt twin study/repo/IMGT_REF_GAPPED.fasta'
   species = 'Homosapiens'
-  inferred_filename = 'final/database/V.fasta'
-  filename = 'final/filtered.tab'
+  inferred_filename = 'TW02A_V_OGRDB.fasta'
+  filename = 'TW02A_OGRDB.tsv'
   hap_gene = 'IGHJ6'
 } 
 
@@ -173,11 +173,44 @@ apply_gaps = function(seq, tem) {
   return(res)
 }
 
-# Gap an ungapped sequence, using the closest reference gene as a template
-# This is used to IMGT-gap inferred alleles, where the gapped sequence is not available
-# It assumes full-length sequences and no change in CDR lengths.
+# Gap an ungapped sequence, using the nominated reference v_gene as template
+# This is used where the inference tool does not provide imgt-aligned sequences.
+# It will not handle indels, but it will try to spot them and set the aligned sequence to NA
+# junction_start is the location of the first nucleotide of the cysteine preceding the CRD3
+# this is location 310 in the IMGT numbering scheme
+imgt_gap = function(sequence, cdr3_sequence, junction_start, ref_gene) {
+  # Find the cdr3_start in the un-aligned reference gene
+  ref_junction_start = 310 - (nchar(ref_gene) - nchar(gsub('.', '', ref_gene, fixed=T)))
+  
+  # Trim or pad this sequence to match the unaligned ref gene
+  if(junction_start < ref_junction_start) {
+    pad = strrep('-', ref_junction_start - junction_start)
+    sequence = paste0(pad, sequence)
+  } else if(junction_start > ref_junction_start) {
+    chop = junction_start - ref_junction_start
+    sequence = substring(sequence, chop+1)
+  }
+  
+  gapped = apply_gaps(sequence, ref_gene)
+  
+  # if the alignment is correct, the cdr3 should start at location 313
+  # if it doesn't, the sequence probably has indels - set the alignment to NA
+  # Ideally we would check CDR1 as well, but as partis doesn't give us CDR1...
+  
+  aligned_cdr3 = substring(gapped, 313, 313+nchar(cdr3_sequence)-1)
+  
+  if(cdr3_sequence != aligned_cdr3) {
+    gapped = NA
+  }
+  
+  return(gapped)
+}
 
-imgt_gap = function(seqname, seqs, ref_genes) {
+# Gap an ungapped inferred germline sequence, using the closest reference gene as a template
+# This is used to IMGT-gap inferred alleles, where the gapped sequence is not available
+# It assumes full-length sequences and no indels.
+
+imgt_gap_inferred = function(seqname, seqs, ref_genes) {
 
   # Do we need to gap?
   if(grepl('.', seqs[seqname], fixed=TRUE))
@@ -257,35 +290,6 @@ find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs) {
   return(l)
 }
 
-
-s = read.delim(filename, stringsAsFactors=F)
-
-if('sequence_id' %in% names(s))
-{
-  # airr format - convert wanted fields to changeo
-  
-  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
-  s = select(seqs, sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3)
-  names(s) = col_names 
-} else if('V_gene' %in% names(s)) {
-  # IgDiscover format
-#  s = uncount(s, count)  for consistency with IgDiscover results, count each unique record in the file only once, regardless of 'count'
-  
-  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC')
-  s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors)
-  names(s) = col_names 
-}
-
-if('SEQUENCE_IMGT' %in% names(s)) {
-  s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT )
-}
-
-if('SEQUENCE_UNGAPPED' %in% names(s)) {
-  s$SEQUENCE_UNGAPPED = toupper(s$SEQUENCE_UNGAPPED )
-}
-
-s$CDR3_IMGT = toupper(s$CDR3_IMGT)
-
 # get the reference set
 
 ref_genes = readIgFasta(ref_filename, strip_down_name =F)
@@ -303,14 +307,6 @@ if(grepl('|', names(ref_genes)[1], fixed=T)) {
 names(ref_genes) = sapply(names(ref_genes), gene_name)
 ref_genes = ref_genes[grepl('IGHV|IGHJ|IGHD', names(ref_genes))]
 
-
-#remove sequences with ambiguous V-calls
-
-s = s[!grepl(',', s$V_CALL_GENOTYPED),]
-
-# remove sequences with ambiguous nucleotide calls
-#s = s[!grepl('[nN]', s$SEQUENCE_IMGT),]
-
 # get the genotype and novel alleles in this set
 
 if(inferred_filename != '-') {
@@ -319,14 +315,44 @@ if(inferred_filename != '-') {
   inferred_seqs = c()
 }
 
-inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
-inferred_seqs = sapply(names(inferred_seqs), imgt_gap, seqs=inferred_seqs, ref_genes=ref_genes)
+# ignore inferred genes that are listed in the reference. gap any that aren't already gapped.
 
-genotype_alleles = unique(s$V_CALL_GENOTYPED)
+inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
+inferred_seqs = sapply(names(inferred_seqs), imgt_gap_inferred, seqs=inferred_seqs, ref_genes=ref_genes)
+
+
+# Read the sequences
+
+s = read.delim(filename, stringsAsFactors=F)
+
+if('sequence_id' %in% names(s))
+{
+  # airr format - convert wanted fields to changeo
+  
+  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
+  s = select(seqs, sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3)
+  names(s) = col_names 
+} else if('V_gene' %in% names(s)) {
+  # IgDiscover format
+  #  s = uncount(s, count)  for consistency with IgDiscover results, count each unique record in the file only once, regardless of 'count'
+  
+  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NCI', 'SEQUENCE', 'JUNCTION_START')
+  s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors, VDJ_nt, V_CDR3_start)
+  names(s) = col_names 
+  # adjust IgDiscover's V_CDR3_START to the 1- based location of the conserved cysteine
+  s$JUNCTION_START = s$JUNCTION_START - 2
+  s$SEQUENCE = toupper(s$SEQUENCE)
+}
+
+#remove sequences with ambiguous V-calls
+
+s = s[!grepl(',', s$V_CALL_GENOTYPED),]
+
 
 # Warn if we don't have genotype statistics for any of the inferred alleles
 # this can happen, for example, with Tigger, if novel alleles are detected but do not pass subsequent criteria for being included in the genotype.
 
+genotype_alleles = unique(s$V_CALL_GENOTYPED)
 missing = inferred_seqs[!(names(inferred_seqs) %in% genotype_alleles)]
 
 if(length(missing) >= 1) {
@@ -338,6 +364,10 @@ genotype_alleles = genotype_alleles[!(genotype_alleles %in% names(inferred_seqs)
 genotype_seqs = lapply(genotype_alleles, function(x) {ref_genes[x]})
 genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, names(inferred_seqs)))
 
+
+s$CDR3_IMGT = toupper(s$CDR3_IMGT)
+
+
 # Check we have sequences for all alleles named in the reads - either from the reference set or from the inferred sequences
 # otherwise - one of these two is incomplete!
 
@@ -345,10 +375,30 @@ if(any(is.na(genotype_db))) {
   stop(paste0("Sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file."))
 }
 
+# gap the sequences if necessary
+
+find_template = function(v_call) {
+  tem = ref_genes[v_call]
+  if(is.na(tem))
+    tem = inferred_seqs[v_call]
+  
+  return(tem)
+}
+
+if(!('SEQUENCE_IMGT' %in% names(s))) {
+  s$SEQUENCE_REF_IMGT = sapply(s$V_CALL_GENOTYPED, find_template)
+  s$SEQUENCE_IMGT = mapply(imgt_gap, s$SEQUENCE,s$CDR3_IMGT, s$JUNCTION_START, s$SEQUENCE_REF_IMGT)
+}
+
+s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT)
+
+
 # unmutated count for each allele
 
 if(!('V_MUT_NC' %in% names(s))) {
-  s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT, s$V_CALL_GENOTYPED, genotype_db))
+  # We take the count up to the 2nd CYS at 310 since we don't have details of junction decomposition
+  s$SEQUENCE_IMGT_TRUNC = sapply(s$SEQUENCE_IMGT, substring, first=1, last=309)
+  s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT_TRUNC, s$V_CALL_GENOTYPED, genotype_db))
 }
 
 s0 = s[s$V_MUT_NC == 0,]
@@ -440,6 +490,10 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   recs = s[s$V_CALL_GENOTYPED==allele,]
   recs = recs[recs$V_MUT_NC < 21,]
 
+  if(nrow(recs) == 0) {
+    return(NA)
+  }
+  
   label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
                       g$unique_cdr3s_unmutated, ' unique CDR3\n',
                       g$unique_js_unmutated, ' unique J')
@@ -458,6 +512,7 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
 }
 
 barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
 # nucleotide composition plots for novel alleles
 
@@ -612,10 +667,18 @@ haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
 
 x=pdf(paste0(file_prefix, '_ogrdb_plots.pdf'), width=210/25,height=297/25) 
 if('SEQUENCE_IMGT' %in% names(s)) {
-  x=print(marrangeGrob(end_composition_grobs, nrow=3, ncol=2,top=NULL))
-  x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+  if(length(end_composition_grobs) > 0) {
+    x=print(marrangeGrob(end_composition_grobs, nrow=3, ncol=2,top=NULL))
+  }
+  if(length(whole_composition_grobs) > 0) {
+    x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+  }
 } 
-x = print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
+
+if(length(barplot_grobs) > 0) {
+  x = print(marrangeGrob(barplot_grobs, nrow=3, ncol=3,top=NULL))
+}
+
 #x=print(marrangeGrob(snap_composition_grobs, nrow=3, ncol=1,top=NULL))
 grid.arrange(j_allele_plot)
 x=print(marrangeGrob(haplo_grobs, nrow=1, ncol=1,top=NULL))
