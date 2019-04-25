@@ -168,8 +168,9 @@ optional arguments:
 Although partis must be run twice - once without the presto-output option, and once with it - it will use cached information 
 provided other parameters remain the same, so that the overall impact on run time is low. Typical processing steps are shown below.
 Note that --presto-output requires an IMGT-gapped V-gene germline file. This can be extracted from the full germline library downloaded
-from IMGT (see 'Prerequisites above), but partis will report as an error any duplicated identical sequences: duplicates must be removed from the file
-before processing will complete successfully.
+from IMGT (see 'Prerequisites' above), but partis will report as an error any duplicated identical sequences: duplicates must be removed from the file
+before processing will complete successfully. Note in the examples below the --extra-annotations option. The CDR3 is
+required by generate_statistics.R: the other fields are included for reference.
 
 ```
 # Run partis to produce annotations in YAML format
