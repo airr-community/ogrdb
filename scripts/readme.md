@@ -157,7 +157,7 @@ python convert_partis.py [-h] partis_yaml partis_tsv ogrdb_recs ogrdb_vs
 
 positional arguments:
   partis_yaml  .yaml file created by partis
-  partis_tsv   .tsv file created by partis
+  partis_tsv   .tsv file created by partis presto-output mode
   ogrdb_recs   annotation output file (.tsv)
   ogrdb_vs     v_gene sequences (.fasta)
 
