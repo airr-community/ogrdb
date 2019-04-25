@@ -143,10 +143,9 @@ $ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fas
 
 ### Usage Notes - partis
 
-Partis normally produces annotation results in YAML format. The R YAML parser was not able to process the size of file produced from a typical annotation run. 
-Partis is capable of providing IMGT-aligned sequences, which are required by genotype_statistics.R, but these are only
-provided in 'presto-output' mode, which is missing other information required by the script: in particular the V-gene sequences of inferred alleles. A python script,
-convert_partis.py, is therefore provided. This will combine output from partis's yaml and presto annotations, producing
+The information required by generate_statstics.R is split between partis's normal YAML output and that provided by 
+the 'presto-output' mode. A python script,
+convert_partis.py, is is provided here. This will combine output from partis's yaml and presto annotations, producing
 CHANGEO format annotations and a FASTA file of genotype V-sequences. These files can then passed to generate_statistics.R.
 convert_partis.py is written in python 2.7 for compatibility with partis, and can be run from the command line in the same virtual 
 environment.
@@ -169,7 +168,7 @@ optional arguments:
 Although partis must be run twice - once without the presto-output option, and once with it - it will use cached information 
 provided other parameters remain the same, so that the overall impact on run time is low. Typical processing steps are shown below.
 Note that --presto-output requires an IMGT-gapped V-gene germline file. This can be extracted from the full germline library downloaded
-from IMGT, but partis will report as an error any duplicated identical sequences: duplicates must be removed from the file
+from IMGT (see 'Prerequisites above), but partis will report as an error any duplicated identical sequences: duplicates must be removed from the file
 before processing will complete successfully.
 
 ```
