@@ -43,13 +43,14 @@ class InferredSequenceTableMatchCol(StyledCol):
 
 class SubLinkCol(StyledCol):
     def td_format(self, content):
-        return Markup('<a href="%s" class="btn btn-xs text-info icon_back">%s</span>&nbsp;</a>'  % (url_for('submission', id=content), content))
+        return Markup('<a href="%s">%s</span>&nbsp;</a>'  % (url_for('submission', id=content), content))
 
 class InferredSequenceTable(StyledTable):
     submission_id = SubLinkCol("Submission ID", tooltip='Submission from which this inference was taken')
+    accession_no = StyledCol("Accession No", tooltip='Accession Number in Genbank or other repository')
     subject_id = StyledCol("Subject ID", tooltip="ID of the subject from which this sequence was inferred")
     genotype_name = StyledCol("Genotype Name", tooltip="Name of genotype from which sequence was drawn")
-    sequence_name = StyledCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
+    sequence_link = StyledCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
 
 def make_InferredSequence_table(results, private = False, classes=()):
     t=create_table(base=InferredSequenceTable)
@@ -67,9 +68,13 @@ class MessageBodyCol(StyledCol):
 def setup_inferred_sequence_table(seqs, gene_desc, action=True):
     results = []
     for seq in seqs:
-        results.append({'submission_id': seq.submission.submission_id, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': gene_desc.sequence.replace('.', '').lower() if gene_desc.sequence else '',
+        ncbi =  seq.submission.repertoire[0].repository_name == 'NCBI SRA'
+        acc = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (seq.seq_accession_no, seq.seq_accession_no)) if ncbi else seq.seq_accession_no
+        name = Markup('<a href="%s">%s</a>' % (url_for('inferred_sequence', id=seq.id), seq.sequence_details.sequence_id))
+        gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=seq.genotype_description.id), seq.genotype_description.genotype_name))
+        results.append({'submission_id': seq.submission.submission_id, 'accession_no': acc, 'sequence_link': name, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': gene_desc.sequence.replace('.', '').lower() if gene_desc.sequence else '',
                         'sequence_id': seq.id, 'nt_sequence': seq.sequence_details.nt_sequence.lower() if seq.sequence_details.nt_sequence else '', 'subject_id': seq.genotype_description.genotype_subject_id,
-                        'genotype_name': seq.genotype_description.genotype_name, 'allele_name': gene_desc.description_id})
+                        'genotype_name': gen, 'allele_name': gene_desc.description_id})
     table = make_InferredSequence_table(results)
     table.add_column('match', InferredSequenceTableMatchCol('Sequence Match', tooltip="Ticked if the sequence exactly matches this inference. Click for alignment."))
 
