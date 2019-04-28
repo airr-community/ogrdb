@@ -61,8 +61,16 @@ def main():
     driver.find_element_by_name("password").send_keys('123456')
     driver.find_element_by_name("submit").click()
 
+    driver.find_element_by_link_text("Statistics").click()
+    sub_download_stats()
     driver.find_element_by_link_text("Sequences").click()
     sub_add_and_process()
+
+def sub_download_stats():
+    wait.until(EC.element_to_be_clickable((By.ID,'create')))
+    driver.find_element_by_id("create").click()
+    driver.find_element_by_id("download").click()
+
 
 def sub_add_and_process():
     # Create a new sequence
@@ -230,6 +238,12 @@ gtgtattactgtgcgagaga""")
     time.sleep(3)
     el = driver.find_element_by_class_name('btn-danger')
     el.click()
+
+    # Download sequences
+
+    wait.until(EC.element_to_be_clickable((By.ID, 'dl-ungapped')))
+    driver.find_element_by_id("dl-ungapped").click()
+    driver.find_element_by_id("dl-airr").click()
 
 if __name__=="__main__":
     main()

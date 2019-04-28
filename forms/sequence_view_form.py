@@ -40,14 +40,19 @@ def setup_sequence_view_tables(db, seq, private):
     for item in gv.items:
         gv_items[item['field']] = item
 
+    wanted = []
 
     if seq.inference_type == 'Rearranged Only':
-        wanted = []
+        if gv_items['inferred_extension']['value']:
+            if len(gv_items['ext_3prime']['value']) > 0:
+                wanted.extend(['ext_3prime', 'start_3prime_ext', 'end_3prime_ext'])
+            if len(gv_items['ext_5prime']['value']) > 0:
+                wanted.extend(['ext_5prime', 'start_5prime_ext', 'end_5prime_ext'])
     else:
         wanted = ['l_region_start', 'l_region_end']
 
         if seq.sequence_type == 'V':
-            wanted.extend(['v_rs_start', 'v_rs_end', 'utr_5_prime_start', 'utr_5_prime_end', 'start_5prime_ext', 'end_5prime_ext'])
+            wanted.extend(['v_rs_start', 'v_rs_end', 'utr_5_prime_start', 'utr_5_prime_end', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_3prime', 'start_5prime_ext', 'end_5prime_ext'])
         elif seq.sequence_type == 'D':
             wanted.extend(['d_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end'])
         elif seq.sequence_type == 'J':
@@ -56,7 +61,7 @@ def setup_sequence_view_tables(db, seq, private):
     if seq.sequence_type == 'J':
         wanted.extend(['j_cdr3_end', 'codon_frame'])
 
-    optional_fields = ['l_region_start', 'l_region_end', 'utr_5_prime_start', 'utr_5_prime_end', 'start_5prime_ext', 'end_5prime_ext',
+    optional_fields = ['l_region_start', 'l_region_end', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
                   'v_rs_start', 'v_rs_end', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end',
                   'j_rs_start', 'j_rs_end', 'j_cdr3_end', 'codon_frame']
 
@@ -103,10 +108,8 @@ def setup_sequence_view_tables(db, seq, private):
             if field in gv_items:
                 tables['description'][sn].items.append(gv_items[field])
 
-    if not gv_items['inferred_extension']['value']:
+    if 'ext_3prime' not in gv_items and 'ext_5prime' not in gv_items:
         tables['description']['extension'] = []
-    else:
-        del(tables['description']['extension']['inferred_extension'])
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
     tables['matches'] = setup_matching_submissions_table(seq) if private else None

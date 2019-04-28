@@ -21,14 +21,14 @@
 
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="det">
-                <div class="row col-sm-12">
-                    <h3>Details</h3>
-                    <div class="form-group col-sm-offset-1">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    <div  class="col-sm-offset-1 col-sm-11">
                         {{ tables['description']['details'] }}
                     </div>
                 </div>
-                <div class="row col-sm-12">
-                    <h3>Evidence</h3>
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Evidence</h3>
                     <p class="col-sm-offset-1 col-sm-10">The table below lists the submissions, and the inferences within them, on which this published sequence is based.
                     The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
                     over time as additional inferences are submitted. </p>
@@ -42,8 +42,8 @@
                     </div>
                 </div>
                 {% if  tables['matches'] %}
-                    <div class="row col-sm-12">
-                        <h3>Unreferenced Matches in Submissions</h3>
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Unreferenced Matches in Submissions</h3>
                         <p class="col-sm-offset-1 col-sm-10">Matching or near-matching inferred sequences in submissions not currently referenced here (this section is only visible to IARC members):</p>
                         <div class="col-sm-10 col-sm-offset-1">
                             <div class="form-group">
@@ -53,15 +53,16 @@
                     </div>
                 {% endif %}
 
-                <div class="row col-sm-12">
+                <div class="row">
                     {% if tables['description']['non-coding'].items|length > 0 %}
-                        <h3>Non-Coding Regions</h3>
+                        <h3 class="col-sm-offset-1 col-sm-11">Non-Coding Regions</h3>
                         <div class="form-group col-sm-offset-1">
                             {{ tables['description']['non-coding'] }}
                         </div>
                     {% endif %}
                     {% if tables['description']['extension'].items|length > 0 %}
-                        <h3>This affirmed sequence extends a partial sequence that was already in IMGT GENE-DB.</h3>
+                        <h3 class="col-sm-offset-1 col-sm-11">Extension</h3>
+                        <p class="col-sm-offset-1 col-sm-10">This affirmed sequence extends a partial sequence already affirmed and/or in IMGT GENE-DB.</p>
                         <div class="form-group col-sm-offset-1">
                             {{ tables['description']['extension'] }}
                         </div>

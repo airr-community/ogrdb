@@ -51,16 +51,17 @@ class ValidNucleotideSequence(object):
         self.message = message
 
     def __call__(self, form, field):
-        try:
-            for c in list(field.data):
-                if c.upper() not in self.permitted:
-                    message = self.message
-                    message = message + " ('%s' is not allowed)" % c
-                    raise ValidationError(message)
-        except ValidationError as e:
-            raise ValidationError(e)
-        except:
-            raise ValidationError(self.message)
+        if field.data is not None:
+            try:
+                for c in list(field.data):
+                    if c.upper() not in self.permitted:
+                        message = self.message
+                        message = message + " ('%s' is not allowed)" % c
+                        raise ValidationError(message)
+            except ValidationError as e:
+                raise ValidationError(e)
+            except:
+                raise ValidationError(self.message)
 
 class ValidAASequence(object):
     def __init__(self, gapped=False, message=None, x=False, dot = False):
@@ -74,12 +75,13 @@ class ValidAASequence(object):
         self.message = message
 
     def __call__(self, form, field):
-        try:
-            for c in list(field.data.upper()):
-                if c not in self.permitted:
-                    raise ValidationError(self.message)
-        except:
-            raise ValidationError(self.message)
+        if field.data is not None:
+            try:
+                for c in list(field.data.upper()):
+                    if c not in self.permitted:
+                        raise ValidationError(self.message)
+            except:
+                raise ValidationError(self.message)
 
 # validators.DataRequired and InputRequired stop the validation chain if they fail
 # This continues, so that if Optional() has been added to the chain, it takes precedence

@@ -57,7 +57,7 @@ def generate_stats(form):
 
     imgt_ref = imgt_reference_genes()
     if species not in imgt_ref:
-        return (0, None)
+        return (0, None, None)
 
     def gene_match(gene, ref):
         for k,v in ref.items():
@@ -82,7 +82,7 @@ def generate_stats(form):
         form.very_rare_genes.errors = ['Gene(s) %s not found in IMGT reference database' % ', '.join(very_rare_missing)]
 
     if len(rare_missing) > 0 or len(very_rare_missing) > 0:
-        return (0, None)
+        return (0, None, None)
 
     ref = []
 
@@ -119,7 +119,7 @@ def generate_stats(form):
                 genotype_descriptions.append(genotype.genotype_description)
 
     if len(genotype_descriptions) == 0:
-        return (0, None)
+        return (0, None, None)
 
     # Initialise stats
 

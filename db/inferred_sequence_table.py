@@ -85,6 +85,7 @@ def setup_inferred_sequence_table(seqs, gene_desc, action=True):
 
 class MatchingSubmissionsTable(StyledTable):
     submission_id = SubLinkCol("Submission ID", tooltip='Submission containing the matching inference')
+    accession_no = StyledCol("Accession No", tooltip='Accession Number in Genbank or other repository')
     subject_id = StyledCol("Subject ID", tooltip="ID of the subject from which this sequence was inferred")
     genotype_name = StyledCol("Genotype Name", tooltip="Name of genotype from which sequence was drawn")
     sequence_name = StyledCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
@@ -102,8 +103,12 @@ def setup_matching_submissions_table(seq):
             match = report_dupe(seq.sequence, 'This', dup.sequence_details.nt_sequence, dup.submission.submission_id)
             if '\n' in match:
                 match = Markup('<code>' + match.replace('\n', '<br>') + '</code>')
-            results.append({'submission_id': dup.submission.submission_id, 'sequence_name': dup.sequence_details.sequence_id, 'match': Markup(match),
-                            'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': dup.genotype_description.genotype_name})
+            ncbi =  dup.submission.repertoire[0].repository_name == 'NCBI SRA'
+            acc = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (dup.seq_accession_no, dup.seq_accession_no)) if ncbi else dup.seq_accession_no
+            name = Markup('<a href="%s">%s</a>' % (url_for('inferred_sequence', id=dup.id), dup.sequence_details.sequence_id))
+            gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=dup.genotype_description.id), dup.genotype_description.genotype_name))
+            results.append({'submission_id': dup.submission.submission_id, 'accession_no': acc, 'sequence_name': name, 'match': Markup(match),
+                            'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': gen})
 
     if len(results) == 0:
         return None

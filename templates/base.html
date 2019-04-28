@@ -31,6 +31,7 @@
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
                     <a href="{{ url_for('sequences') }}" class="m-item">Sequences</a> |
+                    <a href="{{ url_for('genotype_statistics') }}" class="m-item">Statistics</a> |
                     <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
                     {% if current_user.active %}
                     <a href="{{ url_for('profile') }}" class="m-item">Profile</a> |

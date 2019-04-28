@@ -43,12 +43,12 @@ def make_GeneStats_table_table(results, classes=()):
 def setup_gene_stats_tables(form):
     ret = {}
     (ret['count'], stats, raw) = generate_stats(form)
-    ret['raw'] = raw.getvalue()
-    raw.close()
 
     if ret['count'] == 0:
         ret['gene_table'] = None
     else:
+        ret['raw'] = raw.getvalue()
+        raw.close()
         ret['gene_table'] = make_GeneStats_table_table(stats)
 
     return ret

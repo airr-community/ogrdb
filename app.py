@@ -20,7 +20,7 @@ from Bio import SeqIO
 import io
 from os.path import isdir
 from os import mkdir, remove
-
+from yaml import dump
 
 
 
@@ -1055,6 +1055,8 @@ def check_seq_withdraw(id):
 
     return desc
 
+class SpeciesForm(FlaskForm):
+    species = SelectField('Species', description="Species for which the analysis should be conducted")
 
 @app.route('/sequences', methods=['GET', 'POST'])
 def sequences():
@@ -1090,7 +1092,20 @@ def sequences():
     tables['affirmed'] = setup_sequence_list_table(results, current_user)
     tables['affirmed'].table_id = 'affirmed'
 
-    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn)
+    species = db.session.query(Committee.species).all()
+    species = [s[0] for s in species]
+
+    for sp in list(species):
+        if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == sp).all()) < 1:
+            species.remove(sp)
+
+    if len(species) > 0:
+        form = SpeciesForm()
+        form.species.choices = [(s,s) for s in species]
+    else:
+        form = None
+
+    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn, form=form)
 
 
 @app.route('/new_sequence/<species>', methods=['GET', 'POST'])
@@ -1737,7 +1752,7 @@ def genotype_statistics():
     if request.method == 'POST':
         if form.validate():
             tables = setup_gene_stats_tables(form)
-            if current_user.is_authenticated:
+            if current_user.is_authenticated and tables['count'] > 0:
                 with open(user_attach_path + '%05d' % current_user.id, 'w', newline='') as fo:
                     fo.write(tables['raw'])
                 tables['raw'] = ''
@@ -1755,3 +1770,51 @@ def download_userfile(filename):
         flash('File not found')
 
     return redirect('/')
+
+@app.route('/download_sequences/<species>/<format>')
+def download_sequences(species,format):
+    if format not in ['gapped','ungapped','airr']:
+        flash('Invalid format')
+        return redirect('/')
+
+    all_species = db.session.query(Committee.species).all()
+    all_species = [s[0] for s in all_species]
+    if species not in all_species:
+        flash('Invalid species')
+        return redirect('/')
+
+    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == species)
+    results = q.all()
+
+    if len(results) < 1:
+        flash('No sequences to download')
+        return redirect('/')
+
+    def descs_to_fasta(descs, fmt):
+        ret = ''
+        for desc in descs:
+            if format == 'gapped':
+                ret += format_fasta_sequence(desc.sequence_name, desc.coding_seq_imgt, 60)
+            else:
+                ret += format_fasta_sequence(desc.sequence_name, desc.coding_seq_imgt.replace('.',''), 60)
+        return(ret)
+
+    def descs_to_airr(descs):
+        ret = {}
+        for desc in descs:
+            d = make_GeneDescription_view(desc)
+            ret[desc.sequence_name] = {}
+            for row in d.items:
+                ret[desc.sequence_name][row['field']] = row['value']
+
+        return(dump(ret, default_flow_style=False))
+
+    if format == 'airr':
+        dl = descs_to_airr(results)
+        ext = 'yaml'
+    else:
+        dl = descs_to_fasta(results, format)
+        ext = 'fa'
+
+    filename = 'affirmed_germlines_%s_%s.%s' % (species, format, ext)
+    return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
