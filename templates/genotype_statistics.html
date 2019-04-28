@@ -55,7 +55,7 @@
                             a file listing unmutated frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
                             but contains all usage frequencies regardless of the Within-Genotype Criteria.</p>
                     {% else %}
-                        <p>Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}">log in</a> or <a href="{{ url_for_security('login') }}">log in</a> if you would like to do this.</p>
+                        <p>Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}">register</a> or <a href="{{ url_for_security('login') }}">log in</a> if you would like to do this.</p>
                     {% endif %}
                         {% if tables['gene_table'] %}
                             <p>Compiling data from {{ tables['count'] }} published genotypes:</p>
