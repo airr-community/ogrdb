@@ -215,6 +215,7 @@ class GeneDescription_table(StyledTable):
     id = Col("id", show=False)
     release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
     organism = StyledCol("Organism", tooltip="Binomial designation of subject's species")
+    imgt_name = StyledCol("IMGT Name", tooltip="The name of this sequence as assigned by IMGT")
     locus = StyledCol("Locus", tooltip="Gene locus")
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")

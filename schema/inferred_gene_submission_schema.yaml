@@ -833,6 +833,7 @@ GeneDescription:
             description: The name of this sequence as assigned by IMGT
             label: IMGT Name
             inview: true
+            tableview: true
         alt_names:
             type: string
             description: Alternative names for this sequence
