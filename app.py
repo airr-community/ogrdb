@@ -1790,7 +1790,7 @@ def download_sequences(species, format, exc):
     if species in imgt_ref and exc == 'non':
         descs = []
         for result in results:
-            if result.imgt_name == '' or result.imgt_name not in imgt_ref[species]:
+            if result.imgt_name == '':
                 descs.append(result)
         results = descs
 
