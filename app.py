@@ -739,6 +739,7 @@ def genotype(id, editable=False):
 
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
+    srr_table.rec_accession_no.name = 'Record Set'
     ncbi =  desc.submission.repertoire[0].repository_name == 'NCBI SRA'
 
     form = GenotypeViewOptionsForm()
@@ -746,7 +747,7 @@ def genotype(id, editable=False):
     tables['desc'] = make_GenotypeDescription_view(desc, False)
 
     if ncbi:
-        for item in tables['desc'].items:
+        for item in list(tables['desc'].items):
             if item['item'] == 'Sample IDs' or item['item'] == 'Sequence Sets':
                 tables['desc'].items.remove(item)
 
