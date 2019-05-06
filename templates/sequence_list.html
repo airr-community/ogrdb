@@ -49,6 +49,7 @@
 
         <div class="form-horizontal">
             {{ render_field_with_errors(form.species, class="form-control") }}
+            {{ render_field_with_errors(form.exclude_imgt, class="checkbox") }}
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-2">
                     <a href="foo" id="dl-gapped" class="btn btn-primary">Gapped (FASTA)</a>
@@ -71,15 +72,25 @@
         update_dls()
     });
 
+    $("#exclude_imgt").change(function(e) {
+        update_dls()
+    });
+
     $(document).ready(function() {
         update_dls()
     })
 
     function update_dls() {
-        var sp = $("#species").find("option:selected").val();
-        $("#dl-gapped").attr("href", "/download_sequences/" + sp + "/gapped");
-        $("#dl-ungapped").attr("href", "/download_sequences/" + sp + "/ungapped");
-        $("#dl-airr").attr("href", "/download_sequences/" + sp + "/airr")
+        sp = $("#species").find("option:selected").val();
+        if($("#exclude_imgt")[0].checked) {
+            imgt = 'non'
+        }
+        else {
+            imgt = 'all'
+        }
+        $("#dl-gapped").attr("href", "/download_sequences/" + sp + "/gapped/" + imgt);
+        $("#dl-ungapped").attr("href", "/download_sequences/" + sp + "/ungapped/" + imgt);
+        $("#dl-airr").attr("href", "/download_sequences/" + sp + "/airr/" + imgt)
     }
 
     {% if 'species' in tables %}

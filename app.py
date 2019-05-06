@@ -104,6 +104,7 @@ from forms.genotype_stats_form import *
 from forms.genotype_view_options_form import *
 from forms.inferred_sequence_compound_form import *
 from forms.genotype_description_compound_form import *
+from forms.sequences_species_form import *
 
 from genotype_stats import *
 from get_ncbi_details import *
@@ -119,7 +120,7 @@ init_logging(app, mail)
 
 # Read IMGT germline reference sets
 
-from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref
+from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, imgt_reference_genes
 init_imgt_ref()
 init_igpdb_ref()
 
@@ -1056,8 +1057,6 @@ def check_seq_withdraw(id):
 
     return desc
 
-class SpeciesForm(FlaskForm):
-    species = SelectField('Species', description="Species for which the analysis should be conducted")
 
 @app.route('/sequences', methods=['GET', 'POST'])
 def sequences():
@@ -1772,8 +1771,8 @@ def download_userfile(filename):
 
     return redirect('/')
 
-@app.route('/download_sequences/<species>/<format>')
-def download_sequences(species,format):
+@app.route('/download_sequences/<species>/<format>/<exc>')
+def download_sequences(species, format, exc):
     if format not in ['gapped','ungapped','airr']:
         flash('Invalid format')
         return redirect('/')
@@ -1786,6 +1785,14 @@ def download_sequences(species,format):
 
     q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == species)
     results = q.all()
+
+    imgt_ref = imgt_reference_genes()
+    if species in imgt_ref and exc == 'non':
+        descs = []
+        for result in results:
+            if result.sequence_name not in imgt_ref[species]:
+                descs.append(result)
+        results = descs
 
     if len(results) < 1:
         flash('No sequences to download')
