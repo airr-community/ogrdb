@@ -1790,7 +1790,7 @@ def download_sequences(species, format, exc):
     if species in imgt_ref and exc == 'non':
         descs = []
         for result in results:
-            if result.sequence_name not in imgt_ref[species]:
+            if result.imgt_name == '' or result.imgt_name not in imgt_ref[species]:
                 descs.append(result)
         results = descs
 
@@ -1801,15 +1801,21 @@ def download_sequences(species, format, exc):
     def descs_to_fasta(descs, fmt):
         ret = ''
         for desc in descs:
+            name = desc.sequence_name
+            if desc.imgt_name != '':
+                name += '|' + desc.imgt_name
             if format == 'gapped':
-                ret += format_fasta_sequence(desc.sequence_name, desc.coding_seq_imgt, 60)
+                ret += format_fasta_sequence(name, desc.coding_seq_imgt, 60)
             else:
-                ret += format_fasta_sequence(desc.sequence_name, desc.coding_seq_imgt.replace('.',''), 60)
+                ret += format_fasta_sequence(name, desc.coding_seq_imgt.replace('.',''), 60)
         return(ret)
 
     def descs_to_airr(descs):
         ret = {}
         for desc in descs:
+            name = desc.sequence_name
+            if desc.imgt_name != '':
+                name += '|' + desc.imgt_name
             d = make_GeneDescription_view(desc)
             ret[desc.sequence_name] = {}
             for row in d.items:
