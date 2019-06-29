@@ -11,8 +11,10 @@ import csv
 from db.genotype_db import *
 from flask import flash
 from wtforms import ValidationError
-import sys
 from sqlalchemy.exc import OperationalError
+from db.genotype_tables import *
+
+light_loci = ['IGK', 'IGL', 'TRA', 'TRG']
 
 def file_to_genotype(name, desc, db):
     line = 2
@@ -37,6 +39,23 @@ def file_to_genotype(name, desc, db):
                             imported.append(field)
                 if len(unsupported) > 0:
                     flash("Unrecognised field(s) '%s' have not been imported" % ','.join(unsupported))
+
+                if desc.sequence_type in ['V', 'J']:
+                    chain = desc.sequence_type + ('L' if desc.locus in light_loci else 'H')
+                elif desc.sequence_type == 'D':
+                    chain = 'D'
+                else:
+                    chain = desc.sequence_type
+
+                missing = []
+                if chain in reqd_gen_fields:
+                    for field in reqd_gen_fields[chain]:
+                        if field not in reader.fieldnames:
+                            missing.append(field)
+
+                    if len(missing) > 0:
+                        raise ValidationError('Required column(s) %s are missing' % ', '.join(missing))
+
                 first = False
 
             has_data = False

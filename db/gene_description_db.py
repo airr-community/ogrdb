@@ -223,7 +223,7 @@ class GeneDescription_table(StyledTable):
 
 
 def make_GeneDescription_table(results, private = False, classes=()):
-    t=create_table(base=GeneDescription_table)
+    t = create_table(base=GeneDescription_table)
     ret = t(results, classes=classes)
     return ret
 

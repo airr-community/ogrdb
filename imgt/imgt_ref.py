@@ -30,7 +30,7 @@ def init_imgt_ref():
     global imgt_reference_genes
 
     with open('imgt/track_imgt_config.yaml', 'r') as fc:
-        config = yaml.load(fc)
+        config = yaml.load(fc, Loader=yaml.FullLoader)
 
     species = config['species']
     imgt_reference_genes = read_reference('static/docs/IMGT_REF.fasta', species)
@@ -41,6 +41,7 @@ def init_imgt_ref():
 
     imgt_reference_genes['Human'] = imgt_reference_genes['Homo sapiens']
     imgt_reference_genes['Test'] = imgt_reference_genes['Homo sapiens']
+    imgt_reference_genes['Macaque'] = imgt_reference_genes['Macaca mulatta']
 
 def imgt_reference_genes():
     global imgt_reference_genes

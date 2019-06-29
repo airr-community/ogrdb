@@ -7,7 +7,7 @@
 #
 # Command Syntax:
 #
-# Rscript genotype_statistics.R <ref_library> <species> <filename> [<haplotype-allele>]
+# Rscript genotype_statistics.R <ref_library> <species> <filename> <chain> [<haplotype-allele>]
 #
 # <ref_library> - IMGT-aligned reference genes in FASTA format. Header can either be in IMGT's germline library format,
 # or simply the allele name. Reference genes in this file MUST correspond to those used to annotate the reads.
@@ -24,18 +24,23 @@
 #
 # <filename> - annotated reads in AIRR, CHANGEO or IgDiscover format. The format is detected by the script.
 #
+# <chain> - one of VH, VK, VL, JH, JK, JL
+#
 # <halplotype-gene> - optional argument. If present, the haplotyping columns will be completed based on the usage of the two most frequent alleles of this J-gene
 #
 # AIRR format files must contain the following columns:
-# sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3
+# sequence_id, v_call_genotyped, d_call*, j_call, sequence_alignment, cdr3
+# In addition for J gene processing they must contain J_sequence_start, J_sequence_end, J_germline_start, J_germline_end
 #
 # CHANGEO files must contain the following columns:
 #
-# SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT
+# SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL*, J_CALL, CDR3_IMGT, V_MUT_NC, D_MUT_NC*, J_MUT_NC, SEQUENCE, JUNCTION_START, V_SEQ, D_SEQ*, J_SEQ
 #
 # IgDiscover files must contain the following columns:
 #
-# name, count, V_gene, D_gene, J_gene, CDR3_nt, V_errors
+# name, V_gene, D_gene*, J_gene, CDR3_nt, V_errors, D_errors*, J_errors, VDJ_nt, V_CDR3_start, V_nt, D_region*, J_nt
+#
+# Starred fields are only required for heavy chain records.
 #
 # In AIRR and CHANGEO file formats, v_call_genotyped/V_CALL_GENOTYPED/V_gene should contain the V calls made after the subject's genotype has been inferred
 # (including calls of the novel alleles)
@@ -54,6 +59,7 @@ library(grid)
 library(gridExtra)
 library(tidyr)
 library(dplyr)
+library(stringdist)
 
 # to install biostrings:
 # source("http://bioconductor.org/biocLite.R")
@@ -62,64 +68,130 @@ library("Biostrings")
 
 args = commandArgs(trailingOnly=TRUE)
 
-if(length(args) > 3) {
+if(length(args) > 4) {
   ref_filename = args[1]
   species = args[2]
   inferred_filename = args[3]
   filename = args[4]
+  chain = args[5]
   hap_gene = NA
   
-  if(length(args >4)) {
-    hap_gene = args[5]
+  if(length(args >5)) {
+    hap_gene = args[6]
   }
 } else {   # for R Studio Source
-  work_dir = 'D:/Research/partis/TW02A'
+  # VH - tigger (Example in Readme)
+  # work_dir = 'D:/Research/ogre/scripts'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel.fasta'
+  # filename = 'TWO01A_naive_genotyped.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
+
+  # JH - tigger
+  # work_dir = 'D:/Research/ogre/scripts/tests/J_tigger'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED_J_CHANGES.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel.fasta'
+  # filename = 'TWO01A_naive.airr.tab'
+  # chain = 'JH'
+  # hap_gene = 'IGHV2-5'
+
+  # JH - igdiscover
+  # work_dir = 'D:/Research/ogre/scripts/tests/JH_igdiscover'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED_fake_j.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'J.fasta'
+  # filename = 'filtered.tab'
+  # chain = 'JH'
+  # hap_gene = 'IGHV2-5'
+  # 
+  # JL - igdiscover
+  # just a fake based on JH
+  work_dir = 'D:/Research/ogre/scripts/tests/JL_igdiscover'
   setwd(work_dir)
-  
-  ref_filename = '../../Rubelt twin study/repo/IMGT_REF_GAPPED.fasta'
+  ref_filename = 'IMGT_REF_GAPPED_fake_j_fake_JK.fasta'
   species = 'Homosapiens'
-  inferred_filename = 'TW02A_V_OGRDB.fasta'
-  filename = 'TW02A_OGRDB.tsv'
-  hap_gene = 'IGHJ6'
+  inferred_filename = 'J.fasta'
+  filename = 'filtered.tab'
+  chain = 'JK'
+  hap_gene = 'IGHV2-5'
+  
+  # VH - partis
+  # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TW02A_V_OGRDB.fasta'
+  # filename = 'TW02A_OGRDB.tsv'
+  # hap_gene = 'IGHJ6'
+  
 } 
 
-file_prefix = strsplit(filename, '.', fixed=T)[[1]][1]
+# TODO - D not supported yet. Although there is overall code support for D segments, we haven't figured out
+# how to handle alignment, whether to support amino acid changes, etc
+
+if(!(chain %in% c('VH', 'VK', 'VL', 'JH', 'JK', 'JL'))) {
+  stop('Unrecognised chain name.')
+}
+
+segment = substr(chain, 1, 1)
+
+if(segment == 'D') {
+  chain_type = 'H'
+} else {
+  if(substr(chain, 2, 2) == 'H') {
+    chain_type = 'H'
+  } else {
+    chain_type = 'L'
+  }
+}
+
+file_prefix = basename(strsplit(filename, '.', fixed=T)[[1]][1])
 
 pdf(NULL) # this seems to stop an empty Rplots.pdf from being created. I don't know why.
 
 # a reasonable order for the v-alleles
 
-numify = function(gene) {
-  gg = strsplit(gsub('IGHV', '', gene, fixed=T), split='-', fixed=T)
-  gs = c(gg[[1]][[1]])
-  gg = strsplit(gg[[1]][[2]], split='*', fixed=T)
-  gs = c(gs, gg[[1]])
+numify = function(gene, seg) {
+  gg = strsplit(gsub(seg, '', gene, fixed=T), split='-', fixed=T)
+  if(length(gg) > 1) {
+    gs = c(gg[[1]][[1]])
+    gg = strsplit(gg[[1]][[2]], split='*', fixed=T)
+    gs = c(gs, gg[[1]])
+  } else {
+    gs = strsplit(gg[[1]][[1]], split='*', fixed=T)
+  }
   
-  for(i in 1:3) {
-    gs[i] = str_pad(gs[i], 4, pad = "0")
+  for(i in 1:length(gs[[1]])) {
+    gs[[1]][[i]] = str_pad(gs[[1]][[i]], 4, pad = "0")
   }
   
   return(paste0(gs, collapse=''))
 }
 
 
-# count unique J and D calls
+# count unique calls
 unique_calls = function(gene, segment, seqs) {
-  calls = unique(seqs[seqs$V_CALL_GENOTYPED==gene,][segment])
+  calls = unique(seqs[seqs$SEG_CALL==gene,][segment])
   calls = calls[!grepl(',', calls[,segment]),]       # count unambiguous calls only
-  calls = calls[grepl('IGH', calls)]                 #don't count blank calls
+  calls = calls[grepl('IG', calls)]                 #don't count blank calls
   return(length(calls))
 }
 
 # count unique CDRs
 unique_cdrs = function(gene, segment, seqs) {
-  calls = unique(seqs[seqs$V_CALL_GENOTYPED==gene,][segment])
+  calls = unique(seqs[seqs$SEG_CALL==gene,][segment])
   calls = calls[nchar(calls[,segment]) > 0,]
   return(length(calls))
 }
 
 # create list of nt differences between two strings
-build_nt_diff_string = function(seq1, seq2) {
+build_nt_diff_string = function(seq1, seq2, bias) {
   nt_diff_string = ""
   max_length = max(nchar(seq1), nchar(seq2))
   seq1 = str_pad(seq1, max_length, side="right", pad="-")
@@ -129,6 +201,7 @@ build_nt_diff_string = function(seq1, seq2) {
   novel_nt <- strsplit(seq2,"")[[1]][nt_diff]
   
   if(length(nt_diff) > 0) {
+    nt_diff = sapply((nt_diff-bias), function(x) if(x <= 0) {x-1} else {x} )
     nt_diff_string <- paste(paste(
       ref_nt, 
       nt_diff, 
@@ -231,7 +304,7 @@ imgt_gap_inferred = function(seqname, seqs, ref_genes) {
 
 
 # Compare two IMGT gapped sequences and find AA mutations
-getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name) {
+getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name, segment, bias) {
   if (grepl("N", ref_imgt)) {
     stop(paste0("Unexpected N in reference sequence ", ref_name))
   }     
@@ -239,11 +312,11 @@ getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name) {
     stop(paste0("Unexpected N in novel sequence ", seq_name))
   }          
   
-  if (hasNonImgtGaps(ref_imgt)) {
+  if (segment == 'V' && hasNonImgtGaps(ref_imgt)) {
     cat(paste0("Non codon-aligned gaps were found in reference sequence ", ref_name))
   }
   
-  if (hasNonImgtGaps(novel_imgt)) {
+  if (segment == 'V' && hasNonImgtGaps(novel_imgt)) {
     cat(paste0("Non codon-aligned gaps were found in novel sequence ", seq_name))
   }
   
@@ -258,24 +331,42 @@ getMutatedAA <- function(ref_imgt, novel_imgt, ref_name, seq_name) {
   mutations <- c()
   diff_idx <- which(ref_imgt != novel_imgt)
   if (length(diff_idx)>0) {
-    mutations <- paste0(ref_imgt[diff_idx], diff_idx,
+    index = sapply((diff_idx-bias), function(x) if(x <= 0) {x-1} else {x} )
+    mutations <- paste0(ref_imgt[diff_idx], index,
                         replace(novel_imgt[diff_idx], is.na(novel_imgt[diff_idx]),"-"))
   }
   mutations
 }
 
 # Find nearest reference sequences and enumerate differences
-find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs) {
+find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs, segment) {
   sequence = inferred_seqs[[sequence_ind]]
   seq_name = names(inferred_seqs)[[sequence_ind]]
   r = data.frame(GENE=names(ref_genes),SEQ=ref_genes, stringsAsFactors = F)
+  
+  # pad all Js so that they align on the right
+  
+  if(segment == 'J') {
+    w = as.integer(max(max(nchar(r$SEQ)), nchar(sequence))/3)*3
+    r$SEQ = str_pad(r$SEQ, w, 'left', '-')
+    sequence = str_pad(sequence, w, 'left', '-')
+  }
+  
   r$diff = getMutatedPositions(r$SEQ, sequence)
   r$num_diff = sapply(r$diff, length)
   r = r[order(r$num_diff),]
+  r = r[1,]
   
-  nt_diff_string = build_nt_diff_string(ref_genes[[r[1,]$GENE]], sequence)
+  if(segment == 'J') {
+    # 'bias' the index position so that the first nucleotide of the reference is 1
+    bias = nchar(r$SEQ) - nchar(ref_genes[r$GENE])
+  } else {
+    bias = 0
+  }
   
-  diff_aa = getMutatedAA(ref_genes[[r[1,]$GENE]], sequence, r[1,]$GENE, seq_name)
+  nt_diff_string = build_nt_diff_string(r$SEQ, sequence, bias)
+  
+  diff_aa = getMutatedAA(r$SEQ, sequence, r$GENE, seq_name, segment, (bias/3))
   
   if(length(diff_aa) > 0) {
     aa_diffs = length(diff_aa)
@@ -290,14 +381,23 @@ find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs) {
   return(l)
 }
 
+#######################
+# main code starts here
+
 # get the reference set
 
 ref_genes = readIgFasta(ref_filename, strip_down_name =F)
 
+if(segment=='D') {
+  set = 'IGD'
+} else {
+  set = paste0('IG', substr(chain, 2, 2), segment)
+}
+
 # process IMGT library, if header is in corresponding format
 if(grepl('|', names(ref_genes)[1], fixed=T)) {
   ref_genes = ref_genes[grepl(species, names(ref_genes),fixed=T)]
-  ref_genes = ref_genes[grepl('IGHV', names(ref_genes),fixed=T)]
+  ref_genes = ref_genes[grepl(set, names(ref_genes),fixed=T)]
   
   gene_name = function(full_name) {
     return(strsplit(full_name, '|', fixed=T)[[1]][2])
@@ -305,7 +405,18 @@ if(grepl('|', names(ref_genes)[1], fixed=T)) {
 }
 
 names(ref_genes) = sapply(names(ref_genes), gene_name)
-ref_genes = ref_genes[grepl('IGHV|IGHJ|IGHD', names(ref_genes))]
+
+# Crude fix for two misaligned human IGHJ reference genes
+
+if(set == 'IGHJ') {
+  for(g in c('IGHJ6*02', 'IGHJ6*03')) {
+    if(g %in% names(ref_genes) && str_sub(ref_genes[g], start= -1) == 'A') {
+      ref_genes[g] = paste0(ref_genes[g], 'G')
+      print(paste0('Modified truncated reference gene ', g, ' to ', ref_genes[g]))
+    } 
+  }
+}
+  
 
 # get the genotype and novel alleles in this set
 
@@ -318,54 +429,103 @@ if(inferred_filename != '-') {
 # ignore inferred genes that are listed in the reference. gap any that aren't already gapped.
 
 inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
-inferred_seqs = sapply(names(inferred_seqs), imgt_gap_inferred, seqs=inferred_seqs, ref_genes=ref_genes)
+#inferred_seqs = sapply(names(inferred_seqs), imgt_gap_inferred, seqs=inferred_seqs, ref_genes=ref_genes)
 
 
-# Read the sequences
+# Read the sequences. Changeo format is assumed unless airr or IgDiscover format is identified
+# TODO - check and give nice error message if any columns are missing
 
 s = read.delim(filename, stringsAsFactors=F)
 
 if('sequence_id' %in% names(s))
 {
   # airr format - convert wanted fields to changeo
+  # TODO - would be better to get the field ranges from the CIGAR string, given that it's a required field
+  # https://www.bioconductor.org/packages/devel/bioc/manuals/GenomicAlignments/man/GenomicAlignments.pdf
   
-  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
-  s = select(seqs, sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3)
+  # add a dummy D_CALL to light chain repertoires, for ease of processing
+  
+  if(chain_type == 'L' && !('d_call' %in% names(s))) {
+    s$d_call = ''
+  }
+  
+  req_names = c('sequence', 'sequence_id', 'v_call_genotyped', 'd_call', 'j_call', 'sequence_alignment', 'cdr3')
+  col_names = c('SEQUENCE_INPUT', 'SEQUENCE_ID', 'V_CALL', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
+
+  if(segment != 'V') {
+    a_seg = tolower(segment)
+    req_names = c(req_names, paste0(a_seg, '_sequence_start'), paste0(a_seg, '_sequence_end'), paste0(a_seg, '_germline_start'), paste0(a_seg, '_germline_end'))
+    col_names = c(col_names, 'SEG_SEQ_START', 'SEG_SEQ_END', 'SEG_GERM_START', 'SEG_GERM_END')
+  }
+  
+  s = select(s, req_names)
   names(s) = col_names 
+  
+  s$SEG_SEQ_LENGTH = s$SEG_SEQ_END - s$SEG_SEQ_START + 1
+  s$SEG_GERM_LENGTH = s$SEG_GERM_END - s$SEG_GERM_START + 1
+  
 } else if('V_gene' %in% names(s)) {
   # IgDiscover format
   #  s = uncount(s, count)  for consistency with IgDiscover results, count each unique record in the file only once, regardless of 'count'
   
-  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NCI', 'SEQUENCE', 'JUNCTION_START')
-  s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors, VDJ_nt, V_CDR3_start)
+  # add a dummy D_CALL to light chane repertoires, for ease of processing
+  
+  if(chain_type == 'L' && !('D_gene' %in% names(s))) {
+    s$D_gene = ''
+    s$D_errors = ''
+    s$D_region = ''
+  }
+
+    if(chain_type == 'L' && !('VDJ_nt' %in% names(s))) {
+    s$VDJ_nt = s$VJ_nt
+  }
+  
+  col_names = c('SEQUENCE_ID', 'V_CALL', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC', 'D_MUT_NC', 'J_MUT_NC', 'SEQUENCE', 'JUNCTION_START', 'V_SEQ', 'D_SEQ', 'J_SEQ')
+  s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors, D_errors, J_errors, VDJ_nt, V_CDR3_start, V_nt, D_region, J_nt)
   names(s) = col_names 
   # adjust IgDiscover's V_CDR3_START to the 1- based location of the conserved cysteine
   s$JUNCTION_START = s$JUNCTION_START - 2
   s$SEQUENCE = toupper(s$SEQUENCE)
+  
+  if(segment == 'V') {
+    s = rename(s, c('V_MUT_NC'='SEG_MUT_NC', 'V_SEQ'='SEG_SEQ'))
+  } else if(segment == 'D') {
+    s = rename(s, c('D_MUT_NC'='SEG_MUT_NC', 'D_SEQ'='SEG_SEQ'))
+  } else {
+    s = rename(s, c('J_MUT_NC'='SEG_MUT_NC', 'J_SEQ'='SEG_SEQ'))
+  }
 }
 
-#remove sequences with ambiguous V-calls
+if(segment == 'V') {
+  s = rename(s, c('V_CALL_GENOTYPED'='SEG_CALL'))
+} else if(segment == 'D') {
+  s = rename(s, c('D_CALL'='SEG_CALL'))
+} else {
+  s = rename(s, c('J_CALL'='SEG_CALL'))
+}
 
-s = s[!grepl(',', s$V_CALL_GENOTYPED),]
+s$CDR3_IMGT = toupper(s$CDR3_IMGT)
 
+# At this point, s contains Changeo-named columns with all data required for calculations
+
+#remove sequences with ambiguous calls in the target segment
+
+s = s[!grepl(',', s$SEG_CALL),]
 
 # Warn if we don't have genotype statistics for any of the inferred alleles
 # this can happen, for example, with Tigger, if novel alleles are detected but do not pass subsequent criteria for being included in the genotype.
 
-genotype_alleles = unique(s$V_CALL_GENOTYPED)
+genotype_alleles = unique(s$SEG_CALL)
 missing = inferred_seqs[!(names(inferred_seqs) %in% genotype_alleles)]
 
 if(length(missing) >= 1) {
-  cat(paste('Novel sequence(s)', paste0(names(missing), collapse=' '), 'are not listed in the genotype and will be ignored.', sep=' '))
+  cat(paste('Novel sequence(s)', paste0(names(missing), collapse=' '), 'are not listed in the genotype and will be ignored.', sep=' ', '\n'))
   inferred_seqs = inferred_seqs[(names(inferred_seqs) %in% genotype_alleles)]
 }
 
 genotype_alleles = genotype_alleles[!(genotype_alleles %in% names(inferred_seqs))]
 genotype_seqs = lapply(genotype_alleles, function(x) {ref_genes[x]})
 genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, names(inferred_seqs)))
-
-
-s$CDR3_IMGT = toupper(s$CDR3_IMGT)
 
 
 # Check we have sequences for all alleles named in the reads - either from the reference set or from the inferred sequences
@@ -377,32 +537,40 @@ if(any(is.na(genotype_db))) {
 
 # gap the sequences if necessary
 
-find_template = function(v_call) {
-  tem = ref_genes[v_call]
+find_template = function(call) {
+  tem = ref_genes[call]
   if(is.na(tem))
-    tem = inferred_seqs[v_call]
+    tem = inferred_seqs[call]
   
   return(tem)
 }
 
+s$SEG_REF_IMGT = sapply(s$SEG_CALL, find_template)
+
 if(!('SEQUENCE_IMGT' %in% names(s))) {
-  s$SEQUENCE_REF_IMGT = sapply(s$V_CALL_GENOTYPED, find_template)
-  s$SEQUENCE_IMGT = mapply(imgt_gap, s$SEQUENCE,s$CDR3_IMGT, s$JUNCTION_START, s$SEQUENCE_REF_IMGT)
+  s$SEQUENCE_IMGT = mapply(imgt_gap, s$SEQUENCE,s$CDR3_IMGT, s$JUNCTION_START, s$SEG_REF_IMGT)
 }
 
 s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT)
 
-
 # unmutated count for each allele
 
-if(!('V_MUT_NC' %in% names(s))) {
-  # We take the count up to the 2nd CYS at 310 since we don't have details of junction decomposition
-  s$SEQUENCE_IMGT_TRUNC = sapply(s$SEQUENCE_IMGT, substring, first=1, last=309)
-  s$V_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT_TRUNC, s$V_CALL_GENOTYPED, genotype_db))
+
+if(!('SEG_MUT_NC' %in% names(s))) {
+  if(segment == 'V') {
+    # We take the count up to the 2nd CYS at 310
+    # This matches IgDiscover practice and facilitates Tigger's reassignAlles approach which does not re-analyse the junction with the novel V-allele
+    s$SEQUENCE_IMGT_TRUNC = sapply(s$SEQUENCE_IMGT, substring, first=1, last=309)
+    s$SEG_MUT_NC = unlist(getMutCount(s$SEQUENCE_IMGT_TRUNC, s$SEG_CALL, genotype_db))
+  } else {
+    s$SEG_SEQ = mapply(substr, s$SEQUENCE_INPUT, s$SEG_SEQ_START, s$SEG_SEQ_START+s$SEG_SEQ_LENGTH-1)   
+    s$SEG_REF_SEQ = mapply(substr, s$SEG_REF_IMGT, s$SEG_GERM_START, s$SEG_GERM_START+s$SEG_GERM_LENGTH-1)   
+    s$SEG_MUT_NC = stringdist(s$SEG_SEQ, s$SEG_REF_SEQ, method="hamming")
+  }
 }
 
-s0 = s[s$V_MUT_NC == 0,]
-genotype = s0 %>% group_by(V_CALL_GENOTYPED) %>% summarize(unmutated_sequences = n())
+s0 = s[s$SEG_MUT_NC == 0,]
+genotype = s0 %>% group_by(SEG_CALL) %>% summarize(unmutated_sequences = n())
 
 if(any(is.na(genotype$unmutated_sequences))) {
   genotype[is.na(genotype$unmutated_sequences),]$unmutated_sequences = 0
@@ -411,28 +579,40 @@ if(any(is.na(genotype$unmutated_sequences))) {
 total_unmutated = sum(genotype$unmutated_sequences)
 genotype$unmutated_frequency = round(100*genotype$unmutated_sequences/total_unmutated, digits=2)
 
-s_totals = s %>% group_by(V_CALL_GENOTYPED) %>% summarize(sequences = n())
+s_totals = s %>% group_by(SEG_CALL) %>% summarize(sequences = n())
 genotype = merge(genotype, s_totals, all=T)
 
-genotype$GENE = sapply(genotype$V_CALL_GENOTYPED, function(x) {if(grep('*', x, fixed=T)) {strsplit(x, '*', fixed=T)[[1]][1]} else {x}})
+genotype$GENE = sapply(genotype$SEG_CALL, function(x) {if(grep('*', x, fixed=T)) {strsplit(x, '*', fixed=T)[[1]][1]} else {x}})
 allelic_totals = genotype %>% group_by(GENE) %>% summarise(allelic_total=sum(sequences))
 genotype = merge(genotype, allelic_totals, all=T)
 genotype$allelic_percentage = round(100*genotype$sequences/genotype$allelic_total)
 
-genotype$unique_ds = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='D_CALL', seqs=s)
-genotype$unique_js = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='J_CALL', seqs=s)
-genotype$unique_cdr3s = sapply(genotype$V_CALL_GENOTYPED, unique_cdrs, segment='CDR3_IMGT', seqs=s)
+su=s[s$SEG_MUT_NC==0,]
 
-su=s[s$V_MUT_NC==0,]
-genotype$unique_ds_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='D_CALL', seqs=su)
-genotype$unique_js_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_calls, segment='J_CALL', seqs=su)
-genotype$unique_cdr3s_unmutated = sapply(genotype$V_CALL_GENOTYPED, unique_cdrs, segment='CDR3_IMGT', seqs=su)
+if(segment != 'V') {
+  genotype$unique_vs = sapply(genotype$SEG_CALL, unique_calls, segment='V_CALL', seqs=s)
+  genotype$unique_vs_unmutated = sapply(genotype$SEG_CALL, unique_calls, segment='V_CALL', seqs=su)
+}
+
+if(segment != 'D' && chain_type == 'H') {
+  genotype$unique_ds = sapply(genotype$SEG_CALL, unique_calls, segment='D_CALL', seqs=s)
+  genotype$unique_ds_unmutated = sapply(genotype$SEG_CALL, unique_calls, segment='D_CALL', seqs=su)
+}
+
+if(segment != 'J') {
+  genotype$unique_js = sapply(genotype$SEG_CALL, unique_calls, segment='J_CALL', seqs=s)
+  genotype$unique_js_unmutated = sapply(genotype$SEG_CALL, unique_calls, segment='J_CALL', seqs=su)
+}
+
+genotype$unique_cdr3s = sapply(genotype$SEG_CALL, unique_cdrs, segment='CDR3_IMGT', seqs=s)
+genotype$unique_cdr3s_unmutated = sapply(genotype$SEG_CALL, unique_cdrs, segment='CDR3_IMGT', seqs=su)
 
 genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/genotype$sequences, digits=2)
 
 # closest in genotype and in reference (inferred alleles only)
+# I do not know how to handle Ds at the moment. Possibly they should be aligned, then padded. NA for the time being.
 
-if (length(inferred_seqs) == 0) {
+if (length(inferred_seqs) == 0 || segment == 'D') {
   cat('Warning - no inferred sequences found.')
   
   genotype$reference_closest = NA
@@ -443,19 +623,19 @@ if (length(inferred_seqs) == 0) {
   genotype$reference_aa_subs = NA
   genotype$host_difference = NA
 } else {
-  nearest_ref = data.frame(t(sapply(seq_along(inferred_seqs), find_nearest, ref_genes=ref_genes, prefix='reference', inferred_seqs=inferred_seqs)))
-  nearest_ref$V_CALL_GENOTYPED = names(inferred_seqs)
-  genotype = merge(genotype, nearest_ref, by='V_CALL_GENOTYPED', all.x=T)
+  nearest_ref = data.frame(t(sapply(seq_along(inferred_seqs), find_nearest, ref_genes=ref_genes, prefix='reference', inferred_seqs=inferred_seqs, segment=segment)))
+  nearest_ref$SEG_CALL = names(inferred_seqs)
+  genotype = merge(genotype, nearest_ref, by='SEG_CALL', all.x=T)
   
-  nearest_ref = data.frame(t(sapply(seq_along(inferred_seqs), find_nearest, ref_genes=ref_genes[names(ref_genes) %in% genotype$V_CALL_GENOTYPED], prefix='host', inferred_seqs=inferred_seqs)))
-  nearest_ref$V_CALL_GENOTYPED = names(inferred_seqs)
-  genotype = merge(genotype, nearest_ref, by='V_CALL_GENOTYPED', all.x=T)
+  nearest_ref = data.frame(t(sapply(seq_along(inferred_seqs), find_nearest, ref_genes=ref_genes[names(ref_genes) %in% genotype$SEG_CALL], prefix='host', inferred_seqs=inferred_seqs, segment=segment)))
+  nearest_ref$SEG_CALL = names(inferred_seqs)
+  genotype = merge(genotype, nearest_ref, by='SEG_CALL', all.x=T)
 }
 
 
-genotype$nt_sequence = sapply(genotype$V_CALL_GENOTYPED, function(x) genotype_db[x][[1]])
+genotype$nt_sequence = sapply(genotype$SEG_CALL, function(x) genotype_db[x][[1]])
 
-genotype = dplyr::rename(genotype, sequence_id=V_CALL_GENOTYPED, closest_reference=reference_closest, closest_host=host_closest, 
+genotype = dplyr::rename(genotype, sequence_id=SEG_CALL, closest_reference=reference_closest, closest_host=host_closest, 
                    nt_diff=reference_difference, nt_diff_host=host_difference, nt_substitutions=reference_nt_diffs, aa_diff=reference_aa_difference,
                    aa_substitutions=reference_aa_subs)
 
@@ -487,18 +667,24 @@ if(length(dupes) > 0) {
 
 plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   g = genotype[genotype$sequence_id==allele,]
-  recs = s[s$V_CALL_GENOTYPED==allele,]
-  recs = recs[recs$V_MUT_NC < 21,]
+  recs = s[s$SEG_CALL==allele,]
+  recs = recs[recs$SEG_MUT_NC < 21,]
 
   if(nrow(recs) == 0) {
     return(NA)
   }
   
-  label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
-                      g$unique_cdr3s_unmutated, ' unique CDR3\n',
-                      g$unique_js_unmutated, ' unique J')
+  if(segment == 'V') {  
+    label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
+                        g$unique_cdr3s_unmutated, ' unique CDR3\n',
+                        g$unique_js_unmutated, ' unique J')
+  } else {
+    label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
+                        g$unique_cdr3s_unmutated, ' unique CDR3\n',
+                        g$unique_vs_unmutated, ' unique V')
+  }
   
-  g = ggplot(data=recs, aes(x=V_MUT_NC)) + 
+  g = ggplot(data=recs, aes(x=SEG_MUT_NC)) + 
     geom_bar(width=1.0) +
     labs(x='Nucleotide Difference', 
          y='Frequency', 
@@ -511,7 +697,7 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   return(ggplotGrob(g))
 }
 
-barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify, seg=paste0('IG', chain_type, segment)))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
 barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
 # nucleotide composition plots for novel alleles
@@ -556,7 +742,7 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   max_pos = min(max_pos, end_pos)
   min_pos = max(pos, 1)
   
-  recs = strsplit(s[s$V_CALL_GENOTYPED==gene_name,]$SEQUENCE_IMGT, "")
+  recs = strsplit(s[s$SEG_CALL==gene_name,]$SEQUENCE_IMGT, "")
   
   if(length(recs) < 1) {
     return(NA)
@@ -582,71 +768,159 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   return(ggplotGrob(g))
 }
 
-if('SEQUENCE_IMGT' %in% names(s)) {
-  end_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=313, filter=T)
-  end_composition_grobs = end_composition_grobs[!is.na(end_composition_grobs)]
 
-  whole_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
-  whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
-
-  # uncomment to sample an additional region - also uncomment line around 512
-  #snap_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=210, end_pos=230, filter=F)
-  #snap_composition_grobs = snap_composition_grobs[!is.na(snap_composition_grobs)]
+label_5_nuc = function(pos, ref) {
+  if(pos %% 5 == 0) {
+    n = pos
+  } else {
+    n = ''
+  }
+  
+  return(paste0(n, "\n", ref[[1]][pos]))
 }
+
+# Plot composition of a segment rather than the whole IMGT-aligned sequence
+plot_segment_composition = function(s, gene_sequences, pos, gene_name, filter, end_pos=999, r_justify=T) {
+  max_pos = nchar(gene_sequences[gene_name])
+  
+  if(max_pos < pos) {
+    return(NA)
+  }
+  
+  max_pos = min(max_pos, end_pos)
+  min_pos = max(pos, 1)
+  
+  # TODO - align here based on J or D gene alignment
+  recs = s[s$SEG_CALL==gene_name,]$SEG_SEQ
+  
+  if(length(recs) < 1) {
+    return(NA)
+  }
+  
+  if(r_justify) {
+    recs = str_pad(recs, max_pos-min_pos+1, 'left')
+  }
+  
+  recs = strsplit(recs, "")
+  
+  ref = strsplit(gene_sequences[gene_name], "")
+  x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
+  
+  g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
+    geom_bar(stat="count") +
+    labs(x='Position', y='Count', fill='', title=paste0('Gene ', gene_name)) +
+    theme_classic(base_size=12) + 
+    scale_y_continuous(expand=c(0,0)
+    )
+  
+  b =sapply(seq(pos, max_pos), label_5_nuc, ref=ref)
+  g = g + scale_x_discrete(labels=b)
+
+  return(ggplotGrob(g))
+}
+
+whole_composition_grobs = c()
+end_composition_grobs = c()
+
+if('SEQUENCE_IMGT' %in% names(s)) {
+  if(segment == 'V') {
+    end_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=313, filter=T)
+    end_composition_grobs = end_composition_grobs[!is.na(end_composition_grobs)]
+    whole_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
+    whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
+    # uncomment to sample an additional region - also uncomment line around 512
+    #snap_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=210, end_pos=230, filter=F)
+    #snap_composition_grobs = snap_composition_grobs[!is.na(snap_composition_grobs)]
+  } else if(segment == 'J') {
+    whole_composition_grobs = lapply(names(inferred_seqs), plot_segment_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
+    whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
+  }
+  # not sure what to do with Ds. Need to sort out alignment.
+}
+
 
 # J-allele usage and haplotype plots
 
-sj = s[!grepl(',', s$J_CALL),]            # unique J-calls only
-sj$j_gene = sapply(sj$J_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[1]]})
-sj$j_allele = sapply(sj$J_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[2]]})
+if(segment == 'V') {
+  sa = s[!grepl(',', s$J_CALL),]            # unique J-calls only
+  sa = rename(sa, J_CALL='A_CALL')
+} else {
+  sa = s[!grepl(',', s$V_CALL),]            # unique J-calls only
+  sa = rename(sa, V_CALL='A_CALL')
+}
 
-su = select(sj, J_CALL, j_gene, j_allele)
-j_genes = sort(unlist(unique(su$j_gene)))
+sa$a_gene = sapply(sa$A_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[1]]})
+sa$a_allele = sapply(sa$A_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[2]]})
+
+su = select(sa, A_CALL, a_gene, a_allele)
+a_genes = sort(unlist(unique(su$a_gene)))
 
 
 # calc percentage of each allele in a gene
 allele_props = function(gene, su) {
-  alleles = su %>% filter(j_gene==gene) %>% group_by(j_allele) %>% summarise(count=n())
-  alleles$j_gene = gene
+  alleles = su %>% filter(a_gene==gene) %>% group_by(a_allele) %>% summarise(count=n())
+  alleles$a_gene = gene
   total = sum(alleles$count)
   alleles$percent = 100*alleles$count/total
   return(alleles)
 } 
 
-j_props = do.call('rbind', lapply(j_genes, allele_props, su=su))
+a_props = do.call('rbind', lapply(a_genes, allele_props, su=su))
 
-j_allele_plot = ggplot() + geom_bar(aes(y=percent, x=j_gene, fill=j_allele), data=j_props, stat='identity') + 
-  labs(x='J Gene', 
+if(segment == 'V') {
+  theme = theme(legend.title = element_blank(), plot.margin=margin(1,4,19,4, 'cm'), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5))
+} else {
+  theme = theme(legend.title = element_blank(), plot.margin=margin(4,1,15,1, 'cm'), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5, size=7))
+}
+
+a_allele_plot = ggplot() + geom_bar(aes(y=percent, x=a_gene, fill=a_allele), data=a_props, stat='identity') + 
+  labs(x='Gene', 
        y='Allele %', 
-       title='J Allele Usage') +
+       title='Allele Usage') +
   theme_classic(base_size=15) +
-  theme(legend.title = element_blank(), plot.margin=margin(1,4,19,4, 'cm'), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5))
+  theme
 
 
-sj = sj[!grepl(',', sj$V_CALL_GENOTYPED),]        # remove ambiguous V-calls
-all_v = data.frame(gene=unique(sj$V_CALL_GENOTYPED), stringsAsFactors = F)
-all_v$order = sapply(all_v$gene, numify)
-all_v = all_v[order(all_v$order),]
-sj$V_CALL_GENOTYPED = factor(sj$V_CALL_GENOTYPED, all_v$gene)
+sa = sa[!grepl(',', sa$SEG_CALL),]        # remove ambiguous V-calls
+all_g = data.frame(gene=unique(sa$SEG_CALL), stringsAsFactors = F)
+all_g$order = sapply(all_g$gene, numify, seg=paste0('IG', chain_type, segment))
+all_g = all_g[order(all_g$order),]
+sa$SEG_CALL = factor(sa$SEG_CALL, all_g$gene)
 
 
 # differential plot by allele usage - if we have good alleles for this gene
 
-plot_differential = function(gene, j_props, sj) {
-  jp = j_props[j_props$j_gene==gene,]
-  jp = jp[order(jp$percent, decreasing=T),]
-  
-  if(nrow(jp) < 2 || jp[1,]$percent > 75 || jp[2,]$percent < 20) {
+plot_differential = function(gene, a_props, sa) {
+  ap = a_props[a_props$a_gene==gene,]
+  ap = ap[order(ap$percent, decreasing=T),]
+
+  if(nrow(ap) < 2 || ap[1,]$percent > 75 || ap[2,]$percent < 20) {
     return(NA)
   }
+
+  if(segment == 'V') {
+    margins = 1
+  } else {
+    margins = 4
+  }
   
-  a1 = jp[1,]$j_allele
-  a2 = jp[2,]$j_allele
-  recs = sj %>% filter(j_gene==gene) %>% filter(j_allele==a1 | j_allele==a2)
-  recs = recs %>% select(V_CALL_GENOTYPED, j_allele) %>% group_by(V_CALL_GENOTYPED, j_allele) %>% summarise(count=n())
-  recs$pos = sapply(recs$j_allele, function(x) {if(x==a1) {1} else {-1}})
+    
+  a1 = ap[1,]$a_allele
+  a2 = ap[2,]$a_allele
+  recs = sa %>% filter(a_gene==gene) %>% filter(a_allele==a1 | a_allele==a2)
+  recs = recs %>% select(SEG_CALL, a_allele) %>% group_by(SEG_CALL, a_allele) %>% summarise(count=n())
+  recs$pos = sapply(recs$a_allele, function(x) {if(x==a1) {1} else {-1}})
   recs$count = recs$count * recs$pos
-  g = ggplot(recs, aes(x=V_CALL_GENOTYPED,y=count, fill=j_allele)) + 
+  
+  # don't let columns get too broad
+  ncols = nrow(recs)
+  if(ncols < 15) {
+    width = 21 - 2*margins
+    width = width * ncols/15
+    margins = (21 - width)/2
+  }
+  
+  g = ggplot(recs, aes(x=SEG_CALL, y=count, fill=a_allele)) + 
       geom_bar(stat='identity', position='identity') +
       labs(x='', 
          y='Count', 
@@ -654,12 +928,12 @@ plot_differential = function(gene, j_props, sj) {
       theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
           panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
           axis.text=element_text(size=8), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
-          plot.margin=margin(1,1,15,1, 'cm')) +
-      scale_fill_discrete(name  ="J- Allele")
+          plot.margin=margin(1,margins,15,margins, 'cm')) +
+      scale_fill_discrete(name  ="Allele")
   return(ggplotGrob(g))
 }
 
-haplo_grobs = lapply(j_genes, plot_differential, j_props=j_props, sj=sj)
+haplo_grobs = lapply(a_genes, plot_differential, a_props=a_props, sa=sa)
 haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
 
 
@@ -680,7 +954,7 @@ if(length(barplot_grobs) > 0) {
 }
 
 #x=print(marrangeGrob(snap_composition_grobs, nrow=3, ncol=1,top=NULL))
-grid.arrange(j_allele_plot)
+grid.arrange(a_allele_plot)
 x=print(marrangeGrob(haplo_grobs, nrow=1, ncol=1,top=NULL))
 x=dev.off()
 
@@ -692,21 +966,21 @@ genotype$haplotyping_gene = ''
 genotype$haplotyping_ratio = ''
 
 if(!is.na(hap_gene)) {
-  jp = j_props[j_props$j_gene==hap_gene,]
-  jp = jp[order(jp$percent, decreasing=T),]
+  ap = a_props[a_props$a_gene==hap_gene,]
+  ap = ap[order(ap$percent, decreasing=T),]
   
-  if(nrow(jp) < 2 || jp[1,]$percent > 75 || jp[2,]$percent < 20 || (jp[1,]$percent+jp[2,]$percent < 90)) {
-    cat(paste0('Alellelic ratio is unsuitable for haplotyping analysis based on ', hap_gene))
+  if(nrow(ap) < 2 || ap[1,]$percent > 75 || ap[2,]$percent < 20 || (ap[1,]$percent+ap[2,]$percent < 90)) {
+    cat(paste0('Alelleic ratio is unsuitable for haplotyping analysis based on ', hap_gene, '\n'))
   } else
   {
     genotype$haplotyping_gene = hap_gene
     genotype = select(genotype, -c(haplotyping_ratio))
     
-    a1 = jp[1,]$j_allele
-    a2 = jp[2,]$j_allele
-    cat(paste0('Haplotyping analysis is based on gene ', hap_gene, ' alleles ', a1, ':', a2))
-    recs = sj %>% filter(j_gene==hap_gene) %>% filter(j_allele==a1 | j_allele==a2)
-    recs = recs %>% select(sequence_id=V_CALL_GENOTYPED, j_allele) %>% group_by(sequence_id, j_allele) %>% summarise(count=n()) %>% spread(j_allele, count)
+    a1 = ap[1,]$a_allele
+    a2 = ap[2,]$a_allele
+    cat(paste0('Haplotyping analysis is based on gene ', hap_gene, ' alleles ', a1, ':', a2, '\n'))
+    recs = sa %>% filter(a_gene==hap_gene) %>% filter(a_allele==a1 | a_allele==a2)
+    recs = recs %>% select(sequence_id=SEG_CALL, a_allele) %>% group_by(sequence_id, a_allele) %>% summarise(count=n()) %>% spread(a_allele, count)
     recs[is.na(recs)] = 0
     names(recs) = c('sequence_id', 'a1', 'a2')
     recs$totals = recs$a1 + recs$a2
@@ -723,9 +997,32 @@ if(!is.na(hap_gene)) {
 
 # Save Genotype file
 
-g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
-           aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_ds,
-           unique_js,unique_cdr3s, unique_ds_unmutated, unique_js_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+if(chain_type == 'H') {
+  if(segment == 'V') {
+    g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
+             aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_ds,
+             unique_js,unique_cdr3s, unique_ds_unmutated, unique_js_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+  } else if(segment == 'D') {
+    g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
+               aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_vs,
+               unique_js,unique_cdr3s, unique_vs_unmutated, unique_js_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+  } else if(segment == 'J') {
+    g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
+               aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_vs,
+               unique_ds,unique_cdr3s, unique_vs_unmutated, unique_ds_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+  } 
+} else {
+  if(segment == 'V') {
+    g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
+               aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, 
+               unique_js,unique_cdr3s, unique_js_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+  } else if(segment == 'J') {
+    g = select(genotype, sequence_id, sequences, closest_reference, closest_host, nt_diff, nt_diff_host, nt_substitutions, aa_diff,
+               aa_substitutions, assigned_unmutated_frequency, unmutated_frequency, unmutated_sequences, unmutated_umis, allelic_percentage, unique_vs,
+               unique_cdr3s, unique_vs_unmutated, unique_cdr3s_unmutated, haplotyping_gene, haplotyping_ratio, nt_sequence)
+  } 
+}
+
 g[is.na(g)] = ''
 
 write.csv(g, paste0(file_prefix, '_ogrdb_report.csv'), row.names=F)

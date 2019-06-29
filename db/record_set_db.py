@@ -50,11 +50,11 @@ def copy_RecordSet(c_from, c_to):
 class RecordSet_table(StyledTable):
     id = Col("id", show=False)
     rec_accession_no = StyledCol("Accession Number", tooltip="Accession number of the record set within the repository (eg SRR7663069)")
-    rec_record_title = StyledCol("Record TItle", tooltip="Title of sequence record in the repository")
+    rec_record_title = StyledCol("Record Title", tooltip="Title of sequence record in the repository")
 
 
 def make_RecordSet_table(results, private = False, classes=()):
-    t=create_table(base=RecordSet_table)
+    t = create_table(base=RecordSet_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -66,7 +66,7 @@ class RecordSet_view(Table):
 def make_RecordSet_view(sub, private = False):
     ret = RecordSet_view([])
     ret.items.append({"item": "Accession Number", "value": sub.rec_accession_no, "tooltip": "Accession number of the record set within the repository (eg SRR7663069)", "field": "rec_accession_no"})
-    ret.items.append({"item": "Record TItle", "value": sub.rec_record_title, "tooltip": "Title of sequence record in the repository", "field": "rec_record_title"})
+    ret.items.append({"item": "Record Title", "value": sub.rec_record_title, "tooltip": "Title of sequence record in the repository", "field": "rec_record_title"})
     ret.items.append({"item": "URL", "value": sub.rec_url, "tooltip": "URL to record in NCBI", "field": "rec_url"})
     return ret
 

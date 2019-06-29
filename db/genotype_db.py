@@ -25,9 +25,11 @@ class Genotype(db.Model):
     unmutated_umis = db.Column(db.Integer)
     allelic_percentage = db.Column(db.Numeric(precision=(12,2)))
     unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
+    unique_vs = db.Column(db.Integer)
     unique_ds = db.Column(db.Integer)
     unique_js = db.Column(db.Integer)
     unique_cdr3s = db.Column(db.Integer)
+    unique_vs_unmutated = db.Column(db.Integer)
     unique_ds_unmutated = db.Column(db.Integer)
     unique_js_unmutated = db.Column(db.Integer)
     unique_cdr3s_unmutated = db.Column(db.Integer)
@@ -53,9 +55,11 @@ def save_Genotype(db, object, form, new=False):
     object.unmutated_umis = form.unmutated_umis.data
     object.allelic_percentage = form.allelic_percentage.data
     object.unmutated_frequency = form.unmutated_frequency.data
+    object.unique_vs = form.unique_vs.data
     object.unique_ds = form.unique_ds.data
     object.unique_js = form.unique_js.data
     object.unique_cdr3s = form.unique_cdr3s.data
+    object.unique_vs_unmutated = form.unique_vs_unmutated.data
     object.unique_ds_unmutated = form.unique_ds_unmutated.data
     object.unique_js_unmutated = form.unique_js_unmutated.data
     object.unique_cdr3s_unmutated = form.unique_cdr3s_unmutated.data
@@ -85,9 +89,11 @@ def populate_Genotype(db, object, form):
     form.unmutated_umis.data = object.unmutated_umis
     form.allelic_percentage.data = object.allelic_percentage
     form.unmutated_frequency.data = object.unmutated_frequency
+    form.unique_vs.data = object.unique_vs
     form.unique_ds.data = object.unique_ds
     form.unique_js.data = object.unique_js
     form.unique_cdr3s.data = object.unique_cdr3s
+    form.unique_vs_unmutated.data = object.unique_vs_unmutated
     form.unique_ds_unmutated.data = object.unique_ds_unmutated
     form.unique_js_unmutated.data = object.unique_js_unmutated
     form.unique_cdr3s_unmutated.data = object.unique_cdr3s_unmutated
@@ -113,9 +119,11 @@ def copy_Genotype(c_from, c_to):
     c_to.unmutated_umis = c_from.unmutated_umis
     c_to.allelic_percentage = c_from.allelic_percentage
     c_to.unmutated_frequency = c_from.unmutated_frequency
+    c_to.unique_vs = c_from.unique_vs
     c_to.unique_ds = c_from.unique_ds
     c_to.unique_js = c_from.unique_js
     c_to.unique_cdr3s = c_from.unique_cdr3s
+    c_to.unique_vs_unmutated = c_from.unique_vs_unmutated
     c_to.unique_ds_unmutated = c_from.unique_ds_unmutated
     c_to.unique_js_unmutated = c_from.unique_js_unmutated
     c_to.unique_cdr3s_unmutated = c_from.unique_cdr3s_unmutated
@@ -141,9 +149,11 @@ class Genotype_table(StyledTable):
     unmutated_umis = StyledCol("Unmutated UMIs", tooltip="The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)")
     allelic_percentage = StyledCol("Allelic %", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100")
     unmutated_frequency = StyledCol("Total unmutated population (%)", tooltip="The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100")
+    unique_vs = StyledCol("Unique Vs", tooltip="The number of V allele calls (i.e., unique allelic sequences) associated with this allele")
     unique_ds = StyledCol("Unique Ds", tooltip="The number of D allele calls (i.e., unique allelic sequences) associated with this allele")
     unique_js = StyledCol("Unique Js", tooltip="The number of J allele calls (i.e., unique allelic sequences) associated with this allele")
     unique_cdr3s = StyledCol("Unique CDR3s", tooltip="The number of unique CDR3s associated with this allele")
+    unique_vs_unmutated = StyledCol("Unique Vs with unmutated", tooltip="The number of V allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele")
     unique_ds_unmutated = StyledCol("Unique Ds with unmutated", tooltip="The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele")
     unique_js_unmutated = StyledCol("Unique Js with unmutated", tooltip="The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele")
     unique_cdr3s_unmutated = StyledCol("Unique CDR3s with unmutated", tooltip="The number of unique CDR3s associated with unmutated sequences of this allele")
@@ -152,7 +162,7 @@ class Genotype_table(StyledTable):
 
 
 def make_Genotype_table(results, private = False, classes=()):
-    t=create_table(base=Genotype_table)
+    t = create_table(base=Genotype_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -177,9 +187,11 @@ def make_Genotype_view(sub, private = False):
     ret.items.append({"item": "Unmutated UMIs", "value": sub.unmutated_umis, "tooltip": "The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)", "field": "unmutated_umis"})
     ret.items.append({"item": "Allelic %", "value": sub.allelic_percentage, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100", "field": "allelic_percentage"})
     ret.items.append({"item": "Total unmutated population (%)", "value": sub.unmutated_frequency, "tooltip": "The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100", "field": "unmutated_frequency"})
+    ret.items.append({"item": "Unique Vs", "value": sub.unique_vs, "tooltip": "The number of V allele calls (i.e., unique allelic sequences) associated with this allele", "field": "unique_vs"})
     ret.items.append({"item": "Unique Ds", "value": sub.unique_ds, "tooltip": "The number of D allele calls (i.e., unique allelic sequences) associated with this allele", "field": "unique_ds"})
     ret.items.append({"item": "Unique Js", "value": sub.unique_js, "tooltip": "The number of J allele calls (i.e., unique allelic sequences) associated with this allele", "field": "unique_js"})
     ret.items.append({"item": "Unique CDR3s", "value": sub.unique_cdr3s, "tooltip": "The number of unique CDR3s associated with this allele", "field": "unique_cdr3s"})
+    ret.items.append({"item": "Unique Vs with unmutated", "value": sub.unique_vs_unmutated, "tooltip": "The number of V allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele", "field": "unique_vs_unmutated"})
     ret.items.append({"item": "Unique Ds with unmutated", "value": sub.unique_ds_unmutated, "tooltip": "The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele", "field": "unique_ds_unmutated"})
     ret.items.append({"item": "Unique Js with unmutated", "value": sub.unique_js_unmutated, "tooltip": "The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele", "field": "unique_js_unmutated"})
     ret.items.append({"item": "Unique CDR3s with unmutated", "value": sub.unique_cdr3s_unmutated, "tooltip": "The number of unique CDR3s associated with unmutated sequences of this allele", "field": "unique_cdr3s_unmutated"})

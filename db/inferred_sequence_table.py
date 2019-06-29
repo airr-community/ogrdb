@@ -36,7 +36,7 @@ class InferredSequenceTableMatchCol(StyledCol):
 
         # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
         alignments = pairwise2.align.globalms(item['gene_sequence'], item['nt_sequence'], 2, -1, -2, -1, one_alignment_only=True)
-        alignment = format_aln(format_alignment(*alignments[0]), 'Sequence', item['sequence_name'], 50)
+        alignment = format_aln(format_alignment(*alignments[0]), 'Sequence', item['sequence_name'], 50) if len(alignments) > 0 else ''
         content =  Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon %s"></span>&nbsp;</button>' \
             % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
         return(content)

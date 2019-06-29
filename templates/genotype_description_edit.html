@@ -47,3 +47,68 @@
 </form>
 
 {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+
+    hc_seq_values = '';
+    lc_seq_values = '';
+
+    function arrayRemove(arr, value) {
+
+       return arr.filter(function(ele){
+           return ele != value;
+       });
+    }
+
+    function seq_type_options() {
+        lightchains = ['IGK', 'IGL', 'TRA', 'TRG'];
+        sel_value = $('#sequence_type').val();
+
+        $('#sequence_type').children().remove();
+
+        if(lightchains.includes($('#locus').val())) {
+            opts = lc_seq_values;
+        } else {
+            opts = hc_seq_values;
+        }
+
+        $.each(opts, function(key, value) {
+             $('#sequence_type')
+                 .append($("<option></option>")
+                 .attr("value",value)
+                 .text(value));
+        });
+
+        $('#sequence_type').val(sel_value);
+    }
+
+    $('#locus').change(function() {
+       seq_type_options();
+    });
+
+    $(document).ready(function () {
+        seq_options = $('#sequence_type option');
+
+        hc_seq_values = $.map(seq_options ,function(option) {
+            return option.value;
+        });
+
+        lc_seq_values = hc_seq_values;
+        h_seqs = ['D', 'CH1', 'CH2', 'CH3', 'CH4']
+
+        hc_seq_values.forEach(function(item, index) {
+            if(h_seqs.includes(item)) {
+                lc_seq_values = arrayRemove(lc_seq_values, item)
+            }
+        });
+
+        seq_type_options();
+    });
+
+    </script>
+
+
+{% endblock %}

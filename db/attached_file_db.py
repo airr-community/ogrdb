@@ -45,7 +45,7 @@ class AttachedFile_table(StyledTable):
 
 
 def make_AttachedFile_table(results, private = False, classes=()):
-    t=create_table(base=AttachedFile_table)
+    t = create_table(base=AttachedFile_table)
     ret = t(results, classes=classes)
     return ret
 

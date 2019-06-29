@@ -652,9 +652,11 @@ def edit_genotype_description(id):
         return redirect(url_for('edit_submission', id=desc.submission.submission_id))
 
     form = setup_genotype_description_form(desc)
+    form.locus.choices = [(x,x) for x in db.session.query(Committee).filter(Committee.species==desc.submission.species).one_or_none().loci.replace(' ', '').split(',')]
+    form.sequence_type.choices = [(x,x) for x in db.session.query(Committee).filter(Committee.species==desc.submission.species).one_or_none().sequence_types.replace(' ', '').split(',')]
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
-    ncbi =  desc.submission.repertoire[0].repository_name == 'NCBI SRA'
+    ncbi = desc.submission.repertoire[0].repository_name == 'NCBI SRA'
 
     if request.method == 'POST':
         if form.cancel.data:
@@ -701,7 +703,6 @@ def edit_genotype_description(id):
                 return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id, ncbi=ncbi, sam_table=sam_table, srr_table=srr_table)
     else:
         populate_GenotypeDescription(db, desc, form)
-
         if desc.inference_tool is not None:
             form.inference_tool_id.data = str(desc.inference_tool_id)
             form.inference_tool_id.default = str(desc.inference_tool_id)
@@ -741,7 +742,7 @@ def genotype(id, editable=False):
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
     srr_table.rec_accession_no.name = 'Record Set'
-    ncbi =  desc.submission.repertoire[0].repository_name == 'NCBI SRA'
+    ncbi = desc.submission.repertoire[0].repository_name == 'NCBI SRA'
 
     form = GenotypeViewOptionsForm()
     tables = {}
@@ -1168,6 +1169,8 @@ def new_sequence(species):
             gene_description.ext_5prime = seq.ext_5prime
             gene_description.start_5prime_ext = seq.start_5prime_ext
             gene_description.end_5prime_ext = seq.end_5prime_ext
+            gene_description.locus = seq.genotype_description.locus
+            gene_description.sequence = seq.genotype_description.sequence_type
 
             # Add submitter to acknowledgements
 
@@ -1182,9 +1185,6 @@ def new_sequence(species):
             try:
                 sn = gene_description.sequence_name
                 if sn[:2] == 'IG' or sn[:2] == 'TR':
-                    ld = {'H': 'IGH', 'K': 'IGK', 'L': 'IGL', 'A': 'TRA', 'B': 'TRB', 'G': 'TRG', 'D': 'TRD'}
-                    gene_description.locus = ld[sn[2]]
-                    gene_description.sequence_type = sn[3] if sn[3] in ('V', 'D', 'J', 'C') else ''
                     if '-' in sn:
                         if '*' in sn:
                             snq = sn.split('*')
@@ -1217,6 +1217,7 @@ def new_sequence(species):
 
 
     return render_template('sequence_new.html', form=form, species=species)
+
 
 @app.route('/get_sequences/<id>', methods=['GET'])
 @login_required
@@ -1713,34 +1714,28 @@ def remove_test():
     return redirect('/')
 
 
-# Temp route to shift genotype counts from mutated to unmutated
-@app.route('/tidy_genotype/<id>', methods=['GET'])
+# Temp route to add IGH/V segment to existing genotypes
+@app.route('/tidy_genotype', methods=['GET'])
 @login_required
-def tidy_genotype(id):
+def tidy_genotype():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    sub = db.session.query(Submission).filter_by(submission_id = id).one_or_none()
-    if sub is None:
-        flash('Submission not found')
+    subs = db.session.query(Submission).all()
+    if subs is None:
+        flash('Submissions not found')
         return None
 
-    for desc in sub.genotype_descriptions:
-        for gen in desc.genotypes:
-            if gen.unique_ds is not None and gen.unique_ds_unmutated is None:
-                gen.unique_ds_unmutated = gen.unique_ds
-                gen.unique_ds = None
-            if gen.unique_js is not None and gen.unique_js_unmutated is None:
-                gen.unique_js_unmutated = gen.unique_js
-                gen.unique_js = None
-            if gen.unique_cdr3s is not None and gen.unique_cdr3s_unmutated is None:
-                gen.unique_cdr3s_unmutated = gen.unique_cdr3s
-                gen.unique_cdr3s = None
+    for sub in subs:
+        for desc in sub.genotype_descriptions:
+            if desc.locus is None or desc.locus == '':
+                desc.locus = 'IGH'
+            if desc.sequence_type is None or desc.sequence_type == '':
+                desc.sequence_type = 'V'
 
     db.session.commit()
 
-    return('Genotype modified.')
-
+    return('Genotypes modified.')
 
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])

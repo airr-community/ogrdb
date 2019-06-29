@@ -12,21 +12,18 @@ Submission:
         submission_id:
             type: string
             description: Unique ID assigned by IARC on recipt of submission
-            completed_by: IARC
             label: Submission ID
             readonly: true
             tableview: true
         submission_date:
             type: date
             description: Date submission received
-            completed_by: IARC
             label: Submission Date
             readonly: true
             tableview: true
         submission_status:
             type: [draft,reviewing,published,complete]
             description: Status of submission
-            completed_by: IARC
             label: Submission Status
             readonly: true
             tableview: true
@@ -38,33 +35,28 @@ Submission:
         submitter_name:
             type: string
             description: Full contact information of the submitter, i.e. the person depositing the data
-            completed_by: submitter
             label: Submitter
             tableview: true
             readonly: true
         submitter_address:
             type: string
             description: Institution and full address of submitter
-            completed_by: submitter
             label: Submitter Address
             readonly: true
         submitter_email:
             type: email_address
             description: Preferred email address of submitter
-            completed_by: submitter
             label: Submitter Email
             readonly: true
             private: true
         species:
             description: Binomial designation of subject's species
-            completed_by: submitter
             label: Species
             type: []
             tableview: true
         population_ethnicity:
             type: string
             description: Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)
-            completed_by: submitter
             label: Ethnicity
         owner_id:
             type: integer
@@ -186,19 +178,16 @@ Repertoire:
         pub_ids:
             type: list of PubMed ids
             description: Comma-separated list of PubMed IDs of peer-reviewed publications describing this dataset
-            completed_by: submitter
             label: PubMed IDs
             ignore: true
         repository_name:
             type: string
             description: Name of the repository holding the sequence dataset.
-            completed_by: submitter
             label: Repository
             nonblank: true
         rep_accession_no:
             type: string
             description: Accession number or serial number within the repository. For NCBI please provide the NCBI BioProject (e.g. PRJNA349143)
-            completed_by: submitter
             label: Accession Number
             nonblank: true
         rep_title:
@@ -208,40 +197,33 @@ Repertoire:
         dataset_url:
             type: url
             description: URL of the study or project within the repository
-            completed_by: submitter
             label: Dataset URL
         miairr_compliant:
             type: [Yes, No]
             description: Yes if the annotated reads and associated metadata is available in MiAIRR format
-            completed_by: submitter
             label: MiAIRR Compliant?
         miairr_link:
             type: url
             description: Link to MiAIRR metadata, if available
-            completed_by: submitter
             label: MiAIRR URL
             nonblank: false
         sequencing_platform:
             type: string
             description: Designation of sequencing instrument used
-            completed_by: submitter
             label: Sequencing Platform
             nonblank: true
         read_length:
             type: string
             description: Read length in bases for each direction
-            completed_by: submitter
             label: Read Length
             nonblank: true
         primer_sets:
             type: list primer_sets
             description: PCR primer sets used for sequence amplification
-            completed_by: submitter
             ignore: true
         primers_overlapping:
             type: [Yes, No]
             description: Do primers overlap with the stated sequence of any inferred allele?
-            completed_by: submitter
             label: Primers Overlapping?
         submission_id:
             type: integer
@@ -376,28 +358,24 @@ InferenceTool:
         tool_settings_name:
             type: string
             description: Descriptive name for this combination of tool and settings
-            completed_by: submitter
             tableview: true
             label: Tool/Settings Name
             nonblank: true
         tool_name:
             type: string
             description: Name of the inference tool
-            completed_by: submitter
             tableview: true
             label: Tool Name
             nonblank: true
         tool_version:
             type: string
             description: Version of the inference tool
-            completed_by: submitter
             tableview: true
             label: Tool Version
             nonblank: true
         tool_starting_database:
             type: text
             description: Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)
-            completed_by: submitter
             rows: 10
             width: wide
             label: Starting Database
@@ -405,7 +383,6 @@ InferenceTool:
         tool_settings:
             type: text
             description: Settings/configuration of the tool when used to provide the inferences
-            completed_by: submitter
             rows: 20
             label: Settings
             width: wide
@@ -443,7 +420,6 @@ InferredSequence:
         seq_accession_no:
             type: string
             description: Accession number of the inferred allele within the repository (e.g. BK010573)
-            completed_by: submitter
             label: Accession Number
             nonblank: true
         seq_record_title:
@@ -457,12 +433,10 @@ InferredSequence:
         deposited_version:
             type: string
             description: Version number of the sequence within the repository (e.g. 1)
-            completed_by: submitter
             label: Version
         run_ids:
             type: string
             description: Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)
-            completed_by: submitter
             label: Select sets
             nonblank: true
         inferred_extension:
@@ -515,7 +489,7 @@ RecordSet:
         rec_record_title:
             type: string
             description: Title of sequence record in the repository
-            label: Record TItle
+            label: Record Title
             tableview: true
         rec_url:
             type: string
@@ -533,7 +507,7 @@ RecordSet:
             relationship: [genotype_description, GenotypeDescription, record_set]
 
 
-# V-Gene Genotype, for each subject referenced in the set of inferred sequences
+# Inferred Genotype
 GenotypeDescription:
     discriminator: AIRR
     description: Summary details of the genotype
@@ -543,21 +517,18 @@ GenotypeDescription:
         genotype_name:
             type: string
             description: Descriptive name for this genotype
-            completed_by: submitter
             tableview: true
             nonblank: true
             label: Genotype Name
         genotype_subject_id:
             type: string
             description: Identifier of the subject from which this genotype was inferred
-            completed_by: submitter
             tableview: true
             label: Subject ID
             nonblank: true
         genotype_biosample_ids:
             type: list
             description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)
-            completed_by: submitter
             label: Sample IDs
             nonblank: true
         genotype_run_ids:
@@ -578,6 +549,18 @@ GenotypeDescription:
             foreign_key: inference_tool.id
             relationship: [inference_tool, InferenceTool, genotype_descriptions]
             label: Inference Tool
+        locus:
+            type: [IGH, IGK, IGL, TRA, TRB, TRD, TRG]
+            description: Gene locus
+            label: Locus
+            tableview: true
+            width: narrow
+        sequence_type:
+            type: [V,D,J,CH1,CH2,CH3,CH4,Leader]
+            description: Sequence type (V, D, J, CH1 ... CH4, Leader)
+            label: Sequence Type
+            tableview: true
+            width: narrow
         genotype_filename:
             type: string
             description: Name of the uploaded file from which the genotype was read
@@ -604,7 +587,7 @@ SampleName:
         sam_record_title:
             type: string
             description: Title of sequence record in the repository
-            label: Record TItle
+            label: Record Title
             tableview: true
         sam_url:
             type: string
@@ -627,140 +610,161 @@ Genotype:
         sequence_id:
             type: string
             description: Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)
-            completed_by: submitter
             tableview: true
             label: Allele name
+            nonblank: true
         sequences:
             type: integer
             description: Overall number of sequences assigned to this allele
-            completed_by: submitter
             tableview: true
             label: Sequences
+            nonblank: true
         closest_reference:
             type: string
             description: For inferred alleles, the closest reference gene and allele, as inferred by the tool
-            completed_by: submitter
             tableview: true
             label: Closest Reference
+            novel_only: true
+            nonblank: true
         closest_host:
             type: string
             description: For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype
-            completed_by: submitter
             tableview: true
             label: Closest in Host
+            novel_only: true
+            nonblank: true
         nt_diff:
             type: integer
             description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele
-            completed_by: submitter
             tableview: true
             label: NT Diffs (reference)
+            novel_only: true
+            nonblank: true
         nt_diff_host:
             type: integer
             description: For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele that is in the subject's inferred genotype
-            completed_by: submitter
             tableview: true
             label: NT Diffs (host)
+            novel_only: true
+            nonblank: true
         nt_substitutions:
             type: string
             description: For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
-            completed_by: submitter            
             tableview: true
             label: NT Substs (reference)
+            novel_only: true
+            nonblank: true
         aa_diff:
             type: integer
             description: For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele
-            completed_by: submitter
             tableview: true
             label: AA Diffs (reference)
+            novel_only: true
+            nonblank: true
         aa_substitutions:
             type: string
             description: For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
-            completed_by: submitter            
             tableview: true
             label: AA Substs (reference)
+            novel_only: true
+            nonblank: true
         unmutated_sequences:
             type: integer
             description: The number of sequences exactly matching this unmutated sequence
-            completed_by: submitter
             tableview: true
             label: Unmutated Seqs
+            nonblank: true
         assigned_unmutated_frequency:
             type: number
             description: The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100
-            completed_by: submitter
             tableview: true
             label: Unmutated % within allele
+            nonblank: true
         unmutated_umis:
             type: integer
             description: The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
-            completed_by: submitter
             tableview: true
             label: Unmutated UMIs
         allelic_percentage:
             type: number
             description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100
-            completed_by: submitter
             tableview: true
             label: Allelic %
+            nonblank: true
         unmutated_frequency:
             type: number
             description: The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
-            completed_by: submitter
             tableview: true
             label: Total unmutated population (%)
+            nonblank: true
+        unique_vs:
+            type: integer
+            description:  The number of V allele calls (i.e., unique allelic sequences) associated with this allele
+            tableview: true
+            label: Unique Vs
+            segments: ['D', 'JH', 'JL']
+            nonblank: true
         unique_ds:
             type: integer
             description:  The number of D allele calls (i.e., unique allelic sequences) associated with this allele
-            completed_by: submitter
             tableview: true
             label: Unique Ds
+            segments: ['VH', 'JH']
+            nonblank: true
         unique_js:
             type: integer
             description:  The number of J allele calls (i.e., unique allelic sequences) associated with this allele
-            completed_by: submitter
             tableview: true
             label: Unique Js
+            segments: ['VH', 'D', 'VL']
+            nonblank: true
         unique_cdr3s:
             type: integer
             description: The number of unique CDR3s associated with this allele
-            completed_by: submitter
             tableview: true
             label: Unique CDR3s
+            nonblank: true
+        unique_vs_unmutated:
+            type: integer
+            description:  The number of V allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+            tableview: true
+            label: Unique Vs with unmutated
+            segments: ['D', 'JH', 'JL']
+            nonblank: true
         unique_ds_unmutated:
             type: integer
             description:  The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
-            completed_by: submitter
             tableview: true
             label: Unique Ds with unmutated
+            segments: ['VH', 'JH']
+            nonblank: true
         unique_js_unmutated:
             type: integer
             description:  The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
-            completed_by: submitter
             tableview: true
             label: Unique Js with unmutated
+            segments: ['VH', 'D', 'VL']
+            nonblank: true
         unique_cdr3s_unmutated:
             type: integer
             description: The number of unique CDR3s associated with unmutated sequences of this allele
-            completed_by: submitter
             tableview: true
             label: Unique CDR3s with unmutated
         haplotyping_gene:
             type: string
             description: The gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)
-            completed_by: submitter
             tableview: true
             label: Haplotyping Gene
         haplotyping_ratio:
             type: string
             description: The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
-            completed_by: submitter
             tableview: true
             label: Haplotyping Ratio
         nt_sequence:
             type: IUPAC nucleotide notation
             description: The consensus sequence provided by the inference tool
-            completed_by: submitter
             label: NT Sequence
+            nonblank: true
         description_id:
             type: integer
             hide: true

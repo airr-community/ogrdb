@@ -48,7 +48,7 @@ class Primer_table(StyledTable):
 
 
 def make_Primer_table(results, private = False, classes=()):
-    t=create_table(base=Primer_table)
+    t = create_table(base=Primer_table)
     ret = t(results, classes=classes)
     return ret
 

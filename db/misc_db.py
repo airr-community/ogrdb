@@ -12,3 +12,5 @@ class Committee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     committee = db.Column(db.String(80), unique=True)
     species = db.Column(db.String(80), unique=True)
+    loci = db.Column(db.String(80))
+    sequence_types = db.Column(db.String(80))

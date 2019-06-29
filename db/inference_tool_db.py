@@ -63,7 +63,7 @@ class InferenceTool_table(StyledTable):
 
 
 def make_InferenceTool_table(results, private = False, classes=()):
-    t=create_table(base=InferenceTool_table)
+    t = create_table(base=InferenceTool_table)
     ret = t(results, classes=classes)
     return ret
 

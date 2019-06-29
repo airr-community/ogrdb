@@ -49,7 +49,7 @@ class PrimerSet_table(StyledTable):
 
 
 def make_PrimerSet_table(results, private = False, classes=()):
-    t=create_table(base=PrimerSet_table)
+    t = create_table(base=PrimerSet_table)
     ret = t(results, classes=classes)
     return ret
 

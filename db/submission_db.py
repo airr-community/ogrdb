@@ -79,7 +79,7 @@ class Submission_table(StyledTable):
 
 
 def make_Submission_table(results, private = False, classes=()):
-    t=create_table(base=Submission_table)
+    t = create_table(base=Submission_table)
     ret = t(results, classes=classes)
     return ret
 

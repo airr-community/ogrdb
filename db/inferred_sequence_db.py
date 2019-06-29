@@ -94,7 +94,7 @@ class InferredSequence_table(StyledTable):
 
 
 def make_InferredSequence_table(results, private = False, classes=()):
-    t=create_table(base=InferredSequence_table)
+    t = create_table(base=InferredSequence_table)
     ret = t(results, classes=classes)
     return ret
 

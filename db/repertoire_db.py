@@ -51,7 +51,7 @@ class PubId_table(StyledTable):
 
 
 def make_PubId_table(results, private = False, classes=()):
-    t=create_table(base=PubId_table)
+    t = create_table(base=PubId_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -112,7 +112,7 @@ class Acknowledgements_table(StyledTable):
 
 
 def make_Acknowledgements_table(results, private = False, classes=()):
-    t=create_table(base=Acknowledgements_table)
+    t = create_table(base=Acknowledgements_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -196,7 +196,7 @@ class Repertoire_table(StyledTable):
 
 
 def make_Repertoire_table(results, private = False, classes=()):
-    t=create_table(base=Repertoire_table)
+    t = create_table(base=Repertoire_table)
     ret = t(results, classes=classes)
     return ret
 

@@ -22,6 +22,8 @@ class GenotypeDescription(db.Model, GenotypeDescriptionMixin):
     submission = db.relationship('Submission', backref = 'genotype_descriptions')
     inference_tool_id = db.Column(db.Integer, db.ForeignKey('inference_tool.id'))
     inference_tool = db.relationship('InferenceTool', backref = 'genotype_descriptions')
+    locus = db.Column(db.String(255))
+    sequence_type = db.Column(db.String(255))
     genotype_filename = db.Column(db.String(1000))
 
 
@@ -33,6 +35,8 @@ def save_GenotypeDescription(db, object, form, new=False):
     object.genotype_run_ids = form.genotype_run_ids.data
     object.gen_ncbi_hash = form.gen_ncbi_hash.data
     object.inference_tool_id = form.inference_tool_id.data
+    object.locus = form.locus.data
+    object.sequence_type = form.sequence_type.data
     object.genotype_filename = form.genotype_filename.data
 
     if new:
@@ -48,6 +52,8 @@ def populate_GenotypeDescription(db, object, form):
     form.genotype_biosample_ids.data = object.genotype_biosample_ids
     form.genotype_run_ids.data = object.genotype_run_ids
     form.gen_ncbi_hash.data = object.gen_ncbi_hash
+    form.locus.data = object.locus
+    form.sequence_type.data = object.sequence_type
     form.genotype_filename.data = object.genotype_filename
 
 
@@ -59,6 +65,8 @@ def copy_GenotypeDescription(c_from, c_to):
     c_to.genotype_biosample_ids = c_from.genotype_biosample_ids
     c_to.genotype_run_ids = c_from.genotype_run_ids
     c_to.gen_ncbi_hash = c_from.gen_ncbi_hash
+    c_to.locus = c_from.locus
+    c_to.sequence_type = c_from.sequence_type
     c_to.genotype_filename = c_from.genotype_filename
 
 
@@ -67,11 +75,13 @@ class GenotypeDescription_table(StyledTable):
     id = Col("id", show=False)
     genotype_name = StyledCol("Genotype Name", tooltip="Descriptive name for this genotype")
     genotype_subject_id = StyledCol("Subject ID", tooltip="Identifier of the subject from which this genotype was inferred")
+    locus = StyledCol("Locus", tooltip="Gene locus")
+    sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     genotype_filename = StyledCol("Genotype Filename", tooltip="Name of the uploaded file from which the genotype was read")
 
 
 def make_GenotypeDescription_table(results, private = False, classes=()):
-    t=create_table(base=GenotypeDescription_table)
+    t = create_table(base=GenotypeDescription_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -86,6 +96,8 @@ def make_GenotypeDescription_view(sub, private = False):
     ret.items.append({"item": "Subject ID", "value": sub.genotype_subject_id, "tooltip": "Identifier of the subject from which this genotype was inferred", "field": "genotype_subject_id"})
     ret.items.append({"item": "Sample IDs", "value": sub.genotype_biosample_ids, "tooltip": "Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)", "field": "genotype_biosample_ids"})
     ret.items.append({"item": "Sequence Sets", "value": sub.genotype_run_ids, "tooltip": "Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)", "field": "genotype_run_ids"})
+    ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
+    ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
     ret.items.append({"item": "Genotype Filename", "value": sub.genotype_filename, "tooltip": "Name of the uploaded file from which the genotype was read", "field": "genotype_filename"})
     return ret
 

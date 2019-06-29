@@ -59,7 +59,7 @@ class JournalEntry_table(StyledTable):
 
 
 def make_JournalEntry_table(results, private = False, classes=()):
-    t=create_table(base=JournalEntry_table)
+    t = create_table(base=JournalEntry_table)
     ret = t(results, classes=classes)
     return ret
 

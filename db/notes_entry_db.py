@@ -45,7 +45,7 @@ class NotesEntry_table(StyledTable):
 
 
 def make_NotesEntry_table(results, private = False, classes=()):
-    t=create_table(base=NotesEntry_table)
+    t = create_table(base=NotesEntry_table)
     ret = t(results, classes=classes)
     return ret
 

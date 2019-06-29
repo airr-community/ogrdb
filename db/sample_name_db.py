@@ -48,11 +48,11 @@ def copy_SampleName(c_from, c_to):
 class SampleName_table(StyledTable):
     id = Col("id", show=False)
     sam_accession_no = StyledCol("Accession Number", tooltip="Accession number of the record set within the repository (eg SAMN06821283)")
-    sam_record_title = StyledCol("Record TItle", tooltip="Title of sequence record in the repository")
+    sam_record_title = StyledCol("Record Title", tooltip="Title of sequence record in the repository")
 
 
 def make_SampleName_table(results, private = False, classes=()):
-    t=create_table(base=SampleName_table)
+    t = create_table(base=SampleName_table)
     ret = t(results, classes=classes)
     return ret
 
@@ -64,7 +64,7 @@ class SampleName_view(Table):
 def make_SampleName_view(sub, private = False):
     ret = SampleName_view([])
     ret.items.append({"item": "Accession Number", "value": sub.sam_accession_no, "tooltip": "Accession number of the record set within the repository (eg SAMN06821283)", "field": "sam_accession_no"})
-    ret.items.append({"item": "Record TItle", "value": sub.sam_record_title, "tooltip": "Title of sequence record in the repository", "field": "sam_record_title"})
+    ret.items.append({"item": "Record Title", "value": sub.sam_record_title, "tooltip": "Title of sequence record in the repository", "field": "sam_record_title"})
     ret.items.append({"item": "URL", "value": sub.sam_url, "tooltip": "URL to record in NCBI", "field": "sam_url"})
     return ret
 

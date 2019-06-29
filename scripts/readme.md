@@ -9,9 +9,6 @@ a comma-separated-variable (CSV) file. You can download:
 - An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
 - [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
 
-At the moment, OGRDB only accepts submissions of inferred human IGHV genes. The definitions and associated tools will be updated as the scope of accepted 
-inferences is widened.
-
 
 ## Creating the Genotype File with genotype_statistics.R
 
@@ -20,14 +17,18 @@ of any particular inference tool. The script also generates a report containing 
 ([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
 any inferred genotype, even if you don't wish to submit it to OGRDB.
 
+At present the script supports VH, VK, VL and JH, JK, JL gene submissions. It will be extended to support other genes as 
+IARCs start to accept them.
+
 The use of the script with specific inference tools is described at the end of this file. 
 
 ### Prerequisites
 
-*Germline_file - FASTA file containing the IGHV reference germline sequences provided as input to the inference tool.* 
+*Germline_file - FASTA file containing the IG reference germline sequences provided as input to the inference tool.* 
 
 * Sequences must correspond exactly to those used by the tool.
 * They must be IMGT-aligned
+* They must cover all genes called in the read file, except inferred novel alleles
 * The header can either be in IMGT's germline library format, or simply consist of the allele name
 * The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP)
   and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes from time to time, please make sure that 
@@ -46,16 +47,21 @@ inference tools that do not write the inferred sequences to a separate file.
 
 * The format will be determined automatically by the script.
 * AIRR format files must contain at least the following columns:
-`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`
+`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J gene processing  it must also contain 
+`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end` 
 * CHANGEO files must contain at least the following columns:
-`SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`
+`SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`
+
+* D- related fields are only required for heavy chain records.
+
 * In both file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
 (including calls of the novel alleles). Sequences should be IMGT-aligned.
+
 * For IgDiscover, the file 'final/filtered.tab' should be used.
 
 *R libraries*
 
-The following libraries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings`
+The following libraries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings, stringdist`
 
 With the exception of Biostrings, they may be installed using the R function `install.packages`. For Biostrings,
 use the following commands from within R:
@@ -71,7 +77,7 @@ The script is intended to be run by Rscript.
 
 *Command Syntax*
 
-> Rscript genotype_statistics.R \<germline_file\> \<species\> \<inferred_file\> \<read_file\> \[\<haplotyping_gene\>\]
+> Rscript genotype_statistics.R \<germline_file\> \<species\> \<inferred_file\> \<read_file\> \<chain\> \[\<haplotyping_gene\>\]
 
 `<species>` must be present, but is only used by the script if the germline file is in IMGT format, in which case
 it should contain the species name used in field 3 of the header, with spaces removed, e.g. Homosapiens for Human.
@@ -93,8 +99,8 @@ Please upload the plots file as an attachment to the Notes section of your OGRDB
 The script produces the following plots:
 * For each allele used in the the read file, a histogram showing the number of mutated and unmutated sequences
 * Barcharts showing nucleotide usage at locations in the IMGT-aligned sequence: both across the sequence as a whole, and in more detail at the 3' end
-* A barchart showing usage of the alleles of each J-gene, across the whole genotype. This can be used to identify a suitable J-gene for haplotyping analysis.
-* For each potential J-gene haplotyping candidate, a plot comparing the usage of the two most frequently used alleles of that gene.
+* A barchart showing usage of the alleles of potential haplotyping genes, across the whole genotype. This can be used to identify a suitable gene for haplotyping analysis.
+* For each potential haplotyping candidate (selected by the tool from the usage chart above), a plot comparing the usage of the two most frequently used alleles of that gene.
 
 The nucleotide usage plots are not produced from IgDiscover output, as aligned V-sequences are not available.
 
@@ -110,7 +116,7 @@ To complete an analysis using the supplied example file and a downloaded IMGT re
 
 ```angular2
 wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP
-Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv IGHJ6
+Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TWO01A_naive_novel.fasta TWO01A_naive_genotyped.tsv VH IGHJ6
 ``` 
 
 ### Usage Notes
@@ -119,7 +125,7 @@ Usage notes are indicative only and are not intended to discount other approache
 
 ### Usage Notes - TIgGER
 
-
+To conduct a V-gene analysis with TIgGER:
 * Use `findNovelAlleles` to identify novel alleles in a Change-O-formatted data set. Write these to a FASTA file. 
 * Use `inferGenotype` or `inferGenotypeBayesian` to infer the genotype.
 * Use `reassignAlleles` to correct allele calls in the data set, based on the inferred genotype
@@ -133,13 +139,20 @@ TIgGER provides additonal information, including its own plots and statistics We
 ### Usage Notes - IgDiscover
 
 Assuming that you have copied the script file to IgDiscover's `final` directory following an IgDiscover run, the following
-commands will download the IMGT reference file and run the analysis:
+commands will download the IMGT reference file and run a VH gene analysis:
 
 ```
 $ wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP
 $ unzip final.tab.gz
-$ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fasta filtered.tab
+$ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/V.fasta filtered.tab VH
 ```
+
+alternatively, to produce a JH gene analysis:
+
+```
+$ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens database/J.fasta filtered.tab JH
+```
+
 
 ### Usage Notes - partis
 
@@ -181,7 +194,7 @@ partis annotate --extra-annotation-columns cdr3_seqs:invalid:in_frames:stops --i
 # Extract and merge required information from YAML and TSV files
 python convert_partis.py TW01A.yaml TW01A.tsv TW01A_OGRDB.tsv TW01A_V_OGRDB.fasta
 # Process the resulting output to produce the genotye file and plots
-Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TW01A_V_OGRDB.fasta TW01A_OGRDB.tsv
+Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TW01A_V_OGRDB.fasta TW01A_OGRDB.tsv VH
 
 ```
 
