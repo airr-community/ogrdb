@@ -9,6 +9,7 @@ a comma-separated-variable (CSV) file. You can download:
 - An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
 - [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
 
+The preferred way to create the genotype file is with the supplied script genotype_statistics.R, which is described below.
 
 ## Creating the Genotype File with genotype_statistics.R
 
@@ -17,7 +18,7 @@ of any particular inference tool. The script also generates a report containing 
 ([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
 any inferred genotype, even if you don't wish to submit it to OGRDB.
 
-At present the script supports VH, VK, VL and JH, JK, JL gene submissions. It will be extended to support other genes as 
+At present the script supports VH, VK, VL and JH, JK, JL gene inferences. It will be extended to support other genes as 
 IARCs start to accept them.
 
 The use of the script with specific inference tools is described at the end of this file. 
@@ -198,6 +199,18 @@ Rscript genotype_statistics.R IMGT_REF_GAPPED.fasta Homosapiens TW01A_V_OGRDB.fa
 
 ```
 
+### Usage Notes - IMPre
+
+IMPre does not provide a set of sequences annotated with the novel allele calls. The sequences must be
+annotated by a separate tool in order to provide the information needed for the OGRDB genotype. One possible approach
+is as follows:
+
+* Annotate with IgBLAST using a custom germline set that includes the novel alleles inferred by IMPre. Details for
+creating IgBLAST's germline database are given in the [setup notes](https://ncbi.github.io/igblast/cook/How-to-set-up.html).
+The novel alleles inferred by IMPre can be added to the germline sequences downloaded from IMGT, before running
+makeblastdb. 
+* Select the AIRR output format, and provide the resulting annotion file to genotype_statistics.R, along with the 
+novel inferences provided by IMPre
 
 ### Acknowledgements
 
