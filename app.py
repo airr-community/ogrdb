@@ -1170,7 +1170,7 @@ def new_sequence(species):
             gene_description.start_5prime_ext = seq.start_5prime_ext
             gene_description.end_5prime_ext = seq.end_5prime_ext
             gene_description.locus = seq.genotype_description.locus
-            gene_description.sequence = seq.genotype_description.sequence_type
+            gene_description.sequence_type = seq.genotype_description.sequence_type
 
             # Add submitter to acknowledgements
 
