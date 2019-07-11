@@ -6,7 +6,7 @@
 ,Number of sequences': where sequences are counted the count should be conducted after quality control UMI processing and replicate/error cloud removal.,
 ,Reference genes and alleles' - this is the set of genes and alleles provided to the inference tool.,
 ,,
-,Field,description
+,Field,Description
 ,sequence_id,"Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene) "
 ,sequences,Overall number of sequences assigned to this allele
 ,closest_reference,"For inferred alleles, the closest reference gene and allele, as inferred by the tool"
@@ -16,14 +16,16 @@
 ,nt_substitutions,"For inferred alleles,  comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele.  Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes."
 ,aa_diff,"For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele"
 ,aa_substitutions,"For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes."
+,unmutated_sequences,The number of sequences exactly matching this unmutated sequence
 ,assigned_unmutated_frequency,"The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100"
-,unmutated_frequency,"The number of sequences exactly matching this sequence divided by the number of sequences exactly matching any allele of any gene, *100"
-,unmutated_sequences,The number of records in the sequence dataset exactly matching this unmutated sequence 
 ,unmutated_umis,The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
 ,allelic_percentage,"The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100"
-,unique_ds,"The number of D allele calls (i.e., unique allelic sequences) found associated with the inferred sequence"
-,unique_js,"The number of J allele calls (i.e., unique allelic sequences) found associated with the inferred sequence"
-,unique_cdr3s,The number of unique CDR3s found associated with an inferred V sequence
+,unmutated_frequency,"The number of sequences exactly matching this sequence divided by the number of sequences exactly matching any allele of any gene, *100"
+,unique_vs,"The number of V allele calls (i.e., unique allelic sequences) found associated with this allele"
+,unique_ds,"The number of D allele calls (i.e., unique allelic sequences) found associated with this allele"
+,unique_js,"The number of J allele calls (i.e., unique allelic sequences) found associated with this allele"
+,unique_cdr3s,The number of unique CDR3s found associated with this allele
+,unique_vs_unmutated,"The number of V allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele"
 ,unique_ds_unmutated,"The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele"
 ,unique_js_unmutated,"The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele"
 ,unique_cdr3s_unmutated,The number of unique CDR3s associated with unmutated sequences of this allele
