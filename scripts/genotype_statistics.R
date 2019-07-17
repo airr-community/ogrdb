@@ -81,17 +81,17 @@ if(length(args) > 4) {
   }
 } else {   # for R Studio Source
   # VH - tigger (Example in Readme)
-  work_dir = 'D:/Research/ogre/scripts'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'TWO01A_naive_novel.fasta'
-  filename = 'TWO01A_naive_genotyped.tsv'
-  chain = 'VH'
-  hap_gene = 'IGHJ6'
+  # work_dir = 'D:/Research/ogre/scripts'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel.fasta'
+  # filename = 'TWO01A_naive_genotyped.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
 
   # JH - tigger
-  # work_dir = 'D:/Research/ogre/scripts/tests/J_tigger'
+  # work_dir = 'D:/Research/ogre/scripts/tests/JH_tigger'
   # setwd(work_dir)
   # ref_filename = 'IMGT_REF_GAPPED_J_CHANGES.fasta'
   # species = 'Homosapiens'
@@ -122,13 +122,14 @@ if(length(args) > 4) {
   # hap_gene = 'IGHV2-5'
   
   # VH - partis
-  # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
-  # setwd(work_dir)
-  # ref_filename = 'IMGT_REF_GAPPED.fasta'
-  # species = 'Homosapiens'
-  # inferred_filename = 'TW02A_V_OGRDB.fasta'
-  # filename = 'TW02A_OGRDB.tsv'
-  # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TW02A_V_OGRDB.fasta'
+  filename = 'TW02A_OGRDB.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
   
 } 
 
@@ -155,33 +156,20 @@ file_prefix = basename(strsplit(filename, '.', fixed=T)[[1]][1])
 
 pdf(NULL) # this seems to stop an empty Rplots.pdf from being created. I don't know why.
 
-# a reasonable order for the v-alleles
-
-numify = function(gene, seg) {
-  gg = strsplit(gsub(seg, '', gene, fixed=T), split='-', fixed=T)
-  if(length(gg) > 1) {
-    gs = c(gg[[1]][[1]])
-    gg = strsplit(gg[[1]][[2]], split='*', fixed=T)
-    gs = c(gs, gg[[1]])
-  } else {
-    gs = strsplit(gg[[1]][[1]], split='*', fixed=T)
-  }
-  
-  for(i in 1:length(gs[[1]])) {
-    gs[[1]][[i]] = str_pad(gs[[1]][[i]], 4, pad = "0")
-  }
-  
-  return(paste0(gs, collapse=''))
-}
-
 # Functions to provide reasonable sorting of gene names
 
 gene_family = function(gene_name) {
   fam = strsplit(gene_name, '-')[[1]][[1]]
+  if(grepl('*', fam, fixed=T)) {
+    fam = strsplit(fam, '*', fixed=T)[[1]][[1]]
+  }
   return(substr(fam, nchar(fam), nchar(fam)))
 }
 
 gene_number = function(gene_name) {
+  if(!grepl('-', gene_name, fixed=T)) {
+    return('000')
+  }
   num = strsplit(gene_name, '-')[[1]][[2]]
   if(grepl('*', num, fixed=T)) {
     num = strsplit(num, '*', fixed=T)[[1]][[1]]
@@ -197,19 +185,28 @@ allele_number = function(gene_name) {
   return(str_pad(strsplit(gene_name, '*', fixed=T)[[1]][[2]], 3, side='left', pad='0')) 
 }
 
-sort_alleles = function(allele_vec) {
-  allele_names=DataFrame(genes=as.character(unique(allele_vec)))
+order_alleles = function(allele_names) {
+
   allele_names$family = sapply(allele_names$genes, gene_family)
   allele_names$number = sapply(allele_names$genes, gene_number)
   allele_names$allele = sapply(allele_names$genes, allele_number)
+
   alleles = unique(allele_names$allele)[order(unique(allele_names$allele))]
   allele_names$allele_ind = sapply(allele_names$allele, function(x){which(alleles==x)})
+  
   families = unique(allele_names$family)[order(unique(allele_names$family))]
   allele_names$family_ind = sapply(allele_names$family, function(x){which(families==x)})
+  
   numbers = unique(allele_names$number)[order(unique(allele_names$number))]
   allele_names$number_ind = sapply(allele_names$number, function(x){which(numbers==x)})
+  
   allele_names$index = allele_names$allele_ind + 1000*allele_names$number_ind + 1000000*allele_names$family_ind
-  return(allele_names$genes[order(allele_names$index)])
+  return(order(allele_names$index))
+}
+
+sort_alleles = function(allele_vec) {
+  allele_names=DataFrame(genes=as.character(unique(allele_vec)))
+  return(allele_names$genes[order_alleles(allele_names)])
 }
 
 # count unique calls
@@ -734,7 +731,6 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   return(ggplotGrob(g))
 }
 
-#barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify, seg=paste0('IG', chain_type, segment)))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
 barplot_grobs = lapply(sort_alleles(names(genotype_db)), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
 barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
@@ -889,6 +885,7 @@ if(segment == 'V') {
 
 sa$a_gene = sapply(sa$A_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[1]]})
 sa$a_allele = sapply(sa$A_CALL, function(x) {strsplit(x, '*', fixed=T)[[1]][[2]]})
+sa$a_gene = factor(sa$a_gene, sort_alleles(unique(sa$a_gene)))
 
 su = select(sa, A_CALL, a_gene, a_allele)
 a_genes = sort(unlist(unique(su$a_gene)))
@@ -1031,6 +1028,7 @@ if(!is.na(hap_gene)) {
   
 
 # Save Genotype file
+genotype = genotype[order_alleles(DataFrame(genes=as.character(genotype$sequence_id))),]
 
 if(chain_type == 'H') {
   if(segment == 'V') {
