@@ -81,14 +81,14 @@ if(length(args) > 4) {
   }
 } else {   # for R Studio Source
   # VH - tigger (Example in Readme)
-  # work_dir = 'D:/Research/ogre/scripts'
-  # setwd(work_dir)
-  # ref_filename = 'IMGT_REF_GAPPED.fasta'
-  # species = 'Homosapiens'
-  # inferred_filename = 'TWO01A_naive_novel.fasta'
-  # filename = 'TWO01A_naive_genotyped.tsv'
-  # chain = 'VH'
-  # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TWO01A_naive_novel.fasta'
+  filename = 'TWO01A_naive_genotyped.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
 
   # JH - tigger
   # work_dir = 'D:/Research/ogre/scripts/tests/J_tigger'
@@ -112,14 +112,14 @@ if(length(args) > 4) {
   # 
   # JL - igdiscover
   # just a fake based on JH
-  work_dir = 'D:/Research/ogre/scripts/tests/JL_igdiscover'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED_fake_j_fake_JK.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'J.fasta'
-  filename = 'filtered.tab'
-  chain = 'JK'
-  hap_gene = 'IGHV2-5'
+  # work_dir = 'D:/Research/ogre/scripts/tests/JL_igdiscover'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED_fake_j_fake_JK.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'J.fasta'
+  # filename = 'filtered.tab'
+  # chain = 'JK'
+  # hap_gene = 'IGHV2-5'
   
   # VH - partis
   # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
@@ -174,6 +174,43 @@ numify = function(gene, seg) {
   return(paste0(gs, collapse=''))
 }
 
+# Functions to provide reasonable sorting of gene names
+
+gene_family = function(gene_name) {
+  fam = strsplit(gene_name, '-')[[1]][[1]]
+  return(substr(fam, nchar(fam), nchar(fam)))
+}
+
+gene_number = function(gene_name) {
+  num = strsplit(gene_name, '-')[[1]][[2]]
+  if(grepl('*', num, fixed=T)) {
+    num = strsplit(num, '*', fixed=T)[[1]][[1]]
+  }
+  return(str_pad(num, 3, side='left', pad='0'))
+}
+
+allele_number = function(gene_name) {
+  if(!grepl('*', gene_name, fixed=T)) {
+    return('000')
+  }
+  
+  return(str_pad(strsplit(gene_name, '*', fixed=T)[[1]][[2]], 3, side='left', pad='0')) 
+}
+
+sort_alleles = function(allele_vec) {
+  allele_names=DataFrame(genes=as.character(unique(allele_vec)))
+  allele_names$family = sapply(allele_names$genes, gene_family)
+  allele_names$number = sapply(allele_names$genes, gene_number)
+  allele_names$allele = sapply(allele_names$genes, allele_number)
+  alleles = unique(allele_names$allele)[order(unique(allele_names$allele))]
+  allele_names$allele_ind = sapply(allele_names$allele, function(x){which(alleles==x)})
+  families = unique(allele_names$family)[order(unique(allele_names$family))]
+  allele_names$family_ind = sapply(allele_names$family, function(x){which(families==x)})
+  numbers = unique(allele_names$number)[order(unique(allele_names$number))]
+  allele_names$number_ind = sapply(allele_names$number, function(x){which(numbers==x)})
+  allele_names$index = allele_names$allele_ind + 1000*allele_names$number_ind + 1000000*allele_names$family_ind
+  return(allele_names$genes[order(allele_names$index)])
+}
 
 # count unique calls
 unique_calls = function(gene, segment, seqs) {
@@ -688,7 +725,7 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
     geom_bar(width=1.0) +
     labs(x='Nucleotide Difference', 
          y='Frequency', 
-         title=paste0('Gene ', allele),
+         title=allele,
          subtitle=paste0(g$sequences, ' sequences assigned')) +
     theme_classic(base_size=12) +
     theme(aspect.ratio = 1/1) +
@@ -697,7 +734,8 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   return(ggplotGrob(g))
 }
 
-barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify, seg=paste0('IG', chain_type, segment)))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+#barplot_grobs = lapply(names(genotype_db)[order(sapply(names(genotype_db), numify, seg=paste0('IG', chain_type, segment)))], plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+barplot_grobs = lapply(sort_alleles(names(genotype_db)), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
 barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
 # nucleotide composition plots for novel alleles
@@ -882,10 +920,7 @@ a_allele_plot = ggplot() + geom_bar(aes(y=percent, x=a_gene, fill=a_allele), dat
 
 
 sa = sa[!grepl(',', sa$SEG_CALL),]        # remove ambiguous V-calls
-all_g = data.frame(gene=unique(sa$SEG_CALL), stringsAsFactors = F)
-all_g$order = sapply(all_g$gene, numify, seg=paste0('IG', chain_type, segment))
-all_g = all_g[order(all_g$order),]
-sa$SEG_CALL = factor(sa$SEG_CALL, all_g$gene)
+sa$SEG_CALL = factor(sa$SEG_CALL, sort_alleles(unique(sa$SEG_CALL)))
 
 
 # differential plot by allele usage - if we have good alleles for this gene
