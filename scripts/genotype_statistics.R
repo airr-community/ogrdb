@@ -60,6 +60,8 @@ library(gridExtra)
 library(tidyr)
 library(dplyr)
 library(stringdist)
+library(RColorBrewer)
+
 
 # to install biostrings:
 # source("http://bioconductor.org/biocLite.R")
@@ -81,14 +83,14 @@ if(length(args) > 4) {
   }
 } else {   # for R Studio Source
   # VH - tigger (Example in Readme)
-  # work_dir = 'D:/Research/ogre/scripts'
-  # setwd(work_dir)
-  # ref_filename = 'IMGT_REF_GAPPED.fasta'
-  # species = 'Homosapiens'
-  # inferred_filename = 'TWO01A_naive_novel.fasta'
-  # filename = 'TWO01A_naive_genotyped.tsv'
-  # chain = 'VH'
-  # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
+  filename = 'TWO01A_naive_genotyped.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
 
   # JH - tigger
   # work_dir = 'D:/Research/ogre/scripts/tests/JH_tigger'
@@ -122,14 +124,14 @@ if(length(args) > 4) {
   # hap_gene = 'IGHV2-5'
   
   # VH - partis
-  work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'TW02A_V_OGRDB.fasta'
-  filename = 'TW02A_OGRDB.tsv'
-  chain = 'VH'
-  hap_gene = 'IGHJ6'
+ # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+ # setwd(work_dir)
+ # ref_filename = 'IMGT_REF_GAPPED.fasta'
+ # species = 'Homosapiens'
+ # inferred_filename = 'TW02A_V_OGRDB.fasta'
+ # filename = 'TW02A_OGRDB.tsv'
+ # chain = 'VH'
+ # hap_gene = 'IGHJ6'
   
 } 
 
@@ -159,21 +161,30 @@ pdf(NULL) # this seems to stop an empty Rplots.pdf from being created. I don't k
 # Functions to provide reasonable sorting of gene names
 
 gene_family = function(gene_name) {
-  fam = strsplit(gene_name, '-')[[1]][[1]]
-  if(grepl('*', fam, fixed=T)) {
-    fam = strsplit(fam, '*', fixed=T)[[1]][[1]]
+  if(!grepl('-', gene_name, fixed=T)) {
+    return( '000')
   }
+  fam = strsplit(gene_name, '-')[[1]][[1]]
   return(substr(fam, nchar(fam), nchar(fam)))
 }
 
 gene_number = function(gene_name) {
-  if(!grepl('-', gene_name, fixed=T)) {
-    return('000')
+  if(!grepl('-', gene_name, fixed=T) && grepl('_S', gene_name, fixed=T)) {
+    num = strsplit(gene_name, '_S')[[1]][[2]]
+  } else {
+    spl = strsplit(gene_name, '-')
+    
+    if(length(spl[[1]]) > 1) {
+      num = spl[[1]][[2]]
+      } else {
+      num = spl[[1]][[1]]
+      }
   }
-  num = strsplit(gene_name, '-')[[1]][[2]]
+  
   if(grepl('*', num, fixed=T)) {
     num = strsplit(num, '*', fixed=T)[[1]][[1]]
   }
+  
   return(str_pad(num, 3, side='left', pad='0'))
 }
 
@@ -321,7 +332,7 @@ imgt_gap_inferred = function(seqname, seqs, ref_genes) {
 
   # Do we need to gap?
   if(grepl('.', seqs[seqname], fixed=TRUE))
-    return(seqs[seqname])
+    return(unname(seqs[seqname]))
   
   # Find the closest reference gene
   r = data.frame(GENE=names(ref_genes),SEQ=ref_genes, stringsAsFactors = F)
@@ -463,8 +474,10 @@ if(inferred_filename != '-') {
 # ignore inferred genes that are listed in the reference. gap any that aren't already gapped.
 
 inferred_seqs = inferred_seqs[!(names(inferred_seqs) %in% names(ref_genes))]
-#inferred_seqs = sapply(names(inferred_seqs), imgt_gap_inferred, seqs=inferred_seqs, ref_genes=ref_genes)
 
+if(segment == 'V') {
+	inferred_seqs = sapply(names(inferred_seqs), imgt_gap_inferred, seqs=inferred_seqs, ref_genes=ref_genes)
+}
 
 # Read the sequences. Changeo format is assumed unless airr or IgDiscover format is identified
 # TODO - check and give nice error message if any columns are missing
@@ -484,7 +497,7 @@ if('sequence_id' %in% names(s))
   }
   
   req_names = c('sequence', 'sequence_id', 'v_call_genotyped', 'd_call', 'j_call', 'sequence_alignment', 'cdr3')
-  col_names = c('SEQUENCE_INPUT', 'SEQUENCE_ID', 'V_CALL', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
+  col_names = c('SEQUENCE_INPUT', 'SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'SEQUENCE_IMGT', 'CDR3_IMGT')
 
   if(segment != 'V') {
     a_seg = tolower(segment)
@@ -514,7 +527,7 @@ if('sequence_id' %in% names(s))
     s$VDJ_nt = s$VJ_nt
   }
   
-  col_names = c('SEQUENCE_ID', 'V_CALL', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC', 'D_MUT_NC', 'J_MUT_NC', 'SEQUENCE', 'JUNCTION_START', 'V_SEQ', 'D_SEQ', 'J_SEQ')
+  col_names = c('SEQUENCE_ID', 'V_CALL_GENOTYPED', 'D_CALL', 'J_CALL', 'CDR3_IMGT', 'V_MUT_NC', 'D_MUT_NC', 'J_MUT_NC', 'SEQUENCE', 'JUNCTION_START', 'V_SEQ', 'D_SEQ', 'J_SEQ')
   s = select(s, name, V_gene, D_gene, J_gene, CDR3_nt, V_errors, D_errors, J_errors, VDJ_nt, V_CDR3_start, V_nt, D_region, J_nt)
   names(s) = col_names 
   # adjust IgDiscover's V_CDR3_START to the 1- based location of the conserved cysteine
@@ -536,6 +549,13 @@ if(segment == 'V') {
   s = rename(s, c('D_CALL'='SEG_CALL'))
 } else {
   s = rename(s, c('J_CALL'='SEG_CALL'))
+}
+
+if('V_CALL_GENOTYPED' %in% names(s)) {
+  if('V_CALL' %in% names(s)) {
+    s = subset(s, select = -c('V_CALL'))
+  }
+  s = rename(s, c('V_CALL_GENOTYPED'='V_CALL'))
 }
 
 s$CDR3_IMGT = toupper(s$CDR3_IMGT)
@@ -616,7 +636,7 @@ genotype$unmutated_frequency = round(100*genotype$unmutated_sequences/total_unmu
 s_totals = s %>% group_by(SEG_CALL) %>% summarize(sequences = n())
 genotype = merge(genotype, s_totals, all=T)
 
-genotype$GENE = sapply(genotype$SEG_CALL, function(x) {if(grep('*', x, fixed=T)) {strsplit(x, '*', fixed=T)[[1]][1]} else {x}})
+genotype$GENE = sapply(genotype$SEG_CALL, function(x) {if(grepl('*', x, fixed=T)) {strsplit(x, '*', fixed=T)[[1]][1]} else {x}})
 allelic_totals = genotype %>% group_by(GENE) %>% summarise(allelic_total=sum(sequences))
 genotype = merge(genotype, allelic_totals, all=T)
 genotype$allelic_percentage = round(100*genotype$sequences/genotype$allelic_total)
@@ -721,7 +741,7 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   g = ggplot(data=recs, aes(x=SEG_MUT_NC)) + 
     geom_bar(width=1.0) +
     labs(x='Nucleotide Difference', 
-         y='Frequency', 
+         y='Count', 
          title=allele,
          subtitle=paste0(g$sequences, ' sequences assigned')) +
     theme_classic(base_size=12) +
@@ -786,6 +806,7 @@ plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_
   x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
 
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
+		   scale_fill_brewer(palette='Dark2') +
            geom_bar(stat="count") +
            labs(x='Position', y='Count', fill='', title=paste0('Gene ', gene_name)) +
            theme_classic(base_size=12) + 
@@ -841,6 +862,7 @@ plot_segment_composition = function(s, gene_sequences, pos, gene_name, filter, e
   x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
   
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
+    scale_fill_brewer(palette='Dark2') +
     geom_bar(stat="count") +
     labs(x='Position', y='Count', fill='', title=paste0('Gene ', gene_name)) +
     theme_classic(base_size=12) + 
@@ -908,13 +930,24 @@ if(segment == 'V') {
   theme = theme(legend.title = element_blank(), plot.margin=margin(4,1,15,1, 'cm'), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5, size=7))
 }
 
+# color_brewer doesn't work with large numbers of categories
+
+if(length(unique(a_props$a_allele)) > 6) {
 a_allele_plot = ggplot() + geom_bar(aes(y=percent, x=a_gene, fill=a_allele), data=a_props, stat='identity') + 
   labs(x='Gene', 
        y='Allele %', 
        title='Allele Usage') +
   theme_classic(base_size=15) +
   theme
-
+} else {
+  a_allele_plot = ggplot() + geom_bar(aes(y=percent, x=a_gene, fill=a_allele), data=a_props, stat='identity') + 
+    scale_fill_brewer(palette='Dark2') +
+    labs(x='Gene', 
+         y='Allele %', 
+         title='Allele Usage') +
+    theme_classic(base_size=15) +
+    theme
+}
 
 sa = sa[!grepl(',', sa$SEG_CALL),]        # remove ambiguous V-calls
 sa$SEG_CALL = factor(sa$SEG_CALL, sort_alleles(unique(sa$SEG_CALL)))
@@ -954,14 +987,14 @@ plot_differential = function(gene, a_props, sa) {
   
   g = ggplot(recs, aes(x=SEG_CALL, y=count, fill=a_allele)) + 
       geom_bar(stat='identity', position='identity') +
-      labs(x='', 
+      scale_fill_brewer(palette='Dark2') +
+     labs(x='', 
          y='Count', 
          title=paste0('Sequence Count by ', gene, ' allele usage')) +
       theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
           panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
           axis.text=element_text(size=8), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
-          plot.margin=margin(1,margins,15,margins, 'cm')) +
-      scale_fill_discrete(name  ="Allele")
+          plot.margin=margin(1,margins,15,margins, 'cm'))
   return(ggplotGrob(g))
 }
 

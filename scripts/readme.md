@@ -62,7 +62,7 @@ inference tools that do not write the inferred sequences to a separate file.
 
 *R libraries*
 
-The following libraries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings, stringdist`
+The following libraries are required: `tigger, alakazam, tidyr, dplyr, stringr, ggplot2, grid, gridExtra, Biostrings, stringdist, RColorBrewer`
 
 With the exception of Biostrings, they may be installed using the R function `install.packages`. For Biostrings,
 use the following commands from within R:
