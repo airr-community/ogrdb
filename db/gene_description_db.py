@@ -16,8 +16,14 @@ inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descrip
     
 
                         
+supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions',
+    db.Column('supporting_observations_id', db.Integer(), db.ForeignKey('genotype.id')),
+    db.Column('supporting_gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
+    
+
+                        
 duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates',
-    db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('inferred_sequence.id')),
+    db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('published_duplicates_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
@@ -32,15 +38,15 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     release_date = db.Column(db.DateTime)
     release_description = db.Column(db.Text())
 
-    organism = db.Column(db.String(1000))
-    sequence_name = db.Column(db.String(1000))
     imgt_name = db.Column(db.String(1000))
+    sequence_name = db.Column(db.String(1000))
     alt_names = db.Column(db.String(1000))
     locus = db.Column(db.String(255))
     sequence_type = db.Column(db.String(255))
     functional = db.Column(db.Boolean)
     inference_type = db.Column(db.String(255))
     affirmation_level = db.Column(db.String(255))
+    organism = db.Column(db.String(1000))
     status = db.Column(db.String(255))
     gene_subgroup = db.Column(db.String(1000))
     subgroup_designation = db.Column(db.String(1000))
@@ -66,7 +72,9 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
 
     inferred_sequences = db.relationship('InferredSequence', secondary = inferred_sequences_gene_descriptions, backref = db.backref('gene_descriptions', lazy='dynamic'))
 
-    duplicate_sequences = db.relationship('InferredSequence', secondary = duplicate_sequences_published_duplicates, backref = db.backref('published_duplicates', lazy='dynamic'))
+    supporting_observations = db.relationship('Genotype', secondary = supporting_observations_supporting_gene_descriptions, backref = db.backref('supporting_gene_descriptions', lazy='dynamic'))
+
+    duplicate_sequences = db.relationship('Genotype', secondary = duplicate_sequences_published_duplicates, backref = db.backref('published_duplicates', lazy='dynamic'))
     inferred_extension = db.Column(db.Boolean)
     ext_3prime = db.Column(db.Text())
     start_3prime_ext = db.Column(db.Integer)
@@ -79,8 +87,8 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
 def save_GeneDescription(db, object, form, new=False):   
     object.author = form.author.data
     object.lab_address = form.lab_address.data
-    object.sequence_name = form.sequence_name.data
     object.imgt_name = form.imgt_name.data
+    object.sequence_name = form.sequence_name.data
     object.alt_names = form.alt_names.data
     object.locus = form.locus.data
     object.sequence_type = form.sequence_type.data
@@ -125,8 +133,8 @@ def save_GeneDescription(db, object, form, new=False):
 def populate_GeneDescription(db, object, form):   
     form.author.data = object.author
     form.lab_address.data = object.lab_address
-    form.sequence_name.data = object.sequence_name
     form.imgt_name.data = object.imgt_name
+    form.sequence_name.data = object.sequence_name
     form.alt_names.data = object.alt_names
     form.locus.data = object.locus
     form.sequence_type.data = object.sequence_type
@@ -170,15 +178,15 @@ def copy_GeneDescription(c_from, c_to):
     c_to.release_version = c_from.release_version
     c_to.release_date = c_from.release_date
     c_to.release_description = c_from.release_description
-    c_to.organism = c_from.organism
-    c_to.sequence_name = c_from.sequence_name
     c_to.imgt_name = c_from.imgt_name
+    c_to.sequence_name = c_from.sequence_name
     c_to.alt_names = c_from.alt_names
     c_to.locus = c_from.locus
     c_to.sequence_type = c_from.sequence_type
     c_to.functional = c_from.functional
     c_to.inference_type = c_from.inference_type
     c_to.affirmation_level = c_from.affirmation_level
+    c_to.organism = c_from.organism
     c_to.status = c_from.status
     c_to.gene_subgroup = c_from.gene_subgroup
     c_to.subgroup_designation = c_from.subgroup_designation
@@ -213,13 +221,11 @@ def copy_GeneDescription(c_from, c_to):
 
 class GeneDescription_table(StyledTable):
     id = Col("id", show=False)
-    release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
-    organism = StyledCol("Organism", tooltip="Binomial designation of subject's species")
     imgt_name = StyledCol("IMGT Name", tooltip="The name of this sequence as assigned by IMGT")
     locus = StyledCol("Locus", tooltip="Gene locus")
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
-    status = StyledCol("Status", tooltip="Status of record")
+    organism = StyledCol("Organism", tooltip="Binomial designation of subject's species")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):
@@ -240,15 +246,15 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Version", "value": sub.release_version, "tooltip": "Version number of this record, updated whenever a revised version is published or released", "field": "release_version"})
     ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     ret.items.append({"item": "Release Notes", "value": sub.release_description, "tooltip": "Brief descriptive notes of the reason for this release and the changes embodied", "field": "release_description"})
-    ret.items.append({"item": "Organism", "value": sub.organism, "tooltip": "Binomial designation of subject's species", "field": "organism"})
-    ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence as assigned by IARC", "field": "sequence_name"})
     ret.items.append({"item": "IMGT Name", "value": sub.imgt_name, "tooltip": "The name of this sequence as assigned by IMGT", "field": "imgt_name"})
+    ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence as assigned by IARC", "field": "sequence_name"})
     ret.items.append({"item": "Alternative names", "value": sub.alt_names, "tooltip": "Alternative names for this sequence", "field": "alt_names"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
     ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
     ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
     ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})
+    ret.items.append({"item": "Organism", "value": sub.organism, "tooltip": "Binomial designation of subject's species", "field": "organism"})
     ret.items.append({"item": "Gene Subgroup", "value": sub.gene_subgroup, "tooltip": "Gene subgroup (family), as (and if) identified for this species and gene", "field": "gene_subgroup"})
     ret.items.append({"item": "Gene Designation", "value": sub.subgroup_designation, "tooltip": "Gene designation within this subgroup", "field": "subgroup_designation"})
     ret.items.append({"item": "Allele Designation", "value": sub.allele_designation, "tooltip": "Allele designation", "field": "allele_designation"})

@@ -6,25 +6,8 @@
 
 # Mixin methods for InferredSequence
 
-from db.gene_description_db import *
 
 class InferredSequenceMixin:
-    # Find any gene descriptions out there that refer to this sequence
-
-    def build_duplicate_list(self, db, new_status):
-        self.published_duplicates = list()
-        if new_status in ['reviewing', 'complete']:
-            genes = db.session.query(GeneDescription).filter(GeneDescription.status.in_(['draft', 'published']), GeneDescription.organism == self.submission.species).all()
-
-            for gene in genes:
-                try:
-                    if len(gene.sequence) > 0 and len(self.sequence_details.nt_sequence) > 0:
-                        g_seq = gene.sequence.replace('.', '')  # ignore trailing .s in published sequences
-                        if(g_seq in self.sequence_details.nt_sequence or self.sequence_details.nt_sequence in g_seq):
-                            self.published_duplicates.append(gene)
-                except:
-                    continue
-
     def delete_dependencies(self, db):
         for rec in self.record_set:
             db.session.delete(rec)

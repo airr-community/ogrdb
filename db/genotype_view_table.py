@@ -72,19 +72,22 @@ class GenTitleCol(StyledCol):
         return Markup(text)
 
 
-
-
 def setup_gv_table(desc):
-    table = make_Genotype_full_table(desc.genotypes, desc.locus, desc.sequence_type, False, classes=['table-bordered'])
+    table = make_Genotype_full_table(desc.genotypes, desc.locus, False, classes=['table-bordered'])
     table._cols['sequence_id'] = GenTitleCol('Allele name', tooltip='Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)')
     table.rotate_header = True
     table.add_column('nt_sequence', SeqCol('Sequence', tooltip="Click to view or download sequence"))
     table.table_id = 'genotype_table'
 
+    inferred_seqs = []
+
+    for inf in desc.inferred_sequences:
+        inferred_seqs.append(inf.sequence_details.sequence_id)
+
     novel = []
     imgt_ref = imgt_reference_genes()
     for item in desc.genotypes:
-        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species] or item.sequence_id in inferred_seqs:
             novel.append(item)
 
     inferred_table = make_Genotype_novel_table(novel, False, classes = ['table-bordered'])

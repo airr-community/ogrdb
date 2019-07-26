@@ -29,5 +29,6 @@ def receive_gd_set(target, value, oldvalue, initiator):
 @event.listens_for(Submission.submission_status, 'set')
 def receive_gd_set(target, value, oldvalue, initiator):
     print('Submission Set event fired')
-    for seq in target.inferred_sequences:
-        seq.build_duplicate_list(db, value)
+    for gd in target.genotype_descriptions:
+        for genotype in gd.genotypes:
+            genotype.build_duplicate_list(db, value)

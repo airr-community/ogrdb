@@ -797,7 +797,6 @@ GeneDescription:
             type: integer
             description: Version number of this record, updated whenever a revised version is published or released
             label: Version
-            tableview: true
             hide: true
             inview: true
         release_date:
@@ -819,25 +818,18 @@ GeneDescription:
             label: Attachments
             hide: true
             nocopy: 10
-        organism:
-            type: string
-            description: Binomial designation of subject's species
-            label: Organism
-            hide: true
-            tableview: true
-            inview: true
-        sequence_name:
-            type: string
-            description: The canonical name of this sequence as assigned by IARC
-            label: Sequence Name
-            nonblank: true
-            inview: true
         imgt_name:
             type: string
             description: The name of this sequence as assigned by IMGT
             label: IMGT Name
             inview: true
             tableview: true
+        sequence_name:
+            type: string
+            description: The canonical name of this sequence as assigned by IARC
+            label: Sequence Name
+            nonblank: true
+            inview: true
         alt_names:
             type: string
             description: Alternative names for this sequence
@@ -869,13 +861,19 @@ GeneDescription:
             label: Affirmation Level
             tableview: true
             width: narrow
+        organism:
+            type: string
+            description: Binomial designation of subject's species
+            label: Organism
+            hide: true
+            tableview: true
+            inview: true
         status:
             type: [published,draft,retired,withdrawn]
             description: Status of record
             label: Status
             width: narrow
             hide: true
-            tableview: true
         gene_subgroup:
             type: string
             description: Gene subgroup (family), as (and if) identified for this species and gene
@@ -990,9 +988,13 @@ GeneDescription:
             type: list of inferred sequences
             many-relationship: [InferredSequence, gene_descriptions, inferred_sequence, gene_description]
             hide: true
+        supporting_observations:
+            type: list of inferred sequences
+            many-relationship: [Genotype, supporting_gene_descriptions, genotype, gene_description]
+            hide: true
         duplicate_sequences:
             type: list of inferred sequences
-            many-relationship: [InferredSequence, published_duplicates, inferred_sequence, gene_description]
+            many-relationship: [Genotype, published_duplicates, genotype, gene_description]
             hide: true
         inferred_extension:
             type: boolean

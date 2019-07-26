@@ -27,6 +27,11 @@ class SequenceListActionCol(StyledCol):
             fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-warning icon_back" id="%s"><span class="glyphicon glyphicon-duplicate" data-toggle="tooltip" title="Create Draft"></span>&nbsp;</button>' % (item.id))
             fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (item.id))
 
+        if (item.editable or item.draftable) and int(item.affirmation_level) < 3:
+            inf_genotypes = [x.sequence_details for x in item.inferred_sequences]
+
+            if len(set(item.duplicate_sequences) - set(inf_genotypes) - set(item.supporting_observations)) > 0:
+                fmt_string.append('<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="There are unreferenced matches to this sequence"></span>&nbsp;')
 
         return ''.join(fmt_string)
 

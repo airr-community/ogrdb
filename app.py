@@ -1347,6 +1347,11 @@ def edit_sequence(id):
                     valid = False
 
         if form.action.data == 'published':
+            if len(seq.inferred_sequences) < 1:
+                flash("Please provide at least one inferred sequence as evidence.")
+                form.action.data = ''
+                valid = False
+
             for inferred_sequence in seq.inferred_sequences:
                 if inferred_sequence.submission.submission_status == 'draft':
                     flash("Can't publish this sequence while submission %s is in draft." % inferred_sequence.submission.submission_id)
@@ -1504,6 +1509,19 @@ def delete_sequence(id):
     return ''
 
 
+@app.route('/add_inferred_sequence', methods=['POST'])
+@login_required
+def add_inferred_sequence():
+    seq = check_seq_edit(request.form['id'])
+    if seq is not None:
+        inferred_seq = db.session.query(InferredSequence).filter(InferredSequence.id==request.form['inf']).one_or_none()
+        if inferred_seq is not None and inferred_seq not in seq.inferred_sequences:
+            seq.inferred_sequences.append(inferred_seq)
+            db.session.commit()
+
+    return ''
+
+
 @app.route('/delete_inferred_sequence', methods=['POST'])
 @login_required
 def delete_inferred_sequence():
@@ -1512,6 +1530,32 @@ def delete_inferred_sequence():
         inferred_seq = db.session.query(InferredSequence).filter(InferredSequence.id==request.form['inf']).one_or_none()
         if inferred_seq is not None and inferred_seq in seq.inferred_sequences:
             seq.inferred_sequences.remove(inferred_seq)
+            db.session.commit()
+
+    return ''
+
+
+@app.route('/add_supporting_observation', methods=['POST'])
+@login_required
+def add_supporting_observation():
+    seq = check_seq_edit(request.form['id'])
+    if seq is not None:
+        genotype = db.session.query(Genotype).filter(Genotype.id==request.form['gid']).one_or_none()
+        if genotype is not None and genotype not in seq.supporting_observations:
+            seq.supporting_observations.append(genotype)
+            db.session.commit()
+
+    return ''
+
+
+@app.route('/delete_supporting_observation', methods=['POST'])
+@login_required
+def delete_supporting_observation():
+    seq = check_seq_edit(request.form['id'])
+    if seq is not None:
+        genotype = db.session.query(Genotype).filter(Genotype.id==request.form['gid']).one_or_none()
+        if genotype is not None and genotype in seq.supporting_observations:
+            seq.supporting_observations.remove(genotype)
             db.session.commit()
 
     return ''
@@ -1714,28 +1758,25 @@ def remove_test():
     return redirect('/')
 
 
-# Temp route to add IGH/V segment to existing genotypes
-@app.route('/tidy_genotype', methods=['GET'])
+# Permanent maintenance route to rebuild duplicate links
+@app.route('/rebuild_duplicates', methods=['GET'])
 @login_required
-def tidy_genotype():
+def rebuild_duplicates():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    subs = db.session.query(Submission).all()
-    if subs is None:
-        flash('Submissions not found')
-        return None
+    # gene description
 
-    for sub in subs:
-        for desc in sub.genotype_descriptions:
-            if desc.locus is None or desc.locus == '':
-                desc.locus = 'IGH'
-            if desc.sequence_type is None or desc.sequence_type == '':
-                desc.sequence_type = 'V'
+    descs = db.session.query(GeneDescription).all()
+
+    for desc in descs:
+        desc.duplicate_sequences = list()
+        if desc.status in ['published', 'draft']:
+            desc.build_duplicate_list(db, desc.sequence)
 
     db.session.commit()
 
-    return('Genotypes modified.')
+    return('Gene description links rebuilt')
 
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])
@@ -1827,3 +1868,26 @@ def download_sequences(species, format, exc):
 
     filename = 'affirmed_germlines_%s_%s.%s' % (species, format, ext)
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+
+# Temp route to add IGH/V segment to existing genotypes
+@app.route('/tidy_genotype', methods=['GET'])
+@login_required
+def tidy_genotype():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    subs = db.session.query(Submission).all()
+    if subs is None:
+        flash('Submissions not found')
+        return None
+
+    for sub in subs:
+        for desc in sub.genotype_descriptions:
+            if desc.locus is None or desc.locus == '':
+                desc.locus = 'IGH'
+            if desc.sequence_type is None or desc.sequence_type == '':
+                desc.sequence_type = 'V'
+
+    db.session.commit()
+
+    return('Genotypes modified.')

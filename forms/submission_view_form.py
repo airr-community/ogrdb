@@ -143,19 +143,21 @@ def setup_matching_sequences_table(sub):
     for inf in sub.inferred_sequences:
         our_descriptions.extend(inf.gene_descriptions)
 
-    for inf in sub.inferred_sequences:
-        for dup in inf.published_duplicates:
-            if dup not in our_descriptions:
-                match = report_dupe(inf.sequence_details.nt_sequence, 'This', dup.sequence, dup.description_id)
-                if '\n' in match:
-                    match = Markup('<code>' + match.replace('\n', '<br>') + '</code>')
-                results.append({'subject_id': inf.genotype_description.genotype_subject_id,
-                                'genotype_name': inf.genotype_description.genotype_name,
-                                'sequence_name': inf.sequence_details.sequence_id,
-                                'published_name': dup.description_id,
-                                'published_id': dup.id,
-                                'status': dup.status,
-                                'match': Markup(match)})
+    for desc in sub.genotype_descriptions:
+        for seq in desc.genotypes:
+            for dup in seq.published_duplicates:
+                if dup not in our_descriptions:
+                    alignment = report_dupe(seq.nt_sequence, 'Sequence', dup.sequence, dup.description_id)
+                    match = Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon %s"></span>&nbsp;</button>' \
+                        % ('text-info', alignment, dup.description_id, format_fasta_sequence('Sequence', seq.nt_sequence, 50) + format_fasta_sequence(dup.description_id, dup.sequence, 50), 'glyphicon-search'))
+
+                    results.append({'subject_id': seq.genotype_description.genotype_subject_id,
+                                    'genotype_name': seq.genotype_description.genotype_name,
+                                    'sequence_name': seq.sequence_id,
+                                    'published_name': dup.description_id,
+                                    'published_id': dup.id,
+                                    'status': dup.status,
+                                    'match': match})
 
     if len(results) == 0:
         return None

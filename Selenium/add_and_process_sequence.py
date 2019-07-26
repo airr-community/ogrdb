@@ -139,7 +139,7 @@ gtgtattactgtgcgagaga""")
     # Check the number of inferred sequences and delete one
 
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
-    x = driver.find_elements(By.XPATH, '//*[contains(@class, "delbutton")]')
+    x = driver.find_elements(By.XPATH, '//*[contains(@class, "del_inf_button")]')
     assert(len(x) == 2)
     x[random.randint(0, len(x)-1)].click()
     time.sleep(1)

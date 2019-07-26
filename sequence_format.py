@@ -8,6 +8,8 @@
 import itertools
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
+from Bio.pairwise2 import format_alignment, align
+from flask import Markup
 
 
 def chunks(l, n):
@@ -97,38 +99,11 @@ def rem_trailing_dots(s):
 
 
 def report_dupe(s1, s1_name, s2, s2_name):
-    """
-    s1 should be a subset of s2 or vice versa.
-    The function returns an 'alignment' in which the common subset is replaced by an ellipsis
-    """
+    # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
+    alignments = align.globalms(s1, s2, 2, -1, -2, -1, one_alignment_only=True)
+    alignment = format_aln(format_alignment(*alignments[0]), s1_name, s2_name, 50) if len(alignments) > 0 else ''
+    return(alignment)
 
-    if s1 == s2:
-        return('Sequences are identical')
-
-    (s1,s1_trail) = rem_trailing_dots(s1)
-    (s2,s2_trail) = rem_trailing_dots(s2)
-
-    if s1 not in s2 and s2 not in s1:
-        return('Sequences do not match')
-
-    common = s1 if s1 in s2 else s2
-    s1 = s1 + s1_trail
-    s2 = s2 + s2_trail
-    namelength = max(len(s1_name), len(s2_name)) + 2
-    s1_name = s1_name.ljust(namelength)
-    s2_name = s2_name.ljust(namelength)
-
-    s1 = s1.replace(common, '...')
-    s2 = s2.replace(common, '...')
-
-    if s1 in s2:
-        s1 = ' '*s2.find('...') + s1
-        s1 = s1.ljust(len(s2))
-    else:
-        s2 = ' '*s1.find('...') + s2
-        s2 = s2.ljust(len(s1))
-
-    return(s1_name + s1 + '\n' + s2_name + s2)
 
 def format_aln(alignment, name1, name2, width):
     # Format an alignment returned by Bio.pairwise2: add names to start of each split line
@@ -138,3 +113,23 @@ def format_aln(alignment, name1, name2, width):
     lines[1] = "%-*s" % (ln, ' ') + lines[1]
     lines[2] = "%-*s" % (ln, name2) + lines[2]
     return(splitlines(lines[0]+'\n'+lines[1]+'\n'+lines[2]+'\n', width, ln))
+
+
+# Check whether q sequence recorded in a genotype or inferred sequence matches that recorded in gene description
+# The 3nt in the genotype sequence closest to the junction with another segment are ignored
+
+IGNORE_NT = 3
+def check_duplicate(genotype_seq, desc_seq, sequence_type):
+    try:
+        if sequence_type == 'V':
+            genotype_seq = genotype_seq[:0-IGNORE_NT]
+        elif sequence_type == 'J':
+            genotype_seq = genotype_seq[IGNORE_NT:]
+        elif sequence_type == 'D':
+            genotype_seq = genotype_seq[IGNORE_NT:0-IGNORE_NT]
+    except:
+        return False    # ignore short/nonexistent sequences
+
+    # TODO: other sequence types
+
+    return(genotype_seq in desc_seq or desc_seq in genotype_seq)

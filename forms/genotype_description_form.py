@@ -13,7 +13,7 @@ class GenotypeDescriptionForm(FlaskForm):
     genotype_run_ids = StringField('Sequence Sets', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)")
     gen_ncbi_hash = HiddenField('gen_ncbi_hash', [validators.Length(max=255)], description="md5 sum of details passed to ncbi")
     inference_tool_id = SelectField('Inference Tool', [validators.Optional()], choices=[])
-    locus = SelectField('Locus', choices=[('IGH', 'IGH'), ('IGK', 'IGK'), ('IGL', 'IGL'), ('TRA', 'TRA'), ('TRB', 'TRB'), ('TRG', 'TRG'), ('TRD', 'TRD')], description="Gene locus")
+    locus = SelectField('Locus', choices=[('IGH', 'IGH'), ('IGK', 'IGK'), ('IGL', 'IGL'), ('TRA', 'TRA'), ('TRB', 'TRB'), ('TRD', 'TRD'), ('TRG', 'TRG')], description="Gene locus")
     sequence_type = SelectField('Sequence Type', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('CH1', 'CH1'), ('CH2', 'CH2'), ('CH3', 'CH3'), ('CH4', 'CH4'), ('Leader', 'Leader')], description="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     genotype_filename = StringField('Genotype Filename', [validators.Length(max=255)], description="Name of the uploaded file from which the genotype was read")
     genotype_file = FileField('Genotype File', description="CSV file containing genotype information")

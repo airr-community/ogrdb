@@ -6,9 +6,8 @@
 
 # Mixin methods for Submission and associated objects
 
-from db.journal_entry_db import JournalEntry
-from sqlalchemy import inspect
 from db.submission_db import *
+from sequence_format import check_duplicate
 
 class GeneDescriptionMixin:
     def delete_dependencies(self, db):
@@ -34,20 +33,19 @@ class GeneDescriptionMixin:
     # Find any submitted inferences out there that refer to this sequence
 
     def build_duplicate_list(self, db, new_seq):
-        # new_seq is the sequence about to be added to the gene description
-        new_seq = new_seq.replace('.', '')      # ignore leading or trailing dots
         self.duplicate_sequences = list()
-        subs = db.session.query(Submission).filter(Submission.submission_status.in_(['reviewing', 'complete']), Submission.species == self.organism).all()
 
-        for sub in subs:
-            for inf in sub.inferred_sequences:
-                try:
-                    inf_seq = inf.sequence_details.nt_sequence
-                    if len(inf_seq) > 0 and len(new_seq) > 0:
-                        if(inf_seq in new_seq or new_seq in inf_seq):
-                            self.duplicate_sequences.append(inf)
-                except:
-                    continue
+        if new_seq is not None:
+            # new_seq is the sequence about to be added to the gene description
+            new_seq = new_seq.replace('.', '')      # ignore leading or trailing dots
+            subs = db.session.query(Submission).filter(Submission.submission_status.in_(['reviewing', 'complete']), Submission.species == self.organism).all()
 
-        db.session.commit()
+            for sub in subs:
+                for desc in sub.genotype_descriptions:
+                    if desc.sequence_type == self.sequence_type:
+                        for genotype in desc.genotypes:
+                            if check_duplicate(genotype.nt_sequence, new_seq, self.sequence_type):
+                                self.duplicate_sequences.append(genotype)
+
+            db.session.commit()
 

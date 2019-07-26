@@ -7,8 +7,9 @@
 
 
 from db.gene_description_db import *
+from db.journal_entry_db import *
 from db.repertoire_db import make_Acknowledgements_table
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table
+from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table
 from db.attached_file_db import *
 from forms.submission_edit_form import *
 from forms.attached_file_form import *
@@ -112,7 +113,8 @@ def setup_sequence_view_tables(db, seq, private):
         tables['description']['extension'] = []
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
-    tables['matches'] = setup_matching_submissions_table(seq) if private else None
+    tables['supporting_observations'] = setup_supporting_observation_table(seq, action=False)
+    tables['matches'] = setup_matching_submissions_table(seq, action=False) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete=False, download_route='download_sequence_attachment')
@@ -128,79 +130,3 @@ def setup_sequence_view_tables(db, seq, private):
         tables['history'].append(t)
 
     return tables
-
-def old_setup_sequence_view_tables(db, seq, private):
-    tables = {}
-    tables['gene_description'] = make_GeneDescription_view(seq)
-
-    if seq.inference_type == 'Rearranged Only':
-        wanted = []
-    else:
-        wanted = ['l_region_start', 'l_region_end']
-
-        if seq.sequence_type == 'V':
-            wanted.extend(['v_rs_start', 'v_rs_end', 'utr_5_prime_start', 'utr_5_prime_end', 'start_5prime_ext', 'end_5prime_ext'])
-        elif seq.sequence_type == 'D':
-            wanted.extend(['d_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end'])
-        elif seq.sequence_type == 'J':
-            wanted.extend(['j_rs_start', 'j_rs_end'])
-
-    if seq.sequence_type == 'J':
-        wanted.extend(['j_cdr3_end', 'codon_frame'])
-
-    optional_fields = ['l_region_start', 'l_region_end', 'utr_5_prime_start', 'utr_5_prime_end', 'start_5prime_ext', 'end_5prime_ext',
-                  'v_rs_start', 'v_rs_end', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end',
-                  'j_rs_start', 'j_rs_end', 'j_cdr3_end', 'codon_frame']
-
-    fields = deepcopy(tables['gene_description'].items)
-    for field in fields:
-        if field['field'] in optional_fields and field['field'] not in wanted:
-            tables['gene_description'].items.remove(field)
-
-    if seq.sequence[-1] == '.':
-        trailer_text = "A trailing . indicates IARC's opinion that the sequence\n" \
-                   "is likely to contain additional 3' nucleotides for which\n" \
-                   "there is insufficient evidence to make an affirmation.\n" \
-                   "Please see Notes for details."
-    else:
-        trailer_text = ''
-
-    for field in tables['gene_description'].items:
-        if field['field'] == 'sequence':
-            if field['value'] is not None and len(field['value']) > 0:
-                field['value'] =  Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                    % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
-            else:
-                field['value'] = 'None'
-        elif field['field'] == 'coding_seq_imgt':
-            if field['value'] is not None and len(field['value']) > 0:
-                if seq.sequence_type == 'V':
-                    field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                        % (format_imgt_v(seq.coding_seq_imgt, 52) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.coding_seq_imgt, 50)))
-                else:
-                    field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s"><span class="glyphicon glyphicon-search" data-toggle="tooltip" title="View"></span>&nbsp;</button>' \
-                        % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
-            else:
-                field['value'] = 'None'
-        elif field['field'] == 'release_description':
-            if field['value'] is not None and len(field['value']) > 0:
-                field['value'] = Markup(safe_textile(field['value']))
-
-    tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
-    tables['matches'] = setup_matching_submissions_table(seq) if private else None
-    tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
-    tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
-    tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete=False, download_route='download_sequence_attachment')
-    history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
-    tables['history'] = []
-
-    for entry in history:
-        t = StyledTable([entry], classes=['tablefixed'])
-        t.add_column('header', MessageHeaderCol("", tooltip=""))
-        t._cols['header'].th_html_attrs['class'] += ' row-20'
-        t.add_column('body', MessageBodyCol("", tooltip=""))
-        t._cols['body'].th_html_attrs['class'] += ' row-80'
-        tables['history'].append(t)
-
-    return tables
-

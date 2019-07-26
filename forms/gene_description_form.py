@@ -9,8 +9,8 @@ from wtforms import StringField, SelectField, DateField, BooleanField, IntegerFi
 class GeneDescriptionForm(FlaskForm):
     author = StringField('Curator', [validators.Length(max=255)], description="Curator of this sequence record")
     lab_address = StringField('Curator address', [validators.Length(max=255)], description="Institution and full address of corresponding author")
-    sequence_name = StringField('Sequence Name', [validators.Length(max=255), NonEmpty()], description="The canonical name of this sequence as assigned by IARC")
     imgt_name = StringField('IMGT Name', [validators.Length(max=255)], description="The name of this sequence as assigned by IMGT")
+    sequence_name = StringField('Sequence Name', [validators.Length(max=255), NonEmpty()], description="The canonical name of this sequence as assigned by IARC")
     alt_names = StringField('Alternative names', [validators.Length(max=255)], description="Alternative names for this sequence")
     locus = SelectField('Locus', choices=[('IGH', 'IGH'), ('IGK', 'IGK'), ('IGL', 'IGL'), ('TRA', 'TRA'), ('TRB', 'TRB'), ('TRG', 'TRG'), ('TRD', 'TRD')], description="Gene locus")
     sequence_type = SelectField('Sequence Type', choices=[('V', 'V'), ('D', 'D'), ('J', 'J'), ('CH1', 'CH1'), ('CH2', 'CH2'), ('CH3', 'CH3'), ('CH4', 'CH4'), ('Leader', 'Leader')], description="Sequence type (V, D, J, CH1 ... CH4, Leader)")

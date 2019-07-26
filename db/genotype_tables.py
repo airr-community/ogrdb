@@ -21,7 +21,7 @@ class Genotype_novel_table(StyledTable):
 
 
 def make_Genotype_novel_table(results, private = False, classes=()):
-    t=create_table(base=Genotype_novel_table)
+    t=create_table(base=Genotype_full_table)
     return t(results, classes=classes)
 
 
@@ -46,36 +46,20 @@ class Genotype_full_table(StyledTable):
     haplotyping_ratio = StyledCol("Haplotyping Ratio", tooltip="The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)")
 
 
-def find_segment(locus, sequence_type):
-    if sequence_type == 'D':
-        return 'D'
-
-    if locus in ['IGH', 'TRB', 'TRD']:
-        return sequence_type + 'H'
-    else:
-        return sequence_type + 'L'
-
-def make_Genotype_full_table(results, locus, sequence_type, private = False, classes=()):
+def make_Genotype_full_table(results, segment, private = False, classes=()):
     t=create_table(base=Genotype_full_table)
-    segment = find_segment(locus, sequence_type)
     if segment not in ["D", "JH", "JL"]:
         t._cols["unique_vs"].show = False
-        t._cols["unique_vs_unmutated"].show = False
-    else:
-        t._cols["unique_vs"].show = True
-        t._cols["unique_vs_unmutated"].show = True
     if segment not in ["VH", "JH"]:
         t._cols["unique_ds"].show = False
-        t._cols["unique_ds_unmutated"].show = False
-    else:
-        t._cols["unique_ds"].show = True
-        t._cols["unique_ds_unmutated"].show = True
     if segment not in ["VH", "D", "VL"]:
         t._cols["unique_js"].show = False
+    if segment not in ["D", "JH", "JL"]:
+        t._cols["unique_vs_unmutated"].show = False
+    if segment not in ["VH", "JH"]:
+        t._cols["unique_ds_unmutated"].show = False
+    if segment not in ["VH", "D", "VL"]:
         t._cols["unique_js_unmutated"].show = False
-    else:
-        t._cols["unique_js"].show = True
-        t._cols["unique_js_unmutated"].show = True
     return t(results, classes=classes)
 
 

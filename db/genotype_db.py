@@ -9,7 +9,9 @@ from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
 from sqlalchemy.orm import backref
 
-class Genotype(db.Model):
+from db._genotype_db import *
+
+class Genotype(db.Model, GenotypeMixin):
     id = db.Column(db.Integer, primary_key=True)
     sequence_id = db.Column(db.String(1000))
     sequences = db.Column(db.Integer)

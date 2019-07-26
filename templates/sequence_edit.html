@@ -44,6 +44,17 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Supporting Observations</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Sequences in other submitted genotypes which are affirmed by IARC to support the inference: </p>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                            {{ tables['supporting_observations'] }}
+                        </div>
+                    </div>
+                </div>
+
                 {% if  tables['matches'] %}
                     <div class="row">
                         <h3 class="col-sm-offset-1 col-sm-11">Published/Draft Sequences Matching Inferences in This Submission</h3>
@@ -126,8 +137,26 @@
 
     <script>
 
-    $('.delbutton').on('click', function(event) {
-        var button = this;
+    $('.add_inf_button').on('click', function(event) {
+        var id = $(this).data('id');
+        var inf = $(this).data('inf');
+        $.ajax({
+            type: "POST",
+            url: '/add_inferred_sequence',
+            data: {
+                'id': id,
+                'inf': inf
+            },
+            success: function() {
+                window.location.reload(true);
+            },
+            error: function() {
+                console.log("failure");
+            }
+        })
+    });
+
+    $('.del_inf_button').on('click', function(event) {
         var id = $(this).data('id');
         var inf = $(this).data('inf');
         $.ajax({
@@ -136,6 +165,44 @@
             data: {
                 'id': id,
                 'inf': inf
+            },
+            success: function() {
+                window.location.reload(true);
+            },
+            error: function() {
+                console.log("failure");
+            }
+        })
+    });
+
+    $('.del_obs_button').on('click', function(event) {
+        var id = $(this).data('id');
+        var gid = $(this).data('gid');
+        $.ajax({
+            type: "POST",
+            url: '/delete_supporting_observation',
+            data: {
+                'id': id,
+                'gid': gid
+            },
+            success: function() {
+                window.location.reload(true);
+            },
+            error: function() {
+                console.log("failure");
+            }
+        })
+    });
+
+    $('.add_obs_button').on('click', function(event) {
+        var id = $(this).data('id');
+        var gid = $(this).data('gid');
+        $.ajax({
+            type: "POST",
+            url: '/add_supporting_observation',
+            data: {
+                'id': id,
+                'gid': gid
             },
             success: function() {
                 window.location.reload(true);
