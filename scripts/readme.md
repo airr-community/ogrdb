@@ -3,27 +3,21 @@
 ### Creating a Genotype File with genotype_statistics.R
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script 
-that can be used to create the Genotype File ([example](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)). It is independent 
-of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
-([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
-any genotype, whether or not it contains novel alleles, and whether or not you wish to submit it to OGRDB. The script supports B-cell V, D and J heavy and light chain gene inferences. 
-
-The use of the script with specific inference tools is described at the end of this file. You can also use the script 
-to review repertoires without inferring any novel alleles (just supply a blank inferred_file), or to review inferences
-you have determined without the use of a tool (just put their detailes into the inferred_file).
+that can be used to create an extended analysis of the genes used in a receptor repertoire. The analysis consists of 
+[usage statistics](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv) and  [plots](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf). 
+The report includes an analysis of inferred alleles, and was originally written to be used in conjunction with a novel allele inference tool such
+as those listed below, but the script can be run on any repertoire, whether or not it contains novel alleles. 
 
 ### OGRDB Submission Requirements
 
-As part of a submission, you will need to upload one or more inferred genotypes to OGRDB. The genotype is uploaded as 
-a comma-separated-variable (CSV) file. You can download:
+If you wish to submit novel alleles to OGRDB, you will be asked to upload a genotype file. genotype_statistics.R is the preferred way
+to create this. The following references are provided for additional information: 
 
 - A [blank template](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_template.csv)
 - An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
 - [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
 
-The preferred way to create the genotype file is with the script described here.
-
-### Prerequisites
+### Script Prerequisites
 
 *Germline_file - FASTA file containing the IG reference germline sequences provided as input to the inference tool or annotation software.* 
 
