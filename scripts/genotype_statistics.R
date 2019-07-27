@@ -24,9 +24,10 @@
 #
 # <filename> - annotated reads in AIRR, CHANGEO or IgDiscover format. The format is detected by the script.
 #
-# <chain> - one of VH, VK, VL, JH, JK, JL
+# <chain> - one of VH, VK, VL, D, JH, JK, JL
 #
-# <halplotype-gene> - optional argument. If present, the haplotyping columns will be completed based on the usage of the two most frequent alleles of this J-gene
+# <halplotype-gene> - optional argument. If present, the haplotyping columns will be completed based on the usage of the two most frequent alleles of this gene. A J-gene 
+# should be used with V- and D- gene inferences, and a V-gene with J-gene inferences. 
 #
 # AIRR format files must contain the following columns:
 # sequence_id, v_call_genotyped, d_call*, j_call, sequence_alignment, cdr3
