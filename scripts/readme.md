@@ -51,7 +51,7 @@ alignment, just align the sequence in the inferred file as you prefer.
 
 * D- related fields are only required for heavy chain records.
 
-* In both file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
+* In both the above file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
 (including calls of the novel alleles). Sequences should be IMGT-aligned.
 
 * For IgDiscover, the file 'final/filtered.tab' should be used.
