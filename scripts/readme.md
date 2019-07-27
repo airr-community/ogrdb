@@ -3,7 +3,7 @@
 ### Creating a Genotype File with genotype_statistics.R
 
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script 
-that can be used to create an extended analysis of the genes used in a receptor repertoire. The analysis consists of 
+that can be used to create an analysis of gene usage in a receptor repertoire. The analysis consists of 
 [usage statistics](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv) and  [plots](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf). 
 The report includes an analysis of inferred alleles, and was originally written to be used in conjunction with a novel allele inference tool such
 as those listed below, but the script can be run on any repertoire, whether or not it contains novel alleles. 
@@ -30,15 +30,15 @@ to create this. The following references are provided for additional information
   the same version is used by the inference tool and by this script.
 
 *Inferred_file - FASTA file containing the inferred novel alleles*   
-* Sequences may either be IMGT-aligned or not aligned. If they are not aligned, the script will determine
-the nearest reference gene and use it as a template. If you are not satisfied with the resulting
-alignment, just align the sequence in the inferred file as you prefer. 
+* Sequences in the inferred file should all be of the same type: VH, VK, VL, D, JH, JK, or JL
 * If a gene with the same name is present in both the germline file and the inferred file,
 its presence in the inferred file will be ignored. This makes it easier to use the script with 
 inference tools that do not write the inferred sequences to a separate file.  
 * The header should simply consist of the allele name as assigned by the tool.
 * If there are no inferred alleles, please provide a blank file.
-* Sequences in the inferred file should all be of the same type: VH, VK, VL, D, JH, JK, or JL
+* V-gene sequences may either be IMGT-aligned or not aligned. If they are not aligned, the script will determine
+the nearest reference gene and use it as a template. If you are not satisfied with the resulting
+alignment, just align the sequence in the inferred file as you prefer. 
 
 *Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in MiAIRR, CHANGEO or IgDiscover format.*
 
