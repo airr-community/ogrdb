@@ -1,6 +1,18 @@
 # The OGRDB Genotype File
 
-## Submission Requirements
+### Creating a Genotype File with genotype_statistics.R
+
+[genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script 
+that can be used to create the Genotype File ([example](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)). It is independent 
+of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
+([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
+any genotype, whether or not it contains novel alleles, and whether or not you wish to submit it to OGRDB. The script supports B-cell V, D and J heavy and light chain gene inferences. 
+
+The use of the script with specific inference tools is described at the end of this file. You can also use the script 
+to review repertoires without inferring any novel alleles (just supply a blank inferred_file), or to review inferences
+you have determined without the use of a tool (just put their detailes into the inferred_file).
+
+### OGRDB Submission Requirements
 
 As part of a submission, you will need to upload one or more inferred genotypes to OGRDB. The genotype is uploaded as 
 a comma-separated-variable (CSV) file. You can download:
@@ -9,23 +21,11 @@ a comma-separated-variable (CSV) file. You can download:
 - An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
 - [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
 
-The preferred way to create the genotype file is with the supplied script genotype_statistics.R, which is described below.
-
-## Creating the Genotype File with genotype_statistics.R
-
-[genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script that can be used to create the Genotype File. It is independent 
-of any particular inference tool. The script also generates a report containing plots that illustrate genotype quality 
-([example](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf)). You can use the file and report to assess the quality of 
-any inferred genotype, even if you don't wish to submit it to OGRDB.
-
-At present the script supports VH, VK, VL and JH, JK, JL gene inferences. It will be extended to support other genes as 
-IARCs start to accept them.
-
-The use of the script with specific inference tools is described at the end of this file. 
+The preferred way to create the genotype file is with the script described here.
 
 ### Prerequisites
 
-*Germline_file - FASTA file containing the IG reference germline sequences provided as input to the inference tool.* 
+*Germline_file - FASTA file containing the IG reference germline sequences provided as input to the inference tool or annotation software.* 
 
 * Sequences must correspond exactly to those used by the tool.
 * They must be IMGT-aligned
@@ -43,13 +43,15 @@ alignment, just align the sequence in the inferred file as you prefer.
 its presence in the inferred file will be ignored. This makes it easier to use the script with 
 inference tools that do not write the inferred sequences to a separate file.  
 * The header should simply consist of the allele name as assigned by the tool.
+* If there are no inferred alleles, please provide a blank file.
+* Sequences in the inferred file should all be of the same type: VH, VK, VL, D, JH, JK, or JL
 
 *Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in MiAIRR, CHANGEO or IgDiscover format.*
 
 * The format will be determined automatically by the script.
-* AIRR format files must contain at least the following columns:
-`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J gene processing  it must also contain 
-`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end` 
+* MiAIRR format files must contain at least the following columns:
+`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For D or J inferences it must also contain 
+`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end` , or the equivalent fields for D genes.
 * CHANGEO files must contain at least the following columns:
 `SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`
 
@@ -83,6 +85,8 @@ The script is intended to be run by Rscript.
 `<species>` must be present, but is only used by the script if the germline file is in IMGT format, in which case
 it should contain the species name used in field 3 of the header, with spaces removed, e.g. Homosapiens for Human.
 
+`<chain>` is one of  VH, VK, VL, D, JH, JK, JL. It should correspond to the sequence type provided in the inferred_file - or the sequence type you would like analysed, if there are no inferences. 
+
 `[<haplotyping_gene>]` specifies, optionally, the gene to be used for haplotyping analysis (see haplotyping section below).
 
 ### Output
@@ -92,7 +96,7 @@ it should contain the species name used in field 3 of the header, with spaces re
 
 Note that the read_file name is used as a prefix to the output file names. They will be written to the directory containing the read file.
 
-Please upload the plots file as an attachment to the Notes section of your OGRDB submission.
+If you are submitting inferences to OGRDB, you will be prompted to upload the genotype file. Please upload the plots file as an attachment to the Notes section of your submission.
 
 
 ### Plots
@@ -107,9 +111,9 @@ The nucleotide usage plots are not produced from IgDiscover output, as aligned V
 
 ### Haplotyping
 
-The script should first be run without the optional `<haplotyping_gene>` parameter. If, having consulted the plots, you identify a suitable J-gene
+The script should first be run without the optional `<haplotyping_gene>` parameter. If, having consulted the plots, you identify a suitable gene
 for haplotyping, please run the script again, with this gene specified as `<haplotyping_gene>`. The haplotyping_gene and haplotyping_ratio columns of the genotype file
-will be appropriately populated.
+will be appropriately populated.  A J-gene should be used with V- and D- gene inferences, and a V-gene with J-gene inferences. 
 
 ### Example
 

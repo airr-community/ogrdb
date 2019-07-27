@@ -83,14 +83,14 @@ if(length(args) > 4) {
   }
 } else {   # for R Studio Source
   # VH - tigger (Example in Readme)
-  work_dir = 'D:/Research/ogre/scripts'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
-  filename = 'TWO01A_naive_genotyped.tsv'
-  chain = 'VH'
-  hap_gene = 'IGHJ6'
+  # work_dir = 'D:/Research/ogre/scripts'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
+  # filename = 'TWO01A_naive_genotyped.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
 
   # JH - tigger
   # work_dir = 'D:/Research/ogre/scripts/tests/JH_tigger'
@@ -101,6 +101,16 @@ if(length(args) > 4) {
   # filename = 'TWO01A_naive.airr.tab'
   # chain = 'JH'
   # hap_gene = 'IGHV2-5'
+  
+  # D - tigger
+  # work_dir = 'D:/Research/ogre/scripts/tests/D_tigger'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED_D_1_26_01_removed.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel.fasta'
+  # filename = 'TWO01A_naive.airr.tab'
+  # chain = 'DH'
+  # hap_gene = 'IGHJ6'
 
   # JH - igdiscover
   # work_dir = 'D:/Research/ogre/scripts/tests/JH_igdiscover'
@@ -124,21 +134,18 @@ if(length(args) > 4) {
   # hap_gene = 'IGHV2-5'
   
   # VH - partis
- # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
- # setwd(work_dir)
- # ref_filename = 'IMGT_REF_GAPPED.fasta'
- # species = 'Homosapiens'
- # inferred_filename = 'TW02A_V_OGRDB.fasta'
- # filename = 'TW02A_OGRDB.tsv'
- # chain = 'VH'
- # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TW02A_V_OGRDB.fasta'
+  filename = 'TW02A_OGRDB.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
   
 } 
 
-# TODO - D not supported yet. Although there is overall code support for D segments, we haven't figured out
-# how to handle alignment, whether to support amino acid changes, etc
-
-if(!(chain %in% c('VH', 'VK', 'VL', 'JH', 'JK', 'JL'))) {
+if(!(chain %in% c('VH', 'VK', 'VL', 'DH', 'JH', 'JK', 'JL'))) {
   stop('Unrecognised chain name.')
 }
 
@@ -432,16 +439,13 @@ find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs, segment)
 # get the reference set
 
 ref_genes = readIgFasta(ref_filename, strip_down_name =F)
-
-if(segment=='D') {
-  set = 'IGD'
-} else {
-  set = paste0('IG', substr(chain, 2, 2), segment)
-}
+set = paste0('IG', substr(chain, 2, 2), segment)
+region = paste0(segment, '-REGION')
 
 # process IMGT library, if header is in corresponding format
 if(grepl('|', names(ref_genes)[1], fixed=T)) {
   ref_genes = ref_genes[grepl(species, names(ref_genes),fixed=T)]
+  ref_genes = ref_genes[grepl(region, names(ref_genes),fixed=T)]  # restrict to V-D-J regions
   ref_genes = ref_genes[grepl(set, names(ref_genes),fixed=T)]
   
   gene_name = function(full_name) {
@@ -562,9 +566,10 @@ s$CDR3_IMGT = toupper(s$CDR3_IMGT)
 
 # At this point, s contains Changeo-named columns with all data required for calculations
 
-#remove sequences with ambiguous calls in the target segment
+#remove sequences with ambiguous calls, or no call, in the target segment
 
 s = s[!grepl(',', s$SEG_CALL),]
+s = s[!(s$SEG_CALL == ''),]
 
 # Warn if we don't have genotype statistics for any of the inferred alleles
 # this can happen, for example, with Tigger, if novel alleles are detected but do not pass subsequent criteria for being included in the genotype.
@@ -623,6 +628,14 @@ if(!('SEG_MUT_NC' %in% names(s))) {
   }
 }
 
+# make a space-alignment of D sequences for the usage histogram (V and J use the IMGT alignment)
+
+if(segment == 'D') {
+  s$SEG_SEQ_ALIGNED = mapply(paste0, sapply(s$SEG_GERM_START, function(x) {paste(rep(' ', x), collapse='')}), s$SEG_SEQ)
+  width = max(str_length(s$SEG_SEQ_ALIGNED))
+  s$SEG_SEQ_ALIGNED = sapply(s$SEG_SEQ_ALIGNED, function(x) {str_pad(x, width, side='right')})
+}
+
 s0 = s[s$SEG_MUT_NC == 0,]
 genotype = s0 %>% group_by(SEG_CALL) %>% summarize(unmutated_sequences = n())
 
@@ -664,9 +677,9 @@ genotype$unique_cdr3s_unmutated = sapply(genotype$SEG_CALL, unique_cdrs, segment
 genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/genotype$sequences, digits=2)
 
 # closest in genotype and in reference (inferred alleles only)
-# I do not know how to handle Ds at the moment. Possibly they should be aligned, then padded. NA for the time being.
+# Inferred D alleles should be aligned for best match (if this is an allele of an existing D-gene, align against a knon allele of that gene)
 
-if (length(inferred_seqs) == 0 || segment == 'D') {
+if (length(inferred_seqs) == 0) {
   cat('Warning - no inferred sequences found.')
   
   genotype$reference_closest = NA
@@ -786,23 +799,23 @@ label_nuc = function(pos, ref) {
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
 # if pos is negative, SEQUENCE_IMGT contains a certain number of trailing nucleotides. Plot them all.
-plot_base_composition = function(s, gene_sequences, pos, gene_name, filter, end_pos=999) {
-  max_pos = nchar(gene_sequences[gene_name])
+plot_base_composition = function(gene_name, recs, ref, pos=1, filter=T, end_pos=999, r_justify=F) {
+  max_pos = nchar(ref)
   
-  if(max_pos < pos) {
+  if(max_pos < pos || length(recs) < 1) {
     return(NA)
   }
   
   max_pos = min(max_pos, end_pos)
   min_pos = max(pos, 1)
   
-  recs = strsplit(s[s$SEG_CALL==gene_name,]$SEQUENCE_IMGT, "")
-  
-  if(length(recs) < 1) {
-    return(NA)
+  if(r_justify) {
+    recs = str_pad(recs, max_pos-min_pos+1, 'left')
   }
+
+  recs = strsplit(recs, "")
+  ref = strsplit(ref, "")
   
-  ref = strsplit(gene_sequences[gene_name], "")
   x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
 
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
@@ -835,30 +848,23 @@ label_5_nuc = function(pos, ref) {
 }
 
 # Plot composition of a segment rather than the whole IMGT-aligned sequence
-plot_segment_composition = function(s, gene_sequences, pos, gene_name, filter, end_pos=999, r_justify=T) {
-  max_pos = nchar(gene_sequences[gene_name])
+plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_pos=999, r_justify=F) {
+  max_pos = nchar(ref)
   
-  if(max_pos < pos) {
+  if(max_pos < pos || length(recs) < 1) {
     return(NA)
   }
   
   max_pos = min(max_pos, end_pos)
   min_pos = max(pos, 1)
   
-  # TODO - align here based on J or D gene alignment
-  recs = s[s$SEG_CALL==gene_name,]$SEG_SEQ
-  
-  if(length(recs) < 1) {
-    return(NA)
-  }
-  
   if(r_justify) {
     recs = str_pad(recs, max_pos-min_pos+1, 'left')
   }
-  
+
   recs = strsplit(recs, "")
+  ref = strsplit(ref, "")
   
-  ref = strsplit(gene_sequences[gene_name], "")
   x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
   
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
@@ -871,7 +877,7 @@ plot_segment_composition = function(s, gene_sequences, pos, gene_name, filter, e
   
   b =sapply(seq(pos, max_pos), label_5_nuc, ref=ref)
   g = g + scale_x_discrete(labels=b)
-
+  
   return(ggplotGrob(g))
 }
 
@@ -880,28 +886,36 @@ end_composition_grobs = c()
 
 if('SEQUENCE_IMGT' %in% names(s)) {
   if(segment == 'V') {
-    end_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=313, filter=T)
+    recs = lapply(names(inferred_seqs), function(x) {s[s$SEG_CALL==x,]$SEQUENCE_IMGT})
+    refs = lapply(names(inferred_seqs), function(x) {inferred_seqs[x]})
+
+    end_composition_grobs = mapply(plot_base_composition, names(inferred_seqs), recs, refs, pos=313, filter=T)
     end_composition_grobs = end_composition_grobs[!is.na(end_composition_grobs)]
-    whole_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
+
+    whole_composition_grobs = mapply(plot_base_composition, names(inferred_seqs), recs, refs, pos=1, filter=F)
     whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
-    # uncomment to sample an additional region - also uncomment line around 512
-    #snap_composition_grobs = lapply(names(inferred_seqs), plot_base_composition, s=s, gene_sequences=inferred_seqs, pos=210, end_pos=230, filter=F)
-    #snap_composition_grobs = snap_composition_grobs[!is.na(snap_composition_grobs)]
   } else if(segment == 'J') {
-    whole_composition_grobs = lapply(names(inferred_seqs), plot_segment_composition, s=s, gene_sequences=inferred_seqs, pos=1, filter=F)
+    recs = lapply(names(inferred_seqs), function(x) {s[s$SEG_CALL==x,]$SEG_SEQ})
+    refs = lapply(names(inferred_seqs), function(x) {inferred_seqs[x]})
+
+    whole_composition_grobs = mapply(plot_segment_composition, names(inferred_seqs), recs, refs, pos=1, filter=F, r_justify=T)
+    whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
+  } else if(segment == 'D') {
+    recs = lapply(names(inferred_seqs), function(x) {s[s$SEG_CALL==x,]$SEG_SEQ_ALIGNED})
+    refs = lapply(names(inferred_seqs), function(x) {inferred_seqs[x]})
+    
+    whole_composition_grobs = mapply(plot_segment_composition, names(inferred_seqs), recs, refs, pos=1, filter=F)
     whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
   }
-  # not sure what to do with Ds. Need to sort out alignment.
 }
 
+# haplotype plots
 
-# J-allele usage and haplotype plots
-
-if(segment == 'V') {
+if(segment == 'V' || segment == 'D') {
   sa = s[!grepl(',', s$J_CALL),]            # unique J-calls only
   sa = rename(sa, J_CALL='A_CALL')
 } else {
-  sa = s[!grepl(',', s$V_CALL),]            # unique J-calls only
+  sa = s[!grepl(',', s$V_CALL),]            
   sa = rename(sa, V_CALL='A_CALL')
 }
 
@@ -990,7 +1004,8 @@ plot_differential = function(gene, a_props, sa) {
       scale_fill_brewer(palette='Dark2') +
      labs(x='', 
          y='Count', 
-         title=paste0('Sequence Count by ', gene, ' allele usage')) +
+         title=paste0('Sequence Count by ', gene, ' allele usage'),
+         fill = 'Allele') +
       theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
           panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
           axis.text=element_text(size=8), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
