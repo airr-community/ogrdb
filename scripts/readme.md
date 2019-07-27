@@ -44,7 +44,7 @@ alignment, just align the sequence in the inferred file as you prefer.
 
 * The format will be determined automatically by the script.
 * MiAIRR format files must contain at least the following columns:
-`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For D or J inferences it must also contain 
+`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J or D inferences it must also contain 
 `J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end` , or the equivalent fields for D genes.
 * CHANGEO files must contain at least the following columns:
 `SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`
