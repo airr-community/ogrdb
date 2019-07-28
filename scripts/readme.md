@@ -53,8 +53,9 @@ If you would like to process files from IMGT V-Quest, please [parse them with CH
 
 * D- related fields are only required for heavy chain records.
 
-* In both the above file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
-(including calls of the novel alleles). Sequences should be IMGT-aligned.
+* In both the above file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's V-gene genotype has been inferred
+(including calls of the novel alleles). Sequences should be IMGT-aligned. Determining the personalised V-gene genotype is recommended when processing D or J
+gene inferences, so that V-gene usage counts are accurate. However, this step can be omitted for D or J gene processing by providing a V_CALL field instead of V_CALL_GENOTYPED. 
 
 * For IgDiscover, the file 'final/filtered.tab' should be used - see section below.
 
