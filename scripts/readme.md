@@ -45,8 +45,8 @@ inference tools that do not write the inferred sequences to a separate file.
 * The format will be determined automatically by the script.
 * MiAIRR format files must contain at least the following columns:
 `sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J or D inferences they must also contain 
-`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end`, or the equivalent fields for D genes. [IgBLAST](https://www.ncbi.nlm.nih.gov/igblast/)
-creates compatible MiAIRR format files.
+`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end`, or the equivalent fields for D genes. [IgBLAST](https://www.ncbi.nlm.nih.gov/igblast/)'s 
+ `--format airr` creates compatible MiAIRR format files.
 * CHANGEO files must contain at least the following columns:
 `SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`. 
 If you would like to process files from IMGT V-Quest, please [parse them with CHANGEO](https://changeo.readthedocs.io/en/stable/examples/imgt.html) to convert them to CHANGEO format.
