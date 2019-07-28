@@ -5,8 +5,8 @@
 [genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script 
 that can be used to create an analysis of gene usage in a receptor repertoire. The analysis consists of 
 [usage statistics](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv) and  [plots](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf). 
-The report includes an analysis of inferred alleles, and was originally written to be used in conjunction with a novel allele inference tool such
-as those listed below, but the script can be run on any repertoire, whether or not it contains novel alleles. 
+The report includes an analysis of inferred alleles: the script was originally written to be used in conjunction with a novel allele inference tool such
+as those listed below, but it can be run on any repertoire, whether or not it contains novel alleles. 
 
 ### OGRDB Submission Requirements
 
@@ -31,30 +31,32 @@ to create this. The following references are provided for additional information
 
 *Inferred_file - FASTA file containing the inferred novel alleles*   
 * Sequences in the inferred file should all be of the same type: VH, VK, VL, D, JH, JK, or JL
-* If a gene with the same name is present in both the germline file and the inferred file,
-its presence in the inferred file will be ignored. This makes it easier to use the script with 
-inference tools that do not write the inferred sequences to a separate file.  
 * The header should simply consist of the allele name as assigned by the tool.
-* If there are no inferred alleles, please provide a blank file.
+* If there are no inferred alleles, please provide an empty file.
 * V-gene sequences may either be IMGT-aligned or not aligned. If they are not aligned, the script will determine
 the nearest reference gene and use it as a template. If you are not satisfied with the resulting
 alignment, just align the sequence in the inferred file as you prefer. 
+* If a gene with the same name is present in both the germline file and the inferred file,
+its presence in the inferred file will be ignored. This makes it easier to use the script with 
+inference tools that do not write the inferred sequences to a separate file.  
 
 *Read_file - A tab-separated file containing the annotated reads used to infer the genotype, in MiAIRR, CHANGEO or IgDiscover format.*
 
 * The format will be determined automatically by the script.
 * MiAIRR format files must contain at least the following columns:
-`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J or D inferences it must also contain 
-`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end` , or the equivalent fields for D genes.
+`sequence_id, v_call_genotyped, d_call, j_call, sequence_alignment, cdr3`. For J or D inferences they must also contain 
+`J_sequence_start`, `J_sequence_end`, `J_germline_start`, `J_germline_end`, or the equivalent fields for D genes. [IgBLAST](https://www.ncbi.nlm.nih.gov/igblast/)
+creates compatible MiAIRR format files.
 * CHANGEO files must contain at least the following columns:
-`SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`
+`SEQUENCE_ID, V_CALL_GENOTYPED, D_CALL, J_CALL, SEQUENCE_IMGT, CDR3_IMGT`, `V_MUT_NC`, `D_MUT_NC`, `J_MUT_NC`, `SEQUENCE`, `JUNCTION_START`, `V_SEQ`, `D_SEQ`, `J_SEQ`. 
+If you would like to process files from IMGT V-Quest, please [parse them with CHANGEO](https://changeo.readthedocs.io/en/stable/examples/imgt.html) to convert them to CHANGEO format.
 
 * D- related fields are only required for heavy chain records.
 
 * In both the above file formats, `v_call_genotyped/V_CALL_GENOTYPED` should contain the V calls made after the subject's genotype has been inferred
 (including calls of the novel alleles). Sequences should be IMGT-aligned.
 
-* For IgDiscover, the file 'final/filtered.tab' should be used.
+* For IgDiscover, the file 'final/filtered.tab' should be used - see section below.
 
 *R libraries*
 
