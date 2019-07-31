@@ -79,7 +79,7 @@ if(length(args) > 4) {
   chain = args[5]
   hap_gene = NA
   
-  if(length(args >5)) {
+  if(length(args) >5) {
     hap_gene = args[6]
   }
 } else {   # for R Studio Source
