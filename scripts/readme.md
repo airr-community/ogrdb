@@ -19,15 +19,15 @@ to create this. The following references are provided for additional information
 
 ### Script Prerequisites
 
-*Germline_file - FASTA file containing the IG reference germline sequences provided as input to the inference tool or annotation software.* 
+*Germline_file - FASTA file containing the IMGT gap-aligned reference germline sequences.* 
 
-* Sequences must correspond exactly to those used by the tool.
-* They must be IMGT-aligned
-* They must cover all genes called in the read file, except inferred novel alleles
+* All sequences that are called in the read file (apart from those of novel alleles) should be included. 
+* The sequences must be IMGT gap-aligned
 * The header can either be in IMGT's germline library format, or simply consist of the allele name
 * The IMGT set can be [downloaded](http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP)
   and used as-is: the script will filter out the records for the nominated species. As the IMGT set changes from time to time, please make sure that 
   the same version is used by the inference tool and by this script.
+* A warning will be given if any V-calls in the read file do not have a corresponding sequence. Unmutated counts will not be provided for thse sequences.
 
 *Inferred_file - FASTA file containing the inferred novel alleles*   
 * Sequences in the inferred file should all be of the same type: VH, VK, VL, D, JH, JK, or JL

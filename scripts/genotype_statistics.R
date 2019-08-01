@@ -84,14 +84,14 @@ if(length(args) > 4) {
   }
 } else {   # for R Studio Source
   # VH - tigger (Example in Readme)
-  # work_dir = 'D:/Research/ogre/scripts'
-  # setwd(work_dir)
-  # ref_filename = 'IMGT_REF_GAPPED.fasta'
-  # species = 'Homosapiens'
-  # inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
-  # filename = 'TWO01A_naive_genotyped.tsv'
-  # chain = 'VH'
-  # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
+  filename = 'TWO01A_naive_genotyped.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
 
   # JH - tigger
   # work_dir = 'D:/Research/ogre/scripts/tests/JH_tigger'
@@ -135,14 +135,14 @@ if(length(args) > 4) {
   # hap_gene = 'IGHV2-5'
   
   # VH - partis
-  work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'TW02A_V_OGRDB.fasta'
-  filename = 'TW02A_OGRDB.tsv'
-  chain = 'VH'
-  hap_gene = 'IGHJ6'
+  # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TW02A_V_OGRDB.fasta'
+  # filename = 'TW02A_OGRDB.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
   
 } 
 
@@ -474,7 +474,24 @@ if(set == 'IGHJ') {
     } 
   }
 }
-  
+
+# Check that the reference set is IMGT-aligned by looking for dots in the V-gene sequences
+
+misaligned_v = function(ref, name) {
+  if(grepl('V', name, fixed=T)) {
+    return(!grepl('.', ref, fixed=T))
+  } else {
+    return(NA)
+  }
+}
+
+misaligned = mapply(misaligned_v, ref_genes, names(ref_genes))
+
+if(any(misaligned, na.rm=T)) {
+  cat(paste0('Error: the following reference V-genes are not IMGT aligned:\n'))
+  print(names(ref_genes)[misaligned])
+  stop('The reference genes must be IMGT gap-aligned. Please consult the Prerequisites section in the README file for details.\n')
+}
 
 # get the genotype and novel alleles in this set
 
@@ -602,18 +619,18 @@ genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, name
 # otherwise - one of these two is incomplete!
 
 if(any(is.na(genotype_db))) {
-  cat(paste0("Sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file.\n"))
+  cat(paste0("Warning: sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file.\n"))
   
-  cat('\nAlleles in reads:\n')
-  print(unique(names(genotype_db)))
-  
-  cat('\nAlleles in reference set:\n')
-  print(unique(names(ref_genes)))
-  
-  cat('\nNovel Alleles:\n')
-  print(names(inferred_seqs))
-  cat('\n')
-  stop()
+  # cat('\nAlleles in reads:\n')
+  # print(unique(names(genotype_db)))
+  # 
+  # cat('\nAlleles in reference set:\n')
+  # print(unique(names(ref_genes)))
+  # 
+  # cat('\nNovel Alleles:\n')
+  # print(names(inferred_seqs))
+  # cat('\n')
+  # stop()
 }
 
 # gap the sequences if necessary
@@ -638,6 +655,7 @@ s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT)
 
 # unmutated count for each allele
 
+we_calculated_NC = F
 
 if(!('SEG_MUT_NC' %in% names(s))) {
   if(segment == 'V') {
@@ -650,6 +668,9 @@ if(!('SEG_MUT_NC' %in% names(s))) {
     s$SEG_REF_SEQ = mapply(substr, s$SEG_REF_IMGT, s$SEG_GERM_START, s$SEG_GERM_START+s$SEG_GERM_LENGTH-1)   
     s$SEG_MUT_NC = stringdist(s$SEG_SEQ, s$SEG_REF_SEQ, method="hamming")
   }
+  
+  we_calculated_NC = T
+  s[,is.na(s$SEG_MUT_NC)]$SEG_MUT_NC = 0
 }
 
 report('calculated mutation count')
@@ -662,8 +683,9 @@ if(segment == 'D') {
   s$SEG_SEQ_ALIGNED = sapply(s$SEG_SEQ_ALIGNED, function(x) {str_pad(x, width, side='right')})
 }
 
-s0 = s[s$SEG_MUT_NC == 0,]
-genotype = s0 %>% group_by(SEG_CALL) %>% summarize(unmutated_sequences = n())
+genotype = s %>% group_by(SEG_CALL) %>% summarize(sequences = n())
+s0 = s[s$SEG_MUT_NC == 0,] %>% group_by(SEG_CALL) %>% summarize(unmutated_sequences = n())
+genotype = merge(genotype, s0, all=T)
 
 if(any(is.na(genotype$unmutated_sequences))) {
   genotype[is.na(genotype$unmutated_sequences),]$unmutated_sequences = 0
@@ -739,6 +761,14 @@ genotype$nt_sequence = gsub('-', '', genotype$nt_sequence, fixed=T)
 genotype$nt_sequence = gsub('.', '', genotype$nt_sequence, fixed=T)
 genotype = unnest(genotype)
 
+# If we had to calculate MUT_NC, set the mutated counts to NA for any allele for which we don't have a sequence
+
+if(we_calculated_NC) {
+  genotype[is.na(genotype$nt_sequence),]$unmutated_frequency = NA
+  genotype[is.na(genotype$nt_sequence),]$assigned_unmutated_frequency = NA
+  genotype[is.na(genotype$nt_sequence),]$unmutated_sequences = NA
+}  
+
 # Check for duplicate germline sequences
 
 concat_names = function(x) {
@@ -802,7 +832,14 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   return(ggplotGrob(g))
 }
 
-barplot_grobs = lapply(sort_alleles(names(genotype_db)), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+# If we had to calculate MUT_NC, omit any plots for alleles for which we don't have a sequence
+
+if(we_calculated_NC) {
+  barplot_grobs = lapply(sort_alleles(names(genotype_db[!is.na(genotype_db)])), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+} else {
+  barplot_grobs = lapply(sort_alleles(names(genotype_db)), plot_allele_seqs, s=s, inferred_seqs=inferred_seqs, genotype=genotype)
+}
+
 barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
 # nucleotide composition plots for novel alleles
@@ -836,7 +873,7 @@ label_nuc = function(pos, ref) {
   return(paste0(pos, "\n", ref[[1]][pos]))
 }
 
-report('base composition')
+
 
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
@@ -889,7 +926,6 @@ label_5_nuc = function(pos, ref) {
   return(paste0(n, "\n", ref[[1]][pos]))
 }
 
-report('segment composition')
 
 # Plot composition of a segment rather than the whole IMGT-aligned sequence
 plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_pos=999, r_justify=F) {
@@ -925,10 +961,11 @@ plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_
   return(ggplotGrob(g))
 }
 
-report('whole composition')
 
 whole_composition_grobs = c()
 end_composition_grobs = c()
+
+report('base composition')
 
 if('SEQUENCE_IMGT' %in% names(s)) {
   if(segment == 'V') {
