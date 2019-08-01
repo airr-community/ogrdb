@@ -166,6 +166,12 @@ file_prefix = basename(strsplit(filename, '.', fixed=T)[[1]][1])
 
 pdf(NULL) # this seems to stop an empty Rplots.pdf from being created. I don't know why.
 
+# TImestamped progress report
+
+report = function(x) {
+  cat(paste0(Sys.time(), ':', x, '\n'))
+}
+
 # Functions to provide reasonable sorting of gene names
 
 gene_family = function(gene_name) {
@@ -439,6 +445,8 @@ find_nearest = function(sequence_ind, ref_genes, prefix, inferred_seqs, segment)
 
 # get the reference set
 
+report('Processing started')
+
 ref_genes = readIgFasta(ref_filename, strip_down_name =F)
 set = paste0('IG', substr(chain, 2, 2), segment)
 region = paste0(segment, '-REGION')
@@ -471,7 +479,7 @@ if(set == 'IGHJ') {
 # get the genotype and novel alleles in this set
 
 if(inferred_filename != '-') {
-  inferred_seqs = readIgFasta(inferred_filename, strip_down_name=F)
+  inferred_seqs = readIgFasta(inferred_filename, strip_down_name=T)
 } else {
   inferred_seqs = c()
 }
@@ -486,6 +494,8 @@ if(segment == 'V') {
 
 # Read the sequences. Changeo format is assumed unless airr or IgDiscover format is identified
 # TODO - check and give nice error message if any columns are missing
+
+report('reading sequences')
 
 s = read.delim(filename, stringsAsFactors=F)
 
@@ -592,7 +602,18 @@ genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, name
 # otherwise - one of these two is incomplete!
 
 if(any(is.na(genotype_db))) {
-  stop(paste0("Sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file."))
+  cat(paste0("Sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file.\n"))
+  
+  cat('\nAlleles in reads:\n')
+  print(unique(names(genotype_db)))
+  
+  cat('\nAlleles in reference set:\n')
+  print(unique(names(ref_genes)))
+  
+  cat('\nNovel Alleles:\n')
+  print(names(inferred_seqs))
+  cat('\n')
+  stop()
 }
 
 # gap the sequences if necessary
@@ -608,7 +629,9 @@ find_template = function(call) {
 s$SEG_REF_IMGT = sapply(s$SEG_CALL, find_template)
 
 if(!('SEQUENCE_IMGT' %in% names(s))) {
+  report('gapping the reads')
   s$SEQUENCE_IMGT = mapply(imgt_gap, s$SEQUENCE,s$CDR3_IMGT, s$JUNCTION_START, s$SEG_REF_IMGT)
+  report('finished gapping')
 }
 
 s$SEQUENCE_IMGT = toupper(s$SEQUENCE_IMGT)
@@ -628,6 +651,8 @@ if(!('SEG_MUT_NC' %in% names(s))) {
     s$SEG_MUT_NC = stringdist(s$SEG_SEQ, s$SEG_REF_SEQ, method="hamming")
   }
 }
+
+report('calculated mutation count')
 
 # make a space-alignment of D sequences for the usage histogram (V and J use the IMGT alignment)
 
@@ -677,11 +702,13 @@ genotype$unique_cdr3s_unmutated = sapply(genotype$SEG_CALL, unique_cdrs, segment
 
 genotype$assigned_unmutated_frequency = round(100*genotype$unmutated_sequences/genotype$sequences, digits=2)
 
+report('determined unique calls')
+
 # closest in genotype and in reference (inferred alleles only)
 # Inferred D alleles should be aligned for best match (if this is an allele of an existing D-gene, align against a knon allele of that gene)
 
 if (length(inferred_seqs) == 0) {
-  cat('Warning - no inferred sequences found.')
+  cat('Warning - no inferred sequences found.\n')
   
   genotype$reference_closest = NA
   genotype$host_closest = NA
@@ -733,6 +760,8 @@ if(length(dupes) > 0) {
 
 # bar charts for all alleles
 
+report('plotting bar charts')
+
 plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
   g = genotype[genotype$sequence_id==allele,]
   recs = s[s$SEG_CALL==allele,]
@@ -742,14 +771,22 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
     return(NA)
   }
   
-  if(segment == 'V') {  
-    label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
-                        g$unique_cdr3s_unmutated, ' unique CDR3\n',
-                        g$unique_js_unmutated, ' unique J')
+  if(is.na(g$unmutated_sequences)) {
+    g$unmutated_sequences = 0
+  }
+  
+  if(g$unmutated_sequences != 0) {
+    if(segment == 'V') {  
+      label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
+                          g$unique_cdr3s_unmutated, ' unique CDR3\n',
+                          g$unique_js_unmutated, ' unique J')
+    } else {
+      label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
+                          g$unique_cdr3s_unmutated, ' unique CDR3\n',
+                          g$unique_vs_unmutated, ' unique V')
+    }
   } else {
-    label_text = paste0(g$unmutated_sequences, ' (', round(g$unmutated_sequences*100/g$sequences, digits=1), '%) exact matches, in which:\n',
-                        g$unique_cdr3s_unmutated, ' unique CDR3\n',
-                        g$unique_vs_unmutated, ' unique V')
+    label_text = 'No exact matches.\n'
   }
   
   g = ggplot(data=recs, aes(x=SEG_MUT_NC)) + 
@@ -757,11 +794,11 @@ plot_allele_seqs = function(allele, s, inferred_seqs, genotype) {
     labs(x='Nucleotide Difference', 
          y='Count', 
          title=allele,
-         subtitle=paste0(g$sequences, ' sequences assigned')) +
-    theme_classic(base_size=12) +
-    theme(aspect.ratio = 1/1) +
-    geom_label(label=label_text, aes(x=Inf,y=Inf,hjust=1,vjust=1), size=2)
+         subtitle=paste0(g$sequences, ' sequences assigned\n', label_text)) +
+         theme_classic(base_size=12) +
+    theme(aspect.ratio = 1/1, plot.subtitle=element_text(size=8)) 
   
+
   return(ggplotGrob(g))
 }
 
@@ -769,6 +806,8 @@ barplot_grobs = lapply(sort_alleles(names(genotype_db)), plot_allele_seqs, s=s, 
 barplot_grobs=barplot_grobs[!is.na(barplot_grobs)]
 
 # nucleotide composition plots for novel alleles
+
+report('nucleotide plots')
 
 nuc_at = function(seq, pos, filter) {
   if(length(seq) >= pos) {
@@ -796,6 +835,8 @@ nucs_at = function(seqs, pos, filter) {
 label_nuc = function(pos, ref) {
   return(paste0(pos, "\n", ref[[1]][pos]))
 }
+
+report('base composition')
 
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
@@ -848,6 +889,8 @@ label_5_nuc = function(pos, ref) {
   return(paste0(n, "\n", ref[[1]][pos]))
 }
 
+report('segment composition')
+
 # Plot composition of a segment rather than the whole IMGT-aligned sequence
 plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_pos=999, r_justify=F) {
   max_pos = nchar(ref)
@@ -882,6 +925,8 @@ plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_
   return(ggplotGrob(g))
 }
 
+report('whole composition')
+
 whole_composition_grobs = c()
 end_composition_grobs = c()
 
@@ -909,6 +954,8 @@ if('SEQUENCE_IMGT' %in% names(s)) {
     whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
   }
 }
+
+report('haplotype plots')
 
 # haplotype plots
 
@@ -967,6 +1014,7 @@ a_allele_plot = ggplot() + geom_bar(aes(y=percent, x=a_gene, fill=a_allele), dat
 sa = sa[!grepl(',', sa$SEG_CALL),]        # remove ambiguous V-calls
 sa$SEG_CALL = factor(sa$SEG_CALL, sort_alleles(unique(sa$SEG_CALL)))
 
+report('differential plots')
 
 # differential plot by allele usage - if we have good alleles for this gene
 
@@ -1009,7 +1057,7 @@ plot_differential = function(gene, a_props, sa) {
          fill = 'Allele') +
       theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
           panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
-          axis.text=element_text(size=8), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
+          axis.text=element_text(size=4), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5),
           plot.margin=margin(1,margins,15,margins, 'cm'))
   return(ggplotGrob(g))
 }
@@ -1017,6 +1065,7 @@ plot_differential = function(gene, a_props, sa) {
 haplo_grobs = lapply(a_genes, plot_differential, a_props=a_props, sa=sa)
 haplo_grobs = haplo_grobs[!is.na(haplo_grobs)]
 
+report('saving graphics')
 
 # Save all graphics to plot file
 
@@ -1074,7 +1123,7 @@ if(!is.na(hap_gene)) {
 }
   
   
-  
+report('saving stats')  
 
 # Save Genotype file
 genotype = genotype[order_alleles(DataFrame(genes=as.character(genotype$sequence_id))),]
