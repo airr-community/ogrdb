@@ -456,13 +456,13 @@ if(grepl('|', names(ref_genes)[1], fixed=T)) {
   ref_genes = ref_genes[grepl(species, names(ref_genes),fixed=T)]
   ref_genes = ref_genes[grepl(region, names(ref_genes),fixed=T)]  # restrict to V-D-J regions
   ref_genes = ref_genes[grepl(set, names(ref_genes),fixed=T)]
-  
+
   gene_name = function(full_name) {
     return(strsplit(full_name, '|', fixed=T)[[1]][2])
   }
-}
 
-names(ref_genes) = sapply(names(ref_genes), gene_name)
+  names(ref_genes) = sapply(names(ref_genes), gene_name)
+}
 
 # Crude fix for two misaligned human IGHJ reference genes
 
