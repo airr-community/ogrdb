@@ -83,6 +83,7 @@ if(length(args) > 4) {
     hap_gene = args[6]
   }
 } else {   # for R Studio Source
+
   # VH - tigger (Example in Readme)
   work_dir = 'D:/Research/ogre/scripts'
   setwd(work_dir)
@@ -92,7 +93,17 @@ if(length(args) > 4) {
   filename = 'TWO01A_naive_genotyped.tsv'
   chain = 'VH'
   hap_gene = 'IGHJ6'
-
+  
+  # VH - tigger with truncated sequences in IMGT alignment
+  # work_dir = 'D:/Research/ogre/scripts/tests/V_tigger_truncated'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
+  # filename = 'TWO01A_naive_genotyped.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
+  
   # JH - tigger
   # work_dir = 'D:/Research/ogre/scripts/tests/JH_tigger'
   # setwd(work_dir)
@@ -144,6 +155,15 @@ if(length(args) > 4) {
   # chain = 'VH'
   # hap_gene = 'IGHJ6'
   
+  # JK - igDiscover
+  # work_dir = 'D:\\Research\\ogre\\scripts\\tests\\private\\PRJEB30386 - Kappa'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'Inferred_file.fasta'
+  # filename = 'Read_file.tab'
+  # chain = 'VK'
+  # hap_gene = 'IGHJ6'
 } 
 
 if(!(chain %in% c('VH', 'VK', 'VL', 'DH', 'JH', 'JK', 'JL'))) {
@@ -311,6 +331,10 @@ apply_gaps = function(seq, tem) {
 # junction_start is the location of the first nucleotide of the cysteine preceding the CRD3
 # this is location 310 in the IMGT numbering scheme
 imgt_gap = function(sequence, cdr3_sequence, junction_start, ref_gene) {
+  if(is.na(ref_gene) || is.na(cdr3_sequence) || is.na(sequence)) {
+    return(NA)
+  }
+  
   # Find the cdr3_start in the un-aligned reference gene
   ref_junction_start = 310 - (nchar(ref_gene) - nchar(gsub('.', '', ref_gene, fixed=T)))
   
@@ -496,7 +520,7 @@ if(any(misaligned, na.rm=T)) {
 # get the genotype and novel alleles in this set
 
 if(inferred_filename != '-') {
-  inferred_seqs = readIgFasta(inferred_filename, strip_down_name=T)
+  inferred_seqs = readIgFasta(inferred_filename, strip_down_name=F)
 } else {
   inferred_seqs = c()
 }
@@ -621,16 +645,16 @@ genotype_db = setNames(c(genotype_seqs, inferred_seqs), c(genotype_alleles, name
 if(any(is.na(genotype_db))) {
   cat(paste0("Warning: sequence(s) for allele(s) ", names(genotype_db[is.na(genotype_db)]), " can't be found in the reference set or the novel alleles file.\n"))
   
-  # cat('\nAlleles in reads:\n')
-  # print(unique(names(genotype_db)))
-  # 
-  # cat('\nAlleles in reference set:\n')
-  # print(unique(names(ref_genes)))
-  # 
-  # cat('\nNovel Alleles:\n')
-  # print(names(inferred_seqs))
-  # cat('\n')
-  # stop()
+#  cat('\nAlleles in reads:\n')
+#  print(unique(names(genotype_db)))
+
+#  cat('\nAlleles in reference set:\n')
+#  print(unique(names(ref_genes)))
+
+#  cat('\nNovel Alleles:\n')
+#  print(names(inferred_seqs))
+#  cat('\n')
+#  stop()
 }
 
 # gap the sequences if necessary
@@ -763,7 +787,7 @@ genotype = unnest(genotype)
 
 # If we had to calculate MUT_NC, set the mutated counts to NA for any allele for which we don't have a sequence
 
-if(we_calculated_NC) {
+if(we_calculated_NC && any(is.na(genotype$nt_sequence))) {
   genotype[is.na(genotype$nt_sequence),]$unmutated_frequency = NA
   genotype[is.na(genotype$nt_sequence),]$assigned_unmutated_frequency = NA
   genotype[is.na(genotype$nt_sequence),]$unmutated_sequences = NA
@@ -878,6 +902,18 @@ label_nuc = function(pos, ref) {
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
 # if pos is negative, SEQUENCE_IMGT contains a certain number of trailing nucleotides. Plot them all.
+
+label_5_nuc = function(pos, ref) {
+  if(pos %% 5 == 0) {
+    n = pos
+  } else {
+    n = ''
+  }
+  
+  return(paste0(n, "\n", ref[[1]][pos]))
+}
+
+
 plot_base_composition = function(gene_name, recs, ref, pos=1, filter=T, end_pos=999, r_justify=F) {
   max_pos = nchar(ref)
   
@@ -906,24 +942,13 @@ plot_base_composition = function(gene_name, recs, ref, pos=1, filter=T, end_pos=
     )
   
   if(filter) {
-    b =sapply(seq(pos,max_pos), label_nuc, ref=ref)
+    b =sapply(seq(pos, max_pos), label_5_nuc, ref=ref)
     g = g + scale_x_discrete(labels=b)
   } else {
     g = g +   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
   }
   
   return(ggplotGrob(g))
-}
-
-
-label_5_nuc = function(pos, ref) {
-  if(pos %% 5 == 0) {
-    n = pos
-  } else {
-    n = ''
-  }
-  
-  return(paste0(n, "\n", ref[[1]][pos]))
 }
 
 
