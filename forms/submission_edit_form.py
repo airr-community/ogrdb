@@ -26,6 +26,7 @@ from forms.primer_set_form import *
 from forms.attached_file_form import *
 from sys import exc_info
 from get_ncbi_details import *
+from get_ena_details import *
 from collections import namedtuple
 from custom_validators import ValidNucleotideSequence, ValidOrcidID
 from wtforms import HiddenField, SelectField
@@ -201,25 +202,40 @@ class HiddenSubFieldsForm(FlaskForm):
 
 # Selector for repo
 class RepoSelectorForm(FlaskForm):
-    repository_select = SelectField("Repository", choices=[('NCBI SRA', 'NCBI SRA'), ('Other', 'Other')], description="Name of the repository holding the sequence dataset. Please use NCBI SRA wherever possible")
+    repository_select = SelectField("Repository", choices=[('NCBI SRA', 'NCBI SRA'), ('ENA', 'ENA'), ('Other', 'Other')], description="Name of the repository holding the sequence dataset.")
 
 
 # Validation and completion of NCBI repository data
 def update_sra_rep_details(form):
-    if form.repository_select.data != 'NCBI SRA':
+    if form.repository_select.data == 'NCBI SRA':
+        form.repository_name.data = 'NCBI SRA'
+
+        if form.rep_accession_no.data[:5] != 'PRJNA':
+            form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143']
+            raise ValidationError()
+
+        try:
+            details = get_nih_project_details(form.rep_accession_no.data)
+        except ValueError as e:
+            form.rep_accession_no.errors = [e.args[0]]
+            raise ValidationError()
+
+    elif form.repository_select.data == 'ENA':
+        form.repository_name.data = 'ENA'
+
+        if form.rep_accession_no.data[:5] != 'PRJEB':
+            form.rep_accession_no.errors = ['Please provide the Study id, eg PRJEB30386']
+            raise ValidationError()
+
+        try:
+            details = get_ena_project_details(form.rep_accession_no.data)
+        except ValueError as e:
+            form.rep_accession_no.errors = [e.args[0]]
+            raise ValidationError()
+
+    else:
         return
 
-    form.repository_name.data = 'NCBI SRA'
-
-    if form.rep_accession_no.data[:5] != 'PRJNA':
-        form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143']
-        raise ValidationError()
-
-    try:
-        details = get_nih_project_details(form.rep_accession_no.data)
-    except ValueError as e:
-        form.rep_accession_no.errors = [e.args[0]]
-        raise ValidationError()
 
     form.rep_title.data = details['title']
     form.dataset_url.data = details['url']

@@ -105,10 +105,10 @@ class InferredSequence_view(Table):
 
 def make_InferredSequence_view(sub, private = False):
     ret = InferredSequence_view([])
-    ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository (e.g. BK010573)", "field": "seq_accession_no"})
+    ret.items.append({"item": "Accession Number", "value": sub.seq_accession_no, "tooltip": "Accession number of the inferred allele within the repository, e.g. BK010573 (NCBI), MK308864 (ENA)", "field": "seq_accession_no"})
     ret.items.append({"item": "Record Title", "value": sub.seq_record_title, "tooltip": "Title of sequence record in the repository", "field": "seq_record_title"})
     ret.items.append({"item": "Version", "value": sub.deposited_version, "tooltip": "Version number of the sequence within the repository (e.g. 1)", "field": "deposited_version"})
-    ret.items.append({"item": "Select sets", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)", "field": "run_ids"})
+    ret.items.append({"item": "Select sets", "value": sub.run_ids, "tooltip": "Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference, e.g. SRR7154792 (NCBI), ERX3006608 (ENA)", "field": "run_ids"})
     ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence", "field": "inferred_extension"})
     ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)", "field": "ext_3prime"})
     ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "start_3prime_ext"})

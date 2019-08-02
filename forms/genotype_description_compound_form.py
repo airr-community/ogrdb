@@ -13,6 +13,7 @@ from forms.cancel_form import *
 from forms.genotype_description_form import *
 from forms.aggregate_form import *
 from get_ncbi_details import *
+from get_ena_details import *
 import hashlib
 
 
@@ -26,8 +27,8 @@ class LinkedSample_table(StyledTable):
     sam_record_title = StyledCol("Title", tooltip="Sample title in the repository")
 
 
-def update_sample_details(gen, form, ncbi):
-    if not ncbi:
+def update_sample_details(gen, form, repo):
+    if repo is None:
         form.gen_ncbi_hash.data = ''
         for rec in gen.sample_names:
             db.session.delete(rec)
@@ -49,7 +50,7 @@ def update_sample_details(gen, form, ncbi):
         sam_ids = sam_ids.split()
 
         for sam_id in sam_ids:
-            resp = get_nih_samn_details(sam_id)
+            resp = get_nih_samn_details(sam_id) if repo == 'NCBI SRA' else get_ena_samn_details(sam_id)
             rec = SampleName()
             rec.sam_accession_no = sam_id
             rec.sam_record_title = resp['title']
@@ -70,7 +71,7 @@ def update_sample_details(gen, form, ncbi):
         run_ids = run_ids.split()
 
         for run_id in run_ids:
-            resp = get_nih_srr_details(run_id)
+            resp = get_nih_srr_details(run_id) if repo == 'NCBI SRA' else get_ena_srr_details(run_id)
             rec = RecordSet()
             rec.rec_accession_no = run_id
             rec.rec_record_title = resp['title']

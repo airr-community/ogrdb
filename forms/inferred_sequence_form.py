@@ -9,11 +9,11 @@ from wtforms import StringField, SelectField, DateField, BooleanField, IntegerFi
 class InferredSequenceForm(FlaskForm):
     sequence_id = SelectField('sequence_id', [validators.Optional()], choices=[], description="Identifier of the sequence within the genotype")
     genotype_id = SelectField('genotype_id', [validators.Optional()], choices=[], description="Identifier of the genotype from which these sequences were inferred")
-    seq_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number of the inferred allele within the repository (e.g. BK010573)")
+    seq_accession_no = StringField('Accession Number', [validators.Length(max=255), NonEmpty()], description="Accession number of the inferred allele within the repository, e.g. BK010573 (NCBI), MK308864 (ENA)")
     seq_record_title = StringField('Record Title', [validators.Length(max=255)], description="Title of sequence record in the repository")
     ncbi_hash = HiddenField('ncbi_hash', [validators.Length(max=255)], description="md5 sum of details passed to ncbi")
     deposited_version = StringField('Version', [validators.Length(max=255)], description="Version number of the sequence within the repository (e.g. 1)")
-    run_ids = StringField('Select sets', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)")
+    run_ids = StringField('Select sets', [validators.Length(max=255), NonEmpty()], description="Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference, e.g. SRR7154792 (NCBI), ERX3006608 (ENA)")
     inferred_extension = BooleanField('Extension?', [], description="Checked if the inference reports an extension to a known sequence")
     ext_3prime = TextAreaField('3\'  Extension', [ValidNucleotideSequence(ambiguous=False, gapped=True), validators.Optional()], description="Extending sequence at 3\' end (IMGT gapped)")
     start_3prime_ext = IntegerField('3\' start', [validators.Optional()], description="Start co-ordinate of 3\' extension (if any) in IMGT numbering")

@@ -12,6 +12,7 @@ from forms.cancel_form import *
 from forms.inferred_sequence_form import *
 from forms.aggregate_form import *
 from get_ncbi_details import *
+from get_ena_details import *
 import hashlib
 
 
@@ -25,8 +26,8 @@ class LinkedRecordSet_table(StyledTable):
     rec_record_title = StyledCol("Title", tooltip="Title of sequence record in the repository")
 
 
-def update_inf_rep_details(seq, form, ncbi):
-    if not ncbi:
+def update_inf_rep_details(seq, form, repo):
+    if repo is None:
         form.ncbi_hash.data = ''
         form.seq_record_title.data = ''
         for rec in seq.record_set:
@@ -40,7 +41,10 @@ def update_inf_rep_details(seq, form, ncbi):
         return
 
     try:
-        resp = get_nih_nuc_details(form.seq_accession_no.data)
+        if repo == 'NNCBI SRA':
+            resp = get_nih_nuc_details(form.seq_accession_no.data)
+        elif repo == 'ENA':
+            resp = get_ena_nuc_details(form.seq_accession_no.data)
         form.seq_record_title.data = resp['title']
     except ValueError as e:
         form.seq_accession_no.errors = [e.args[0]]
@@ -56,7 +60,11 @@ def update_inf_rep_details(seq, form, ncbi):
         run_ids = run_ids.split()
 
         for run_id in run_ids:
-            resp = get_nih_srr_details(run_id)
+            if repo == 'NNCBI SRA':
+                resp = get_nih_srr_details(run_id)
+            elif repo == 'ENA':
+                resp = get_ena_srr_details(run_id)
+
             rec = RecordSet()
             rec.rec_accession_no = run_id
             rec.rec_record_title = resp['title']

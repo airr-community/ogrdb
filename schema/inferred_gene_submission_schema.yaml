@@ -187,7 +187,7 @@ Repertoire:
             nonblank: true
         rep_accession_no:
             type: string
-            description: Accession number or serial number within the repository. For NCBI please provide the NCBI BioProject (e.g. PRJNA349143)
+            description: Accession number or serial number within the repository. please provide the BioProject (e.g. PRJNA349143) for NCBI or Study for ENA (e.g. PRJEB30386)
             label: Accession Number
             nonblank: true
         rep_title:
@@ -419,7 +419,7 @@ InferredSequence:
             relationship: [genotype_description, GenotypeDescription, inferred_sequences]
         seq_accession_no:
             type: string
-            description: Accession number of the inferred allele within the repository (e.g. BK010573)
+            description: Accession number of the inferred allele within the repository, e.g. BK010573 (NCBI), MK308864 (ENA)
             label: Accession Number
             nonblank: true
         seq_record_title:
@@ -436,7 +436,7 @@ InferredSequence:
             label: Version
         run_ids:
             type: string
-            description: Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference (e.g. SRR7154792)
+            description: Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference, e.g. SRR7154792 (NCBI), ERX3006608 (ENA)
             label: Select sets
             nonblank: true
         inferred_extension:
@@ -528,12 +528,12 @@ GenotypeDescription:
             nonblank: true
         genotype_biosample_ids:
             type: list
-            description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived (e.g. SAMN05924304)
+            description: Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived, e.g. SAMN05924304 (NCBI), SAMEA5178755 (ENA)
             label: Sample IDs
             nonblank: true
         genotype_run_ids:
             type: string
-            description: Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived (e.g. SRR7154792)
+            description: Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived, e.g. SRR7154792 (NCBI), ERX3006608 (NCBI)
             label: Sequence Sets
             nonblank: true
         gen_ncbi_hash:

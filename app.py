@@ -286,7 +286,7 @@ def edit_submission(id):
     if request.method == 'GET':
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
-        form.repository_select.data = 'NCBI SRA' if sub.repertoire[0].repository_name == 'NCBI SRA' else 'Other'
+        form.repository_select.data = sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else 'Other'
         return render_template('submission_edit.html', form = form, id=id, tables=tables, attachment=len(sub.notes_entries[0].attached_files) > 0)
 
     missing_sequence_error = False
@@ -382,7 +382,7 @@ def edit_submission(id):
                 sub.notes_entries[0].notes_text = request.form['notes_text'].encode('utf-8')
 
             db.session.commit()
-            form.repository_select.data = 'NCBI SRA' if sub.repertoire[0].repository_name == 'NCBI SRA' else 'Other'
+            form.repository_select.data = sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else 'Other'
 
         if validation_result.route:
             return redirect(url_for(validation_result.route, id = validation_result.id))
@@ -656,7 +656,7 @@ def edit_genotype_description(id):
     form.sequence_type.choices = [(x,x) for x in db.session.query(Committee).filter(Committee.species==desc.submission.species).one_or_none().sequence_types.replace(' ', '').split(',')]
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
-    ncbi = desc.submission.repertoire[0].repository_name == 'NCBI SRA'
+    repo = desc.submission.repertoire[0].repository_name if desc.submission.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else None
 
     if request.method == 'POST':
         if form.cancel.data:
@@ -668,7 +668,7 @@ def edit_genotype_description(id):
                     form.genotype_name.errors.append('There is already a genotype description with that name.')
                     raise ValidationError()
 
-                update_sample_details(desc, form, ncbi)
+                update_sample_details(desc, form, repo)
                 sam_table = LinkedSample_table(desc.sample_names)
                 srr_table = LinkedRecordSet_table(desc.record_set)
 
@@ -700,14 +700,14 @@ def edit_genotype_description(id):
                 if 'save_close_genotype' in request.form:
                     return redirect(url_for('edit_submission', id=desc.submission.submission_id, _anchor= 'genotype_description'))
             except ValidationError as e:
-                return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id, ncbi=ncbi, sam_table=sam_table, srr_table=srr_table)
+                return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id, ncbi=(repo is not None), sam_table=sam_table, srr_table=srr_table)
     else:
         populate_GenotypeDescription(db, desc, form)
         if desc.inference_tool is not None:
             form.inference_tool_id.data = str(desc.inference_tool_id)
             form.inference_tool_id.default = str(desc.inference_tool_id)
 
-    return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id, ncbi=ncbi, sam_table=sam_table, srr_table=srr_table)
+    return render_template('genotype_description_edit.html', form=form, submission_id=desc.submission.submission_id, id=id, ncbi=(repo is not None), sam_table=sam_table, srr_table=srr_table)
 
 
 def check_genotype_description_view(id):
@@ -742,7 +742,7 @@ def genotype(id, editable=False):
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
     srr_table.rec_accession_no.name = 'Record Set'
-    ncbi = desc.submission.repertoire[0].repository_name == 'NCBI SRA'
+    ncbi = desc.submission.repertoire[0].repository_name in ('NCBI SRA', 'ENA')
 
     form = GenotypeViewOptionsForm()
     tables = {}
@@ -826,7 +826,7 @@ def inferred_sequence(id):
         return redirect('/')
 
     sub = seq.submission
-    ncbi =  sub.repertoire[0].repository_name == 'NCBI SRA'
+    repo =  sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else None
 
     table = make_InferredSequence_view(seq)
     srr_table = LinkedRecordSet_table(seq.record_set)
@@ -834,8 +834,10 @@ def inferred_sequence(id):
     for i in range(len(table.items)-1, -1, -1):
         if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?' or (table.items[i]['item'] == 'Select sets' and ncbi):
             del(table.items[i])
-        elif table.items[i]['item'] == 'Accession Number' and ncbi:
+        elif table.items[i]['item'] == 'Accession Number' and repo == 'NCBI SRA':
             table.items[i]['value'] = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (table.items[i]['value'], table.items[i]['value']))
+        elif table.items[i]['item'] == 'Accession Number' and repo == 'ENA':
+            table.items[i]['value'] = Markup('<a href="https://www.ebi.ac.uk/ena/data/view/%s">%s</a>' % (table.items[i]['value'], table.items[i]['value']))
 
     return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id, srr_table = srr_table, ncbi=ncbi)
 
@@ -887,9 +889,9 @@ def edit_inferred_sequence(id):
 
     form = setup_inferred_sequence_form(seq)
     srr_table = LinkedRecordSet_table(seq.record_set)
-    ncbi =  seq.submission.repertoire[0].repository_name == 'NCBI SRA'
+    repo = seq.submission.repertoire[0].repository_name if seq.submission.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else None
 
-    if not ncbi:
+    if repo is None:
         form.seq_record_title.type = 'HiddenField'
 
     if request.method == 'POST':
@@ -929,20 +931,20 @@ def edit_inferred_sequence(id):
                         form.inferred_extension.errors.append('Please specify an extension at at least one end')
                         raise ValidationError()
 
-                update_inf_rep_details(seq, form, ncbi)
+                update_inf_rep_details(seq, form, repo)
                 save_InferredSequence(db, seq, form, new=False)
                 srr_table = LinkedRecordSet_table(seq.record_set)
 
                 if 'save_close_sequence' in request.form:
                     return redirect(url_for('edit_submission', id=seq.submission.submission_id, _anchor= 'inferred_sequence'))
             except ValidationError as e:
-                return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id, ncbi=ncbi, srr_table=srr_table)
+                return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id, ncbi=repo is not None, srr_table=srr_table)
     else:
         populate_InferredSequence(db, seq, form)
         form.genotype_id.data = str(seq.genotype_id) if seq.genotype_id else ''
         form.sequence_id.data = str(seq.sequence_id) if seq.sequence_id else ''
 
-    return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id, ncbi=ncbi, srr_table=srr_table)
+    return render_template('inferred_sequence_edit.html', form=form, submission_id=seq.submission.submission_id, id=id, ncbi=repo is not None, srr_table=srr_table)
 
 
 @app.route('/render_page/<page>')
