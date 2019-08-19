@@ -102,8 +102,8 @@ def get_ena_srr_details(srr_id):
 def get_ena_samn_details(sam_id):
     ret = {}
 
-    if len(sam_id) < 5 or (sam_id[:4] != 'SAME' and sam_id[:3] != 'ERS'):
-        raise ValueError('badly formatted SAME/ERS record accession number: %s' % (sam_id))
+    if len(sam_id) < 5 or (sam_id[:4] != 'SAME' and sam_id[:3] != 'ERS' and sam_id[:4] != 'SAMN'):
+        raise ValueError('badly formatted sample accession number: %s' % (sam_id))
 
     try:
         r = requests.get('https://www.ebi.ac.uk/ena/data/view/%s&display=xml' % sam_id)
