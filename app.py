@@ -1889,17 +1889,21 @@ def tidy_genotype():
         if len(sub.repertoire) > 0 and sub.repertoire[0].repository_name == 'ENA':
             report += 'Processing submission ' + sub.submission_id + '<br>'
 
+
             rep = sub.repertoire[0]
             try:
+                time.sleep(3)
                 details = get_ena_project_details(rep.rep_accession_no)
                 rep.rep_title = details['title']
                 rep.dataset_url = details['url']
             except:
                 report += 'project accession number ' + rep.rep_accession_no + 'not found.<br>'
 
+
             for inf in sub.inferred_sequences:
                 report += 'Processing inferred sequence' + str(inf.sequence_id) + '<br>'
                 try:
+                    time.sleep(3)
                     resp = get_ena_nuc_details(inf.seq_accession_no)
                     inf.seq_record_title = resp['title']
                 except:
@@ -1915,6 +1919,7 @@ def tidy_genotype():
 
                 for run_id in run_ids:
                     try:
+                        time.sleep(3)
                         resp = get_ena_srr_details(run_id)
 
                         rec = RecordSet()
@@ -1936,6 +1941,7 @@ def tidy_genotype():
 
                     for sam_id in sam_ids:
                         try:
+                            time.sleep(3)
                             resp = get_ena_samn_details(sam_id)
                             rec = SampleName()
                             rec.sam_accession_no = sam_id
@@ -1955,6 +1961,7 @@ def tidy_genotype():
 
                     for run_id in run_ids:
                         try:
+                            time.sleep(3)
                             resp = get_ena_srr_details(run_id)
                             rec = RecordSet()
                             rec.rec_accession_no = run_id
