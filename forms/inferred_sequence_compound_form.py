@@ -27,7 +27,7 @@ class LinkedRecordSet_table(StyledTable):
 
 
 def update_inf_rep_details(seq, form, repo):
-    if repo is None:
+    if repo is None or repo not in ('NCBI SRA', 'ENA'):
         form.ncbi_hash.data = ''
         form.seq_record_title.data = ''
         for rec in seq.record_set:
@@ -41,7 +41,7 @@ def update_inf_rep_details(seq, form, repo):
         return
 
     try:
-        if repo == 'NNCBI SRA':
+        if repo == 'NCBI SRA':
             resp = get_nih_nuc_details(form.seq_accession_no.data)
         elif repo == 'ENA':
             resp = get_ena_nuc_details(form.seq_accession_no.data)
@@ -60,7 +60,7 @@ def update_inf_rep_details(seq, form, repo):
         run_ids = run_ids.split()
 
         for run_id in run_ids:
-            if repo == 'NNCBI SRA':
+            if repo == 'NCBI SRA':
                 resp = get_nih_srr_details(run_id)
             elif repo == 'ENA':
                 resp = get_ena_srr_details(run_id)

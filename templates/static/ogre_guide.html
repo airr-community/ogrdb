@@ -28,9 +28,9 @@
         The sequence sets must have been the subject of a published study (the publication does not need to relate
     to germline inference: it provides documentation and peer review of the repertoire sequencing methods used).</p>
 
-     <p>When providing repertoire details, please specify the repository as NCBI SRA, and use NCBI accession numbers, if possible. While IARC will accept
-     submissions that refer to any recognised national repository, OGRDB can validate NCBI accession numbers and retrieve supporting information,
-     which enhances the quality of the submission. </p>
+     <p>When providing repertoire details, please specify the repository as NCBI SRA or ENA, if possible. While IARC will accept
+     submissions that refer to any recognised national repository, OGRDB can validate NCBI and ENA accession numbers and retrieve supporting information,
+     which enhances the quality of the submission and guards against errors when entering the accession numbers. </p>
 
     <p>Germline Inferences may have been made with one or more inference tools. Each of these may have been used with one or more settings. For
     example, it is possible - although by no means mandatory - that an inference was confirmed by the use of two tools, and that each tool was
@@ -38,7 +38,8 @@
     OGRDB - hence if two different tools were each used with two settings each, there will be four tool/settings combinations.</p>
 
     <p>When a tool is run against a sequence set from the repertoire, it will generate a genotype. The genotype may contain both known germline sequences
-    (from the starting database provided to the tool) and inferred sequences. The inferred genotypes are uploaded to OGRDB.</p>
+    (from the starting database provided to the tool) and inferred sequences. The inferred genotypes are uploaded to OGRDB. Guidance on producing the
+    necessary information for upload to OGRDB is given <a href="https://github.com/airr-community/ogre/tree/master/scripts">here</a> - the page includes usage notes for different inference tools.</p>
 
     <p>The inferred sequences to be submitted to IARC are then selected from the uploaded genotypes. Note that the same sequence may have been inferred
     in multiple genotypes (providing increased support). Each occurrence should be identified as an inferred sequence, selected from the genotype in which

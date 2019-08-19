@@ -1871,8 +1871,8 @@ def download_sequences(species, format, exc):
     filename = 'affirmed_germlines_%s_%s.%s' % (species, format, ext)
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 
-# Temp route to add IGH/V segment to existing genotypes
-@app.route('/tidy_genotype', methods=['GET'])
+# Temp route to fetch ENA details for existing submissions
+@app.route('/ena_details', methods=['GET'])
 @login_required
 def tidy_genotype():
     if not current_user.has_role('Admin'):
@@ -1883,13 +1883,86 @@ def tidy_genotype():
         flash('Submissions not found')
         return None
 
+    report = ''
+
     for sub in subs:
-        for desc in sub.genotype_descriptions:
-            if desc.locus is None or desc.locus == '':
-                desc.locus = 'IGH'
-            if desc.sequence_type is None or desc.sequence_type == '':
-                desc.sequence_type = 'V'
+        if len(sub.repertoire) > 0 and sub.repertoire[0].repository_name == 'ENA':
+            report += 'Processing submission ' + sub.submission_id + '<br>'
 
-    db.session.commit()
+            rep = sub.repertoire[0]
+            try:
+                details = get_ena_project_details(rep.rep_accession_no)
+                rep.rep_title = details['title']
+                rep.dataset_url = details['url']
+            except:
+                report += 'project accession number ' + rep.rep_accession_no + 'not found.<br>'
 
-    return('Genotypes modified.')
+            for inf in sub.inferred_sequences:
+                report += 'Processing inferred sequence' + str(inf.sequence_id) + '<br>'
+                try:
+                    resp = get_ena_nuc_details(inf.seq_accession_no)
+                    inf.seq_record_title = resp['title']
+                except:
+                    report += 'sequence accession number ' + inf.seq_accession_no + 'not found.<br>'
+
+                for rec in inf.record_set:
+                    db.session.delete(rec)
+
+                run_ids = inf.run_ids
+                run_ids = run_ids.replace(',', ' ')
+                run_ids = run_ids.replace(';', ' ')
+                run_ids = run_ids.split()
+
+                for run_id in run_ids:
+                    try:
+                        resp = get_ena_srr_details(run_id)
+
+                        rec = RecordSet()
+                        rec.rec_accession_no = run_id
+                        rec.rec_record_title = resp['title']
+                        rec.rec_url = resp['url']
+                        inf.record_set.append(rec)
+                    except:
+                        report += 'Cant fetch run id details for accession ' + run_id + '<br>'
+
+                for gen in sub.genotype_descriptions:
+                    for rec in gen.sample_names:
+                        db.session.delete(rec)
+
+                    sam_ids = gen.genotype_biosample_ids
+                    sam_ids = sam_ids.replace(',', ' ')
+                    sam_ids = sam_ids.replace(';', ' ')
+                    sam_ids = sam_ids.split()
+
+                    for sam_id in sam_ids:
+                        try:
+                            resp = get_ena_samn_details(sam_id)
+                            rec = SampleName()
+                            rec.sam_accession_no = sam_id
+                            rec.sam_record_title = resp['title']
+                            rec.sam_url = resp['url']
+                            gen.sample_names.append(rec)
+                        except ValueError as e:
+                            report += 'Cant fetch sample details for accession ' + sam_id + '<br>'
+
+                    for rec in gen.record_set:
+                        db.session.delete(rec)
+
+                    run_ids = gen.genotype_run_ids
+                    run_ids = run_ids.replace(',', ' ')
+                    run_ids = run_ids.replace(';', ' ')
+                    run_ids = run_ids.split()
+
+                    for run_id in run_ids:
+                        try:
+                            resp = get_ena_srr_details(run_id)
+                            rec = RecordSet()
+                            rec.rec_accession_no = run_id
+                            rec.rec_record_title = resp['title']
+                            rec.rec_url = resp['url']
+                            gen.record_set.append(rec)
+
+                        except ValueError as e:
+                            report += 'Cant fetch sample details for accession ' + run_id + '<br>'
+                db.session.commit()
+    return(report)
