@@ -832,14 +832,14 @@ def inferred_sequence(id):
     srr_table = LinkedRecordSet_table(seq.record_set)
 
     for i in range(len(table.items)-1, -1, -1):
-        if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?' or (table.items[i]['item'] == 'Select sets' and ncbi):
+        if table.items[i]['value'] is None or table.items[i]['item'] == 'Extension?' or (table.items[i]['item'] == 'Select sets' and repo):
             del(table.items[i])
         elif table.items[i]['item'] == 'Accession Number' and repo == 'NCBI SRA':
             table.items[i]['value'] = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (table.items[i]['value'], table.items[i]['value']))
         elif table.items[i]['item'] == 'Accession Number' and repo == 'ENA':
             table.items[i]['value'] = Markup('<a href="https://www.ebi.ac.uk/ena/data/view/%s">%s</a>' % (table.items[i]['value'], table.items[i]['value']))
 
-    return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id, srr_table = srr_table, ncbi=ncbi)
+    return render_template('inferred_sequence_view.html', table=table, sub_id=sub.submission_id, seq_id=seq.sequence_details.sequence_id, srr_table = srr_table, ncbi=(repo is not None))
 
 
 def check_inferred_sequence_edit(id):
