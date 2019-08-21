@@ -140,8 +140,9 @@ TIgGER provides additonal information, including its own plots and statistics We
 
 ### Usage Notes - IgDiscover
 
-Assuming that you have copied the script file to IgDiscover's `final` directory following an IgDiscover run, the following
-commands will download the IMGT reference file and run a VH gene analysis:
+Assuming that you have copied the script file to IgDiscover's `final` directory following an IgDiscover run, the 
+commands below will download the IMGT reference file and run a VH gene analysis. Please note that all commands should be
+run in the `final` directory.
 
 ```
 $ wget -O IMGT_REF_GAPPED.fasta http://www.imgt.org/download/GENE-DB/IMGTGENEDB-ReferenceSequences.fasta-nt-WithGaps-F+ORF+inframeP
