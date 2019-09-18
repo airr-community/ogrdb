@@ -125,7 +125,8 @@ def generate_stats(form):
 
     stats = {}
     for name in ref:
-        stats[name] = {'occurrences': 0, 'unmutated_freq': [], 'gene': name}
+        if '/OR' not in name:
+            stats[name] = {'occurrences': 0, 'unmutated_freq': [], 'gene': name}
 
     stats = OrderedDict(sorted(stats.items(), key=lambda name: parse_name(name[0])[2]))
     stats = OrderedDict(sorted(stats.items(), key=lambda name: parse_name(name[0])[1]))
@@ -133,7 +134,8 @@ def generate_stats(form):
 
     raw = {}
     for name in ref:
-        raw[name] = {'gene': name}
+        if '/OR' not in name:
+            raw[name] = {'gene': name}
 
     raw = OrderedDict(sorted(raw.items(), key=lambda name: parse_name(name[0])[2]))
     raw = OrderedDict(sorted(raw.items(), key=lambda name: parse_name(name[0])[1]))
@@ -161,7 +163,7 @@ def generate_stats(form):
 
     ret = []
     for(k, stat) in stats.items():
-            ret.append(stat)
+        ret.append(stat)
 
     ro = StringIO()
     writer = csv.DictWriter(ro, fieldnames=gen_names)
