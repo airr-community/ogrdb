@@ -2,9 +2,9 @@
 
 ### Creating a Genotype File with genotype_statistics.R
 
-[genotype_statistics.R](https://github.com/airr-community/ogre/blob/master/scripts/genotype_statistics.R) is a script 
+[genotype_statistics.R](https://github.com/airr-community/ogrdb/blob/master/scripts/genotype_statistics.R) is a script 
 that can be used to create an analysis of gene usage in a receptor repertoire. The analysis consists of 
-[usage statistics](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv) and  [plots](https://github.com/airr-community/ogre/raw/master/static/docs/example_ogrdb_genotype_report.pdf). 
+[usage statistics](https://github.com/airr-community/ogrdb/blob/master/static/docs/genotype_1.csv) and  [plots](https://github.com/airr-community/ogrdb/raw/master/static/docs/example_ogrdb_genotype_report.pdf). 
 The report includes an analysis of inferred alleles: the script was originally written to be used in conjunction with a novel allele inference tool such
 as those listed below, but it can be run on any repertoire, whether or not it contains novel alleles. 
 
@@ -13,9 +13,9 @@ as those listed below, but it can be run on any repertoire, whether or not it co
 If you wish to submit novel alleles to OGRDB, you will be asked to upload a genotype file. genotype_statistics.R is the preferred way
 to create this. The following references are provided for additional information: 
 
-- A [blank template](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_template.csv)
-- An [example genotype file](https://github.com/airr-community/ogre/blob/master/static/docs/genotype_1.csv)
-- [Definitions](https://github.com/airr-community/ogre/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
+- A [blank template](https://github.com/airr-community/ogrdb/blob/master/static/templates/genotype_template.csv)
+- An [example genotype file](https://github.com/airr-community/ogrdb/blob/master/static/docs/genotype_1.csv)
+- [Definitions](https://github.com/airr-community/ogrdb/blob/master/static/templates/genotype_fields.csv) of the fields used in the genotype.
 
 ### Script Prerequisites
 
