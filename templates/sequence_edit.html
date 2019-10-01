@@ -126,6 +126,8 @@
                 data-header="Publish Affirmation" data-instr="Please provide brief notes on this version"
                 data-title="Submission {{ id }} Version {{ version }} - Published" id="published">Publish</button>
     </div>
+
+    {% include 'dupe_gene_notes_modal.html' %}
 </form>
 
 {% endblock %}
@@ -402,6 +404,7 @@
 
     </script>
 
+    {% include 'dupe_gene_notes_script.html' %}
     {% include 'sequence_popup_script.html' %}
 
 {% endblock %}

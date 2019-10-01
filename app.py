@@ -83,6 +83,7 @@ from db.primer_db import *
 from db.record_set_db import *
 from db.sample_name_db import *
 from db.attached_file_db import *
+from db.dupe_gene_note_db import *
 
 import db_events
 
@@ -734,10 +735,10 @@ def genotype_e(id):
 @app.route('/genotype/<id>', methods=['GET', 'POST'])
 def genotype(id, editable=False):
     desc = check_genotype_description_view(id)
-    sub = desc.submission
-    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
     if desc is None:
         return redirect('/')
+    sub = desc.submission
+    reviewer = (current_user.has_role(sub.species) or current_user in sub.delegates)
 
     sam_table = LinkedSample_table(desc.sample_names)
     srr_table = LinkedRecordSet_table(desc.record_set)
@@ -767,7 +768,9 @@ def genotype(id, editable=False):
                 if form.sub_only.data:
                     if len(item.inferred_sequences) == 0:
                         continue
-                if (item.sequences is None or item.sequences < form.occ_threshold.data) or (item.unmutated_frequency is None or item.unmutated_frequency < form.freq_threshold.data):
+                if (form.occ_threshold.data > 0 and (item.sequences is None or item.sequences < form.occ_threshold.data)):
+                    continue
+                if (form.freq_threshold.data > 0 and (item.unmutated_frequency is None or item.unmutated_frequency < form.freq_threshold.data)):
                     continue
                 new_items.append(item)
             tables['genotype'].items = new_items
@@ -977,6 +980,24 @@ def check_seq_edit(id):
 
         if not desc.can_edit(current_user):
             flash('You do not have rights to edit that sequence.')
+            return None
+
+        return desc
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+def check_seq_see_notes(id):
+    try:
+        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        if desc is None:
+            flash('Record not found')
+            return None
+
+        if not desc.can_see_notes(current_user):
+            flash('You do not have rights to view notes.')
             return None
 
         return desc
@@ -1579,6 +1600,9 @@ def draft_sequence(id):
         for inferred_sequence in seq.inferred_sequences:
             new_seq.inferred_sequences.append(inferred_sequence)
 
+        for gen in seq.supporting_observations:
+            new_seq.supporting_observations.append(gen)
+
         for journal_entry in seq.journal_entries:
             new_entry = JournalEntry()
             copy_JournalEntry(journal_entry, new_entry)
@@ -1625,6 +1649,70 @@ def withdraw_sequence(id):
 
     return ''
 
+@app.route('/add_sequence_dup_note/<seq_id>/<gen_id>/<text>', methods=['POST'])
+@login_required
+def add_sequence_dup_note(seq_id, gen_id, text):
+    seq = check_seq_see_notes(seq_id)
+
+    try:
+        gen_id = int(gen_id)
+    except:
+        return('error')
+
+    if seq is not None:
+        gen = db.session.query(Genotype).filter_by(id = gen_id).one_or_none()
+        if gen is not None and gen in seq.duplicate_sequences:
+            for note in seq.dupe_notes:
+                if note.genotype_id == gen_id:
+                    db.session.delete(note)
+
+        if len(text) > 0:
+            note = DupeGeneNote(gene_description = seq, genotype = gen)
+            note.author = current_user.name
+            note.body = text
+            note.date = datetime.datetime.now()
+            db.session.add(note)
+
+        db.session.commit()
+    return ''
+
+@app.route('/delete_sequence_dup_note/<seq_id>/<gen_id>', methods=['POST'])
+@login_required
+def delete_sequence_dup_note(seq_id, gen_id):
+    try:
+        gen_id = int(gen_id)
+    except:
+        return('error')
+
+    seq = check_seq_see_notes(seq_id)
+    if seq is not None:
+        gen = db.session.query(Genotype).filter_by(id = gen_id).one_or_none()
+        if gen is not None and gen in seq.duplicate_sequences:
+            for note in seq.dupe_notes:
+                if note.genotype_id == gen_id:
+                    db.session.delete(note)
+            db.session.commit()
+    return ''
+
+
+@app.route('/get_sequence_dup_note/<seq_id>/<gen_id>', methods=['POST'])
+@login_required
+def get_sequence_dup_note(seq_id, gen_id):
+    try:
+        gen_id = int(gen_id)
+    except:
+        return('error')
+
+    seq = check_seq_see_notes(seq_id)
+    if seq is not None:
+        gen = db.session.query(Genotype).filter_by(id = gen_id).one_or_none()
+        if gen is not None and gen in seq.duplicate_sequences:
+            for note in seq.dupe_notes:
+                if note.genotype_id == gen_id:
+                    return json.dumps({'author': note.author, 'timestamp': note.date.strftime("%d/%m/%y %H:%M"), 'body': note.body})
+        return ''
+    else:
+        return 'error'
 
 def check_primer_set_edit(id):
     try:

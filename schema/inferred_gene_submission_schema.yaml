@@ -1032,4 +1032,39 @@ GeneDescription:
             nonblank: false
 
 
+# A note explaining why a duplicate sequence does not form useful additional evidence for an inferred sequence
+
+DupeGeneNote:
+    discriminator: AIRR
+    version: 1.4
+    description: A note explaining why a duplicate sequence does not form useful additional evidence for an inferred sequence
+    type: object
+    occurrence: multiple
+    properties:
+        date:
+            type: date
+            description: Date submission received
+            tableview: true
+            hide: true
+        author:
+            type: email_address
+            description: email address of author
+            tableview: true
+            hide: true
+        body:
+            type: text
+            description: body text of entry
+            label: Note
+            rows: 15
+            nonblank: true
+        gene_description_id:
+            type: integer
+            foreign_key: gene_description.id
+            relationship: [gene_description, GeneDescription, dupe_notes]
+            hide: true
+        genotype_id:
+            type: integer
+            foreign_key: genotype.id
+            relationship: [genotype, Genotype, dupe_notes]
+            hide: true
 

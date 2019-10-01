@@ -30,7 +30,19 @@ class SequenceListActionCol(StyledCol):
         if (item.editable or item.draftable) and int(item.affirmation_level) < 3:
             inf_genotypes = [x.sequence_details for x in item.inferred_sequences]
 
-            if len(set(item.duplicate_sequences) - set(inf_genotypes) - set(item.supporting_observations)) > 0:
+            # We allow notes to persist (but not be shown) even if the genotype ceases to be visible because the submission has been returned to draft.
+            # This means that the contents of the note will still be there when the submission is re-published.
+            # The loop below copes with the 'vanishing' notes when calculating whether to display an info icon
+
+            dupe_notes = []
+            for note in  item.dupe_notes:
+                if note.genotype is None:           # The submission has been deleted: we may as well tidy up
+                    db.session.delete(note)
+                    db.session.commit()
+                elif note.genotype in item.duplicate_sequences:
+                    dupe_notes.append(note)
+
+            if len(set(item.duplicate_sequences) - set(inf_genotypes) - set(item.supporting_observations)) > len(dupe_notes):
                 fmt_string.append('<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="There are unreferenced matches to this sequence"></span>&nbsp;')
 
         return ''.join(fmt_string)

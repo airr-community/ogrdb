@@ -137,12 +137,18 @@ class MatchingSubmissionsTableMatchCol(StyledCol):
 
 class MatchingSubmissionsTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        if item['inferred_id'] is None:
-            contents = '<button type="button" class="add_obs_button btn btn-xs text-default icon_back" data-id="%s" data-gid="%s" id="add_obs_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
-        else:
-            contents = '<button type="button" class="add_inf_button btn btn-xs text-default icon_back" data-id="%s" data-inf="%s" id="add_inf_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['inferred_id'], item['gene_description_id'], item['inferred_id'])
-        return(contents)
+        contents = ''
+        if item['add_action']:
+            if item['inferred_id'] is None:
+                contents += '<button type="button" class="add_obs_button btn btn-xs text-default icon_back" data-id="%s" data-gid="%s" id="add_obs_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
+            else:
+                contents += '<button type="button" class="add_inf_button btn btn-xs text-default icon_back" data-id="%s" data-inf="%s" id="add_inf_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['inferred_id'], item['gene_description_id'], item['inferred_id'])
 
+        notes_icon = 'glyphicon-list-alt' if item['notes_present'] else 'glyphicon-unchecked'
+        notes_tooltip = 'View/modify note' if item['notes_present'] else 'Add note'
+        contents += '<button type="button" class="dupe_notes_button btn btn-xs text-default icon_back" data-genotype_id="%s" data-sequence_id="%s" id="add_inf_%s_%s" title="%s"><span class="glyphicon %s"></span>&nbsp;</button>' % (item['genotype_id'], item['gene_description_id'], item['genotype_id'], item['inferred_id'], notes_tooltip, notes_icon)
+
+        return contents
 
 class MatchingSubmissionsTableInfCol(StyledCol):
     def td_contents(selfself, item, attr_list):
@@ -165,12 +171,20 @@ def make_MatchingSubmissions_table(results, classes=()):
     ret = t(results, classes=classes)
     return ret
 
-def setup_matching_submissions_table(seq, action=True):
+def setup_matching_submissions_table(seq, add_action=True):
     results = []
     our_descs = []
 
     for inf in seq.inferred_sequences:
         our_descs.append(inf.sequence_details)
+
+    for gen in seq.supporting_observations:
+        our_descs.append(gen)
+
+    noted_dupes = []
+
+    for dn in seq.dupe_notes:
+        noted_dupes.append(dn.genotype_id)
 
     for dup in seq.duplicate_sequences:
         if dup not in our_descs:
@@ -186,16 +200,16 @@ def setup_matching_submissions_table(seq, action=True):
             gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=dup.genotype_description.id), dup.genotype_description.genotype_name))
             results.append({'submission_id': dup.genotype_description.submission.submission_id, 'accession_no': acc, 'allele_name': seq.description_id,
                             'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': gen, 'gene_sequence': seq.sequence, 'nt_sequence': dup.nt_sequence,
-                             'inferred_id': inferred_id, 'sequence_name': dup.sequence_id, 'gene_description_id': seq.id, 'genotype_id': dup.id})
+                            'inferred_id': inferred_id, 'sequence_name': dup.sequence_id, 'gene_description_id': seq.id, 'genotype_id': dup.id, 'add_action': add_action,
+                            'notes_present': dup.id in noted_dupes})
 
     if len(results) == 0:
         return None
 
     table = make_MatchingSubmissions_table(results)
 
-    if action:
-        table.add_column('action', MatchingSubmissionsTableActionCol(''))
-        table._cols.move_to_end('action', last=False)
+    table.add_column('action', MatchingSubmissionsTableActionCol(''))
+    table._cols.move_to_end('action', last=False)
 
     return table
 

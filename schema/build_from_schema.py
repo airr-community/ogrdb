@@ -53,6 +53,7 @@ def main(argv):
     write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
     write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
     write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
+    write_model(schema, 'DupeGeneNote', 'db/dupe_gene_note_db.py')
     write_model(schema, 'PrimerSet', 'db/primer_set_db.py')
     write_flaskform(schema, 'PrimerSet', 'forms/primer_set_form.py')
     write_inp(schema, 'PrimerSet', 'templates/primer_set_form.html')

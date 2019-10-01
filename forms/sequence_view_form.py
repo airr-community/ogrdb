@@ -114,7 +114,7 @@ def setup_sequence_view_tables(db, seq, private):
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
     tables['supporting_observations'] = setup_supporting_observation_table(seq, action=False)
-    tables['matches'] = setup_matching_submissions_table(seq, action=False) if private else None
+    tables['matches'] = setup_matching_submissions_table(seq, add_action=False) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete=False, download_route='download_sequence_attachment')

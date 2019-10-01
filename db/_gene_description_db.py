@@ -13,6 +13,8 @@ class GeneDescriptionMixin:
     def delete_dependencies(self, db):
         for a in self.acknowledgements:
             db.session.delete(a)
+        for d in self.dupe_notes:
+            db.session.delete(d)
 
     def can_see(self, user):
         return(self.status == 'published' or
@@ -29,6 +31,11 @@ class GeneDescriptionMixin:
         return(user.is_authenticated and
             #(user.has_role('Admin') or
              (user.has_role(self.organism) and self.status == 'published'))
+
+    def can_see_notes(self, user):
+        return(user.is_authenticated and
+            #(user.has_role('Admin') or
+             user.has_role(self.organism))
 
     # Find any submitted inferences out there that refer to this sequence
 

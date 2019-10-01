@@ -124,6 +124,9 @@
                 </div>
             </div>
         </div>
+
+        {% include 'dupe_gene_notes_modal.html' %}
+
     </div>
 
 {% endblock %}
@@ -132,6 +135,7 @@
     {{ super() }}
     <script src="/static/script/helpers.js"></script>
 
+    {% include 'dupe_gene_notes_script.html' %}
     {% include 'sequence_popup_script.html' %}
 
 {% endblock %}

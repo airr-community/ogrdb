@@ -1,0 +1,56 @@
+<script>
+    $(document).ready(function() {
+        $('.dupe_notes_button').click(function () {
+            var genotype_id = $.parseJSON($(this).attr('data-genotype_id'));
+            var sequence_id = $.parseJSON($(this).attr('data-sequence_id'));
+
+            $.ajax({
+                type: "POST",
+                url: '{{ url_for("get_sequence_dup_note", seq_id="xxx", gen_id="yyy") }}'.replace("xxx", sequence_id).replace("yyy", genotype_id),
+                success: function (data) {
+                    if(data == 'error') {
+                        return;
+                    }
+                    else if(data != '') {
+                        var opts = $.parseJSON(data);
+                        $('#dupeNotesUpdated').text(opts.author + ', ' + opts.timestamp)
+                        $('#dupeNotesBody').val(opts.body);
+                    }
+                    else {
+                        $('#dupeNotesBody').val('');
+                    }
+
+                    $('#dupeNotesModal').modal();
+
+                    $('#dupNotesUpdateBtn').click(function() {
+                        content = $('#dupeNotesBody').val();
+
+                        if(content.length > 0 ){
+                            $.ajax({
+                                type: "POST",
+                                url: '{{ url_for("add_sequence_dup_note", seq_id="xxx", gen_id="yyy", text="zzz") }}'.replace("xxx", sequence_id).replace("yyy", genotype_id).replace("zzz", encodeURIComponent(content)),
+                                success: function () {
+                                    location.reload(true);
+                                }
+                            });
+                        } else {
+                            $.ajax({
+                                type: "POST",
+                                url: '{{ url_for("delete_sequence_dup_note", seq_id="xxx", gen_id="yyy") }}'.replace("xxx", sequence_id).replace("yyy", genotype_id),
+                                success: function () {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+
+
+                    });
+                }
+            })
+        });
+
+        $('#dupeNotesModal').on('hidden.bs.modal', function () {
+            $('#dupNotesUpdateBtn').off('click')
+        });
+    });
+</script>
