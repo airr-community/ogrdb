@@ -85,14 +85,14 @@ if(length(args) > 4) {
 } else {   # for R Studio Source
 
   # VH - tigger (Example in Readme)
-  work_dir = 'D:/Research/ogre/scripts'
-  setwd(work_dir)
-  ref_filename = 'IMGT_REF_GAPPED.fasta'
-  species = 'Homosapiens'
-  inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
-  filename = 'TWO01A_naive_genotyped.tsv'
-  chain = 'VH'
-  hap_gene = 'IGHJ6'
+  # work_dir = 'D:/Research/ogre/scripts'
+  # setwd(work_dir)
+  # ref_filename = 'IMGT_REF_GAPPED.fasta'
+  # species = 'Homosapiens'
+  # inferred_filename = 'TWO01A_naive_novel_ungapped.fasta'
+  # filename = 'TWO01A_naive_genotyped.tsv'
+  # chain = 'VH'
+  # hap_gene = 'IGHJ6'
   
   # VH - tigger with truncated sequences in IMGT alignment
   # work_dir = 'D:/Research/ogre/scripts/tests/V_tigger_truncated'
@@ -146,14 +146,14 @@ if(length(args) > 4) {
   # hap_gene = 'IGHV2-5'
   
   # VH - partis
-  # work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
-  # setwd(work_dir)
-  # ref_filename = 'IMGT_REF_GAPPED.fasta'
-  # species = 'Homosapiens'
-  # inferred_filename = 'TW02A_V_OGRDB.fasta'
-  # filename = 'TW02A_OGRDB.tsv'
-  # chain = 'VH'
-  # hap_gene = 'IGHJ6'
+  work_dir = 'D:/Research/ogre/scripts/tests/VH_partis'
+  setwd(work_dir)
+  ref_filename = 'IMGT_REF_GAPPED.fasta'
+  species = 'Homosapiens'
+  inferred_filename = 'TW02A_V_OGRDB.fasta'
+  filename = 'TW02A_OGRDB.tsv'
+  chain = 'VH'
+  hap_gene = 'IGHJ6'
   
   # JK - igDiscover
   # work_dir = 'D:\\Research\\ogre\\scripts\\tests\\private\\PRJEB30386 - Kappa'
@@ -783,7 +783,9 @@ genotype = dplyr::rename(genotype, sequence_id=SEG_CALL, closest_reference=refer
 genotype$unmutated_umis = ''
 genotype$nt_sequence = gsub('-', '', genotype$nt_sequence, fixed=T)
 genotype$nt_sequence = gsub('.', '', genotype$nt_sequence, fixed=T)
-genotype = unnest(genotype)
+genotype = unnest(genotype, cols = c(closest_reference, nt_diff, nt_substitutions, aa_diff, aa_substitutions, 
+                                     closest_host, nt_diff_host, host_nt_diffs, host_aa_difference, 
+                                     host_aa_subs))
 
 # If we had to calculate MUT_NC, set the mutated counts to NA for any allele for which we don't have a sequence
 
@@ -898,7 +900,6 @@ label_nuc = function(pos, ref) {
 }
 
 
-
 # Plot base composition from nominated nucleotide position to the end or to optional endpos.
 # Only include gaps, n nucleotides if filter=F
 # if pos is negative, SEQUENCE_IMGT contains a certain number of trailing nucleotides. Plot them all.
@@ -971,7 +972,7 @@ plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_
   ref = strsplit(ref, "")
   
   x = do.call('rbind', lapply(seq(min_pos,max_pos), nucs_at, seqs=recs, filter=filter))
-  
+
   g = ggplot(data=x, aes(x=pos, fill=nuc)) + 
     scale_fill_brewer(palette='Dark2') +
     geom_bar(stat="count") +
@@ -987,10 +988,81 @@ plot_segment_composition = function(gene_name, recs, ref, pos=1,  filter=T, end_
 }
 
 
-whole_composition_grobs = c()
-end_composition_grobs = c()
+
+
+# convert specified section of a nucleotide sequence to a number. Presence of non-nucleotides results in 0
+
+nuc_value = list()
+nuc_value['T'] = 0
+nuc_value['C'] = 1
+nuc_value['A'] = 2
+nuc_value['G'] = 3
+
+seq_to_num = function(rec) {
+  rec = strsplit(rec, "")[[1]]
+
+    if(!all(rec=="T" || rec=="C" || rec=="A" || rec=="G")) {
+    return(0)
+  }
+  
+  rec = rev(rec)
+
+  return(sum(unlist(lapply(seq(length(rec)), function(x) nuc_value[rec[x]][[1]]*(4**(x-1))))) + 1)
+}
+
+extract_frag = function(rec, start_pos, length) {
+  if(length(rec) < start_pos + length - 1) {
+    return('Truncated')
+  }
+  
+  rec = rec[start_pos : (start_pos+length - 1)]
+  
+  if(!all(rec=="T" | rec=="C" | rec=="A" | rec=="G")) {
+    return('Non-nucleotide')
+  }
+  
+  return(paste(rec, collapse=""))
+}
+
+# Plot occurrence of each possible nucleotide sequence in the trailing triplet
+
+plot_trailing_triplet = function(gene_name, recs, ref) {
+  start_pos = nchar(ref) - 2
+  length = 3
+  
+  if(start_pos < 1 || length(recs) < 1) {
+    return(NA)
+  }
+  
+  recs = strsplit(recs, "")
+  ref = strsplit(ref, "")
+  
+  x = do.call('rbind', lapply(recs, extract_frag, start_pos=start_pos, length=3))
+  x = data.frame(triplet = x[,1])
+  x = aggregate(x, by=list(x$triplet), FUN=length)
+  names(x)=c("triplet", "count")
+  x$triplet=as.character(x$triplet)
+  x$order = sapply(x$triplet, seq_to_num)
+  x = x[order(x$order),]
+  x$triplet=factor(x$triplet, levels=x$triplet)
+  
+
+  g = ggplot(data=x, aes(x=triplet, y=count)) + 
+    geom_bar(stat="identity") +
+    labs(x='Triplet', y='Count', fill='', title=paste0(gene_name, '- Final 3 nucleotides as a triplet')) +
+    theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+          panel.background = element_blank(), axis.ticks = element_blank(), legend.position=c(0.9, 0.9),
+          axis.text=element_text(size=6), axis.title =element_text(size=15), axis.text.x = element_text(angle = 270, hjust = 0,vjust=0.5))
+  
+  return(ggplotGrob(g))
+}
+
 
 report('base composition')
+
+whole_composition_grobs = c()
+end_composition_grobs = c()
+triplet_grobs = c()
 
 if('SEQUENCE_IMGT' %in% names(s)) {
   if(segment == 'V') {
@@ -1002,6 +1074,9 @@ if('SEQUENCE_IMGT' %in% names(s)) {
 
     whole_composition_grobs = mapply(plot_base_composition, names(inferred_seqs), recs, refs, pos=1, filter=F)
     whole_composition_grobs = whole_composition_grobs[!is.na(whole_composition_grobs)]
+    
+    triplet_grobs = mapply(plot_trailing_triplet, names(inferred_seqs), recs, refs)
+    triplet_grobs = triplet_grobs[!is.na(triplet_grobs)]
   } else if(segment == 'J') {
     recs = lapply(names(inferred_seqs), function(x) {s[s$SEG_CALL==x,]$SEG_SEQ})
     refs = lapply(names(inferred_seqs), function(x) {inferred_seqs[x]})
@@ -1138,6 +1213,9 @@ if('SEQUENCE_IMGT' %in% names(s)) {
   }
   if(length(whole_composition_grobs) > 0) {
     x=print(marrangeGrob(whole_composition_grobs, nrow=3, ncol=1,top=NULL))
+  }
+  if(length(triplet_grobs) > 0) {
+    x=print(marrangeGrob(triplet_grobs, nrow=3, ncol=1,top=NULL))
   }
 } 
 
