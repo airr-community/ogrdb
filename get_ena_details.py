@@ -46,7 +46,7 @@ def get_ena_project_details(prj_id):
 def get_ena_nuc_details(nuc_id):
     ret = {}
 
-    if len(nuc_id) < 5 or nuc_id[:2] != 'MK':
+    if len(nuc_id) < 5 or (nuc_id[:2] != 'MK' and nuc_id[:2] != 'MN'):
         raise ValueError('badly formatted nucleotide sequence record accession number: %s' % (nuc_id))
 
     try:
