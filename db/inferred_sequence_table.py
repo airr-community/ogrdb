@@ -68,7 +68,10 @@ def setup_inferred_sequence_table(seqs, gene_desc, action=True):
     results = []
     for seq in seqs:
         ncbi = seq.submission.repertoire[0].repository_name == 'NCBI SRA'
-        acc = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (seq.seq_accession_no, seq.seq_accession_no)) if ncbi else seq.seq_accession_no
+        ena = seq.submission.repertoire[0].repository_name == 'ENA'
+        acc = Markup('<a href="https://www.ncbi.nlm.nih.gov/nuccore/%s">%s</a>' % (seq.seq_accession_no, seq.seq_accession_no)) if ncbi \
+            else Markup('<a href="https://www.ebi.ac.uk/ena/data/view/%s">%s</a>' % (seq.seq_accession_no, seq.seq_accession_no)) if ena \
+            else seq.seq_accession_no
         name = Markup('<a href="%s">%s</a>' % (url_for('inferred_sequence', id=seq.id), seq.sequence_details.sequence_id))
         gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=seq.genotype_description.id), seq.genotype_description.genotype_name))
         results.append({'submission_id': seq.submission.submission_id, 'accession_no': acc, 'sequence_link': name, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': gene_desc.sequence.replace('.', '').lower() if gene_desc.sequence else '',
