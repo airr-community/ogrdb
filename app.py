@@ -1131,6 +1131,29 @@ def sequences():
 
     return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn, form=form)
 
+# Copy submitter and acknowledgements from sequence submission to gene_description
+
+
+
+def copy_acknowledgements(seq, gene_description):
+    def add_acknowledgement_to_gd(name, institution_name, orcid_id, gene_description):
+        for ack in gene_description.acknowledgements:
+            if ack.ack_name == name and ack.ack_institution_name == institution_name:
+                return
+
+        a = Acknowledgements()
+        a.ack_name = name
+        a.ack_institution_name = institution_name
+        a.ack_ORCID_id = orcid_id
+        gene_description.acknowledgements.append(a)
+
+    add_acknowledgement_to_gd(seq.submission.submitter_name, seq.submission.submitter_address, '', gene_description)
+
+    # Copy acknowledgements across
+
+    for ack in seq.submission.acknowledgements:
+        add_acknowledgement_to_gd(ack.ack_name, ack.ack_institution_name, ack.ack_ORCID_id, gene_description)
+
 
 @app.route('/new_sequence/<species>', methods=['GET', 'POST'])
 @login_required
@@ -1195,13 +1218,7 @@ def new_sequence(species):
             gene_description.locus = seq.genotype_description.locus
             gene_description.sequence_type = seq.genotype_description.sequence_type
 
-            # Add submitter to acknowledgements
-
-            a = Acknowledgements()
-            a.ack_name = seq.submission.submitter_name
-            a.ack_institution_name = seq.submission.submitter_address
-            a.ack_ORCID_id = ''
-            gene_description.acknowledgements.append(a)
+            copy_acknowledgements(seq, gene_description)
 
             # Parse the name, if it's tractable
 
@@ -1306,18 +1323,7 @@ def seq_add_inference(id):
             return redirect(url_for(sequences, id=id))
 
         seq.inferred_sequences.append(inferred_seq)
-        add_ack = True
-        for ack in seq.acknowledgements:
-            if ack.ack_name == inferred_seq.submission.submitter_name and ack.ack_institution_name == inferred_seq.submission.submitter_address:
-                add_ack = False
-                break
-
-        if add_ack:
-            a = Acknowledgements()
-            a.ack_name = inferred_seq.submission.submitter_name
-            a.ack_institution_name = inferred_seq.submission.submitter_address
-            a.ack_ORCID_id = ''
-            seq.acknowledgements.append(a)
+        copy_acknowledgements(inferred_seq, seq)
 
         db.session.commit()
         return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
@@ -1540,6 +1546,7 @@ def add_inferred_sequence():
         inferred_seq = db.session.query(InferredSequence).filter(InferredSequence.id==request.form['inf']).one_or_none()
         if inferred_seq is not None and inferred_seq not in seq.inferred_sequences:
             seq.inferred_sequences.append(inferred_seq)
+            copy_acknowledgements(inferred_seq, seq)
             db.session.commit()
 
     return ''
@@ -1566,6 +1573,7 @@ def add_supporting_observation():
         genotype = db.session.query(Genotype).filter(Genotype.id==request.form['gid']).one_or_none()
         if genotype is not None and genotype not in seq.supporting_observations:
             seq.supporting_observations.append(genotype)
+            copy_acknowledgements(genotype.genotype_description, seq)
             db.session.commit()
 
     return ''
