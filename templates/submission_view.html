@@ -145,7 +145,7 @@
                       {{ form.action(class="hidden") }}
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <input type="submit" value="Save" class="btn" name="save_btn" id="save_btn">
                   </div>
                 </div>
@@ -155,6 +155,9 @@
         </form>
         {% if status == 'reviewing' %}
             {% if not sub.public %}
+            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="withdraw"
+                    data-header="Withdraw Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Withdraw Submission" id="withdraw">Withdraw Submission</button>
             <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="draft"
                     data-header="Return Submission to Submitter" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Submitter" id="draft">Return to Submitter</button>
@@ -164,9 +167,18 @@
                     data-header="Complete Review" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Completed" id="complete">Complete</button>
         {% elif (status == 'complete') %}
+            {% if not sub.public %}
+            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="withdraw"
+                    data-header="Withdraw Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Withdraw Submission" id="withdraw">Withdraw Submission</button>
+            {% endif %}
             <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
                     data-header="Un-Complete Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Review" id="ret_review">Un-Complete Submission</button>
+        {% elif (status == 'withdrawn') %}
+            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
+                    data-header="Un-Withdraw Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
+                    data-title="Submission {{ id }} - Returned to Review" id="ret_review">Un-Withdraw Submission</button>
         {% endif %}
     </div>
     {% endif %}

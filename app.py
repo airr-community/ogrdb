@@ -185,7 +185,7 @@ def submissions():
         for sp in species:
             if current_user.has_role(sp) or sp in delegated_species:
                 if 'completed' in request.args and request.args['completed'] == 'yes':
-                    q = db.session.query(Submission).filter(Submission.species==sp).filter(Submission.submission_status.in_(['reviewing', 'complete']))
+                    q = db.session.query(Submission).filter(Submission.species==sp).filter(Submission.submission_status.in_(['reviewing', 'complete', 'withdrawn']))
                     show_completed = True
                 else:
                     q = db.session.query(Submission).filter(Submission.species==sp).filter(Submission.submission_status.in_(['reviewing']))
@@ -513,6 +513,23 @@ def submission(id):
                 sub.submission_status = 'complete'
                 db.session.commit()
                 flash('Submission marked as complete')
+                return redirect('/submissions')
+            elif form.action.data == 'withdraw':
+                referenced_gds = []
+                for inf in sub.inferred_sequences:
+                    for gd in inf.gene_descriptions:
+                        if gd.status not in ('superceded', 'withdrawn'):
+                            referenced_gds.append(gd.description_id)
+                if len(referenced_gds) > 0:
+                    flash('Please remove references to this submission in sequence(s) %s first.' % ','.join(referenced_gds))
+                    return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
+                add_note(current_user, form.title.data, safe_textile('Submission withdrawn with the following message to the Submitter:\n\n' + form.body.data), sub, db)
+                add_history(current_user, 'Submission withdrawn', sub, db)
+                send_mail('Submission %s has been marked as withdrawn by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_withdrawn', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                send_mail('Submission %s has been marked as withdrawn by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_withdrawn', reviewer=current_user, user_name=sub.submitter_name, submission=sub, comment=form.body.data)
+                sub.submission_status = 'withdrawn'
+                db.session.commit()
+                flash('Submission marked as withdrawn')
                 return redirect('/submissions')
             elif form.action.data == 'review':
                 add_note(current_user, form.title.data, safe_textile('Submission returned to IARC Review with the following message to the Submitter:\n\n' + form.body.data), sub, db)
@@ -1188,7 +1205,7 @@ def new_sequence(species):
                 raise ValidationError()
 
             sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
-            if sub.species != species or sub.submission_status == 'draft':
+            if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
                 return redirect('/sequences')
 
             seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
@@ -1312,7 +1329,7 @@ def seq_add_inference(id):
             return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
 
         sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
-        if sub.species != seq.organism or sub.submission_status == 'draft':
+        if sub.species != seq.organism or sub.submission_status not in ('reviewing', 'published', 'complete'):
             flash('Submission is for the wrong species, or still in draft.')
             return redirect(url_for(sequences, id=id))
 
@@ -1384,6 +1401,9 @@ def edit_sequence(id):
             for inferred_sequence in seq.inferred_sequences:
                 if inferred_sequence.submission.submission_status == 'draft':
                     flash("Can't publish this sequence while submission %s is in draft." % inferred_sequence.submission.submission_id)
+                    valid = False
+                if inferred_sequence.submission.submission_status == 'withdrawn':
+                    flash("Can't publish this sequence: submission %s is withdrawn." % inferred_sequence.submission.submission_id)
                     valid = False
 
         if valid:

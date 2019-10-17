@@ -156,6 +156,8 @@ gtgtattactgtgcgagaga""")
     # Add some acknowledgements
 
     driver.find_element_by_xpath('//*[@id="tab-ack"]').click()
+    time.sleep(2)
+    prev_items = len(driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]'))
     nitems = random.randint(3,5)
     names = [random_proper() + ' ' + random_proper() for i in range(nitems) ]
     insts = [random_proper() + ' ' + random_proper() for i in range(nitems) ]
@@ -169,7 +171,7 @@ gtgtattactgtgcgagaga""")
 
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
-    assert(len(x) == nitems+1)
+    assert(len(x) == nitems+prev_items)
     nacks = len(x)
     i = random.randint(0, nitems-1)
     x[i].click()
