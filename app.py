@@ -464,6 +464,10 @@ def delete_submission_attachment(id):
 def delete_submission(id):
     sub = check_sub_edit(id)
     if sub is not None:
+        repo = sub.repertoire[0].repository_name if sub.repertoire[0] else ''
+        acc = sub.repertoire[0].rep_accession_no if sub.repertoire[0] else ''
+        app.logger.info('User %s deleted submission: species %s, repository %s, accession %s' % (current_user.email, sub.species, repo, acc))
+
         sub.delete_dependencies(db)
         db.session.delete(sub)
         db.session.commit()
