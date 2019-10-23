@@ -63,6 +63,43 @@
             </div>
         </div>
     {% endif %}
+
+    <div class="modal bootstrap-dialog type-warning fade size-normal" role="dialog" aria-hidden="true" id="imgt_name_dlg" aria-labelledby="imgt_name_dlg_label">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="bootstrap-dialog-header">
+                            <div class="bootstrap-dialog-close-button">
+                                <button class="close"  data-dismiss="modal">×</button>
+                            </div>
+                            <div class="bootstrap-dialog-title" id="imgt_name_title">Change IMGT Name</div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="bootstrap-dialog-body">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-3 col-sm-offset-1 control-label" data-placement="left" for="imgt_name_text" title="">IMGT Name</label>
+                                    <div class="col-sm-4">
+                                        <input class="form-control" id="imgt_name_text" name="imgt_name_text" type="text" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="bootstrap-dialog-footer">
+                            <div class="bootstrap-dialog-footer-buttons">
+                                <button class="btn btn-default" id="imgt_name_cancel"  data-dismiss="modal">Cancel</button>
+                                <button class="btn btn-warning" id="imgt_name_save">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
 {% endblock %}
 
 {% block scripts %}
@@ -180,6 +217,34 @@
             }
         });
     }
+
+    function seq_imgt_name(id) {
+        $('#imgt_name_dlg').on('show.bs.modal', function (event) {
+            $('#imgt_name_save').on('click', function (event) {
+                var new_name = $('#imgt_name_text').val();
+                if(new_name.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        dataType: "json",
+                        url: "/sequence_imgt_name",
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            'id': id,
+                            'imgt_name': new_name
+                            }),
+                        success: function (data) {
+                            window.location.reload(true);
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#imgt_name_dlg').modal()
+    }
+
+
+
     </script>
 
 {% endblock %}

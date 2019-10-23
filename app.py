@@ -1643,6 +1643,20 @@ def draft_sequence(id):
         db.session.commit()
     return ''
 
+@app.route('/sequence_imgt_name', methods=['POST'])
+@login_required
+def sequence_imgt_name():
+    if request.is_json:
+        content = request.get_json()
+        seq = check_seq_draft(content['id'])
+        if seq is not None:
+            seq.imgt_name = content['imgt_name']
+            add_history(current_user, 'IMGT Name updated to %s' % seq.imgt_name, seq, db, body='IMGT Name updated.')
+            send_mail('Sequence %s version %d: IMGT name updated to %s by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.imgt_name, seq.organism), [seq.organism], 'iarc_sequence_released', reviewer=current_user, user_name=seq.author, sequence=seq, comment='IMGT Name updated to %s' % seq.imgt_name)
+            db.session.commit()
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+    return ''
+
 
 @app.route('/withdraw_sequence/<id>', methods=['POST'])
 @login_required
@@ -1650,7 +1664,7 @@ def withdraw_sequence(id):
     seq = check_seq_withdraw(id)
     if seq is not None:
         add_history(current_user, 'Published version %s withdrawn' % seq.release_version, seq, db, body = '')
-        send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_withdrawn', reviewer=current_user, user_name=seq.author, sequence=seq, comment='')
+        send_mail('Sequence %s version %d withdrawn by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_withdrawn', reviewer=current_user, user_name=seq.author, sequence=seq, comment='')
         seq.status = 'withdrawn'
         db.session.commit()
         seq.duplicate_sequences = list()
