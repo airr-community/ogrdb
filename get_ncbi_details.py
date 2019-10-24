@@ -135,6 +135,7 @@ def get_nih_nuc_details(nuc_id):
             if c['result'][uid]['caption'] == nuc_id:
                 ret['title'] = c['result'][uid]['title']
                 ret['caption'] = c['result'][uid]['caption']
+                ret['url'] = 'https://www.ncbi.nlm.nih.gov/nuccore/%s' % nuc_id
                 break
 
         if 'title' not in ret:

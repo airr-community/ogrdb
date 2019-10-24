@@ -284,3 +284,63 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "5\' end", "value": sub.end_5prime_ext, "tooltip": "End co-ordinate of 5\' extension (if any) in IMGT numbering", "field": "end_5prime_ext"})
     return ret
 
+
+class GenomicSupport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    repository = db.Column(db.String(255))
+    accession = db.Column(db.String(1000))
+    title = db.Column(db.Text())
+    url = db.Column(db.Text())
+    sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
+    gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
+
+
+def save_GenomicSupport(db, object, form, new=False):   
+    object.repository = form.repository.data
+    object.accession = form.accession.data
+
+    if new:
+        db.session.add(object)
+        
+    db.session.commit()   
+
+
+
+def populate_GenomicSupport(db, object, form):   
+    form.repository.data = object.repository
+    form.accession.data = object.accession
+
+
+
+
+def copy_GenomicSupport(c_from, c_to):   
+    c_to.repository = c_from.repository
+    c_to.accession = c_from.accession
+    c_to.title = c_from.title
+    c_to.url = c_from.url
+
+
+
+class GenomicSupport_table(StyledTable):
+    id = Col("id", show=False)
+    repository = StyledCol("Repository", tooltip="Repository")
+    accession = StyledCol("Accession Number", tooltip="Genbank or ENA accession number, e.g MK321684")
+    title = StyledCol("Title", tooltip="Title")
+
+
+def make_GenomicSupport_table(results, private = False, classes=()):
+    t = create_table(base=GenomicSupport_table)
+    ret = t(results, classes=classes)
+    return ret
+
+class GenomicSupport_view(Table):
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    value = Col("")
+
+
+def make_GenomicSupport_view(sub, private = False):
+    ret = GenomicSupport_view([])
+    ret.items.append({"item": "Repository", "value": sub.repository, "tooltip": "Repository", "field": "repository"})
+    ret.items.append({"item": "Accession Number", "value": sub.accession, "tooltip": "Genbank or ENA accession number, e.g MK321684", "field": "accession"})
+    return ret
+

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Add Genomic Support - {{ name }}{% endblock %}
+
+{% block c_body %}
+
+    <div class="row pad">
+
+        <form action="{{ url_for('seq_add_genomic', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+
+            <p class="col-sm-offset-1">Please enter the repository and accession number of the supporting record.</p>
+            {{ render_field_with_errors(form.repository, class="form-control") }}
+
+            {{ render_field_with_errors(form.accession, class="form-control") }}
+
+            <div class="form-group row col-sm-10">
+                <input type="submit" value="Cancel" class="btn btn-default col-sm-offset-1" id="cancel" name="cancel">
+                <input type="submit" value="Add" class="btn btn-primary" id="create" name="create">
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

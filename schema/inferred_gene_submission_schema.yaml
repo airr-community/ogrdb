@@ -1068,3 +1068,36 @@ DupeGeneNote:
             relationship: [genotype, Genotype, dupe_notes]
             hide: true
 
+# Genomic Support for an Inference
+GenomicSupport:
+    discriminator: AIRR
+    description: PubMed Id and publication details
+    type: object
+    occurrence: single
+    properties:
+        repository:
+            type: [Genbank, ENA]
+            description: Repository
+            tableview: true
+            label: Repository
+        accession:
+            type: string
+            description: Genbank or ENA accession number, e.g MK321684
+            tableview: true
+            label: Accession Number
+        title:
+            type: text
+            description: Title
+            tableview: true
+            hide: true
+            label: Title
+        url:
+            type: text
+            description: Link to record
+            hide: true
+            label: URL
+        sequence_id:
+            type: integer
+            foreign_key: gene_description.id
+            relationship: [gene_description, GeneDescription, genomic_accessions]
+            hide: true

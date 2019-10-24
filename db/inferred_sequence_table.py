@@ -49,7 +49,7 @@ class InferredSequenceTableMatchCol(StyledCol):
 
 class SubLinkCol(StyledCol):
     def td_format(self, content):
-        return Markup('<a href="%s">%s</span>&nbsp;</a>'  % (url_for('submission', id=content), content))
+        return Markup('<a href="%s">%s</span>&nbsp;</a>' % (url_for('submission', id=content), content))
 
 
 class InferredSequenceTable(StyledTable):
@@ -169,6 +169,8 @@ class MatchingSubmissionsTable(StyledTable):
     sequence_name = MatchingSubmissionsTableInfCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
     match = MatchingSubmissionsTableMatchCol("Match", tooltip="Details of the match")
 
+
+
 def make_MatchingSubmissions_table(results, classes=()):
     t=create_table(base=MatchingSubmissionsTable)
     ret = t(results, classes=classes)
@@ -216,10 +218,24 @@ def setup_matching_submissions_table(seq, add_action=True):
 
     return table
 
+class GenomicSupportTableActionCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        contents = '<button type="button" class="del_genomic_button btn btn-xs text-danger icon_back" data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item.sequence_id, item.id, item.sequence_id, item.id)
+        return(contents)
+
+def setup_genomic_support_table(seq):
+        table = make_GenomicSupport_table(seq.genomic_accessions)
+        table.add_column('action', GenomicSupportTableActionCol(""))
+        table._cols.move_to_end('action', last=False)
+        for item in table.items:
+            item.accession = Markup('<a href="%s">%s</a>' % (item.url, item.accession)) if item.url is not None else item.accession
+        return table
+
 def setup_sequence_edit_tables(db, seq):
     tables = {}
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq)
     tables['supporting_observations'] = setup_supporting_observation_table(seq)
+    tables['genomic_support'] = setup_genomic_support_table(seq)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
     tables['matches'] = setup_matching_submissions_table(seq)
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete_route='delete_sequence_attachment', delete_message='Are you sure you wish to delete the attachment?', download_route='download_sequence_attachment')

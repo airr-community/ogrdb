@@ -19,9 +19,8 @@ def main(argv):
     args = parser.parse_args()
 
     schema =  yaml.load(open(args.schemafile, 'r'), Loader=yamlordereddictloader.Loader)
-    markup =  yaml.load(open(args.markupfile, 'r'), Loader=yamlordereddictloader.Loader)
-
-    schema = merge_markup(schema, markup)
+    #markup =  yaml.load(open(args.markupfile, 'r'), Loader=yamlordereddictloader.Loader)
+    #schema = merge_markup(schema, markup)
 
     write_model(schema, 'Submission', 'db/submission_db.py')
     write_flaskform(schema, 'Submission', 'forms/submission_form.py')
@@ -53,6 +52,8 @@ def main(argv):
     write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
     write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
     write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
+    write_model(schema, 'GenomicSupport', 'db/gene_description_db.py', True)
+    write_flaskform(schema, 'GenomicSupport', 'forms/gene_description_form.py', True)
     write_model(schema, 'DupeGeneNote', 'db/dupe_gene_note_db.py')
     write_model(schema, 'PrimerSet', 'db/primer_set_db.py')
     write_flaskform(schema, 'PrimerSet', 'forms/primer_set_form.py')

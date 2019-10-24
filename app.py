@@ -1319,7 +1319,7 @@ def seq_add_inference(id):
 
     if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
         if form.cancel.data:
-            return redirect('/sequences')
+            return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
         try:
             if form.submission_id.data == '0' or form.submission_id.data == None or form.submission_id.data == 'None':
@@ -1351,6 +1351,42 @@ def seq_add_inference(id):
 
     return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
 
+
+@app.route('/seq_add_genomic/<id>', methods=['GET', 'POST'])
+@login_required
+def seq_add_genomic(id):
+    seq = check_seq_edit(id)
+    if seq is None:
+        return redirect('/sequences')
+
+    form = GenomicSupportForm()
+
+    if request.method == 'POST':
+        if form.validate():
+            if 'cancel' in request.form:
+                return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
+
+            support = GenomicSupport()
+            support.accession = form.accession.data
+            support.repository = form.repository.data
+
+            try:
+                if support.repository == 'Genbank':
+                    resp = get_nih_nuc_details(support.accession)
+                elif support.repository == 'ENA':
+                    resp = get_ena_nuc_details(support.accession)
+                support.title = resp['title']
+                support.url = resp['url']
+            except ValueError as e:
+                form.accession.errors = [e.args[0]]
+                return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id)
+
+            db.session.add(support)
+            seq.genomic_accessions.append(support)
+            db.session.commit()
+            return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
+
+    return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id)
 
 @app.route('/sequence/<id>', methods=['GET'])
 def sequence(id):
@@ -1457,6 +1493,9 @@ def edit_sequence(id):
 
                 if 'upload_btn' in request.form:
                     return redirect(url_for('edit_sequence', id=id, _anchor='note'))
+
+                if 'add_genomic_btn' in request.form:
+                    return redirect(url_for('seq_add_genomic', id=id))
 
                 if form.action.data == 'published':
                     old_seq = db.session.query(GeneDescription).filter_by(description_id = seq.description_id, status='published').one_or_none()
@@ -1612,6 +1651,18 @@ def delete_supporting_observation():
         if genotype is not None and genotype in seq.supporting_observations:
             seq.supporting_observations.remove(genotype)
             db.session.commit()
+
+    return ''
+
+@app.route('/delete_genomic_support', methods=['POST'])
+@login_required
+def delete_genomic_support():
+    seq = check_seq_edit(request.form['id'])
+    if seq is not None:
+        for ga in seq.genomic_accessions:
+            if ga.id == int(request.form['gen']):
+                seq.genomic_accessions.remove(ga)
+                db.session.commit()
 
     return ''
 

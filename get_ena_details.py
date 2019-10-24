@@ -63,6 +63,7 @@ def get_ena_nuc_details(nuc_id):
 
     if len(entries) > 0:
         ret['title'] = entries[0].text
+        ret['url'] = 'https://www.ebi.ac.uk/ena/data/view/%s' % nuc_id
     else:
         raise ValueError('Error fetching nucleotide info from ENA: %s' % (root.text))
 
