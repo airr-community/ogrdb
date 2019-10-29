@@ -121,7 +121,8 @@ init_logging(app, mail)
 
 # Read IMGT germline reference sets
 
-from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, imgt_reference_genes
+from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, get_imgt_reference_genes
+
 init_imgt_ref()
 init_igpdb_ref()
 
@@ -2009,7 +2010,7 @@ def download_sequences(species, format, exc):
     q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == species)
     results = q.all()
 
-    imgt_ref = imgt_reference_genes()
+    imgt_ref = get_imgt_reference_genes()
     if species in imgt_ref and exc == 'non':
         descs = []
         for result in results:

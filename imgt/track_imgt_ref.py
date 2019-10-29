@@ -2,7 +2,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-# Check for new versions of the IMGR reference set, log changes and update the version used by Ogre
+# Check for new versions of the IMGT reference set, log changes and update the version used by Ogre
 
 
 import argparse
@@ -35,7 +35,7 @@ def main(argv):
     args = parser.parse_args()
 
     with open(args.cfgfile, 'r') as fc:
-        config = yaml.load(fc)
+        config = yaml.load(fc, Loader=yaml.FullLoader)
 
     # find the latest downloaded file
     file_list = glob.glob(config['file_dir'] + '/' + config['file_prefix'] + '*')
@@ -74,6 +74,14 @@ def main(argv):
             if config['ogre_touch'] != 'none':
                 os.system('touch %s' % config['ogre_touch'])
             fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['ogre_file']))
+
+            # download a new gapped reference set from IMGT
+            with urllib.request.urlopen(config['gapped_file_url']) as response:
+                with open(config['gapped_ogre_file'], 'wb') as fo:
+                    fo.write(response.read())
+            fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['gapped_ogre_file']))
+
+
         else:
             fl.write('%s No changes detected.\n' % (datetime.datetime.now().isoformat(timespec='minutes')))
             os.remove(newfile)

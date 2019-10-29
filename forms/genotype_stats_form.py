@@ -9,7 +9,7 @@ from wtforms.validators import NumberRange
 from wtforms import SelectField, SubmitField, DecimalField, IntegerField, StringField, BooleanField
 from db.styled_table import *
 from flask_table import create_table
-from imgt.imgt_ref import imgt_reference_genes
+from imgt.imgt_ref import get_imgt_reference_genes
 
 from genotype_stats import generate_stats
 

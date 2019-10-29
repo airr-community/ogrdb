@@ -5,21 +5,21 @@
 #
 
 
-from imgt.imgt_ref import imgt_reference_genes, igpdb_ref
-from db.genotype_db import Genotype_table, make_Genotype_table
-from db.styled_table import *
-from Bio import pairwise2
-from Bio.pairwise2 import format_alignment
-from sequence_format import *
+from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index
+from Bio import pairwise2, Seq
+from Bio.Alphabet import generic_dna
 from db.genotype_tables import *
+import sys
+import re
 
 
 
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):
-        imgt_ref = imgt_reference_genes()
+        imgt_ref = get_imgt_reference_genes()
+        ref_codon_usage = get_reference_v_codon_usage()
 
-        bt_view =  '<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
+        bt_view = '<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
                % (format_nuc_sequence(item.nt_sequence, 50), item.sequence_id, format_fasta_sequence(item.sequence_id, item.nt_sequence, 50))
 
         if item.sequence_id in imgt_ref[item.genotype_description.submission.species]:
@@ -45,13 +45,17 @@ class SeqCol(StyledCol):
         bt_igpdb = ''
 
         if item.genotype_description.submission.species == 'Human':
-            igpdb_genes = igpdb_ref()
+            igpdb_genes = get_igpdb_ref()
             for k,v in igpdb_genes.items():
                 if item.nt_sequence.lower() == v:
                     bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IGPDB gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
                     break
 
+        bt_indels = ''
         bt_imgt = ''
+        bt_codon_usage = ''
+        bt_runs = ''
+        bt_hotspots = ''
 
         if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             for k,v in imgt_ref[item.genotype_description.submission.species].items():
@@ -59,11 +63,87 @@ class SeqCol(StyledCol):
                     bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
                     break
 
-        return bt_view + bt_check + bt_igpdb + bt_imgt
+            # QA Checks
+
+            # Alignment issues
+
+            ref_nt = imgt_ref[item.genotype_description.submission.species][item.closest_reference].upper()
+            seq_nt = item.nt_sequence.upper()
+
+            mismatch = 0
+            aligned = True
+
+            for (r,s) in zip(list(ref_nt), list(seq_nt)):
+                if r != s:
+                    mismatch += 1
+
+            if mismatch > 20:
+                aligned = False
+                bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
+
+            if aligned:
+                # Check for unusual AAs at each position
+
+                if item.genotype_description.sequence_type == 'V' \
+                        and item.genotype_description.locus+'V' in ref_codon_usage[item.genotype_description.submission.species]\
+                        and item.closest_reference in imgt_ref[item.genotype_description.submission.species]:
+                    try:
+                        q_codons = []
+                        ref_aa = list(imgt_ref[item.genotype_description.submission.species][item.closest_reference].upper().translate())
+                        seq_aa = list(Seq(item.nt_sequence.upper(), generic_dna).translate())
+                        family = find_family(item.closest_reference)
+
+                        for i in range(1, min(len(ref_aa), len(seq_aa))):
+                            if ref_aa[i] != seq_aa[i] and '*' not in (ref_aa[i], seq_aa[i]) and '.' not in (ref_aa[i], seq_aa[i]):
+                                if seq_aa[i] not in ref_codon_usage[item.genotype_description.submission.species][item.genotype_description.locus + 'V'][family][i]:
+                                    q_codons.append("%s%d" % (seq_aa[i], i))
+
+                        if len(q_codons) > 0:
+                            bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_codons)
+
+                    except:
+                        bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Error translating sequence: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % sys.exc_info()[0]
+
+                # Check for lengthened strings of the same base
+
+                ref_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(ref_nt))]
+                seq_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(seq_nt))]
+
+                q_runs = []
+
+                for p in seq_qpos:
+                    if p not in ref_qpos:
+                        q_runs.append("%d" % find_gapped_index(p, item.genotype_description.submission.species, item.closest_reference))
+
+                if len(q_runs) > 0:
+                    bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
+
+                # Check for RGYW/WRCY hotspot change
+
+                ref_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(ref_nt))]
+                seq_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(seq_nt))]
+
+                q_hotspots= []
+
+                for p in seq_qpos:
+                    if p in ref_qpos and list(ref_nt)[p+1] != list(seq_nt)[p+1]:
+                        q_hotspots.append("%d" % find_gapped_index(p+1, item.genotype_description.submission.species, item.closest_reference))
+
+                ref_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(ref_nt))]
+                seq_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(seq_nt))]
+
+                for p in seq_qpos:
+                    if p in ref_qpos and list(ref_nt)[p+2] != list(seq_nt)[p+2]:
+                        q_hotspots.append("%d" % find_gapped_index(p+2, item.genotype_description.submission.species, item.closest_reference))
+
+                if len(q_hotspots) > 0:
+                    bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
+
+        return bt_view + bt_check + bt_igpdb + bt_imgt + bt_indels + bt_codon_usage + bt_runs + bt_hotspots
 
 class GenTitleCol(StyledCol):
     def td_contents(selfself, item, attr_list):
-        imgt_ref = imgt_reference_genes()
+        imgt_ref = get_imgt_reference_genes()
         text = item.sequence_id
         if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             text = '<em>' + text + '</em>'
@@ -85,7 +165,7 @@ def setup_gv_table(desc):
         inferred_seqs.append(inf.sequence_details.sequence_id)
 
     novel = []
-    imgt_ref = imgt_reference_genes()
+    imgt_ref = get_imgt_reference_genes()
     for item in desc.genotypes:
         if item.sequence_id not in imgt_ref[item.genotype_description.submission.species] or item.sequence_id in inferred_seqs:
             novel.append(item)

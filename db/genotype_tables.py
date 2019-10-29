@@ -21,7 +21,7 @@ class Genotype_novel_table(StyledTable):
 
 
 def make_Genotype_novel_table(results, private = False, classes=()):
-    t=create_table(base=Genotype_full_table)
+    t=create_table(base=Genotype_novel_table)
     return t(results, classes=classes)
 
 

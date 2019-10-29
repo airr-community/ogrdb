@@ -14,7 +14,7 @@ import csv
 from app import db
 from db.submission_db import *
 from db.gene_description_db import *
-from imgt.imgt_ref import imgt_reference_genes
+from imgt.imgt_ref import get_imgt_reference_genes
 
 
 def parse_name(name):
@@ -55,7 +55,7 @@ def generate_stats(form):
     locus = form.locus.data
     sequence_type = form.sequence_type.data
 
-    imgt_ref = imgt_reference_genes()
+    imgt_ref = get_imgt_reference_genes()
     if species not in imgt_ref:
         return (0, None, None)
 

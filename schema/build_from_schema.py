@@ -481,7 +481,7 @@ from db.view_table import ViewCol
                 fo.write('    %s = StyledCol("%s"%s)\n' % (k, label, tooltip))
         fo.write('\n\n')
 
-        fo.write('def make_%s_novel_table(results, private = False, classes=()):\n    t=create_table(base=%s_full_table)\n    return t(results, classes=classes)\n\n\n' % (section,section))
+        fo.write('def make_%s_novel_table(results, private = False, classes=()):\n    t=create_table(base=%s_novel_table)\n    return t(results, classes=classes)\n\n\n' % (section,section))
 
         # full_table
 
