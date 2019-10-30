@@ -57,91 +57,95 @@ class SeqCol(StyledCol):
         bt_codon_usage = ''
         bt_runs = ''
         bt_hotspots = ''
+        bt_ref_found = ''
 
-        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species] and item.closest_reference in imgt_ref[item.genotype_description.submission.species]:
-            for k,v in imgt_ref[item.genotype_description.submission.species].items():
-                if item.nt_sequence.lower() == v:
-                    bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
-                    break
+        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+            if item.closest_reference not in imgt_ref[item.genotype_description.submission.species]:
+                bt_ref_found = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Nearest reference not found in IMGT reference set"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
+            else:
+                for k,v in imgt_ref[item.genotype_description.submission.species].items():
+                    if item.nt_sequence.lower() == v:
+                        bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
+                        break
 
-            # QA Checks
+                # QA Checks
 
-            # Alignment issues
+                # Alignment issues
 
-            ref_nt = imgt_ref[item.genotype_description.submission.species][item.closest_reference].upper()
-            seq_nt = item.nt_sequence.upper()
+                ref_nt = imgt_ref[item.genotype_description.submission.species][item.closest_reference].upper()
+                seq_nt = item.nt_sequence.upper()
 
-            mismatch = 0
-            aligned = True
+                mismatch = 0
+                aligned = True
 
-            for (r,s) in zip(list(ref_nt), list(seq_nt)):
-                if r != s:
-                    mismatch += 1
+                for (r,s) in zip(list(ref_nt), list(seq_nt)):
+                    if r != s:
+                        mismatch += 1
 
-            if mismatch > 20:
-                aligned = False
-                bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
+                if mismatch > 20:
+                    aligned = False
+                    bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
 
-            if aligned:
-                # Check for unusual AAs at each position
+                if aligned:
+                    # Check for unusual AAs at each position
 
-                if item.genotype_description.sequence_type == 'V' and item.genotype_description.locus+'V' in ref_codon_usage[item.genotype_description.submission.species]:
-                    try:
-                        q_codons = []
-                        ref_aa_gapped = list(imgt_ref_gapped[item.genotype_description.submission.species][item.closest_reference].upper().translate(gap='.'))
-                        seq_aa = Seq(item.nt_sequence.upper(), generic_dna).translate()
+                    if item.genotype_description.sequence_type == 'V' and item.genotype_description.locus+'V' in ref_codon_usage[item.genotype_description.submission.species]:
+                        try:
+                            q_codons = []
+                            ref_aa_gapped = list(imgt_ref_gapped[item.genotype_description.submission.species][item.closest_reference].upper().translate(gap='.'))
+                            seq_aa = Seq(item.nt_sequence.upper(), generic_dna).translate()
 
-                        seq_aa_gapped = gap_sequence(seq_aa, ref_aa_gapped)
-                        seq_aa_gapped = list(seq_aa_gapped)
-                        family = find_family(item.closest_reference)
+                            seq_aa_gapped = gap_sequence(seq_aa, ref_aa_gapped)
+                            seq_aa_gapped = list(seq_aa_gapped)
+                            family = find_family(item.closest_reference)
 
-                        for i in range( min(len(ref_aa_gapped), len(seq_aa_gapped))):
-                            if ref_aa_gapped[i] != seq_aa_gapped[i] and '*' not in (ref_aa_gapped[i], seq_aa_gapped[i]) and '.' not in (ref_aa_gapped[i], seq_aa_gapped[i]):
-                                if seq_aa_gapped[i] not in ref_codon_usage[item.genotype_description.submission.species][item.genotype_description.locus + 'V'][family][i+1]:
-                                    q_codons.append("%s%d" % (seq_aa_gapped[i], i+1))
+                            for i in range( min(len(ref_aa_gapped), len(seq_aa_gapped))):
+                                if ref_aa_gapped[i] != seq_aa_gapped[i] and '*' not in (ref_aa_gapped[i], seq_aa_gapped[i]) and '.' not in (ref_aa_gapped[i], seq_aa_gapped[i]):
+                                    if seq_aa_gapped[i] not in ref_codon_usage[item.genotype_description.submission.species][item.genotype_description.locus + 'V'][family][i+1]:
+                                        q_codons.append("%s%d" % (seq_aa_gapped[i], i+1))
 
-                        if len(q_codons) > 0:
-                            bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_codons)
+                            if len(q_codons) > 0:
+                                bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_codons)
 
-                    except:
-                        bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Error translating sequence: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % sys.exc_info()[0]
+                        except:
+                            bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Error translating sequence: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % sys.exc_info()[0]
 
-                # Check for lengthened strings of the same base
+                    # Check for lengthened strings of the same base
 
-                ref_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(ref_nt))]
-                seq_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(seq_nt))]
+                    ref_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(ref_nt))]
+                    seq_qpos = [m.start() for m in re.finditer('(.)\\1+\\1+\\1+', str(seq_nt))]
 
-                q_runs = []
+                    q_runs = []
 
-                for p in seq_qpos:
-                    if p not in ref_qpos:
-                        q_runs.append("%d" % find_gapped_index(p, item.genotype_description.submission.species, item.closest_reference))
+                    for p in seq_qpos:
+                        if p not in ref_qpos:
+                            q_runs.append("%d" % find_gapped_index(p, item.genotype_description.submission.species, item.closest_reference))
 
-                if len(q_runs) > 0:
-                    bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
+                    if len(q_runs) > 0:
+                        bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
 
-                # Check for RGYW/WRCY hotspot change
+                    # Check for RGYW/WRCY hotspot change
 
-                ref_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(ref_nt))]
-                seq_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(seq_nt))]
+                    ref_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(ref_nt))]
+                    seq_qpos = [m.start() for m in re.finditer('[AG][GC][CT][AT]', str(seq_nt))]
 
-                q_hotspots= []
+                    q_hotspots= []
 
-                for p in seq_qpos:
-                    if p in ref_qpos and list(ref_nt)[p+1] != list(seq_nt)[p+1]:
-                        q_hotspots.append("%d" % find_gapped_index(p+1, item.genotype_description.submission.species, item.closest_reference))
+                    for p in seq_qpos:
+                        if p in ref_qpos and list(ref_nt)[p+1] != list(seq_nt)[p+1]:
+                            q_hotspots.append("%d" % find_gapped_index(p+1, item.genotype_description.submission.species, item.closest_reference))
 
-                ref_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(ref_nt))]
-                seq_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(seq_nt))]
+                    ref_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(ref_nt))]
+                    seq_qpos = [m.start() for m in re.finditer('[AT][AG][GC][CT]', str(seq_nt))]
 
-                for p in seq_qpos:
-                    if p in ref_qpos and list(ref_nt)[p+2] != list(seq_nt)[p+2]:
-                        q_hotspots.append("%d" % find_gapped_index(p+2, item.genotype_description.submission.species, item.closest_reference))
+                    for p in seq_qpos:
+                        if p in ref_qpos and list(ref_nt)[p+2] != list(seq_nt)[p+2]:
+                            q_hotspots.append("%d" % find_gapped_index(p+2, item.genotype_description.submission.species, item.closest_reference))
 
-                if len(q_hotspots) > 0:
-                    bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
+                    if len(q_hotspots) > 0:
+                        bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
 
-        return bt_view + bt_check + bt_igpdb + bt_imgt + bt_indels + bt_codon_usage + bt_runs + bt_hotspots
+        return bt_view + bt_check + bt_igpdb + bt_imgt + bt_indels + bt_codon_usage + bt_runs + bt_hotspots + bt_ref_found
 
 class GenTitleCol(StyledCol):
     def td_contents(selfself, item, attr_list):
