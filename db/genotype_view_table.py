@@ -58,7 +58,7 @@ class SeqCol(StyledCol):
         bt_runs = ''
         bt_hotspots = ''
 
-        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species] and item.closest_reference in imgt_ref[item.genotype_description.submission.species]:
             for k,v in imgt_ref[item.genotype_description.submission.species].items():
                 if item.nt_sequence.lower() == v:
                     bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
@@ -82,7 +82,7 @@ class SeqCol(StyledCol):
                 aligned = False
                 bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
 
-            if aligned and item.closest_reference in imgt_ref[item.genotype_description.submission.species]:
+            if aligned:
                 # Check for unusual AAs at each position
 
                 if item.genotype_description.sequence_type == 'V' and item.genotype_description.locus+'V' in ref_codon_usage[item.genotype_description.submission.species]:
