@@ -155,10 +155,10 @@
 
     function delete_warn(route, message) {
         foo = BootstrapDialog.confirm({
-            title: 'Delete Submission?',
+            title: 'Delete?',
             message: message,
             type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Delete',
+            btnOKLabel: ' Delete ',
             btnOKClass: 'btn-danger',
               callback: function(result) {
                 if(result) {

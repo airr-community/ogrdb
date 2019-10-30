@@ -179,10 +179,19 @@ gtgtattactgtgcgagaga""")
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
     assert(len(x) == nacks-1)
 
+    # Add genomic evidence
+
+    driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'add_genomic_btn'))).click()
+    time.sleep(3)
+    wait.until(EC.element_to_be_clickable((By.ID, 'accession')))
+    driver.find_element_by_id('accession').send_keys('MK321684')
+    driver.find_element_by_id('create').click()
+    wait.until(EC.element_to_be_clickable((By.ID,'add_genomic_btn')))
+
     # Add a note
 
-    driver.find_element_by_xpath('//*[@id="tab-notes"]').click()
-
+    wait.until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-notes"]'))).click()
     wait.until(EC.element_to_be_clickable((By.ID,'notes')))
     driver.find_element_by_id('notes').send_keys(random_chars(size=random.randint(50,500), chars=string.ascii_lowercase + ' '))
     wait.until(EC.element_to_be_clickable((By.ID,'save_draft_btn')))
@@ -221,7 +230,7 @@ gtgtattactgtgcgagaga""")
 
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button" % name).click()
     time.sleep(3)
-    el = driver.find_element_by_class_name('btn-warning')
+    el = driver.find_element(By.XPATH, "//button[@class='btn btn-warning' and contains(., 'New Draft')]")
     el.click()
 
     # Promote
@@ -234,11 +243,21 @@ gtgtattactgtgcgagaga""")
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Completed')
     wait.until(EC.element_to_be_clickable((By.ID, 'history_btn'))).click()
 
-    # Withdraw
+    # Change IMGT name
 
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[2]" % name).click()
     time.sleep(3)
-    el = driver.find_element_by_class_name('btn-danger')
+    driver.find_element_by_id('imgt_name_text').send_keys(random_chars(size=random.randint(5, 10), chars=string.ascii_lowercase))
+    el = driver.find_element(By.XPATH, "//button[@class='btn btn-warning' and contains(., 'Save')]")
+    el.click()
+
+    # Withdraw
+
+    time.sleep(3)
+    wait.until(EC.element_to_be_clickable((By.XPATH,"//*[text()[.='%s']]/following-sibling::button[3]" % name))).click()
+    #driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[3]" % name).click()
+    time.sleep(3)
+    el = driver.find_element(By.XPATH, "//button[@class='btn btn-danger' and contains(., 'Withdraw')]")
     el.click()
 
     # Download sequences

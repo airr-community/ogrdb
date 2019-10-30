@@ -312,7 +312,7 @@ def sub_edit_gen():
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_gen")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
-    wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-danger'))).click()
+    wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., ' Delete ')]"))).click()
     time.sleep(2)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_gen")]')
