@@ -119,6 +119,24 @@ def find_gapped_index(ind_ungapped, species, gene_name):
 
     return ind + 1
 
+# Gap a sequence given the closest gapped reference
+# A bit simplistic: will truncate to the shortest of the two sequences (excluding gaps)
+def gap_sequence(seq, ref):
+    i_seq = iter(list(seq))
+    i_ref = iter(list(ref))
+    ret = ''
+
+    try:
+        while(True):
+            r = next(i_ref)
+            if r != '.':
+                ret += next(i_seq)
+            else:
+                ret += '.'
+    except StopIteration:
+        pass
+
+    return ret
 
 def find_codon_usage(gapped_reference_genes, species, chain):
     usage = {}
@@ -128,16 +146,16 @@ def find_codon_usage(gapped_reference_genes, species, chain):
             family = find_family(gene_name)
             if family not in usage:
                 usage[family] = [[],]
-                try:
-                    aa_seq = list(nt_seq.upper().translate(gap='.'))
+            try:
+                aa_seq = list(nt_seq.upper().translate(gap='.'))
 
-                    for i in range(0, len(aa_seq)):
-                        if len(usage[family]) <= i+1:
-                            usage[family].append([])
-                        if aa_seq[i] not in usage[family][i+1]:
-                            usage[family][i+1].append(aa_seq[i])
-                except:
-                    pass
+                for i in range(0, len(aa_seq)):
+                    if len(usage[family]) <= i+1:
+                        usage[family].append([])
+                    if aa_seq[i] not in usage[family][i+1]:
+                        usage[family][i+1].append(aa_seq[i])
+            except:
+                pass
     return usage
 
 def init_igpdb_ref():

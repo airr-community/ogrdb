@@ -5,7 +5,7 @@
 #
 
 
-from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index
+from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
 from Bio import pairwise2, Seq
 from Bio.Alphabet import generic_dna
 from db.genotype_tables import *
@@ -17,6 +17,7 @@ import re
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):
         imgt_ref = get_imgt_reference_genes()
+        imgt_ref_gapped = get_imgt_gapped_reference_genes()
         ref_codon_usage = get_reference_v_codon_usage()
 
         bt_view = '<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
@@ -89,14 +90,17 @@ class SeqCol(StyledCol):
                         and item.closest_reference in imgt_ref[item.genotype_description.submission.species]:
                     try:
                         q_codons = []
-                        ref_aa = list(imgt_ref[item.genotype_description.submission.species][item.closest_reference].upper().translate())
-                        seq_aa = list(Seq(item.nt_sequence.upper(), generic_dna).translate())
+                        ref_aa_gapped = list(imgt_ref_gapped[item.genotype_description.submission.species][item.closest_reference].upper().translate(gap='.'))
+                        seq_aa = Seq(item.nt_sequence.upper(), generic_dna).translate()
+
+                        seq_aa_gapped = gap_sequence(seq_aa, ref_aa_gapped)
+                        seq_aa_gapped = list(seq_aa_gapped)
                         family = find_family(item.closest_reference)
 
-                        for i in range(1, min(len(ref_aa), len(seq_aa))):
-                            if ref_aa[i] != seq_aa[i] and '*' not in (ref_aa[i], seq_aa[i]) and '.' not in (ref_aa[i], seq_aa[i]):
-                                if seq_aa[i] not in ref_codon_usage[item.genotype_description.submission.species][item.genotype_description.locus + 'V'][family][i]:
-                                    q_codons.append("%s%d" % (seq_aa[i], i))
+                        for i in range( min(len(ref_aa_gapped), len(seq_aa_gapped))):
+                            if ref_aa_gapped[i] != seq_aa_gapped[i] and '*' not in (ref_aa_gapped[i], seq_aa_gapped[i]) and '.' not in (ref_aa_gapped[i], seq_aa_gapped[i]):
+                                if seq_aa_gapped[i] not in ref_codon_usage[item.genotype_description.submission.species][item.genotype_description.locus + 'V'][family][i+1]:
+                                    q_codons.append("%s%d" % (seq_aa_gapped[i], i+1))
 
                         if len(q_codons) > 0:
                             bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_codons)
@@ -116,7 +120,7 @@ class SeqCol(StyledCol):
                         q_runs.append("%d" % find_gapped_index(p, item.genotype_description.submission.species, item.closest_reference))
 
                 if len(q_runs) > 0:
-                    bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
+                    bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
 
                 # Check for RGYW/WRCY hotspot change
 
