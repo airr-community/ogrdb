@@ -349,3 +349,7 @@ code {
     padding: 0px 0px;
     background-color: unset;
 }
+
+.table {
+    word-break: break-all;
+}
