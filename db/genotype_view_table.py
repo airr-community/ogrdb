@@ -143,7 +143,7 @@ class SeqCol(StyledCol):
                             q_hotspots.append("%d" % find_gapped_index(p+2, item.genotype_description.submission.species, item.closest_reference))
 
                     if len(q_hotspots) > 0:
-                        bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
+                        bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
 
         return bt_view + bt_check + bt_igpdb + bt_imgt + bt_indels + bt_codon_usage + bt_runs + bt_hotspots + bt_ref_found
 
