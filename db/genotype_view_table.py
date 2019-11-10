@@ -56,7 +56,7 @@ class SeqCol(StyledCol):
             for k,v in vdjbase_genes.items():
                 if item.nt_sequence.lower() in v[0] or v[0] in item.nt_sequence.lower():
                     bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
-                                 (Markup("'https://www.vdjbase.org/data/Samples/alleles_n=%s'" % k), k, v[1])
+                                 (Markup("'https://www.vdjbase.org/data/Samples?alleles_n=%s'" % k), k, v[1])
                     break
 
         bt_indels = ''
