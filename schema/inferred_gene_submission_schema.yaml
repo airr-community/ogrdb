@@ -1096,6 +1096,7 @@ GenomicSupport:
             description: Link to record
             hide: true
             label: URL
+
         sequence_id:
             type: integer
             foreign_key: gene_description.id

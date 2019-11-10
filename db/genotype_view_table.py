@@ -4,15 +4,12 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-
-from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
+from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_vdjbase_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
 from Bio import pairwise2, Seq
 from Bio.Alphabet import generic_dna
 from db.genotype_tables import *
 import sys
 import re
-
-
 
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -48,8 +45,18 @@ class SeqCol(StyledCol):
         if item.genotype_description.submission.species == 'Human':
             igpdb_genes = get_igpdb_ref()
             for k,v in igpdb_genes.items():
-                if item.nt_sequence.lower() == v:
+                if item.nt_sequence.lower() in v or v in item.nt_sequence.lower():
                     bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IGPDB gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
+                    break
+
+        bt_vdjbase = ''
+
+        if item.genotype_description.submission.species == 'Human':
+            vdjbase_genes = get_vdjbase_ref()
+            for k,v in vdjbase_genes.items():
+                if item.nt_sequence.lower() in v[0] or v[0] in item.nt_sequence.lower():
+                    bt_vdjbase = '<button type="button" name="vdjbase_btn" id="vdjbase_btn" class="btn btn-xs text-info icon_back" data-toggle="tooltip" data-vdjbase_name="%s" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
+                                 (k, k, v[1])
                     break
 
         bt_indels = ''
@@ -145,7 +152,7 @@ class SeqCol(StyledCol):
                     if len(q_hotspots) > 0:
                         bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
 
-        return bt_view + bt_check + bt_igpdb + bt_imgt + bt_indels + bt_codon_usage + bt_runs + bt_hotspots + bt_ref_found
+        return bt_view + bt_check + bt_imgt + bt_igpdb + bt_vdjbase + bt_indels + bt_codon_usage + bt_runs + bt_hotspots + bt_ref_found
 
 class GenTitleCol(StyledCol):
     def td_contents(selfself, item, attr_list):

@@ -121,10 +121,11 @@ init_logging(app, mail)
 
 # Read IMGT germline reference sets
 
-from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, get_imgt_reference_genes
+from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, init_vdjbase_ref, get_imgt_reference_genes
 
 init_imgt_ref()
 init_igpdb_ref()
+init_vdjbase_ref()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

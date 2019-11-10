@@ -8,13 +8,10 @@
 
 from db.gene_description_db import *
 from db.journal_entry_db import *
-from db.repertoire_db import make_Acknowledgements_table
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table
-from db.attached_file_db import *
+from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table
 from forms.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
-from copy import deepcopy
 from textile_filter import safe_textile
 
 
@@ -114,6 +111,7 @@ def setup_sequence_view_tables(db, seq, private):
 
     tables['inferred_sequences'] = setup_inferred_sequence_table(seq.inferred_sequences, seq, action=False)
     tables['supporting_observations'] = setup_supporting_observation_table(seq, action=False)
+    tables['vdjbase_matches'] = setup_vdjbase_matches_table(seq)
     tables['matches'] = setup_matching_submissions_table(seq, add_action=False) if private else None
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])

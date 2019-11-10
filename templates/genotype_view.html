@@ -107,6 +107,14 @@
     <script src="/static/script/jquery.stickytableheaders.js"></script>
 
     <script>
+
+    $('#vdjbase_btn').on('click', function () {
+        var vdjbase_name = $('#vdjbase_btn').data('vdjbase_name'); // Extract info from data-* attributes
+        window.open('https://www.vdjbase.org/data/Samples?alleles_n='+vdjbase_name)
+    });
+
+
+
     $('#show_all_fasta').on('click', function () {
         var sequence = $('#show_all_fasta').data('sequence'); // Extract info from data-* attributes
         BootstrapDialog.show({
@@ -123,5 +131,10 @@
     })
 
     $('#genotype_table').stickyTableHeaders();
+
+  /*  $('#vdjbase_btn').click(function () {
+        var vdjbase_name = $('#vdjbase_btn').data('vdjbase_name'); // Extract info from data-* attributes
+        window.open('https://www.vdjbase.org')
+    }) */
     </script>
 {% endblock %}

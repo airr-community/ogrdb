@@ -12,13 +12,9 @@ from forms.repertoire_form import AcknowledgementsForm
 from forms.attached_file_form import *
 from textile_filter import *
 from flask import url_for
-from db.styled_table import *
 from db.gene_description_db import *
 from sequence_format import *
-from flask import Markup
-from Bio import pairwise2
-from Bio.pairwise2 import format_alignment
-from sequence_format import *
+from imgt.imgt_ref import get_vdjbase_ref
 
 class MessageHeaderCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -98,12 +94,10 @@ class SupportingObservationTable(StyledTable):
     genotype_name = StyledCol("Genotype Name", tooltip="Name of genotype from which sequence was drawn")
     sequence_name = StyledCol("Sequence Name", tooltip="Name of inferred sequence as referred to in the submission")
 
-
 def make_SupportingObservation_table(results, private = False, classes=()):
     t = create_table(base=SupportingObservationTable)
     ret = t(results, classes=classes)
     return ret
-
 
 def setup_supporting_observation_table(seq, action=True):
     results = []
@@ -121,6 +115,29 @@ def setup_supporting_observation_table(seq, action=True):
 
     return table
 
+class VDJbaseTable(StyledTable):
+    vdjbase_name = StyledCol("VDJbase Allele Name", tooltip='Name of matching allele in VDJbase')
+    subjects = StyledCol("Subjects", tooltip="Number of subjects in which the allele was observed")
+
+def make_VDJbase_table(results, private = False, classes=()):
+    t = create_table(base=VDJbaseTable)
+    ret = t(results, classes=classes)
+    return ret
+
+def setup_vdjbase_matches_table(seq):
+    results = []
+
+    if seq.organism == 'Human':
+        vdjbase_genes = get_vdjbase_ref()
+        for k,v in vdjbase_genes.items():
+            if seq.sequence.lower() in v[0] or v[0] in seq.sequence.lower():
+                results.append({'vdjbase_name': Markup('<a href="https://www.vdjbase.org/data/Samples?alleles_n=%s"> %s </a>' % (k, k)), 'allele_name': k,
+                                'subjects': v[1], 'nt_sequence': v[0], 'sequence_name': seq.sequence_name, 'gene_sequence': seq.sequence.lower()})
+
+    table = make_VDJbase_table(results)
+    table.add_column('match', InferredSequenceTableMatchCol('Sequence Match', tooltip="Ticked if the sequence exactly matches this inference. Click for alignment."))
+
+    return table
 
 class MatchingSubmissionsTableMatchCol(StyledCol):
     def td_contents(self, item, attr_list):

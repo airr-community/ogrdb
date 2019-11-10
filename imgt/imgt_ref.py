@@ -16,6 +16,7 @@ import pickle
 imgt_reference_genes = None
 imgt_gapped_reference_genes = None
 igpdb_genes = None
+vdjbase_genes = None
 
 # indexed by species and then by codon (first codon = 1), lists the residues found in that location in the reference set
 reference_v_codon_usage = None
@@ -164,7 +165,19 @@ def init_igpdb_ref():
 
     for rec in SeqIO.parse('static/docs/igpdb.fasta', 'fasta'):
         rd = rec.description.split('|')
-        igpdb_genes[rd[0]] = rec.seq.lower()
+        igpdb_genes[rd[0]] = str(rec.seq.lower())
+
+def init_vdjbase_ref():
+    global vdjbase_genes
+    vdjbase_genes = {}
+
+    for rec in SeqIO.parse('static/docs/vdjbase.fasta', 'fasta'):
+        try:
+            rd = rec.description.split(' ')
+            occ = rd[1].split('=')[1]
+            vdjbase_genes[rd[0]] = (str(rec.seq.lower()).replace('.', ''), occ)
+        except:
+            pass
 
 # if we just import the global variables in another module, they are empty
 # I suspect this is related to threading but it could be a basic coding error
@@ -179,6 +192,7 @@ def get_imgt_gapped_reference_genes():
     return imgt_gapped_reference_genes
 
 def get_igpdb_ref():
-    global igpdb_genes
     return igpdb_genes
 
+def get_vdjbase_ref():
+    return vdjbase_genes
