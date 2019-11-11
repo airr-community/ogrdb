@@ -131,7 +131,7 @@ def setup_vdjbase_matches_table(seq):
         vdjbase_genes = get_vdjbase_ref()
         gene_seq = seq.coding_seq_imgt.lower().replace('.', '')
         for k,v in vdjbase_genes.items():
-            if gene_seq in v[0] or v[0] in gene_seq:
+            if (gene_seq in v[0] or v[0] in gene_seq) and v[1] != '0':
                 results.append({'vdjbase_name': Markup('<a href="https://www.vdjbase.org/data/Samples?alleles_n=%s"> %s </a>' % (k, k)), 'allele_name': k,
                                 'subjects': v[1], 'nt_sequence': v[0], 'sequence_name': seq.sequence_name, 'gene_sequence': gene_seq})
 
