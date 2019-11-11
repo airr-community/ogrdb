@@ -51,7 +51,7 @@ class SeqCol(StyledCol):
 
         bt_vdjbase = ''
 
-        if item.genotype_description.submission.species == 'Human':
+        if item.genotype_description.submission.species == 'Human' and item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             vdjbase_genes = get_vdjbase_ref()
             for k,v in vdjbase_genes.items():
                 if item.nt_sequence.lower() in v[0] or v[0] in item.nt_sequence.lower():
