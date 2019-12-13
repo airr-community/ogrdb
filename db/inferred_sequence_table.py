@@ -118,7 +118,7 @@ def setup_supporting_observation_table(seq, action=True):
 class VDJbaseTable(StyledTable):
     vdjbase_name = StyledCol("VDJbase Allele Name", tooltip='Name of matching allele in VDJbase')
     subjects = StyledCol("Subjects", tooltip="Number of subjects in which the allele was observed")
-
+      
 def make_VDJbase_table(results, private = False, classes=()):
     t = create_table(base=VDJbaseTable)
     ret = t(results, classes=classes)
@@ -129,6 +129,8 @@ def setup_vdjbase_matches_table(seq):
 
     if seq.organism == 'Human':
         vdjbase_genes = get_vdjbase_ref()
+        if seq.coding_seq_imgt is None:
+            seq.coding_seq_imgt = ''
         gene_seq = seq.coding_seq_imgt.lower().replace('.', '')
         for k,v in vdjbase_genes.items():
             if (gene_seq in v[0] or v[0] in gene_seq) and v[1] != '0':
