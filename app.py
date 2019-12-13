@@ -1223,6 +1223,7 @@ def new_sequence(species):
             gene_description.sequence_name = form.new_name.data
             gene_description.inferred_sequences.append(seq)
             gene_description.sequence = seq.sequence_details.nt_sequence
+            gene_description.coding_seq_imgt = ''
             gene_description.organism = species
             gene_description.status = 'draft'
             gene_description.author = current_user.name
