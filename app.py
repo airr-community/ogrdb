@@ -1223,7 +1223,6 @@ def new_sequence(species):
             gene_description.sequence_name = form.new_name.data
             gene_description.inferred_sequences.append(seq)
             gene_description.sequence = seq.sequence_details.nt_sequence
-            gene_description.coding_seq_imgt = ''
             gene_description.organism = species
             gene_description.status = 'draft'
             gene_description.author = current_user.name
@@ -1241,6 +1240,7 @@ def new_sequence(species):
             gene_description.end_5prime_ext = seq.end_5prime_ext
             gene_description.locus = seq.genotype_description.locus
             gene_description.sequence_type = seq.genotype_description.sequence_type
+            gene_description.coding_seq_imgt = seq.sequence_details.nt_sequence_gapped if gene_description.sequence_type == 'V' else seq.sequence_details.nt_sequence
 
             copy_acknowledgements(seq, gene_description)
 
@@ -2059,13 +2059,16 @@ def download_sequences(species, format, exc):
     filename = 'affirmed_germlines_%s_%s.%s' % (species, format, ext)
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 
-# Temp route to fetch ENA details for existing submissions
-@app.route('/ena_details', methods=['GET'])
+from imgt.imgt_ref import gap_sequence
+
+# Temp route to add gapped sequences to genotypes
+@app.route('/add_gapped', methods=['GET'])
 @login_required
-def tidy_genotype():
+def add_gapped():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
+    refs = get_imgt_gapped_reference_genes()
     subs = db.session.query(Submission).all()
     if subs is None:
         flash('Submissions not found')
@@ -2074,86 +2077,31 @@ def tidy_genotype():
     report = ''
 
     for sub in subs:
-        if len(sub.repertoire) > 0 and sub.repertoire[0].repository_name == 'ENA':
+        if len(sub.repertoire) > 0:
             report += 'Processing submission ' + sub.submission_id + '<br>'
 
+            for gd in sub.genotype_descriptions:
+                report += 'Processing genotype ' + gd.genotype_name + '<br>'
 
-            rep = sub.repertoire[0]
-            try:
-                details = get_ena_project_details(rep.rep_accession_no)
-                rep.rep_title = details['title']
-                rep.dataset_url = details['url']
-            except:
-                report += 'project accession number ' + rep.rep_accession_no + 'not found.<br>'
+                if gd.sequence_type == 'V':
+                    for gen in gd.genotypes:
+                        #if gen.nt_sequence_gapped is None or len(gen.nt_sequence_gapped) < 1:
+                        if gen.sequence_id in refs[sub.species]:
+                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id].upper())
+                        elif gen.closest_reference in refs[sub.species]:
+                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.closest_reference])
+                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.closest_reference + '<br>'
+                        elif '_' in gen.sequence_id and gen.sequence_id.split('_')[0] in refs[sub.species]:
+                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id.split('_')[0]])
+                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.sequence_id.split('_')[0] + '<br>'
+                        elif '+' in gen.sequence_id and gen.sequence_id.split('+')[0] in refs[sub.species]:
+                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id.split('+')[0]])
+                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.sequence_id.split('+')[0] + '<br>'
+                        else:
+                            report += 'Not sure how to gap ' + gen.sequence_id + ' - skipping <br>'
 
-
-            for inf in sub.inferred_sequences:
-                report += 'Processing inferred sequence' + str(inf.sequence_id) + '<br>'
-                try:
-                    resp = get_ena_nuc_details(inf.seq_accession_no)
-                    inf.seq_record_title = resp['title']
-                except:
-                    report += 'sequence accession number ' + inf.seq_accession_no + 'not found.<br>'
-
-                for rec in inf.record_set:
-                    db.session.delete(rec)
-
-                run_ids = inf.run_ids
-                run_ids = run_ids.replace(',', ' ')
-                run_ids = run_ids.replace(';', ' ')
-                run_ids = run_ids.split()
-
-                for run_id in run_ids:
-                    try:
-                        resp = get_ena_srr_details(run_id)
-
-                        rec = RecordSet()
-                        rec.rec_accession_no = run_id
-                        rec.rec_record_title = resp['title']
-                        rec.rec_url = resp['url']
-                        inf.record_set.append(rec)
-                    except:
-                        report += 'Cant fetch run id details for accession ' + run_id + '<br>'
-
-            for gen in sub.genotype_descriptions:
-                report += 'Processing genotype' + gen.genotype_name + '<br>'
-                for rec in gen.sample_names:
-                    db.session.delete(rec)
-
-                sam_ids = gen.genotype_biosample_ids
-                sam_ids = sam_ids.replace(',', ' ')
-                sam_ids = sam_ids.replace(';', ' ')
-                sam_ids = sam_ids.split()
-
-                for sam_id in sam_ids:
-                    try:
-                        resp = get_ena_samn_details(sam_id)
-                        rec = SampleName()
-                        rec.sam_accession_no = sam_id
-                        rec.sam_record_title = resp['title']
-                        rec.sam_url = resp['url']
-                        gen.sample_names.append(rec)
-                    except ValueError as e:
-                        report += 'Cant fetch sample details for accession ' + sam_id + '<br>'
-
-                for rec in gen.record_set:
-                    db.session.delete(rec)
-
-                run_ids = gen.genotype_run_ids
-                run_ids = run_ids.replace(',', ' ')
-                run_ids = run_ids.replace(';', ' ')
-                run_ids = run_ids.split()
-
-                for run_id in run_ids:
-                    try:
-                        resp = get_ena_srr_details(run_id)
-                        rec = RecordSet()
-                        rec.rec_accession_no = run_id
-                        rec.rec_record_title = resp['title']
-                        rec.rec_url = resp['url']
-                        gen.record_set.append(rec)
-
-                    except ValueError as e:
-                        report += 'Cant fetch recordset details for accession ' + run_id + '<br>'
                 db.session.commit()
-    return(report)
+
+    return report
+
+

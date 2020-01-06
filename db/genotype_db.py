@@ -38,6 +38,7 @@ class Genotype(db.Model, GenotypeMixin):
     haplotyping_gene = db.Column(db.String(1000))
     haplotyping_ratio = db.Column(db.String(1000))
     nt_sequence = db.Column(db.Text())
+    nt_sequence_gapped = db.Column(db.Text())
     description_id = db.Column(db.Integer, db.ForeignKey('genotype_description.id'))
     genotype_description = db.relationship('GenotypeDescription', backref = 'genotypes')
 
@@ -68,6 +69,7 @@ def save_Genotype(db, object, form, new=False):
     object.haplotyping_gene = form.haplotyping_gene.data
     object.haplotyping_ratio = form.haplotyping_ratio.data
     object.nt_sequence = form.nt_sequence.data
+    object.nt_sequence_gapped = form.nt_sequence_gapped.data
 
     if new:
         db.session.add(object)
@@ -102,6 +104,7 @@ def populate_Genotype(db, object, form):
     form.haplotyping_gene.data = object.haplotyping_gene
     form.haplotyping_ratio.data = object.haplotyping_ratio
     form.nt_sequence.data = object.nt_sequence
+    form.nt_sequence_gapped.data = object.nt_sequence_gapped
 
 
 
@@ -132,6 +135,7 @@ def copy_Genotype(c_from, c_to):
     c_to.haplotyping_gene = c_from.haplotyping_gene
     c_to.haplotyping_ratio = c_from.haplotyping_ratio
     c_to.nt_sequence = c_from.nt_sequence
+    c_to.nt_sequence_gapped = c_from.nt_sequence_gapped
 
 
 
@@ -200,5 +204,6 @@ def make_Genotype_view(sub, private = False):
     ret.items.append({"item": "Haplotyping Gene", "value": sub.haplotyping_gene, "tooltip": "The gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)", "field": "haplotyping_gene"})
     ret.items.append({"item": "Haplotyping Ratio", "value": sub.haplotyping_ratio, "tooltip": "The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)", "field": "haplotyping_ratio"})
     ret.items.append({"item": "NT Sequence", "value": sub.nt_sequence, "tooltip": "The consensus sequence provided by the inference tool", "field": "nt_sequence"})
+    ret.items.append({"item": "Gapped NT Sequence", "value": sub.nt_sequence_gapped, "tooltip": "IMGT-gapped sequence (V-gene only)", "field": "nt_sequence_gapped"})
     return ret
 

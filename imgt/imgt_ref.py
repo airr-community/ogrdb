@@ -121,7 +121,7 @@ def find_gapped_index(ind_ungapped, species, gene_name):
     return ind + 1
 
 # Gap a sequence given the closest gapped reference
-# A bit simplistic: will truncate to the shortest of the two sequences (excluding gaps)
+
 def gap_sequence(seq, ref):
     i_seq = iter(list(seq))
     i_ref = iter(list(ref))
@@ -134,6 +134,14 @@ def gap_sequence(seq, ref):
                 ret += next(i_seq)
             else:
                 ret += '.'
+    except StopIteration:
+        pass
+
+    # if the sequence is longer than the ref, need to add on trailing nucs
+
+    try:
+        while(True):
+            ret += next(i_seq)
     except StopIteration:
         pass
 

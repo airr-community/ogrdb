@@ -146,8 +146,7 @@ class SeqNameCol(StyledCol):
     def td_contents(self, item, attr_list):
         ret = ''
         if item.sequence_details:
-            ret += '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View Sequence"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>&nbsp;' \
-                    % (format_nuc_sequence(item.sequence_details.nt_sequence, 50), item.sequence_details.sequence_id, format_fasta_sequence(item.sequence_details.sequence_id, item.sequence_details.nt_sequence, 50))
+            ret += popup_seq_button(item.sequence_details.sequence_id, item.sequence_details.nt_sequence, item.sequence_details.nt_sequence_gapped)
             ret += item.sequence_details.sequence_id
 
         return ret

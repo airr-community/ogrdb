@@ -13,10 +13,13 @@ from flask import flash
 from wtforms import ValidationError
 from sqlalchemy.exc import OperationalError
 from db.genotype_tables import *
+from imgt.imgt_ref import gap_sequence
+from imgt.imgt_ref import get_imgt_gapped_reference_genes
 
 light_loci = ['IGK', 'IGL', 'TRA', 'TRG']
 
 def file_to_genotype(name, desc, db):
+    refs = get_imgt_gapped_reference_genes()
     line = 2
     try:
         fi = open(name, 'r')
@@ -68,6 +71,16 @@ def file_to_genotype(name, desc, db):
 
             if has_data:
                 rec.description_id = desc.id
+
+                # For the time being, we'll gap V records that don't have a gapped sequence provided.
+                # We can phase this out after a few months, once we're confident that everyone is using an ogrdbstats script which provides gapped sequences
+
+                if desc.sequence_type == 'V' and not rec.nt_sequence_gapped:
+                    if rec.sequence_id in refs[desc.submission.species]:
+                        rec.nt_sequence_gapped = gap_sequence(rec.nt_sequence, refs[desc.submission.species][rec.sequence_id].upper())
+                    else:
+                        rec.nt_sequence_gapped = gap_sequence(rec.nt_sequence, refs[desc.submission.species][rec.closest_reference].upper())
+
                 db.session.add(rec)
                 db.session.commit()
 

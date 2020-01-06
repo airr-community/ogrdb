@@ -497,7 +497,7 @@ from db.view_table import ViewCol
         fo.write('def make_%s_full_table(results, segment, private = False, classes=()):\n    t=create_table(base=%s_full_table)\n' % (section,section))
 
         for k, v in schema[section]['properties'].items():
-            if 'segments' in v:
+            if 'segments' in v and 'tableview' in v:
                 els = ['"' + x + '"' for x in v['segments']]
                 fo.write('    if segment not in %s:\n' % ('[' + ', '.join(els) + ']'))
                 fo.write('        t._cols["%s"].show = False\n' % k)

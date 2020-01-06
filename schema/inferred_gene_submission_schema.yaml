@@ -765,6 +765,11 @@ Genotype:
             description: The consensus sequence provided by the inference tool
             label: NT Sequence
             nonblank: true
+        nt_sequence_gapped:
+            type: IUPAC nucleotide notation
+            description: IMGT-gapped sequence (V-gene only)
+            label: Gapped NT Sequence
+            segments: ['VH', 'VL']
         description_id:
             type: integer
             hide: true

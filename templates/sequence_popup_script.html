@@ -3,27 +3,71 @@
       var button = $(event.relatedTarget); // Button that triggered the modal
       var sequence = button.data('sequence'); // Extract info from data-* attributes
       var name = button.data('name'); // Extract info from data-* attributes
+      var sequence_gapped = button.data('gapped-sequence');
+      var sequence_trans = button.data('trans')
       var fasta = button.data('fa');
+      var fasta_gapped = button.data('gapped-fa');
+      var fasta_trans = button.data('trans-fa');
       var modal = $(this);
-      document.querySelector('#modal-sequence').textContent = sequence;
+      document.querySelector('#modal-sequence').innerHTML = sequence;
       modal.find('.modal-title').text(name);
-      state = 'numbered';
-      $( "#modal-fa" ).html('FASTA')
+      var state = 'numbered';
+      var g_state = 0;
+      var g_next_text = ["Gapped", "Translated", "Ungapped"]
+
+      $( "#modal-ga" ).html(g_next_text[g_state]);
+
+      if(sequence_gapped) {
+        $( "#modal-ga" ).show()
+      } else {
+        $( "#modal-ga" ).hide()
+      }
+
+      function display_text() {
+        if(state == 'fasta') {
+            if(g_state == 0) {
+                document.querySelector('#modal-sequence').innerHTML = fasta;
+            } else if(g_state == 1) {
+                document.querySelector('#modal-sequence').innerHTML = fasta_gapped;
+            } else {
+                document.querySelector('#modal-sequence').innerHTML = fasta_trans;
+            }
+
+        } else {
+            if(g_state == 0) {
+                document.querySelector('#modal-sequence').innerHTML = sequence;
+            } else if(g_state == 1) {
+                document.querySelector('#modal-sequence').innerHTML = sequence_gapped;
+            } else {
+                document.querySelector('#modal-sequence').innerHTML = sequence_trans;
+            }
+        }
+      }
+
+      $( "#modal-fa" ).html('FASTA');
 
       $( "#modal-fa" ).click(function() {
         if(state == 'numbered') {
-            document.querySelector('#modal-sequence').textContent = fasta;
-            $( "#modal-fa" ).html('Formatted')
+            $("#modal-fa").html('Formatted');
             state = 'fasta'
         } else {
-            document.querySelector('#modal-sequence').textContent = sequence;
-            $( "#modal-fa" ).html('FASTA')
+            $( "#modal-fa" ).html('FASTA');
             state = 'numbered'
         }
+        display_text()
       });
-    })
+
+
+      $( "#modal-ga" ).click(function() {
+        g_state = (g_state + 1) % 3;
+        $("#modal-ga").html(g_next_text[g_state]);
+        display_text()
+      });
+
+    });
 
     $('#seqModal').on('hide.bs.modal', function (event) {
         $( "#modal-fa" ).off('click');
+        $( "#modal-ga" ).off('click');
     })
 </script>
