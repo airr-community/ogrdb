@@ -55,18 +55,26 @@ def init():
 def main():
     init()
 
-
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.LINK_TEXT,'Login')))
     driver.find_element_by_link_text("Login").click()
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.NAME,'email')))
     driver.find_element_by_name("email").send_keys('fred@lees.org.uk')
     driver.find_element_by_name("password").send_keys('123456')
     driver.find_element_by_name("submit").click()
 
+
+
+    time.sleep(1)
     driver.find_element_by_link_text("Statistics").click()
     sub_download_stats()
+    time.sleep(1)
     driver.find_element_by_link_text("Sequences").click()
     sub_add_and_process()
 
 def sub_download_stats():
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'create')))
     driver.find_element_by_id("create").click()
     driver.find_element_by_id("download").click()
@@ -74,7 +82,9 @@ def sub_download_stats():
 
 def sub_add_and_process():
     # Create a new sequence
+    time.sleep(1)
     driver.find_element_by_link_text("New Sequence").click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'new_name')))
     name = random_proper()
     driver.find_element_by_id("new_name").send_keys(name)
@@ -99,11 +109,14 @@ def sub_add_and_process():
 
     # Edit the new sequence and add the IMGT alignment
 
+    time.sleep(1)
     driver.find_element_by_link_text("Sequences").click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
     element = driver.find_element_by_link_text(name)
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'coding_seq_imgt')))
     driver.find_element_by_name("coding_seq_imgt").send_keys("""caggtgcagctggtgcagtctggggct---gaggtgaagaagcctggggcctcagtgaag
 gtctcctgcaaggcttctggatacaccttc------------accggctactatatgcac
@@ -115,9 +128,11 @@ gtgtattactgtgcgagaga""")
     # Add another inferred sequence from the edit screen
 
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
     driver.find_element_by_id('add_inference_btn').click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'submission_id')))
     time.sleep(3)
     sel_sub = Select(driver.find_element_by_id('submission_id'))
@@ -138,6 +153,7 @@ gtgtattactgtgcgagaga""")
 
     # Check the number of inferred sequences and delete one
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
     x = driver.find_elements(By.XPATH, '//*[contains(@class, "del_inf_button")]')
     assert(len(x) == 2)
@@ -147,6 +163,7 @@ gtgtattactgtgcgagaga""")
 
     # View an alignment
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'aln_view'))).click()
     time.sleep(3)
 
@@ -163,18 +180,21 @@ gtgtattactgtgcgagaga""")
     insts = [random_proper() + ' ' + random_proper() for i in range(nitems) ]
     orcids = ['0000-0001-9834-6840' if i < (nitems/2) else '' for i in range(nitems)  ]
     for i in range(nitems):
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'ack_name')))
         driver.find_element_by_id("ack_name").send_keys(names[i])
         driver.find_element_by_id("ack_institution_name").send_keys(insts[i])
         driver.find_element_by_id("ack_ORCID_id").send_keys(orcids[i])
         driver.find_element_by_id("add_ack").click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
     assert(len(x) == nitems+prev_items)
     nacks = len(x)
     i = random.randint(0, nitems-1)
     x[i].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
     assert(len(x) == nacks-1)
@@ -182,52 +202,67 @@ gtgtattactgtgcgagaga""")
     # Add genomic evidence
 
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genomic_btn'))).click()
     time.sleep(3)
     wait.until(EC.element_to_be_clickable((By.ID, 'accession')))
     driver.find_element_by_id('accession').send_keys('MK321684')
     driver.find_element_by_id('create').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genomic_btn')))
 
     # Add a note
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-notes"]'))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'notes')))
     driver.find_element_by_id('notes').send_keys(random_chars(size=random.randint(50,500), chars=string.ascii_lowercase + ' '))
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'save_draft_btn')))
     driver.find_element_by_id('save_draft_btn').click()
 
     # View the draft, and pop up both sequence views
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
     driver.find_element_by_link_text(name).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'seq_view'))).click()
     time.sleep(3)
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
     time.sleep(3)
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'seq_coding_view'))).click()
     time.sleep(3)
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
     time.sleep(3)
 
     # Go back to Edit again, and publish
 
     driver.find_element_by_link_text("Sequences").click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
     element = driver.find_element_by_link_text(name)
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'publish_btn')))
     driver.find_element_by_id('publish_btn').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Completed')
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'history_btn'))).click()
 
     # New draft
 
+    time.sleep(3)
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button" % name).click()
     time.sleep(3)
     el = driver.find_element(By.XPATH, "//button[@class='btn btn-warning' and contains(., 'New Draft')]")
@@ -238,9 +273,12 @@ gtgtattactgtgcgagaga""")
     time.sleep(3)
     element = driver.find_element_by_link_text(name)
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'publish_btn')))
     driver.find_element_by_id('publish_btn').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Completed')
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'history_btn'))).click()
 
     # Change IMGT name
@@ -262,6 +300,7 @@ gtgtattactgtgcgagaga""")
 
     # Download sequences
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'dl-ungapped')))
     driver.find_element_by_id("dl-ungapped").click()
     driver.find_element_by_id("dl-airr").click()

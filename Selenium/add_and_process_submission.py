@@ -35,7 +35,7 @@ host_address = "http://localhost:5000/"
 def init():
     global host_address
     # Create a new instance of the Firefox driver
-    #driver.implicitly_wait(5)
+    # driver.implicitly_wait(5)
 
     # go to the home page
     if len(sys.argv) > 1:
@@ -54,19 +54,28 @@ def init():
 def main():
     init()
 
-
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.LINK_TEXT,'Login')))
     driver.find_element_by_link_text("Login").click()
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.NAME,'email')))
     driver.find_element_by_name("email").send_keys('fred@lees.org.uk')
     driver.find_element_by_name("password").send_keys('123456')
     driver.find_element_by_name("submit").click()
 
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.LINK_TEXT,'Submissions')))
     driver.find_element_by_link_text("Submissions").click()
+    time.sleep(1)
 #    for i in range(1,10):
     sub_add_and_process()
 
 def sub_add_and_process():
+    time.sleep(1)
+    wait.until(EC.element_to_be_clickable((By.LINK_TEXT,'New Submission')))
     driver.find_element_by_link_text("New Submission").click()
     driver.find_element_by_id("species").submit()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
     x = driver.find_elements(By.CLASS_NAME, "form-control-static")
     sub_id = x[0].text
@@ -103,31 +112,37 @@ def sub_edit_ack():
     n_pmids = random.randint(2, len(pmids)-1)
 
     for i in range(n_pmids):
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'pubmed_id')))
         driver.find_element_by_id("pubmed_id").send_keys(pmids[i])
         driver.find_element_by_id("add_pubmed").click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "pubmed_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "pubmed_del_")]')
     assert(len(x) == n_pmids)
     i = random.randint(0, n_pmids-1)
     x[i].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "pubmed_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "pubmed_del_")]')
     assert(len(x) == n_pmids-1)
 
     for i in range(nitems):
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'ack_name')))
         driver.find_element_by_id("ack_name").send_keys(names[i])
         driver.find_element_by_id("ack_institution_name").send_keys(insts[i])
         driver.find_element_by_id("ack_ORCID_id").send_keys(orcids[i])
         driver.find_element_by_id("add_ack").click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
     assert(len(x) == nitems)
     i = random.randint(0, nitems-1)
     x[i].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH,'//*[contains(@id, "ack_del_")]')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]')
     assert(len(x) == nitems-1)
@@ -139,6 +154,7 @@ def sub_edit_rep(sub_id):
     time.sleep(2)
     driver.find_element_by_xpath('//*[@id="tab-rep"]').click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,"repository_select")))
     Select(driver.find_element_by_id("repository_select")).select_by_visible_text('NCBI SRA')
 #    driver.find_element_by_id("repository_name").send_keys('EBI')
@@ -149,21 +165,26 @@ def sub_edit_rep(sub_id):
 
     driver.find_element_by_name("save_close_btn").click()
     driver.get(host_address + "edit_submission/" + sub_id)
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 
 
 def add_primer_set():
     driver.find_element_by_xpath('//*[@id="tab-pri"]').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_primer_sets')))
     driver.find_element_by_id("add_primer_sets").click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'edit_btn')))
     driver.find_element_by_id("primer_set_name").send_keys(random_chars())
     driver.find_element_by_id("primer_set_notes").send_keys(random_chars())
     driver.find_element_by_id("edit_btn").click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'upload_primer')))
     driver.find_element_by_id("upload_primer").click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'btn-upload')))
     driver.find_element_by_id("sel-file").send_keys("D:\\Research\\ogre\\testfiles\\R1_lim_primers.fasta")
     driver.find_element_by_id("btn-upload").click()
@@ -174,15 +195,19 @@ def add_primer_set():
     foo = len(x)
     assert(len(x) == 20)
     x[random.randint(0, 19)].click()
+    time.sleep(3)
+
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "primers_del_")]')
     assert(len(x) == 19)
     driver.find_element_by_id("primer_name").send_keys(random_proper())
     driver.find_element_by_id("primer_seq").send_keys(random_chars(random.randint(10,30), chars='AGCTRYSWKMBDHVN'))
     driver.find_element_by_id('add_primers').click()
+    time.sleep(3)
     wait.until(EC.element_to_be_clickable((By.ID,'add_primers')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "primers_del_")]')
     assert(len(x) == 20)
     driver.find_element_by_id('close_btn').click()
+    time.sleep(3)
     wait.until(EC.element_to_be_clickable((By.ID,'cancel_btn')))
     driver.find_element_by_id('cancel_btn').click()
 
@@ -193,6 +218,7 @@ def sub_edit_pri():
     for i in range(nitems):
         add_primer_set()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_primer_sets')))
     time.sleep(2)
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "primer_sets_del_")]')
@@ -206,6 +232,7 @@ def sub_edit_pri():
 def sub_edit_notes(sub_id):
     driver.find_element_by_xpath('//*[@id="tab-notes"]').click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'notes_text')))
     driver.find_element_by_id('notes_text').send_keys(random_chars(size=random.randint(50,500), chars=string.ascii_lowercase + ' '))
 
@@ -213,18 +240,22 @@ def sub_edit_notes(sub_id):
 
     driver.find_element_by_name("save_close_btn").click()
     driver.get(host_address + "edit_submission/" + sub_id)
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.NAME,'save_btn')))
 
 
 def sub_edit_inf():
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
 
     nitems = random.randint(3,5)
 
     for _ in range(nitems):
+        time.sleep(1)
         driver.find_element_by_id('add_tools').click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'tool_settings_name')))
         driver.find_element_by_id('tool_settings_name').send_keys(random_proper())
         driver.find_element_by_id('tool_name').send_keys(random_proper())
@@ -232,36 +263,43 @@ def sub_edit_inf():
         driver.find_element_by_id('tool_starting_database').send_keys(random_chars(size=random.randint(50,200), chars=string.ascii_lowercase + ' '))
         driver.find_element_by_id('tool_settings').send_keys(random_chars(size=random.randint(50,500), chars=string.ascii_lowercase + ' '))
         driver.find_element_by_id('save-btn').click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_tool")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-danger'))).click()
     time.sleep(2)
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_tool")]')
     assert(len(x) == nitems-1)
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
     time.sleep(2)
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_tool")]')
     foo = len(x)
     choice = random.randint(0,nitems-2)
     x[choice].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'tool_settings_name')))
     driver.find_element_by_id('tool_settings_name').send_keys(random_proper())
     driver.find_element_by_id('save-btn').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_tools')))
 
 
 def sub_edit_gen():
     driver.find_element_by_xpath('//*[@id="tab-gen"]').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
     nitems = random.randint(2,4)
     for _ in range(nitems):
         driver.find_element_by_id('add_genotype_description').click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'genotype_name')))
         driver.find_element_by_id('genotype_name').send_keys(random_proper())
         driver.find_element_by_id('genotype_subject_id').send_keys(random_chars(size=random.randint(1,4), chars=string.digits))
@@ -275,21 +313,26 @@ def sub_edit_gen():
         driver.find_element_by_id('save_genotype').click()
         time.sleep(3)
         wait.until(EC.element_to_be_clickable((By.ID,'save_close_genotype'))).click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_genotype")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'genotype_name')))
     driver.find_element_by_id('genotype_name').send_keys(random_proper())
     driver.find_element_by_id('save_close_genotype').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "genotype_e/")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'download_genotype')))
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'btn_view_seq'))).click()
     time.sleep(3)
 
@@ -304,6 +347,7 @@ def sub_edit_gen():
 
     driver.find_element_by_id('occ_threshold').send_keys('10000')
     driver.find_element_by_id('update').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'download_genotype')))
     time.sleep(3)
 
@@ -312,6 +356,7 @@ def sub_edit_gen():
     x = driver.find_elements(By.XPATH, '//*[contains(@id, "delete_gen")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., ' Delete ')]"))).click()
     time.sleep(2)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genotype_description')))
@@ -321,6 +366,7 @@ def sub_edit_gen():
 
 def sub_edit_seq():
     driver.find_element_by_xpath('//*[@id="tab-seq"]').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
     nitems = random.randint(2,4)
@@ -329,6 +375,7 @@ def sub_edit_seq():
 
     for _ in range(nitems):
         driver.find_element_by_id('add_inferred_sequence').click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'seq_accession_no')))
         sel = Select(driver.find_element_by_id('genotype_id'))
         opts = sel.options
@@ -356,25 +403,30 @@ def sub_edit_seq():
 
         if random.randint(0,2) > 0:
             driver.find_element_by_id('inferred_extension').click()
+            time.sleep(1)
             wait.until(EC.element_to_be_clickable((By.ID,'ext_3prime')))
             driver.find_element_by_id('ext_3prime').send_keys('acgt')
             driver.find_element_by_id('start_3prime_ext').send_keys('20')
             driver.find_element_by_id('end_3prime_ext').send_keys('23')
 
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'sequence_id')))
         time.sleep(2)
         driver.find_element_by_id('save_sequence').click()
         time.sleep(2)
         wait.until(EC.element_to_be_clickable((By.ID,'save_close_sequence'))).click()
+        time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
     x = driver.find_elements(By.XPATH, '//*[contains(@href, "edit_inferred")]')
     assert(len(x) == nitems)
     x[random.randint(0,nitems-1)].click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'seq_accession_no')))
 #    driver.find_element_by_id('seq_accession_no').send_keys(', MH779622')
     time.sleep(2)
     driver.find_element_by_id('save_close_sequence').click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inferred_sequence')))
 
     time.sleep(3)
@@ -399,25 +451,40 @@ def sub_submit():
 
 
 def sub_review_actions(sub_id):
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, sub_id))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tab-rev"]'))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'complete'))).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Completed')
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'save_btn'))).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, sub_id))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tab-rev"]'))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'ret_review'))).click()
+    time.sleep(1)
 
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Un-Completed')
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'save_btn'))).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, sub_id))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tab-rev"]'))).click()
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'draft'))).click()
 
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'body'))).send_keys('Returned')
+    time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'save_btn'))).click()
 
 
