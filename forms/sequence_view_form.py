@@ -17,7 +17,7 @@ from textile_filter import safe_textile
 
 class GeneDescriptionNotes_table(StyledTable):
     id = Col("id", show=False)
-    notes = StyledCol("Notes", tooltip="Notes")
+    notes = StyledCol("", tooltip="Notes", column_html_attrs={"class": "notes-table-row"})
 
 
 def make_GeneDescriptionNotes_table(results, private = False, classes=()):
@@ -85,11 +85,9 @@ def setup_sequence_view_tables(db, seq, private):
         elif fn == 'coding_seq_imgt':
             if field['value'] is not None and len(field['value']) > 0:
                 if seq.sequence_type == 'V':
-                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt))
+                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt).replace('btn_view_seq', 'seq_coding_view'))
                 else:
-                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, ''))
-#                    field['value'] =  Markup('<button id="seq_coding_view" name="seq_coding_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s"><span class="glyphicon glyphicon-search" data-toggle="tooltip" title="View"></span>&nbsp;</button>' \
-#                        % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
+                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '').replace('btn_view_seq', 'seq_coding_view'))
             else:
                 field['value'] = 'None'
         elif fn == 'release_description':

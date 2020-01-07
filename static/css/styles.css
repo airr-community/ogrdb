@@ -271,6 +271,10 @@ div.menu {
     font-weight: bold;
 }
 
+.notes-table-row {
+    word-break: break-word;
+}
+
 .heading-btn {
     margin-top: 20px;
 }
