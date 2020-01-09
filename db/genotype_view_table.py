@@ -10,9 +10,13 @@ from Bio.Alphabet import generic_dna
 from db.genotype_tables import *
 import sys
 import re
+from db.genotype_db import Genotype
 
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):
+        if not item.nt_sequence:       # e.g. for totals column
+            return ''
+
         imgt_ref = get_imgt_reference_genes()
         imgt_ref_gapped = get_imgt_gapped_reference_genes()
         ref_codon_usage = get_reference_v_codon_usage()
@@ -162,8 +166,12 @@ class SeqCol(StyledCol):
 
 class GenTitleCol(StyledCol):
     def td_contents(selfself, item, attr_list):
-        imgt_ref = get_imgt_reference_genes()
         text = item.sequence_id
+
+        if text == 'Totals':
+            return Markup('<strong>' + text + '</strong>')
+
+        imgt_ref = get_imgt_reference_genes()
         if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             text = '<em>' + text + '</em>'
         if len(item.inferred_sequences) > 0:
@@ -173,10 +181,35 @@ class GenTitleCol(StyledCol):
 
 def setup_gv_table(desc):
     table = make_Genotype_full_table(desc.genotypes, desc.locus, False, classes=['table-bordered'])
+#    table.items = list(table.items)
     table._cols['sequence_id'] = GenTitleCol('Allele name', tooltip='Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)')
     table.rotate_header = True
     table.add_column('nt_sequence', SeqCol('Sequence', tooltip="Click to view or download sequence"))
     table.table_id = 'genotype_table'
+
+    # Add totals row
+
+    totals = Genotype()
+    totals.sequence_id = 'Totals'
+    totals.sequences = 0
+    totals.unmutated_sequences = 0
+    lh_seqs = 0
+
+    for gen in desc.genotypes:
+        try:
+            if gen.haplotyping_ratio and ':' in gen.haplotyping_ratio:
+                lh = int(gen.haplotyping_ratio.split(':')[0])
+            totals.sequences += gen.sequences
+            totals.unmutated_sequences += gen.unmutated_sequences
+            lh_seqs += lh * gen.sequences / 100
+        except:
+            pass
+
+    if lh_seqs > 0:
+        lh_prop = round(100 * lh_seqs / totals.sequences)
+        totals.haplotyping_ratio = "%d:%d" % (lh_prop, (100-lh_prop))
+    totals.assigned_unmutated_frequency = round(100 * totals.unmutated_sequences / totals.sequences, 2)
+    table.items.append(totals)
 
     inferred_seqs = []
 
@@ -186,7 +219,7 @@ def setup_gv_table(desc):
     novel = []
     imgt_ref = get_imgt_reference_genes()
     for item in desc.genotypes:
-        if item.sequence_id not in imgt_ref[item.genotype_description.submission.species] or item.sequence_id in inferred_seqs:
+        if item.sequence_id != 'Totals' and (item.sequence_id not in imgt_ref[item.genotype_description.submission.species] or item.sequence_id in inferred_seqs):
             novel.append(item)
 
     inferred_table = make_Genotype_novel_table(novel, False, classes = ['table-bordered'])
