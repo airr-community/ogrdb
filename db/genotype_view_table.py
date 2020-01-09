@@ -146,14 +146,14 @@ class SeqCol(StyledCol):
                     q_hotspots= []
 
                     for p in ref_qpos:
-                        if ref_nt[p+1] != seq_nt[p+1]:
+                        if seq_nt[p+1] == 'C':
                             q_hotspots.append("%d" % find_gapped_index(p+1, item.genotype_description.submission.species, item.closest_reference))
                             annots.append((p+1, 1, 'G/C SNP in RGYW hotspot'))
 
                     ref_qpos = [m.start() for m in re.finditer('[AT][AG][C][CT]', str(ref_nt))]
 
                     for p in ref_qpos:
-                        if ref_nt[p+2] != seq_nt[p+2]:
+                        if seq_nt[p+2] == 'G':
                             q_hotspots.append("%d" % find_gapped_index(p+2, item.genotype_description.submission.species, item.closest_reference))
                             annots.append((p+2, 1, 'C/G SNP in WRCY hotspot'))
 
