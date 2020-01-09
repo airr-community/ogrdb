@@ -93,8 +93,9 @@ def sub_add_and_process():
 
 
 def sub_del(sub_id):
+    time.sleep(3)
     driver.find_element_by_id(sub_id).click()
-    time.sleep(2)
+    time.sleep(3)
     el = driver.find_element_by_class_name('btn-danger')
     time.sleep(2)
     el.click()
@@ -245,6 +246,7 @@ def sub_edit_notes(sub_id):
 
 
 def sub_edit_inf():
+    time.sleep(1)
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
 
     time.sleep(1)

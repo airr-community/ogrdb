@@ -292,8 +292,9 @@ gtgtattactgtgcgagaga""")
     # Withdraw
 
     time.sleep(3)
-    wait.until(EC.element_to_be_clickable((By.XPATH,"//*[text()[.='%s']]/following-sibling::button[3]" % name))).click()
-    #driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[3]" % name).click()
+    wait.until(EC.element_to_be_clickable((By.XPATH,"//*[text()[.='%s']]/following-sibling::button[3]" % name)))
+    time.sleep(2)
+    driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[3]" % name).click()
     time.sleep(3)
     el = driver.find_element(By.XPATH, "//button[@class='btn btn-danger' and contains(., 'Withdraw')]")
     el.click()
