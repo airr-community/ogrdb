@@ -357,3 +357,9 @@ code {
 .table {
     word-break: break-all;
 }
+
+.highlight-nuc {
+    background-color: black;
+    color: white;
+
+}

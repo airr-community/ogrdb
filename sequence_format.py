@@ -26,7 +26,7 @@ def apply_annots(frag, startpos, ra, gapped):
     for i in range(len(frag)):
         if not gapped or (frag[i] != '.' and frag[i] != ' '):
             if pos in ra:
-                ret += "<span data-toggle='tooltip' title='%s'><b>" % ra[pos] + frag[i] + "</b></span>"
+                ret += "<span class='highlight-nuc' data-toggle='tooltip' title='%s'>" % ra[pos] + frag[i] + "</span>"
             else:
                 ret += frag[i]
             pos += 1
