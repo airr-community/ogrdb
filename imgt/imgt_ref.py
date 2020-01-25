@@ -127,13 +127,20 @@ def gap_sequence(seq, ref):
     i_ref = iter(list(ref))
     ret = ''
 
+    # if reference is partial at the 5' end, pass nucleotides through until we reach the first 'real' reference position
+    five_gapped = True
+
     try:
         while(True):
             r = next(i_ref)
             if r != '.':
+                five_gapped = False
                 ret += next(i_seq)
             else:
-                ret += '.'
+                if five_gapped:
+                    ret += next(i_seq)
+                else:
+                    ret += '.'
     except StopIteration:
         pass
 
