@@ -17,6 +17,7 @@ imgt_reference_genes = None
 imgt_gapped_reference_genes = None
 igpdb_genes = None
 vdjbase_genes = None
+imgt_config = None
 
 # indexed by species and then by codon (first codon = 1), lists the residues found in that location in the reference set
 reference_v_codon_usage = None
@@ -27,51 +28,52 @@ def init_imgt_ref():
     global imgt_reference_genes
     global imgt_gapped_reference_genes
     global reference_v_codon_usage
+    global imgt_config
 
     with open('imgt/track_imgt_config.yaml', 'r') as fc:
-        config = yaml.load(fc, Loader=yaml.FullLoader)
+        imgt_config = yaml.load(fc, Loader=yaml.FullLoader)
 
-    species = config['species']
+    species = imgt_config['species']
 
     imgt_reference_genes = None
-    if os.path.exists(config['imgt_ref_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(config['ogre_ref_file'])) < os.path.getmtime(config['imgt_ref_pickle']):
+    if os.path.exists(imgt_config['imgt_ref_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(imgt_config['ogre_ref_file'])) < os.path.getmtime(imgt_config['imgt_ref_pickle']):
         try:
-            imgt_reference_genes = pickle.load(open(config['imgt_ref_pickle'], "rb"))
+            imgt_reference_genes = pickle.load(open(imgt_config['imgt_ref_pickle'], "rb"))
         except:
             imgt_reference_genes = None
-            app.logger.error("Error reading %s: rebuilding" % config['imgt_ref_pickle'])
+            app.logger.error("Error reading %s: rebuilding" % imgt_config['imgt_ref_pickle'])
 
     if imgt_reference_genes is None:
         try:
-            imgt_reference_genes = read_reference(config['ogre_ref_file'], species)
+            imgt_reference_genes = read_reference(imgt_config['ogre_ref_file'], species)
             imgt_reference_genes['Test'] = imgt_reference_genes['Human']
-            pickle.dump(imgt_reference_genes, open(config['imgt_ref_pickle'], "wb"))
+            pickle.dump(imgt_reference_genes, open(imgt_config['imgt_ref_pickle'], "wb"))
         except:
             app.logger.error("Error parsing IMGT reference file: %s" % sys.exc_info()[0])
 
     imgt_gapped_reference_genes = None
-    if os.path.exists(config['imgt_gapped_ref_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(config['gapped_ogre_ref_file'])) < os.path.getmtime(config['imgt_gapped_ref_pickle']):
+    if os.path.exists(imgt_config['imgt_gapped_ref_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(imgt_config['gapped_ogre_ref_file'])) < os.path.getmtime(imgt_config['imgt_gapped_ref_pickle']):
         try:
-            imgt_gapped_reference_genes = pickle.load(open(config['imgt_gapped_ref_pickle'], "rb"))
+            imgt_gapped_reference_genes = pickle.load(open(imgt_config['imgt_gapped_ref_pickle'], "rb"))
         except:
             imgt_gapped_reference_genes = None
-            app.logger.error("Error reading %s: rebuilding" % config['imgt_gapped_ref_pickle'])
+            app.logger.error("Error reading %s: rebuilding" % imgt_config['imgt_gapped_ref_pickle'])
 
     if imgt_gapped_reference_genes is None:
         try:
-            imgt_gapped_reference_genes = read_reference(config['gapped_ogre_ref_file'], species)
+            imgt_gapped_reference_genes = read_reference(imgt_config['gapped_ogre_ref_file'], species)
             imgt_gapped_reference_genes['Test'] = imgt_gapped_reference_genes['Human']
-            pickle.dump(imgt_gapped_reference_genes, open(config['imgt_gapped_ref_pickle'], "wb"))
+            pickle.dump(imgt_gapped_reference_genes, open(imgt_config['imgt_gapped_ref_pickle'], "wb"))
         except:
             app.logger.error("Error parsing IMGT gapped file: %s" % sys.exc_info()[0])
 
     reference_v_codon_usage = None
-    if os.path.exists(config['codon_usage_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(config['ogre_ref_file'])) < os.path.getmtime(config['codon_usage_pickle']):
+    if os.path.exists(imgt_config['codon_usage_pickle']) and max(os.path.getmtime('imgt/track_imgt_config.yaml'), os.path.getmtime(imgt_config['ogre_ref_file'])) < os.path.getmtime(imgt_config['codon_usage_pickle']):
         try:
-            reference_v_codon_usage = pickle.load(open(config['codon_usage_pickle'], "rb"))
+            reference_v_codon_usage = pickle.load(open(imgt_config['codon_usage_pickle'], "rb"))
         except:
             reference_v_codon_usage = None
-            app.logger.error("Error reading %s: rebuilding" % config['codon_usage_pickle'])
+            app.logger.error("Error reading %s: rebuilding" % imgt_config['codon_usage_pickle'])
 
     if reference_v_codon_usage is None:
         try:
@@ -82,7 +84,7 @@ def init_imgt_ref():
                 for chain in 'IGHV', 'IGKV', 'IGLV':
                     reference_v_codon_usage[sp][chain] = find_codon_usage(imgt_gapped_reference_genes, sp, chain)
 
-            pickle.dump(reference_v_codon_usage, open(config['codon_usage_pickle'], "wb"))
+            pickle.dump(reference_v_codon_usage, open(imgt_config['codon_usage_pickle'], "wb"))
         except:
             app.logger.error("Error determining germline codon usage: %s" % sys.exc_info()[0])
 
@@ -211,3 +213,6 @@ def get_igpdb_ref():
 
 def get_vdjbase_ref():
     return vdjbase_genes
+
+def get_imgt_config():
+    return imgt_config

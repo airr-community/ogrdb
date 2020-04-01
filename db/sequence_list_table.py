@@ -1,12 +1,12 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
 from flask import url_for
 from copy import deepcopy
-
+from imgt.imgt_ref import get_imgt_config
 from db.styled_table import *
 from db.gene_description_db import *
 
@@ -48,12 +48,30 @@ class SequenceListActionCol(StyledCol):
 
         return ''.join(fmt_string)
 
+
+class SequenceListIMGTCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        if item.imgt_name:
+            imgt_config = get_imgt_config()
+            imgt_species = {v['alias']: k for k, v in imgt_config['species'].items()}
+            fmt_string = '<a href="http://www.imgt.org/IMGTrepertoire/Proteins/alleles/index.php?species=%s&group=%s%s&gene=%s">%s</a>' % (imgt_species[item.organism], item.locus, item.sequence_type, item.imgt_name.split('*')[0], item.imgt_name)
+        else:
+            fmt_string = ''
+
+        return fmt_string
+
+
 def setup_sequence_list_table(results, current_user):
     table = make_GeneDescription_table(results)
     for item in table.items:
         item.viewable = item.can_see(current_user)
         item.editable = item.can_edit(current_user)
         item.draftable = item.can_draft(current_user)
+
+    del table._cols['imgt_name']
+    table.add_column('imgt_name', SequenceListIMGTCol('Sequence Name'))
+    table._cols.move_to_end('imgt_name', last=False)
+
     table.add_column('sequence_name', SequenceListActionCol('Sequence Name'))
     table._cols.move_to_end('sequence_name', last=False)
     return table
