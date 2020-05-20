@@ -31,7 +31,7 @@ Flask-Table==0.5.0
 Flask-WTF==0.14.2
 future==0.18.2
 html5lib==1.0.1
-httplib2==0.15.0
+httplib2==0.18.0
 idna==2.8
 imagesize==1.2.0
 itsdangerous==1.1.0
