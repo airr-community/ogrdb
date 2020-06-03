@@ -45,7 +45,7 @@ class imgtNameApi(Resource):
                 'coding_seq_imgt': gapped
             }
         else:
-            return 404, 'Not found'
+            return 'Not found', 404
 
 @ns.route('/iarc/<string:species>')
 @api.response(404, 'Not found')
@@ -70,7 +70,7 @@ class iarcSetApi(Resource):
         imgt_ref = get_imgt_reference_genes()
 
         if species not in imgt_ref:
-            return 404, 'Not found'
+            return 'Not found', 404
 
         all_species = db.session.query(Committee.species).all()
         all_species = [s[0] for s in all_species]
