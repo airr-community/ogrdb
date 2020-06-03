@@ -1,10 +1,10 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from flask import Flask, render_template, request, redirect, flash, url_for, Response
+from flask import Flask, render_template, request, redirect, flash, url_for, Response, Blueprint
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -126,6 +126,17 @@ from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, init_vdjbase_ref, get_i
 init_imgt_ref()
 init_igpdb_ref()
 init_vdjbase_ref()
+
+# Initialise REST API
+
+from api.restplus import api
+from api.sequence.sequence import ns as sequence
+
+blueprint = Blueprint('api', __name__, url_prefix='/api')
+api.init_app(blueprint)
+api.add_namespace(sequence)
+app.register_blueprint(blueprint)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

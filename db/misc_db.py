@@ -1,10 +1,10 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-# ORM definitions for misclellaneous non schema generated tables
+# ORM definitions for miscellaneous non schema generated tables
 
 from app import db
 
