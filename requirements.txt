@@ -35,7 +35,7 @@ httplib2==0.15.0
 idna==2.8
 imagesize==1.2.0
 itsdangerous==1.1.0
-Jinja2==2.10.3
+Jinja2==2.11.3
 limits==1.4.1
 Mako==1.1.0
 MarkupSafe==1.1.1
