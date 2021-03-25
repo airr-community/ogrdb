@@ -54,7 +54,7 @@ pyparsing==2.4.6
 python-dateutil==2.8.1
 python-editor==1.0.4
 pytz==2019.3
-PyYAML==5.2
+PyYAML==5.4
 recommonmark==0.6.0
 requests==2.22.0
 selenium==3.141.0
