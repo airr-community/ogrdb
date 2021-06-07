@@ -17,7 +17,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Build ORM models, Forms and Templates from the germline schema.')
     parser.add_argument('schemafile', help='Schema file (.yaml)')
     parser.add_argument('markupfile', help='Markup file (.yaml)')
-    parser.add_argument('airrfile', help='AIRR Schema file (.yaml)') # ../airr-standards/specs/airr-schema.yaml
+    parser.add_argument('airrfile', help='AIRR Schema file (.yaml)') # ../airr-standards/specs/airr-schema-openapi3.yaml
     args = parser.parse_args()
 
     schema =  yaml.load(open(args.schemafile, 'r'), Loader=yamlordereddictloader.Loader)
@@ -37,25 +37,31 @@ def main(argv):
     write_flaskform(schema, 'Repertoire', 'forms/repertoire_form.py', True)
     write_inp(schema, 'Repertoire', 'templates/repertoire_form.html')
 
+    # TODO: The execution of an InferenceTool is related to DataProcessing
     write_model(schema, 'InferenceTool', 'db/inference_tool_db.py')
     write_flaskform(schema, 'InferenceTool', 'forms/inference_tool_form.py')
     write_inp(schema, 'InferenceTool', 'templates/inference_tool_form.html')
+
     write_model(schema, 'Genotype', 'db/genotype_db.py')
     write_genotype_tables(schema, 'Genotype', 'db/genotype_tables.py')
     write_model(schema, 'GenotypeDescription', 'db/genotype_description_db.py')
     write_flaskform(schema, 'GenotypeDescription', 'forms/genotype_description_form.py')
     write_inp(schema, 'GenotypeDescription', 'templates/genotype_description_form.html')
+
+    # TODO: from AIRR
     write_model(schema, 'InferredSequence', 'db/inferred_sequence_db.py')
     write_flaskform(schema, 'InferredSequence', 'forms/inferred_sequence_form.py')
     write_inp(schema, 'InferredSequence', 'templates/inferred_sequence_form.html')
+
     write_model(schema, 'JournalEntry', 'db/journal_entry_db.py')
     write_flaskform(schema, 'JournalEntry', 'forms/journal_entry_form.py')
     write_inp(schema, 'JournalEntry', 'templates/journal_entry_form.html')
     write_model(schema, 'NotesEntry', 'db/notes_entry_db.py')
     write_flaskform(schema, 'NotesEntry', 'forms/notes_entry_form.py')
     write_inp(schema, 'NotesEntry', 'templates/notes_entry_form.html')
-    write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
+
     # TODO: from AIRR
+    write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
     write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
     write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
 
