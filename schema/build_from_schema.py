@@ -11,14 +11,17 @@ import yamlordereddictloader
 import argparse
 import sys
 import os.path
+import airr
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Build ORM models, Forms and Templates from the germline schema.')
     parser.add_argument('schemafile', help='Schema file (.yaml)')
     parser.add_argument('markupfile', help='Markup file (.yaml)')
+    parser.add_argument('airrfile', help='AIRR Schema file (.yaml)') # ../airr-standards/specs/airr-schema.yaml
     args = parser.parse_args()
 
     schema =  yaml.load(open(args.schemafile, 'r'), Loader=yamlordereddictloader.Loader)
+    airr_schema =  yaml.load(open(args.airrfile, 'r'), Loader=yamlordereddictloader.Loader)
     #markup =  yaml.load(open(args.markupfile, 'r'), Loader=yamlordereddictloader.Loader)
     #schema = merge_markup(schema, markup)
 
@@ -30,8 +33,10 @@ def main(argv):
     write_model(schema, 'Repertoire', 'db/repertoire_db.py', True)
     write_flaskform(schema, 'PubId', 'forms/repertoire_form.py')
     write_flaskform(schema, 'Acknowledgements', 'forms/repertoire_form.py', True)
+    # TODO: from AIRR
     write_flaskform(schema, 'Repertoire', 'forms/repertoire_form.py', True)
     write_inp(schema, 'Repertoire', 'templates/repertoire_form.html')
+
     write_model(schema, 'InferenceTool', 'db/inference_tool_db.py')
     write_flaskform(schema, 'InferenceTool', 'forms/inference_tool_form.py')
     write_inp(schema, 'InferenceTool', 'templates/inference_tool_form.html')
@@ -50,8 +55,10 @@ def main(argv):
     write_flaskform(schema, 'NotesEntry', 'forms/notes_entry_form.py')
     write_inp(schema, 'NotesEntry', 'templates/notes_entry_form.html')
     write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
+    # TODO: from AIRR
     write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
     write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
+
     write_model(schema, 'GenomicSupport', 'db/gene_description_db.py', True)
     write_flaskform(schema, 'GenomicSupport', 'forms/gene_description_form.py', True)
     write_model(schema, 'DupeGeneNote', 'db/dupe_gene_note_db.py')
