@@ -1,13 +1,12 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
 # Functions for formatting sequences for display
 import itertools
 from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
 from Bio.pairwise2 import format_alignment, align
 
 
@@ -79,7 +78,7 @@ def format_imgt_v(seq, width, ra=None):
         if '.' in cd or '-' in cd or len(cd) < 3:
             fmt_aa += '    '
         else:
-            fmt_aa += ' ' + str(Seq(cd, IUPAC.unambiguous_dna).translate()) + '  '
+            fmt_aa += ' ' + str(Seq(cd).translate()) + '  '
 
     # this will deliberately truncate at the end of the shortest line - which will never be imgt_leg or imgt_num unless the sequence is longer than it should be...
     res = splitlines(imgt_leg + '\n' + imgt_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0).split('\n')
@@ -102,7 +101,7 @@ def format_translated_fasta(name, seq, width):
         if '.' in cd or '-' in cd or len(cd) < 3:
             tr_seq += '.'
         else:
-            tr_seq += str(Seq(cd, IUPAC.unambiguous_dna).translate())
+            tr_seq += str(Seq(cd).translate())
 
     return format_fasta_sequence(name, tr_seq, width)
 

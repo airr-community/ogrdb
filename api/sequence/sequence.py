@@ -1,7 +1,7 @@
 # Services related to vdjbase repseq-based data sets
 
 from flask import request
-from flask_restplus import Resource, reqparse, fields, marshal, inputs
+from flask_restx import Resource, reqparse, fields, marshal, inputs
 from api.restplus import api
 from db.gene_description_db import make_GeneDescription_view
 from werkzeug.exceptions import BadRequest

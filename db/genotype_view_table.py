@@ -1,12 +1,11 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
 from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_vdjbase_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
 from Bio import pairwise2, Seq
-from Bio.Alphabet import generic_dna
 from db.genotype_tables import *
 import sys
 import re
@@ -102,7 +101,7 @@ class SeqCol(StyledCol):
                         try:
                             q_codons = []
                             ref_aa_gapped = imgt_ref_gapped[item.genotype_description.submission.species][item.closest_reference].upper().translate(gap='.')
-                            seq_aa = Seq(item.nt_sequence.upper(), generic_dna).translate()
+                            seq_aa = Seq(item.nt_sequence.upper()).translate()
 
                             seq_aa_gapped = gap_sequence(seq_aa, ref_aa_gapped)
                             family = find_family(item.closest_reference)
