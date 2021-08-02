@@ -64,7 +64,6 @@ Submission:
             foreign_key: user.id
             relationship: [owner, User, submissions]
 
-
 NotesEntry:
     discriminator: AIRR
     description: Notes and file attachment
@@ -92,7 +91,6 @@ NotesEntry:
             relationship: [submission, Submission, notes_entries]
             hide: true
 
-
 AttachedFile:
     discriminator: AIRR
     description: File attached to submission or other items
@@ -114,7 +112,6 @@ AttachedFile:
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, attached_files]
             hide: true
-
 
 #Journal Entries
 JournalEntry:
@@ -164,9 +161,6 @@ JournalEntry:
             foreign_key: journal_entry.id
             self-relationship: [children, parent, id]
             hide: true
-
-
-
 
 # Repertoire Dataset
 Repertoire:
@@ -231,7 +225,6 @@ Repertoire:
             foreign_key: submission.id
             relationship: [submission, Submission, repertoire]
 
-
 # PubMed Ids
 PubId:
     discriminator: AIRR
@@ -266,7 +259,6 @@ PubId:
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, pub_ids]
             hide: true
-
 
 # Primers
 PrimerSet:
@@ -314,7 +306,6 @@ Primer:
             relationship: [primer_set, PrimerSet, primers]
             hide: true
 
-
 Acknowledgements:
     discriminator: AIRR
     description: List of individuals whose contribution to this work should be acknowledged
@@ -346,7 +337,6 @@ Acknowledgements:
             hide: true
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, acknowledgements]
-
 
 # Inference Tool
 InferenceTool:
@@ -393,7 +383,7 @@ InferenceTool:
             foreign_key: submission.id
             relationship: [submission, Submission, inference_tools]
 
-            
+
 # Inferred Sequence
 InferredSequence:
     discriminator: AIRR
@@ -506,7 +496,6 @@ RecordSet:
             foreign_key: genotype_description.id
             relationship: [genotype_description, GenotypeDescription, record_set]
 
-
 # Inferred Genotype
 GenotypeDescription:
     discriminator: AIRR
@@ -598,8 +587,6 @@ SampleName:
             hide: true
             foreign_key: genotype_description.id
             relationship: [genotype_description, GenotypeDescription, sample_names]
-
-
 
 Genotype:
     discriminator: AIRR
@@ -1036,9 +1023,7 @@ GeneDescription:
             description: End co-ordinate of 5\' extension (if any) in IMGT numbering
             nonblank: false
 
-
 # A note explaining why a duplicate sequence does not form useful additional evidence for an inferred sequence
-
 DupeGeneNote:
     discriminator: AIRR
     version: 1.4
