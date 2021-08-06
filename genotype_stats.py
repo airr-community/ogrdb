@@ -107,7 +107,7 @@ def generate_stats(form):
 
     genotype_descriptions = []
     seqs = db.session.query(GeneDescription).filter(GeneDescription.status == 'published',
-                                                    GeneDescription.organism == species,
+                                                    GeneDescription.species == species,
                                                     GeneDescription.locus == locus,
                                                     GeneDescription.sequence_type == sequence_type,
                                                     GeneDescription.affirmation_level != '0'

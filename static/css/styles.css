@@ -155,7 +155,13 @@ div._panel div.info-bit > h1, div._panel div.info-bit-last > h1 {
 
 td {
   white-space: normal !important;
-  word-wrap: break-word;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 150px !important;
+}
+
+th {
+  word-wrap: break-word !important;
 }
 
 /*

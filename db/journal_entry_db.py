@@ -20,6 +20,8 @@ class JournalEntry(db.Model):
     submission = db.relationship('Submission', backref = 'journal_entries')
     gene_description_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'journal_entries')
+    germline_set_id = db.Column(db.Integer, db.ForeignKey('germline_set.id'))
+    germline_set = db.relationship('GermlineSet', backref = 'journal_entries')
     parent_id = db.Column(db.Integer, db.ForeignKey('journal_entry.id'))
     children = db.relationship('JournalEntry', backref = backref('parent', remote_side = [id]))
 

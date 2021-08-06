@@ -1,0 +1,5 @@
+Dear IARC {{ germline_set.species }} Committee Member,
+
+The germline set {{  url_for('germline_set', id=germline_set.id, _external=True) }} has been published by {{ reviewer.name }}, with the following notes:
+
+{{ comment }}

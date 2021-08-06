@@ -17,4 +17,4 @@ schema definition. The usual build cycle is:
 <modify inferred_gene_submission_schema.yaml>
 run build_from_schema.py
 flask db migrate
-flask db update
+flask db upgrade

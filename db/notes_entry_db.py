@@ -16,6 +16,8 @@ class NotesEntry(db.Model):
     notes_attachment_filename = db.Column(db.String(1000))
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     submission = db.relationship('Submission', backref = 'notes_entries')
+    germline_set_id = db.Column(db.Integer, db.ForeignKey('germline_set.id'))
+    germline_set = db.relationship('GermlineSet', backref = 'notes_entries')
 
 
 def save_NotesEntry(db, object, form, new=False):   

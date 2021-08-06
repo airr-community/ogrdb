@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -11,17 +11,14 @@ import yamlordereddictloader
 import argparse
 import sys
 import os.path
-import airr
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Build ORM models, Forms and Templates from the germline schema.')
     parser.add_argument('schemafile', help='Schema file (.yaml)')
     parser.add_argument('markupfile', help='Markup file (.yaml)')
-    parser.add_argument('airrfile', help='AIRR Schema file (.yaml)') # ../airr-standards/specs/airr-schema-openapi3.yaml
     args = parser.parse_args()
 
-    schema =  yaml.load(open(args.schemafile, 'r'), Loader=yamlordereddictloader.Loader)
-    airr_schema =  yaml.load(open(args.airrfile, 'r'), Loader=yamlordereddictloader.Loader)
+    schema = yaml.load(open(args.schemafile, 'r'), Loader=yamlordereddictloader.Loader)
     #markup =  yaml.load(open(args.markupfile, 'r'), Loader=yamlordereddictloader.Loader)
     #schema = merge_markup(schema, markup)
 
@@ -64,6 +61,10 @@ def main(argv):
     write_model(schema, 'GeneDescription', 'db/gene_description_db.py')
     write_flaskform(schema, 'GeneDescription', 'forms/gene_description_form.py')
     write_inp(schema, 'GeneDescription', 'templates/gene_description_form.html')
+
+    write_model(schema, 'GermlineSet', 'db/germline_set_db.py')
+    write_flaskform(schema, 'GermlineSet', 'forms/germline_set_form.py')
+    write_inp(schema, 'GermlineSet', 'templates/germline_set_form.html')
 
     write_model(schema, 'GenomicSupport', 'db/gene_description_db.py', True)
     write_flaskform(schema, 'GenomicSupport', 'forms/gene_description_form.py', True)

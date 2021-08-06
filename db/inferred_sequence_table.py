@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -26,7 +26,13 @@ class MessageBodyCol(StyledCol):
 
 class InferredSequenceTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        contents = '<button type="button" class="del_inf_button btn btn-xs text-danger icon_back" data-id="%s" data-inf="%s" id="del_inf_%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
+        contents = '''
+        <button type="button" class="del_inf_button btn btn-xs text-danger icon_back" 
+        data-id="%s" data-inf="%s" id="del_inf_%s_%s" data-toggle="tooltip" 
+        title="Delete">
+        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        </button>
+        ''' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
         return(contents)
 
 class InferredSequenceTableMatchCol(StyledCol):
@@ -39,8 +45,14 @@ class InferredSequenceTableMatchCol(StyledCol):
             colour = 'text-danger'
 
         alignment = report_dupe(item['gene_sequence'], 'Sequence', item['nt_sequence'], item['sequence_name'])
-        content = Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon %s"></span>&nbsp;</button>' \
-            % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
+        content = Markup('''
+        <button id="aln_view" name="aln_view" type="button" 
+        class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
+        data-toggle="tooltip" 
+        title="View">
+        <span class="glyphicon %s"></span>&nbsp;
+        </button>
+        ''' % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
         return(content)
 
 class SubLinkCol(StyledCol):
@@ -84,7 +96,14 @@ def setup_inferred_sequence_table(seqs, gene_desc, action=True):
 
 class SupportingObservationTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        contents = '<button type="button" class="del_obs_button btn btn-xs text-danger icon_back" data-id="%s" data-gid="%s" id="del_obs_%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
+        contents = '''
+        <button type="button" 
+        class="del_obs_button btn btn-xs text-danger icon_back" 
+        data-id="%s" data-gid="%s" id="del_obs_%s_%s" data-toggle="tooltip" 
+        title="Delete">
+        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        </button>
+        ''' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
         return(contents)
 
 
@@ -118,7 +137,7 @@ def setup_supporting_observation_table(seq, action=True):
 class VDJbaseTable(StyledTable):
     vdjbase_name = StyledCol("VDJbase Allele Name", tooltip='Name of matching allele in VDJbase')
     subjects = StyledCol("Subjects", tooltip="Number of subjects in which the allele was observed")
-      
+
 def make_VDJbase_table(results, private = False, classes=()):
     t = create_table(base=VDJbaseTable)
     ret = t(results, classes=classes)
@@ -127,7 +146,7 @@ def make_VDJbase_table(results, private = False, classes=()):
 def setup_vdjbase_matches_table(seq):
     results = []
 
-    if seq.organism == 'Human':
+    if seq.species == 'Human':
         vdjbase_genes = get_vdjbase_ref()
         if seq.coding_seq_imgt is None:
             seq.coding_seq_imgt = ''
@@ -153,8 +172,14 @@ class MatchingSubmissionsTableMatchCol(StyledCol):
 
         # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
         alignment = report_dupe(item['gene_sequence'], 'Sequence', item['nt_sequence'], item['sequence_name'])
-        content = Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon %s"></span>&nbsp;</button>' \
-            % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
+        content = Markup('''
+        <button id="aln_view" name="aln_view" type="button" 
+        class="btn btn-xs %s icon_back" 
+        data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
+        data-toggle="tooltip" title="View">
+        <span class="glyphicon %s"></span>&nbsp;
+        </button>
+        ''' % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
         return(content)
 
 
@@ -163,13 +188,34 @@ class MatchingSubmissionsTableActionCol(StyledCol):
         contents = ''
         if item['add_action']:
             if item['inferred_id'] is None:
-                contents += '<button type="button" class="add_obs_button btn btn-xs text-default icon_back" data-id="%s" data-gid="%s" id="add_obs_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
+                contents += '''
+                <button type="button" 
+                class="add_obs_button btn btn-xs text-default icon_back" 
+                data-id="%s" data-gid="%s" id="add_obs_%s_%s" 
+                data-toggle="tooltip" title="Add">
+                <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                </button>
+                ''' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
             else:
-                contents += '<button type="button" class="add_inf_button btn btn-xs text-default icon_back" data-id="%s" data-inf="%s" id="add_inf_%s_%s" data-toggle="tooltip" title="Add"><span class="glyphicon glyphicon-plus"></span>&nbsp;</button>' % (item['gene_description_id'], item['inferred_id'], item['gene_description_id'], item['inferred_id'])
+                contents += '''
+                <button type="button" 
+                class="add_inf_button btn btn-xs text-default icon_back" 
+                data-id="%s" data-inf="%s" id="add_inf_%s_%s" 
+                data-toggle="tooltip" title="Add">
+                <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                </button>
+                ''' % (item['gene_description_id'], item['inferred_id'], item['gene_description_id'], item['inferred_id'])
 
         notes_icon = 'glyphicon-list-alt' if item['notes_present'] else 'glyphicon-unchecked'
         notes_tooltip = 'View/modify note' if item['notes_present'] else 'Add note'
-        contents += '<button type="button" class="dupe_notes_button btn btn-xs text-default icon_back" data-genotype_id="%s" data-sequence_id="%s" id="add_inf_%s_%s" title="%s"><span class="glyphicon %s"></span>&nbsp;</button>' % (item['genotype_id'], item['gene_description_id'], item['genotype_id'], item['inferred_id'], notes_tooltip, notes_icon)
+        contents += '''
+        <button type="button" 
+        class="dupe_notes_button btn btn-xs text-default icon_back" 
+        data-genotype_id="%s" data-sequence_id="%s" id="add_inf_%s_%s" 
+        title="%s">
+        <span class="glyphicon %s"></span>&nbsp;
+        </button>
+        ''' % (item['genotype_id'], item['gene_description_id'], item['genotype_id'], item['inferred_id'], notes_tooltip, notes_icon)
 
         return contents
 
@@ -240,22 +286,39 @@ def setup_matching_submissions_table(seq, add_action=True):
 
 class GenomicSupportTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        contents = '<button type="button" class="del_genomic_button btn btn-xs text-danger icon_back" data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;</button>' % (item.sequence_id, item.id, item.sequence_id, item.id)
+        contents = '''
+        <button type="button" 
+        class="del_genomic_button btn btn-xs text-danger icon_back" 
+        data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-toggle="tooltip" 
+        title="Delete">
+        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        </button>
+        ''' % (item.sequence_id, item.id, item.sequence_id, item.id)
+        contents += ('''
+        <a href="%s" 
+        class="btn btn-xs text-warning icon_back">
+        <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;
+        </a>
+        ''' % (url_for('seq_edit_genomic', seq_id=item.sequence_id, support_id=item.id)))
         return(contents)
 
-def setup_genomic_support_table(seq):
+def setup_genomic_support_table(seq, action=True):
         table = make_GenomicSupport_table(seq.genomic_accessions)
-        table.add_column('action', GenomicSupportTableActionCol(""))
-        table._cols.move_to_end('action', last=False)
+
+        if action:
+            table.add_column('action', GenomicSupportTableActionCol(""))
+            table._cols.move_to_end('action', last=False)
+
         for item in table.items:
             item.accession = Markup('<a href="%s">%s</a>' % (item.url, item.accession)) if item.url is not None else item.accession
+
         return table
 
 def setup_sequence_edit_tables(db, seq):
     tables = {}
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq)
     tables['supporting_observations'] = setup_supporting_observation_table(seq)
-    tables['genomic_support'] = setup_genomic_support_table(seq)
+    tables['genomic_support'] = setup_genomic_support_table(seq, action=True)
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
     tables['matches'] = setup_matching_submissions_table(seq)
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete_route='delete_sequence_attachment', delete_message='Are you sure you wish to delete the attachment?', download_route='download_sequence_attachment')

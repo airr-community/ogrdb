@@ -4,25 +4,37 @@
 
 {% block c_body %}
 
-    <div class="row pad">
+
 
         <form action="{{ url_for('new_sequence', species=species) }}" method="POST" name="form" class="form-horizontal">
 
-            {{ form.hidden_tag() }}
+            <div class="row pad">
+                {{ form.hidden_tag() }}
 
-            {{ render_field_with_errors(form.new_name, class="form-control") }}
+                {{ render_field_with_errors(form.new_name, class="form-control") }}
+            </div>
 
-            <p class="col-sm-offset-1">Please select the submission and inferred sequence on which this affirmation should be based.</p>
-            {{ render_field_with_errors(form.submission_id, class="form-control") }}
+            <div class="row pad">
+                <div class="col-sm-6 col-sm-offset-3">
+                    <input type="radio" name="record_type" id="rad_submission" value="submission" checked> The sequence will be based on information from a submission </input><br>
+                    <input type="radio" name="record_type" id="rad_genomic" value="genomic"> The sequence will be based on genomic information </input><br>
+                </div>
+            </div>
 
-            {{ render_field_with_errors(form.sequence_name, class="form-control") }}
+            <div class="row pad" id="submit_details">
+                <p class="col-sm-offset-1">Please select the submission and inferred sequence on which this affirmation should be based.</p>
+                {{ render_field_with_errors(form.submission_id, class="form-control") }}
+
+                {{ render_field_with_errors(form.sequence_name, class="form-control") }}
+
+            </div>
 
             <div class="form-group row col-sm-10">
                 {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
                 {{ form.create(class="btn btn-primary") }}
             </div>
         </form>
-    </div>
+
 
 {% endblock %}
 
@@ -45,6 +57,13 @@
                 }
             })
         }
+    });
+
+    $("#rad_submission").change(function(e) {
+       $("#submit_details").show();
+    });
+    $("#rad_genomic").change(function(e) {
+       $("#submit_details").hide();
     });
     </script>
 {% endblock %}

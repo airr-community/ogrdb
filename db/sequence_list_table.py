@@ -54,7 +54,7 @@ class SequenceListIMGTCol(StyledCol):
         if item.imgt_name:
             imgt_config = get_imgt_config()
             imgt_species = {v['alias']: k for k, v in imgt_config['species'].items()}
-            fmt_string = '<a href="http://www.imgt.org/IMGTrepertoire/Proteins/alleles/index.php?species=%s&group=%s%s&gene=%s">%s</a>' % (imgt_species[item.organism], item.locus, item.sequence_type, item.imgt_name.split('*')[0], item.imgt_name)
+            fmt_string = '<a href="http://www.imgt.org/IMGTrepertoire/Proteins/alleles/index.php?species=%s&group=%s%s&gene=%s">%s</a>' % (imgt_species[item.species], item.locus, item.sequence_type, item.imgt_name.split('*')[0], item.imgt_name)
         else:
             fmt_string = ''
 
@@ -69,7 +69,7 @@ def setup_sequence_list_table(results, current_user):
         item.draftable = item.can_draft(current_user)
 
     del table._cols['imgt_name']
-    table.add_column('imgt_name', SequenceListIMGTCol('Sequence Name'))
+    table.add_column('imgt_name', SequenceListIMGTCol('IMGT Name'))
     table._cols.move_to_end('imgt_name', last=False)
 
     table.add_column('sequence_name', SequenceListActionCol('Sequence Name'))

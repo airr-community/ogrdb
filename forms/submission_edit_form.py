@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -252,12 +252,12 @@ def setup_submission_edit_forms_and_tables(sub, db):
         sub.notes_entries.append(NotesEntry())
         db.session.commit()
 
-    submission_form = SubmissionForm(obj = sub)
+    submission_form = SubmissionForm(obj=sub)
     species = db.session.query(Committee.species).all()
     submission_form.species.choices = [(s[0],s[0]) for s in species]
 
-    repertoire_form = RepertoireForm(obj = sub.repertoire[0])
-    notes_entry_form = NotesEntryForm(obj = sub.notes_entries[0])
+    repertoire_form = RepertoireForm(obj=sub.repertoire[0])
+    notes_entry_form = NotesEntryForm(obj=sub.notes_entries[0])
 
     hidden_fields_form = HiddenSubFieldsForm()
 

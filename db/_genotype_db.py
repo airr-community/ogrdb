@@ -16,7 +16,7 @@ class GenotypeMixin:
     def build_duplicate_list(self, db, new_status):
         self.published_duplicates = list()
         if new_status in ['reviewing', 'complete']:
-            genes = db.session.query(GeneDescription).filter(GeneDescription.status.in_(['draft', 'published']), GeneDescription.organism == self.genotype_description.submission.species).all()
+            genes = db.session.query(GeneDescription).filter(GeneDescription.status.in_(['draft', 'published']), GeneDescription.species == self.genotype_description.submission.species).all()
 
             for gene in genes:
                 if gene.sequence_type == self.genotype_description.sequence_type and check_duplicate(self.nt_sequence, gene.sequence.replace('.', ''), self.genotype_description.sequence_type):

@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -8,7 +8,7 @@
 
 from db.gene_description_db import *
 from db.journal_entry_db import *
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table
+from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table
 from forms.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
@@ -28,10 +28,10 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
 
 def setup_sequence_view_tables(db, seq, private):
     sections = {}
-    sections['details'] = ["organism", "sequence_name", "imgt_name", "affirmation_level", "sequence", "coding_seq_imgt", "functional", "inference_type", "alt_names", "paralogs"]
-    sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "l_region_start", "l_region_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "j_rs_start", "j_rs_end"]
+    sections['details'] = ["species", "sequence_name", "imgt_name", "affirmation_level", "sequence", "coding_seq_imgt", "functional", "inference_type", "alt_names", "paralogs"]
+    sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "leader_2_start", "leader_2_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "j_rs_start", "j_rs_end"]
     sections['extension'] = ["inferred_extension", "ext_3prime", "start_3prime_ext", "end_3prime_ext", "ext_5prime", "start_5prime_ext", "end_5prime_ext"]
-    sections['meta'] = ["description_id", "author", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "codon_frame", "j_cdr3_end"]
+    sections['meta'] = ["description_id", "author", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "j_codon_frame", "j_cdr3_end"]
 
     gv = make_GeneDescription_view(seq)
     gv_items = {}
@@ -47,7 +47,7 @@ def setup_sequence_view_tables(db, seq, private):
             if len(gv_items['ext_5prime']['value']) > 0:
                 wanted.extend(['ext_5prime', 'start_5prime_ext', 'end_5prime_ext'])
     else:
-        wanted = ['l_region_start', 'l_region_end']
+        wanted = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end']
 
         if seq.sequence_type == 'V':
             wanted.extend(['v_rs_start', 'v_rs_end', 'utr_5_prime_start', 'utr_5_prime_end', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_3prime', 'start_5prime_ext', 'end_5prime_ext'])
@@ -57,17 +57,17 @@ def setup_sequence_view_tables(db, seq, private):
             wanted.extend(['j_rs_start', 'j_rs_end'])
 
     if seq.sequence_type == 'J':
-        wanted.extend(['j_cdr3_end', 'codon_frame'])
+        wanted.extend(['j_cdr3_end', 'j_codon_frame'])
 
-    optional_fields = ['l_region_start', 'l_region_end', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
+    optional_fields = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
                   'v_rs_start', 'v_rs_end', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end',
-                  'j_rs_start', 'j_rs_end', 'j_cdr3_end', 'codon_frame']
+                  'j_rs_start', 'j_rs_end', 'j_cdr3_end', 'j_codon_frame']
 
     for field in list(gv_items.keys()):
         if field in optional_fields and field not in wanted:
             del(gv_items[field])
 
-    if seq.sequence[-1] == '.':
+    if len(seq.sequence) > 0 and seq.sequence[-1] == '.':
         trailer_text = "A trailing . indicates IARC's opinion that the sequence\n" \
                    "is likely to contain additional 3' nucleotides for which\n" \
                    "there is insufficient evidence to make an affirmation.\n" \
@@ -114,6 +114,7 @@ def setup_sequence_view_tables(db, seq, private):
     tables['acknowledgements'] = make_Acknowledgements_table(seq.acknowledgements)
     tables['notes'] = make_GeneDescriptionNotes_table([{'notes': Markup(safe_textile(seq.notes)), 'id': seq.id}])
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete=False, download_route='download_sequence_attachment')
+    tables['genomic_observations'] = setup_genomic_support_table(seq, action=False)
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []
 

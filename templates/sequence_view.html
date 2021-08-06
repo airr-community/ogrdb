@@ -76,8 +76,18 @@
                 </div>
 
                 <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Genomic Observations</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Genomic observations that support this sequence: </p>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                            {{ tables['genomic_observations'] }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
                     {% if tables['description']['non-coding'].items|length > 0 %}
-                        <h3 class="col-sm-offset-1 col-sm-11">Non-Coding Regions</h3>
+                        <h3 class="col-sm-offset-1 col-sm-11">Non-Core Regions</h3>
                         <div class="form-group col-sm-offset-1">
                             {{ tables['description']['non-coding'] }}
                         </div>

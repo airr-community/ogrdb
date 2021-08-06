@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} New Germline Set - {{ species }}{% endblock %}
+
+{% block c_body %}
+
+    <div class="row pad">
+
+        <form action="{{ url_for('new_germline_set', species=species) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+
+            {{ render_field_with_errors(form.name, class="form-control") }}
+
+            {{ render_field_with_errors(form.locus, class="form-control") }}
+
+            <div class="form-group row col-sm-10">
+                {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
+                {{ form.create(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

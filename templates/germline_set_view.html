@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Germline Set {{ name }}{% endblock %}
+
+{% block c_body %}
+
+    <div>
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation" class="active"><a href="#download" aria-controls="download" role="tab" data-toggle="tab" id="tab-download">Download</a></li>
+            <li role="presentation"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
+            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
+            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
+        </ul>
+
+        {{ form.hidden_tag() }}
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="download">
+                {% if supplementary_files %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Supplementary Files</h3>
+                        <div class="col-sm-8 col-sm-offset-2">
+                            {{ tables['attachments'] }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if notes %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>
+                        <p>{{ notes }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="det">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    <div  class="col-sm-offset-1 col-sm-11">
+                        {{ tables['description'] }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Included Sequences</h3>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                            {{ tables['genes'] }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="ack">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Individuals acknowledged as contributing to this sequence:</p>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            {{ tables['acknowledgements'] }}
+                        </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="history">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
+                    <p class="col-sm-offset-1 col-sm-10">History records log the times and reasons for the publication of each version of this sequence record.</p>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        {% for t in tables['history'] %}
+                            {{ t }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+{% endblock %}

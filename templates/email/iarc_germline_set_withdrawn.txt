@@ -1,0 +1,3 @@
+Dear IARC {{ germline_set.species }} Committee Member,
+
+The published germline set {{  url_for('germline_set', id=germline_set.id, _external=True) }} has been withdrawn by {{ reviewer.name }}.

@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -73,7 +73,8 @@ class EditableTable():
         # Add Optional validators to the instance - using standalone objects so we don't contaminate class validators
 
         for field in self.form:
-            field.validators = deepcopy(field.validators) + [validators.Optional()]
+            field.validators = list(deepcopy(field.validators))
+            field.validators.append(validators.Optional())
 
         self.__clean_form__()
 

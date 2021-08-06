@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block pagetitle %} Edit Germline Set - {{ germline_set_name }}{% endblock %}
+
+{% block c_body %}
+
+<form action="{{ url_for('edit_germline_set', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+    <div>
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation" class="active"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
+            <li role="presentation"><a href="#genes" aria-controls="genes" role="tab" data-toggle="tab" id="tab-genes">Genes</a></li>
+            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
+            <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
+            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
+        </ul>
+
+        {{ form.hidden_tag() }}
+
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="det">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    {% include 'germline_set_form.html' %}
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="genes">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Genes in the reference set</h3>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                           {{ tables['genes'] }}
+                            <input type="submit" value="Add Gene(s)" class="btn btn-default" id="add_gene_btn" name="add_gene_btn" data-action="add_gene">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div role="tabpanel" class="tab-pane" id="ack">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
+                    <p class="col-sm-offset-1 col-sm-11">Please list those individuals who should be acknowledged as contributing to this sequence.</p>
+                        <a name="ack"> </a>
+                        <div class="col-sm-9 col-sm-offset-1">
+                            {% include 'acknowledgement_form.html' %}
+                        </div>
+                </div>
+            </div>
+
+            <div role="notes" class="tab-pane" id="notes">
+                <h3>Notes</h3>
+                <p>These notes will be viewed by users when they go to the download page for the germline set. Please include
+                    any helpful information on background or intended usage. Any attachments you upload will be listed there too.
+                    Please consider attaching files for use with IgBLAST.</p>
+                <p>Formatting available: *<b>bold</b>*, _<i>italic</i>_, * bulleted list</p>
+                {% include 'notes_entry_form.html' %}
+
+                <div class="form-group ">
+                    <div class="col-sm-2 col-sm-offset-3">
+                        <input type="submit" value="Upload" class="btn btn-default tablebutton" id="upload_btn" name="upload_btn">
+                    </div>
+                </div>
+
+                <p>The attachments will be listed in the download section as 'Supplementary Files'. Please use meaningful file names,
+                    and refer to them in the Notes if further explanation is required.</p>
+                 <div class="row">
+                     <div class="col-sm-8 col-sm-offset-2">
+                        {{ tables['attachments'] }}
+                     </div>
+                 </div>
+
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="history">
+                <div class="row">
+                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
+                    <div class="col-sm-10 col-sm-offset-1">
+                        {% for t in tables['history'] %}
+                            {{ t }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="messageModallLabel">New message</h4>
+              </div>
+              <div class="modal-body">
+                  <div class="modal-instructions">
+                  </div>
+                  <br>
+                  {% include 'journal_entry_form.html' %}
+
+                  {{ form.type(class="hidden") }}
+                  {{ form.action(class="hidden") }}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <input type="submit" value="Save" class="btn" name="history_btn" id="history_btn">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <input type="submit" value="Save Draft" class="btn btn-primary col-sm-offset-1" id="save_draft_btn" name="save_draft_btn">
+        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
+                data-header="Publish Germline Set" data-instr="Please provide brief notes on this version"
+                data-title="Germline Set {{ set_id }} - Publish" id="published">Publish</button>
+    </div>
+
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+
+    <script>
+
+    $('.del_gene_button').on('click', function(event) {
+        var set_id = $(this).data('sid');
+        var gene_id = $(this).data('gid');
+        $.ajax({
+            type: "POST",
+            url: '/delete_gene_from_set',
+            data: {
+                'set_id': set_id,
+                'gene_id': gene_id
+            },
+            success: function() {
+                window.location.reload(true);
+            },
+            error: function() {
+                console.log("failure");
+            }
+        })
+    });
+
+    $(document).ready(function ()
+    {
+        {% if form.title.errors or form.body.errors %}
+           $('#publish_btn').trigger('click');
+        {% endif %}
+    });
+
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+    });
+
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    var jump = '';
+
+    skip_to_anchor = function(anchor) {
+        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+    };
+
+    {% if jump %}
+        skip_to_anchor("{{ jump }}");
+    {% else %}
+        if (url.match('#')) {
+            anchor = url.split('#')[1];
+            skip_to_anchor(anchor)
+        }
+    {% endif %}
+
+    $(document).ready(function ()
+    {
+        if(jump != '') {
+            window.location.hash = "";
+            window.location.hash = "#" + jump
+        }
+    });
+
+    $('#messageModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var type = button.data('type');
+        var action = button.data('action');
+        var header = button.data('header');
+        var title = button.data('title');
+        var instructions = button.data('instr');
+        var modal = $(this);
+        modal.find('#type').val(type);
+        modal.find('#action').val(action);
+        modal.find('#title').val(title);
+        modal.find('.modal-title').text(header);
+        modal.find('.modal-instructions').text(instructions);
+
+        if(type == 'note' && action != 'note') {
+            modal.find('#title').hide();
+            modal.find('#title').val('Title');
+            modal.find('[for=title]').hide()
+        }
+
+        diag_class = '';
+        if(button.hasClass("btn-warning")) {
+            modal.addClass("bootstrap-dialog type-warning");
+            modal.find('#save_btn').addClass("btn-warning")
+        } else if(button.hasClass("btn-danger")) {
+            modal.addClass("bootstrap-dialog type-danger");
+            modal.find('#save_btn').addClass("btn-danger")
+        } else {
+            modal.find('#save_btn').addClass("btn-primary")
+        }
+    });
+
+    function delete_warn(route, message) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete Attachment?',
+            message: message,
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Delete',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: route,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+   </script>
+
+{% endblock %}

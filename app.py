@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from flask import Flask, render_template, request, redirect, flash, url_for, Response, Blueprint
+from flask import Flask, render_template, request, redirect, Response, Blueprint
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -76,8 +76,11 @@ from db.genotype_view_table import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
 from db.notes_entry_db import *
+from db.germline_set_db import *
+from db.germline_set_list_table import *
 from db.gene_description_db import *
 from db.inferred_sequence_table import *
+from db.germline_set_table import *
 from db.primer_set_db import *
 from db.primer_db import *
 from db.record_set_db import *
@@ -97,9 +100,13 @@ from forms.cancel_form import *
 from forms.submission_view_form import *
 from forms.journal_entry_form import *
 from forms.sequence_new_form import *
+from forms.germline_set_new_form import *
+from forms.germline_set_gene_form import *
 from forms.gene_description_form import *
 from forms.gene_description_notes_form import *
+from forms.germline_set_form import *
 from forms.sequence_view_form import *
+from forms.germline_set_view_form import *
 from forms.primer_set_edit_form import *
 from forms.genotype_stats_form import *
 from forms.genotype_view_options_form import *
@@ -266,7 +273,7 @@ def check_sub_view(id):
     return sub
 
 def check_sub_attachment_edit(id):
-    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    af = db.session.query(AttachedFile).filter_by(i =id).one_or_none()
     if af is None:
         flash('Attachment not found')
         return None
@@ -376,7 +383,7 @@ def edit_submission(id):
                     if af is None:
                         af = AttachedFile()
                     af.notes_entry = sub.notes_entries[0]
-                    af.filename  = file.filename
+                    af.filename = file.filename
                     db.session.add(af)
                     db.session.commit()
                     dirname = attach_path + sub.submission_id
@@ -428,7 +435,7 @@ def edit_submission(id):
                         validation_result.tag = table.name
                         break
 
-        return render_template('submission_edit.html', form = form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
+        return render_template('submission_edit.html', form=form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
 
 
 @app.route('/download_submission_attachment/<id>')
@@ -1005,9 +1012,9 @@ def check_seq_view(id):
         flash('Error : exception %s with message %s' % (exc_type, exc_value))
         return None
 
-def check_seq_edit(id):
+def check_seq_edit(seq_id):
     try:
-        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        desc = db.session.query(GeneDescription).filter_by(id=seq_id).one_or_none()
         if desc is None:
             flash('Record not found')
             return None
@@ -1022,6 +1029,7 @@ def check_seq_edit(id):
         exc_type, exc_value = sys.exc_info()[:2]
         flash('Error : exception %s with message %s' % (exc_type, exc_value))
         return None
+
 
 def check_seq_see_notes(id):
     try:
@@ -1130,17 +1138,17 @@ def sequences():
                 tables['species'][sp] = {}
 
                 if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
-                    q = db.session.query(GeneDescription).filter(GeneDescription.organism==sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
+                    q = db.session.query(GeneDescription).filter(GeneDescription.species==sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
                     show_withdrawn = True
                 else:
-                    q = db.session.query(GeneDescription).filter(GeneDescription.organism==sp).filter(GeneDescription.status.in_(['draft']))
+                    q = db.session.query(GeneDescription).filter(GeneDescription.species==sp).filter(GeneDescription.status.in_(['draft']))
                     show_withdrawn = False
                 results = q.all()
 
                 tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
                 tables['species'][sp]['draft'].table_id = sp + '_draft'
 
-                q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.organism==sp, GeneDescription.affirmation_level == '0')
+                q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species==sp, GeneDescription.affirmation_level == '0')
                 results = q.all()
                 tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
                 tables['species'][sp]['level_0'].table_id = sp + '_level_0'
@@ -1154,7 +1162,7 @@ def sequences():
     species = [s[0] for s in species]
 
     for sp in list(species):
-        if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == sp).all()) < 1:
+        if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == sp).all()) < 1:
             species.remove(sp)
 
     if len(species) > 0:
@@ -1209,57 +1217,76 @@ def new_sequence(species):
                 form.new_name.errors = ['Name cannot be blank.']
                 raise ValidationError()
 
-            if db.session.query(GeneDescription).filter(and_(GeneDescription.organism == species, GeneDescription.sequence_name == form.new_name.data, ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
+            if db.session.query(GeneDescription).filter(and_(GeneDescription.species == species, GeneDescription.sequence_name == form.new_name.data, ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
                 form.new_name.errors = ['A sequence already exists with that name.']
                 raise ValidationError()
 
-            if form.submission_id.data == '0' or form.submission_id.data == '' or form.submission_id.data == 'None':
-                form.submission_id.errors = ['Please select a submission.']
-                raise ValidationError()
+            record_type = request.form['record_type']
+            if record_type == 'submission':
+                if form.submission_id.data == '0' or form.submission_id.data == '' or form.submission_id.data == 'None':
+                    form.submission_id.errors = ['Please select a submission.']
+                    raise ValidationError()
 
-            if form.sequence_name.data == '0' or form.sequence_name.data == '' or form.sequence_name.data == 'None':
-                form.sequence_name.errors = ['Please select a sequence.']
-                raise ValidationError()
+                if form.sequence_name.data == '0' or form.sequence_name.data == '' or form.sequence_name.data == 'None':
+                    form.sequence_name.errors = ['Please select a sequence.']
+                    raise ValidationError()
 
-            sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
-            if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
-                return redirect('/sequences')
+                sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
+                if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
+                    return redirect('/sequences')
 
-            seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
+                seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
 
-            if seq is None or seq not in sub.inferred_sequences:
-                return redirect('/sequences')
+                if seq is None or seq not in sub.inferred_sequences:
+                    return redirect('/sequences')
 
             gene_description = GeneDescription()
             gene_description.sequence_name = form.new_name.data
-            gene_description.inferred_sequences.append(seq)
-            gene_description.sequence = seq.sequence_details.nt_sequence
-            gene_description.organism = species
+            gene_description.species = species
             gene_description.status = 'draft'
-            gene_description.author = current_user.name
+            gene_description.maintainer = current_user.name
             gene_description.lab_address = current_user.address
             gene_description.functional = True
-            gene_description.inference_type = 'Rearranged Only'
+            gene_description.inference_type = 'Rearranged Only' if record_type == 'submission' else 'Genomic Only'
             gene_description.release_version = 1
             gene_description.affirmation_level = 0
-            gene_description.inferred_extension = seq.inferred_extension
-            gene_description.ext_3prime = seq.ext_3prime
-            gene_description.start_3prime_ext = seq.start_3prime_ext
-            gene_description.end_3prime_ext = seq.end_3prime_ext
-            gene_description.ext_5prime = seq.ext_5prime
-            gene_description.start_5prime_ext = seq.start_5prime_ext
-            gene_description.end_5prime_ext = seq.end_5prime_ext
-            gene_description.locus = seq.genotype_description.locus
-            gene_description.sequence_type = seq.genotype_description.sequence_type
-            gene_description.coding_seq_imgt = seq.sequence_details.nt_sequence_gapped if gene_description.sequence_type == 'V' else seq.sequence_details.nt_sequence
 
-            copy_acknowledgements(seq, gene_description)
+            if record_type == 'submission':
+                gene_description.inferred_sequences.append(seq)
+                gene_description.inferred_extension = seq.inferred_extension
+                gene_description.ext_3prime = seq.ext_3prime
+                gene_description.start_3prime_ext = seq.start_3prime_ext
+                gene_description.end_3prime_ext = seq.end_3prime_ext
+                gene_description.ext_5prime = seq.ext_5prime
+                gene_description.start_5prime_ext = seq.start_5prime_ext
+                gene_description.end_5prime_ext = seq.end_5prime_ext
+                gene_description.sequence = seq.sequence_details.nt_sequence
+                gene_description.locus = seq.genotype_description.locus
+                gene_description.sequence_type = seq.genotype_description.sequence_type
+                gene_description.coding_seq_imgt = seq.sequence_details.nt_sequence_gapped if gene_description.sequence_type == 'V' else seq.sequence_details.nt_sequence
+                copy_acknowledgements(seq, gene_description)
+            else:
+                gene_description.inferred_extension = False
+                gene_description.ext_3prime = None
+                gene_description.start_3prime_ext = None
+                gene_description.end_3prime_ext = None
+                gene_description.ext_5prime = None
+                gene_description.start_5prime_ext = None
+                gene_description.end_5prime_ext = None
+                gene_description.sequence = ''
+                gene_description.locus = ''
+                gene_description.sequence_type = 'V'
+                gene_description.coding_seq_imgt = ''
+
 
             # Parse the name, if it's tractable
 
             try:
                 sn = gene_description.sequence_name
                 if sn[:2] == 'IG' or sn[:2] == 'TR':
+                    if record_type == 'genomic':
+                        gene_description.locus = sn[:3]
+                        gene_description.sequence_type = sn[3]
                     if '-' in sn:
                         if '*' in sn:
                             snq = sn.split('*')
@@ -1284,7 +1311,8 @@ def new_sequence(species):
             db.session.commit()
             gene_description.description_id = "A%05d" % gene_description.id
             db.session.commit()
-            gene_description.build_duplicate_list(db, seq.sequence_details.nt_sequence)
+            if record_type == 'submission':
+                gene_description.build_duplicate_list(db, seq.sequence_details.nt_sequence)
             return redirect('/sequences')
 
         except ValidationError as e:
@@ -1326,7 +1354,7 @@ def seq_add_inference(id):
         return redirect('/sequences')
 
     form = NewSequenceForm()
-    subs = db.session.query(Submission).filter(Submission.species==seq.organism).filter(Submission.submission_status.in_(['reviewing', 'complete', 'published'])).all()
+    subs = db.session.query(Submission).filter(Submission.species==seq.species).filter(Submission.submission_status.in_(['reviewing', 'complete', 'published'])).all()
     form.create.label.text = "Add"
     form.submission_id.choices = [('', 'Select Submission')] +  [(s.submission_id, '%s (%s)' % (s.submission_id, s.submitter_name)) for s in subs]
     form.sequence_name.choices = [(0, 'Select Sequence')]
@@ -1347,7 +1375,7 @@ def seq_add_inference(id):
             return render_template('sequence_add.html', form=form, name=seq.sequence_name, id=id)
 
         sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
-        if sub.species != seq.organism or sub.submission_status not in ('reviewing', 'published', 'complete'):
+        if sub.species != seq.species or sub.submission_status not in ('reviewing', 'published', 'complete'):
             flash('Submission is for the wrong species, or still in draft.')
             return redirect(url_for(sequences, id=id))
 
@@ -1380,9 +1408,23 @@ def seq_add_genomic(id):
             if 'cancel' in request.form:
                 return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
-            support = GenomicSupport()
+            support = None
+            append = True
+            if request.form['support_id'] != "":
+                for s in seq.genomic_accessions:
+                    if s.id == int(request.form['support_id']):
+                        support = s
+                        append = False
+                        break
+
+            if support is None:
+                support = GenomicSupport()
+
             support.accession = form.accession.data
             support.repository = form.repository.data
+            support.sequence_type = form.sequence_type.data
+            support.sequence_start = form.sequence_start.data
+            support.sequence_end = form.sequence_end.data
 
             try:
                 if support.repository == 'Genbank':
@@ -1393,14 +1435,40 @@ def seq_add_genomic(id):
                 support.url = resp['url']
             except ValueError as e:
                 form.accession.errors = [e.args[0]]
-                return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id)
+                return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id, support_id="", action="Add")
 
-            db.session.add(support)
-            seq.genomic_accessions.append(support)
+            if append:
+                db.session.add(support)
+                seq.genomic_accessions.append(support)
+
             db.session.commit()
             return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
-    return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id)
+    return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id, support_id="", action="Add")
+
+
+@app.route('/seq_edit_genomic/<seq_id>/<support_id>', methods=['GET', 'POST'])
+@login_required
+def seq_edit_genomic(seq_id, support_id):
+    seq = check_seq_edit(seq_id)
+    if seq is None:
+        return redirect('/sequences')
+
+    support = db.session.query(GenomicSupport).filter_by(id=support_id).one_or_none()
+    if support is None:
+        return redirect(url_for('edit_sequence', id=seq_id, _anchor='inf'))
+
+    form = GenomicSupportForm()
+    if request.method == 'GET':
+        form.accession.data = support.accession
+        form.repository.data = support.repository
+        form.sequence_type.data = support.sequence_type
+        form.sequence_start.data = support.sequence_start
+        form.sequence_end.data = support.sequence_end
+        form.support_id = support_id
+        return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=seq_id, action="Save", support_id=support_id)
+
+    # POST goes back to seq_add_genomic
 
 @app.route('/sequence/<id>', methods=['GET'])
 def sequence(id):
@@ -1409,7 +1477,7 @@ def sequence(id):
         return redirect('/sequences')
 
     form = FlaskForm()
-    tables = setup_sequence_view_tables(db, seq, current_user.has_role(seq.organism))
+    tables = setup_sequence_view_tables(db, seq, current_user.has_role(seq.species))
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
 
 
@@ -1540,7 +1608,7 @@ def edit_sequence(id):
 
                     seq.release_date = datetime.date.today()
                     add_history(current_user, 'Version %s published' % seq.release_version, seq, db, body = form.body.data)
-                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_released', reviewer=current_user, user_name=seq.author, sequence=seq, comment=form.body.data)
+                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.species), [seq.species], 'iarc_sequence_released', reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment=form.body.data)
                     seq.release_description = form.body.data
                     seq.status = 'published'
                     db.session.commit()
@@ -1717,7 +1785,7 @@ def sequence_imgt_name():
         if seq is not None:
             seq.imgt_name = content['imgt_name']
             add_history(current_user, 'IMGT Name updated to %s' % seq.imgt_name, seq, db, body='IMGT Name updated.')
-            send_mail('Sequence %s version %d: IMGT name updated to %s by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.imgt_name, seq.organism), [seq.organism], 'iarc_sequence_released', reviewer=current_user, user_name=seq.author, sequence=seq, comment='IMGT Name updated to %s' % seq.imgt_name)
+            send_mail('Sequence %s version %d: IMGT name updated to %s by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.imgt_name, seq.species), [seq.species], 'iarc_sequence_released', reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment='IMGT Name updated to %s' % seq.imgt_name)
             db.session.commit()
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
     return ''
@@ -1729,7 +1797,7 @@ def withdraw_sequence(id):
     seq = check_seq_withdraw(id)
     if seq is not None:
         add_history(current_user, 'Published version %s withdrawn' % seq.release_version, seq, db, body = '')
-        send_mail('Sequence %s version %d withdrawn by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.organism), [seq.organism], 'iarc_sequence_withdrawn', reviewer=current_user, user_name=seq.author, sequence=seq, comment='')
+        send_mail('Sequence %s version %d withdrawn by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.species), [seq.species], 'iarc_sequence_withdrawn', reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment='')
         seq.status = 'withdrawn'
         db.session.commit()
         seq.duplicate_sequences = list()
@@ -1741,7 +1809,7 @@ def withdraw_sequence(id):
 
         # un-publish any related submissions that now don't have published sequences
 
-        published_seqs = db.session.query(GeneDescription).filter_by(organism=seq.organism, status='published').all()
+        published_seqs = db.session.query(GeneDescription).filter_by(species=seq.species, status='published').all()
 
         for related_sub in related_subs:
             other_published = False
@@ -1759,6 +1827,7 @@ def withdraw_sequence(id):
         db.session.commit()
 
     return ''
+
 
 @app.route('/add_sequence_dup_note/<seq_id>/<gen_id>/<text>', methods=['POST'])
 @login_required
@@ -1943,7 +2012,7 @@ def remove_test():
 
     test_user = 'fred tester'
 
-    seqs = db.session.query(GeneDescription).filter(GeneDescription.author == test_user).all()
+    seqs = db.session.query(GeneDescription).filter(GeneDescription.maintainer == test_user).all()
     for seq in seqs:
         seq.delete_dependencies(db)
         db.session.delete(seq)
@@ -1980,6 +2049,517 @@ def rebuild_duplicates():
     return('Gene description links rebuilt')
 
 
+@app.route('/germline_sets', methods=['GET', 'POST'])
+def germline_sets():
+    tables = {}
+    show_withdrawn = False
+
+    if current_user.is_authenticated:
+        species = [s[0] for s in db.session.query(Committee.species).all()]
+        for sp in species:
+            if current_user.has_role(sp):
+                if 'species' not in tables:
+                    tables['species'] = {}
+                tables['species'][sp] = {}
+
+                if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
+                    q = db.session.query(GermlineSet).filter(GermlineSet.species==sp).filter(GermlineSet.status.in_(['draft', 'withdrawn']))
+                    show_withdrawn = True
+                else:
+                    q = db.session.query(GermlineSet).filter(GermlineSet.species==sp).filter(GermlineSet.status.in_(['draft']))
+                    show_withdrawn = False
+                results = q.all()
+
+                tables['species'][sp]['draft'] = setup_germline_set_list_table(results, current_user)
+                tables['species'][sp]['draft'].table_id = sp + '_draft'
+
+    q = db.session.query(GermlineSet).filter(GermlineSet.status == 'published')
+    results = q.all()
+    tables['affirmed'] = setup_germline_set_list_table(results, current_user)
+    tables['affirmed'].table_id = 'affirmed'
+
+    species = db.session.query(Committee.species).all()
+    species = [s[0] for s in species]
+
+    for sp in list(species):
+        if len(db.session.query(GermlineSet).filter(GermlineSet.status == 'published', GermlineSet.species == sp).all()) < 1:
+            species.remove(sp)
+
+    return render_template('germline_set_list.html', tables=tables, show_withdrawn=show_withdrawn)
+
+
+@app.route('/new_germline_set/<species>', methods=['GET', 'POST'])
+@login_required
+def new_germline_set(species):
+    if not current_user.has_role(species):
+        return redirect('/')
+
+    form = NewGermlineSetForm()
+    form.locus.choices = ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD']
+
+    if request.method == 'POST':
+        if form.cancel.data:
+            return redirect('/germline_sets')
+
+        if form.validate():
+            try:
+                if db.session.query(GermlineSet).filter(and_(GermlineSet.species == species, GermlineSet.germline_set_name == form.name.data, ~GermlineSet.status.in_(['withdrawn', 'superceded']))).count() > 0:
+                    form.new_name.errors = ['A germline set already exists with that name.']
+                    raise ValidationError()
+
+                germline_set = GermlineSet()
+                germline_set.species = species
+                germline_set.status = 'draft'
+                germline_set.author = current_user.name
+                germline_set.lab_address = current_user.address
+                germline_set.release_version = 0
+                germline_set.locus = form.locus.data
+                germline_set.germline_set_name = form.name.data
+
+                db.session.add(germline_set)
+                db.session.commit()
+                germline_set.germline_set_id = "G%05d" % germline_set.id
+                add_history(current_user, '%s germline set %s (%s) created' % (germline_set.species, germline_set.germline_set_id, germline_set.germline_set_name), germline_set, db)
+                db.session.commit()
+
+                return redirect('/germline_sets')
+
+            except ValidationError as e:
+                return render_template('germline_set_new.html', form=form, species=species)
+
+    return render_template('germline_set_new.html', form=form, species=species)
+
+
+@app.route('/edit_germline_set/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_germline_set(id):
+    germline_set = check_set_edit(id)
+    if germline_set is None:
+        return redirect('/germline_sets')
+
+    if len(germline_set.notes_entries) == 0:
+        germline_set.notes_entries.append(NotesEntry())
+        db.session.commit()
+
+    tables = setup_germline_set_edit_tables(db, germline_set)
+    germline_set_form = GermlineSetForm(obj=germline_set)
+    notes_entry_form = NotesEntryForm(obj=germline_set.notes_entries[0])
+    history_form = JournalEntryForm()
+    hidden_return_form = HiddenReturnForm()
+    form = AggregateForm(germline_set_form, notes_entry_form, history_form, hidden_return_form, tables['ack'].form)
+
+    foo = tables['attachments'].__html__()
+
+    if request.method == 'POST':
+        form.validate()
+        valid = True
+
+        for field in form._fields:
+            if len(form[field].errors) > 0:
+                if field in history_form._fields and 'history_btn' not in request.form:
+                    form[field].errors = []
+                else:
+                    valid = False
+
+        if form.action.data == 'published':
+            if len(germline_set.gene_descriptions) < 1:
+                flash("Please provide at least one gene in the set!")
+                form.action.data = ''
+                valid = False
+
+            for gene_description in germline_set.gene_descriptions:
+                if gene_description.status == 'draft':
+                    flash("Can't publish this set while gene %s is in draft." % gene_description.sequence_name)
+                    valid = False
+                if gene_description.status == 'withdrawn':
+                    flash("Can't publish this set while gene %s is withdrawn." % gene_description.sequence_name)
+                    valid = False
+
+        if valid:
+            try:
+                validation_result = process_table_updates({'ack': tables['ack']}, request, db)
+                if not validation_result.valid:
+                    raise ValidationError()
+
+                save_GermlineSet(db, germline_set, form)
+
+                if 'add_gene_btn' in request.form:
+                    return redirect(url_for('add_gene_to_set', id=id))
+
+                if form.action.data == 'published':
+                    old_set = db.session.query(GermlineSet).filter_by(germline_set_id=germline_set.germline_set_id, status='published').one_or_none()
+                    if old_set:
+                        old_set.status = 'superceded'
+                        germline_set.release_version = old_set.release_version + 1
+                    else:
+                        germline_set.release_version += 1
+
+                    germline_set.release_date = datetime.date.today()
+                    add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=form.body.data)
+                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
+
+                    germline_set.status = 'published'
+                    db.session.commit()
+                    flash('Germline set published')
+                    return redirect('/germline_sets')
+
+                if 'notes_attachment' in request.files:
+                    for file in form.notes_attachment.data:
+                        if file.filename != '':
+                            af = None
+                            for at in germline_set.notes_entries[0].attached_files:
+                                if at.filename == file.filename:
+                                    af = at
+                                    break
+                            if af is None:
+                                af = AttachedFile()
+                            af.notes_entry = germline_set.notes_entries[0]
+                            af.filename = file.filename
+                            db.session.add(af)
+                            db.session.commit()
+                            dirname = attach_path + germline_set.germline_set_id
+
+                            try:
+                                if not isdir(dirname):
+                                    mkdir(dirname)
+                                with open(dirname + '/multi_attachment_%s' % af.id, 'wb') as fo:
+                                    fo.write(file.stream.read())
+                            except:
+                                info = sys.exc_info()
+                                flash('Error saving attachment: %s' % (info[1]))
+                                app.logger.error(format_exc())
+                                return redirect(url_for('edit_submission', id=germline_set.germline_set_id))
+                            db.session.commit()
+                            validation_result.tag = 'notes'
+
+                if 'notes_text' in request.form and germline_set.notes_entries[0].notes_text is None or germline_set.notes_entries[0].notes_text != request.form['notes_text'].encode('utf-8'):
+                    germline_set.notes_entries[0].notes_text = request.form['notes_text'].encode('utf-8')
+                    db.session.commit()
+
+            except ValidationError:
+                return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, jump=validation_result.tag, version=germline_set.release_version)
+
+            if validation_result.tag:
+                return redirect(url_for('edit_germline_set', id=id, _anchor=validation_result.tag))
+            else:
+                return redirect(url_for('germline_sets'))
+
+        else:
+            for field in tables['ack'].form:
+                if len(field.errors) > 0:
+                    return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, jump='ack', version=germline_set.release_version)
+
+    return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, version=germline_set.release_version)
+
+
+def check_set_view(id):
+    try:
+        set = db.session.query(GermlineSet).filter_by(id = id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        if not set.can_see(current_user):
+            flash('You do not have rights to view that sequence.')
+
+        return set
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+
+def check_set_edit(id):
+    try:
+        set = db.session.query(GermlineSet).filter_by(id = id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        if not set.can_edit(current_user):
+            flash('You do not have rights to edit that sequence.')
+            return None
+
+        return set
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+
+@app.route('/delete_germline_set/<id>', methods=['POST'])
+@login_required
+def delete_germline_set(id):
+    set = check_set_edit(id)
+    if set is not None:
+        set.delete_dependencies(db)
+        db.session.delete(set)
+        db.session.commit()
+    return ''
+
+
+@app.route('/download_germline_set_attachment/<id>')
+def download_germline_set_attachment(id):
+    att = check_germline_set_attachment_view(id)
+    if att is None:
+        return redirect('/')
+
+    germline_set = att.notes_entry.germline_set
+
+    try:
+        dirname = attach_path + germline_set.germline_set_id
+        with open(dirname + '/multi_attachment_%s' % att.id, 'rb') as fi:
+            return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % att.filename})
+    except:
+        info = sys.exc_info()
+        flash('Error retrieving attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    return redirect('/')
+
+
+@app.route('/delete_germline_set_attachment/<id>', methods=['POST'])
+def delete_germline_set_attachment(id):
+    att = check_germline_set_attachment_edit(id)
+    if att is None:
+        return redirect('/')
+
+    germline_set = att.notes_entry.submission
+
+    try:
+        dirname = attach_path + germline_set.germline_set_id
+        remove(dirname + '/multi_attachment_%s' % att.id)
+    except:
+        info = sys.exc_info()
+        flash('Error deleting attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    db.session.delete(att)
+    db.session.commit()
+    return ''
+
+
+def check_set_draft(id):
+    try:
+        set = db.session.query(GermlineSet).filter_by(id = id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        if set.status != 'published':
+            flash('Only published sequences can be cloned.')
+            return None
+
+        clones = db.session.query(GermlineSet).filter_by(germline_set_name=set.germline_set_name).all()
+        for clone in clones:
+            if clone.status == 'draft':
+                flash('There is already a draft of that germline set')
+                return None
+
+        if not set.can_draft(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return set
+
+
+@app.route('/draft_germline_set/<id>', methods=['POST'])
+@login_required
+def draft_germline_set(id):
+    set = check_set_draft(id)
+    if set is not None:
+        new_set = GermlineSet()
+        db.session.add(new_set)
+        db.session.commit()
+
+        copy_GermlineSet(set, new_set)
+        new_set.status = 'draft'
+
+        for gene_description in set.gene_descriptions:
+            new_set.gene_descriptions.append(gene_description)
+
+        for journal_entry in set.journal_entries:
+            new_entry = JournalEntry()
+            copy_JournalEntry(journal_entry, new_entry)
+            new_set.journal_entries.append(new_entry)
+
+        db.session.commit()
+    return ''
+
+
+def check_set_withdraw(id):
+    try:
+        set = db.session.query(GermlineSet).filter_by(id=id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        if set.status != 'published':
+            flash('Only published sequences can be withdrawn.')
+            return None
+
+        if not set.can_draft(current_user):
+            flash('You do not have rights to edit that entry')
+            return None
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return set
+
+
+@app.route('/withdraw_germline_set/<id>', methods=['POST'])
+@login_required
+def withdraw_germline_set(id):
+    set = check_set_withdraw(id)
+    if set is not None:
+        add_history(current_user, 'Published version %s withdrawn' % set.release_version, set, db, body='')
+        send_mail('Germline set %s version %d withdrawn by the IARC %s Committee' % (set.germline_set_id, set.release_version, set.species), [set.species], 'iarc_germline_set_withdrawn', reviewer=current_user, user_name=set.author, germline_set=set, comment='')
+        set.status = 'withdrawn'
+        db.session.commit()
+        flash('Germline set %s withdrawn' % set.germline_set_name)
+
+        db.session.commit()
+
+    return ''
+
+
+@app.route('/delete_gene_from_set', methods=['POST'])
+@login_required
+def delete_gene_from_set():
+    germline_set = check_set_edit(request.form['set_id'])
+    if germline_set is not None:
+        gene_description = db.session.query(GeneDescription).filter(GeneDescription.id == request.form['gene_id']).one_or_none()
+        if gene_description is not None and gene_description in germline_set.gene_descriptions:
+            germline_set.gene_descriptions.remove(gene_description)
+            db.session.commit()
+
+    return ''
+
+
+@app.route('/add_gene_to_set/<id>', methods=['GET', 'POST'])
+@login_required
+def add_gene_to_set(id):
+    germline_set = check_set_edit(id)
+    if germline_set is None:
+        return redirect('/germline_sets')
+
+    form = NewGermlineSetGeneForm()
+    gene_descriptions = db.session.query(GeneDescription).filter(GeneDescription.species == germline_set.species)\
+        .filter(GeneDescription.status.in_(['published', 'draft'])).all()
+    gene_descriptions = [g for g in gene_descriptions if g not in germline_set.gene_descriptions]
+    form.create.label.text = "Add"
+    form.gene_description_id.choices = [(g.id, '%s (%s)' % (g.sequence_name, g.status)) for g in gene_descriptions]
+
+    if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
+        if form.cancel.data:
+            return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
+
+        if form.validate():
+            for gid in form.gene_description_id.data:
+                gene_description = db.session.query(GeneDescription).filter(GeneDescription.id == gid).one_or_none()
+
+                if gene_description and gene_description not in germline_set.gene_descriptions:
+                    germline_set.gene_descriptions.append(gene_description)
+
+            db.session.commit()
+        return redirect(url_for('edit_germline_set', id=id, _anchor='genes'))
+
+    return render_template('germline_set_add_gene.html', form=form, name=germline_set.germline_set_name, id=id)
+
+
+def check_germline_set_attachment_edit(af_id):
+    af = db.session.query(AttachedFile).filter_by(id=af_id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    germline_set = af.notes_entry.germline_set
+    if not germline_set.can_edit(current_user):
+        flash('You do not have rights to delete that attachment')
+        return None
+    return af
+
+
+def check_germline_set_attachment_view(af_id):
+    af = db.session.query(AttachedFile).filter_by(id=af_id).one_or_none()
+    if af is None:
+        flash('Attachment not found')
+        return None
+    germline_set = af.notes_entry.germline_set
+    if not germline_set.can_see(current_user):
+        flash('You do not have rights to download that attachment')
+        return None
+    return af
+
+
+@app.route('/download_germline_set_attachment/<id>')
+def download_germline_set_attachment_view(id):
+    att = check_germline_set_attachment_view(id)
+    if att is None:
+        return redirect('/')
+
+    germline_set = att.notes_entry.germline_set
+
+    try:
+        dirname = attach_path + germline_set.germline_set_id
+        with open(dirname + '/multi_attachment_%s' % att.id, 'rb') as fi:
+            return Response(fi.read(), mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % att.filename})
+    except:
+        info = sys.exc_info()
+        flash('Error retrieving attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    return redirect('/')
+
+
+@app.route('/delete_submission_attachment/<id>', methods=['POST'])
+def delete_set_attachment(id):
+    att = check_germline_set_attachment_edit(id)
+    if att is None:
+        return redirect('/')
+
+    sub = att.notes_entry.submission
+
+    try:
+        dirname = attach_path + germline_set.germline_set_id
+        remove(dirname + '/multi_attachment_%s' % att.id)
+    except:
+        info = sys.exc_info()
+        flash('Error deleting attachment: %s' % (info[1]))
+        app.logger.error(format_exc())
+
+    db.session.delete(att)
+    db.session.commit()
+    return ''
+
+
+@app.route('/germline_set/<id>', methods=['GET'])
+def germline_set(id):
+    germline_set = check_set_view(id)
+    if germline_set is None:
+        return redirect('/germline_sets')
+
+    if len(germline_set.notes_entries) == 0:
+        germline_set.notes_entries.append(NotesEntry())
+        db.session.commit()
+
+    form = FlaskForm()
+    tables = setup_germline_set_view_tables(db, germline_set, current_user.has_role(germline_set.species))
+    supplementary_files = len(tables['attachments'].table.items) > 0
+
+    notes = germline_set.notes_entries[0].notes_text
+    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes)
+
+
 @app.route('/genotype_statistics', methods=['GET', 'POST'])
 def genotype_statistics():
     form = GeneStatsForm()
@@ -1997,6 +2577,7 @@ def genotype_statistics():
 
     return render_template('genotype_statistics.html', form=form, tables=None)
 
+
 @app.route('/download_userfile/<filename>')
 @login_required
 def download_userfile(filename):
@@ -2007,6 +2588,60 @@ def download_userfile(filename):
         flash('File not found')
 
     return redirect('/')
+
+
+@app.route('/download_germline_set/<set_id>/<format>')
+def download_germline_set(set_id, format):
+    if format not in ['gapped', 'ungapped', 'airr']:
+        flash('Invalid format')
+        return redirect('/')
+
+    germline_set = check_set_view(set_id)
+    if not germline_set:
+        flash('Germline set not found')
+        return redirect('/')
+
+    if len(germline_set.gene_descriptions) < 1:
+        flash('No sequences to download')
+        return redirect('/')
+
+    if format == 'airr':
+        dl = descs_to_airr(germline_set.gene_descriptions)
+        filename = '%s_%s_rev_%d.yml' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+    else:
+        dl = descs_to_fasta(germline_set.gene_descriptions, format)
+        filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
+
+    return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+
+
+def descs_to_fasta(descs, format):
+    ret = ''
+    for desc in descs:
+        name = desc.sequence_name
+        if desc.imgt_name != '':
+            name += '|IMGT=' + desc.imgt_name
+        if format == 'gapped':
+            ret += format_fasta_sequence(name, desc.coding_seq_imgt, 60)
+        else:
+            seq = desc.coding_seq_imgt.replace('.','')
+            seq = seq.replace('-','')
+            ret += format_fasta_sequence(name, seq, 60)
+    return(ret)
+
+def descs_to_airr(descs):
+    ret = {}
+    for desc in descs:
+        name = desc.sequence_name
+        if desc.imgt_name != '':
+            name += '|' + desc.imgt_name
+        d = make_GeneDescription_view(desc)
+        ret[desc.sequence_name] = {}
+        for row in d.items:
+            ret[desc.sequence_name][row['field']] = row['value']
+
+    return(dump(ret, default_flow_style=False))
+
 
 @app.route('/download_sequences/<species>/<format>/<exc>')
 def download_sequences(species, format, exc):
@@ -2020,7 +2655,7 @@ def download_sequences(species, format, exc):
         flash('Invalid species')
         return redirect('/')
 
-    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == species)
+    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == species)
     results = q.all()
 
     imgt_ref = get_imgt_reference_genes()
@@ -2034,31 +2669,6 @@ def download_sequences(species, format, exc):
     if len(results) < 1:
         flash('No sequences to download')
         return redirect('/')
-
-    def descs_to_fasta(descs, fmt):
-        ret = ''
-        for desc in descs:
-            name = desc.sequence_name
-            if desc.imgt_name != '':
-                name += '|' + desc.imgt_name
-            if format == 'gapped':
-                ret += format_fasta_sequence(name, desc.coding_seq_imgt, 60)
-            else:
-                ret += format_fasta_sequence(name, desc.coding_seq_imgt.replace('.',''), 60)
-        return(ret)
-
-    def descs_to_airr(descs):
-        ret = {}
-        for desc in descs:
-            name = desc.sequence_name
-            if desc.imgt_name != '':
-                name += '|' + desc.imgt_name
-            d = make_GeneDescription_view(desc)
-            ret[desc.sequence_name] = {}
-            for row in d.items:
-                ret[desc.sequence_name][row['field']] = row['value']
-
-        return(dump(ret, default_flow_style=False))
 
     if format == 'airr':
         dl = descs_to_airr(results)

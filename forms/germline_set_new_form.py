@@ -9,9 +9,8 @@ from custom_validators import *
 from wtforms import SelectField, SubmitField, StringField, validators
 
 
-class NewSequenceForm(FlaskForm):
-    new_name = StringField('New Sequence Name', description="The name for this new sequence")
-    submission_id = SelectField('Submission ID', description="Inference study on which this new sequence is based")
-    sequence_name = SelectField('Sequence', description="Inferred sequence on which this new sequence is based")
+class NewGermlineSetForm(FlaskForm):
+    name = StringField('New Set Name', description="The name for this new germline set")
+    locus = SelectField('Locus', description="Locus")
     create = SubmitField('Create')
     cancel = SubmitField('Cancel')

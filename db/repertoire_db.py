@@ -75,6 +75,8 @@ class Acknowledgements(db.Model):
     submission = db.relationship('Submission', backref = 'acknowledgements')
     description_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'acknowledgements')
+    germline_set_id = db.Column(db.Integer, db.ForeignKey('germline_set.id'))
+    germline_set = db.relationship('GermlineSet', backref = 'acknowledgements')
 
 
 def save_Acknowledgements(db, object, form, new=False):   

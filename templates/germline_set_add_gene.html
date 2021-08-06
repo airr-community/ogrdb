@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Add Gene(s) - {{ name }}{% endblock %}
+
+{% block c_body %}
+
+    <div class="row pad">
+
+        <form action="{{ url_for('add_gene_to_set', id=id) }}" method="POST" name="form" class="form-horizontal">
+
+            {{ form.hidden_tag() }}
+
+            <p class="col-sm-offset-1">Please select the genes to add. Use Ctrl-click to select multiple genes.</p>
+            {{ render_field_with_errors(form.gene_description_id, class="form-control") }}
+
+            <div class="form-group row col-sm-10">
+                {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
+                {{ form.create(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+

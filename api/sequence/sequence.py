@@ -77,7 +77,7 @@ class iarcSetApi(Resource):
         if species not in all_species:
             return []
 
-        q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.organism == species)
+        q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == species)
         results = q.all()
 
         dl = self.descs_to_airr(results)
