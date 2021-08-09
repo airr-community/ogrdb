@@ -79,6 +79,7 @@ def main(argv):
     write_model(schema, 'SampleName', 'db/sample_name_db.py')
     write_model(schema, 'AttachedFile', 'db/attached_file_db.py')
     write_flaskform(schema, 'AttachedFile', 'forms/attached_file_form.py')
+    write_model(schema, 'SequenceIdentifier', 'db/sequence_identifier_db.py')
 
 # Merge markup properties with schema
 # In the event of a conflict, markup always wins. Otherwise properties are merged.

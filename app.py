@@ -12,7 +12,8 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_required, lo
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
+from sqlalchemy.sql.expression import func
 
 
 import json
@@ -87,6 +88,7 @@ from db.record_set_db import *
 from db.sample_name_db import *
 from db.attached_file_db import *
 from db.dupe_gene_note_db import *
+from db.sequence_identifier_db import *
 
 import db_events
 
@@ -116,6 +118,8 @@ from forms.sequences_species_form import *
 
 from genotype_stats import *
 from get_ncbi_details import *
+from sequence_identifier import *
+from to_airr import *
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 migrate = Migrate(app, db)
@@ -846,7 +850,7 @@ def get_genotype_seqnames(id):
     for g in desc.genotypes:
         ret.append({"id": g.id, "name": g.sequence_id})
 
-    return json.dumps(ret)
+    return jsonify(ret)
 
 # AJAX - delete genotype and associated data
 @app.route('/delete_genotype/<id>', methods=['POST'])
@@ -1551,7 +1555,7 @@ def edit_sequence(id):
                         if af is None:
                             af = AttachedFile()
                         af.gene_description = seq
-                        af.filename  = file.filename
+                        af.filename = file.filename
                         db.session.add(af)
                         db.session.commit()
                         dirname = attach_path + seq.description_id
@@ -1568,6 +1572,17 @@ def edit_sequence(id):
                             return redirect(url_for('edit_submission', id=seq.id))
 
                 seq.notes = form.notes.data      # this was left out of the form definition in the schema so it could go on its own tab
+                seq.coding_sequence_identifier = sequence_identifier(form.coding_seq_imgt.data)
+
+                rearranged = len(seq.inferred_sequences) > 0
+                genomic = len(seq.genomic_accessions) > 0
+                if rearranged and genomic:
+                    seq.inference_type = 'Genomic and rearranged'
+                elif rearranged:
+                    seq.inference_type = 'Rearranged'
+                elif genomic:
+                    seq.inference_type = 'Genomic'
+
                 save_GeneDescription(db, seq, form)
 
                 if 'add_inference_btn' in request.form:
@@ -2063,10 +2078,10 @@ def germline_sets():
                 tables['species'][sp] = {}
 
                 if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
-                    q = db.session.query(GermlineSet).filter(GermlineSet.species==sp).filter(GermlineSet.status.in_(['draft', 'withdrawn']))
+                    q = db.session.query(GermlineSet).filter(GermlineSet.species == sp).filter(GermlineSet.status.in_(['draft', 'withdrawn']))
                     show_withdrawn = True
                 else:
-                    q = db.session.query(GermlineSet).filter(GermlineSet.species==sp).filter(GermlineSet.status.in_(['draft']))
+                    q = db.session.query(GermlineSet).filter(GermlineSet.species == sp).filter(GermlineSet.status.in_(['draft']))
                     show_withdrawn = False
                 results = q.all()
 
@@ -2171,6 +2186,9 @@ def edit_germline_set(id):
                 if gene_description.status == 'draft':
                     flash("Can't publish this set while gene %s is in draft." % gene_description.sequence_name)
                     valid = False
+                if gene_description.status == 'published' and gene_description.affirmation_level == 0:
+                    flash("Can't publish this set while gene %s is at affirmation level 0." % gene_description.sequence_name)
+                    valid = False
                 if gene_description.status == 'withdrawn':
                     flash("Can't publish this set while gene %s is withdrawn." % gene_description.sequence_name)
                     valid = False
@@ -2190,10 +2208,13 @@ def edit_germline_set(id):
                     old_set = db.session.query(GermlineSet).filter_by(germline_set_id=germline_set.germline_set_id, status='published').one_or_none()
                     if old_set:
                         old_set.status = 'superceded'
-                        germline_set.release_version = old_set.release_version + 1
-                    else:
-                        germline_set.release_version += 1
 
+                    max_version = db.session.query(func.max(GermlineSet.release_version))\
+                        .filter(GermlineSet.germline_set_id == germline_set.germline_set_id)\
+                        .filter(or_(GermlineSet.status == 'withdrawn', GermlineSet.status == 'superceded'))\
+                        .one_or_none()
+
+                    germline_set.release_version = max_version[0] + 1 if max_version[0] else 1
                     germline_set.release_date = datetime.date.today()
                     add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=form.body.data)
                     send_mail('Sequence %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
@@ -2381,6 +2402,7 @@ def draft_germline_set(id):
 
         copy_GermlineSet(set, new_set)
         new_set.status = 'draft'
+        new_set.release_version = 0
 
         for gene_description in set.gene_descriptions:
             new_set.gene_descriptions.append(gene_description)
@@ -2554,10 +2576,15 @@ def germline_set(id):
 
     form = FlaskForm()
     tables = setup_germline_set_view_tables(db, germline_set, current_user.has_role(germline_set.species))
+    versions = db.session.query(GermlineSet).filter(GermlineSet.species == germline_set.species)\
+        .filter(GermlineSet.germline_set_name == germline_set.germline_set_name)\
+        .filter(GermlineSet.status.in_(['published', 'superceded']))\
+        .all()
+    tables['versions'] = setup_germline_set_list_table(versions, None)
     supplementary_files = len(tables['attachments'].table.items) > 0
 
-    notes = germline_set.notes_entries[0].notes_text
-    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes)
+    notes = safe_textile(germline_set.notes_entries[0].notes_text)
+    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes, id=id)
 
 
 @app.route('/genotype_statistics', methods=['GET', 'POST'])
@@ -2606,7 +2633,7 @@ def download_germline_set(set_id, format):
         return redirect('/')
 
     if format == 'airr':
-        dl = descs_to_airr(germline_set.gene_descriptions)
+        dl = germline_set_to_airr(germline_set)
         filename = '%s_%s_rev_%d.yml' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format)
@@ -2627,20 +2654,17 @@ def descs_to_fasta(descs, format):
             seq = desc.coding_seq_imgt.replace('.','')
             seq = seq.replace('-','')
             ret += format_fasta_sequence(name, seq, 60)
-    return(ret)
+    return ret
 
-def descs_to_airr(descs):
-    ret = {}
-    for desc in descs:
+
+def germline_set_to_airr(germline_set):
+    ret = []
+    for desc in germline_set.gene_descriptions:
         name = desc.sequence_name
-        if desc.imgt_name != '':
-            name += '|' + desc.imgt_name
-        d = make_GeneDescription_view(desc)
-        ret[desc.sequence_name] = {}
-        for row in d.items:
-            ret[desc.sequence_name][row['field']] = row['value']
+        ad = vars(AIRRGeneDescription(desc))
+        ret.append(ad)
 
-    return(dump(ret, default_flow_style=False))
+    return json.dumps(ret, default=str, indent=4)
 
 
 @app.route('/download_sequences/<species>/<format>/<exc>')
@@ -2682,46 +2706,37 @@ def download_sequences(species, format, exc):
 
 from imgt.imgt_ref import gap_sequence
 
-# Temp route to add gapped sequences to genotypes
-@app.route('/add_gapped', methods=['GET'])
+# Temp route to add sequence id and chromosome to gene descriptions
+@app.route('/add_seq_id', methods=['GET'])
 @login_required
 def add_gapped():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    refs = get_imgt_gapped_reference_genes()
-    subs = db.session.query(Submission).all()
-    if subs is None:
-        flash('Submissions not found')
+    descs = db.session.query(GeneDescription).all()
+    if descs is None:
+        flash('Gene descriptions not found')
         return None
 
     report = ''
 
-    for sub in subs:
-        if len(sub.repertoire) > 0:
-            report += 'Processing submission ' + sub.submission_id + '<br>'
+    for desc in descs:
+        if desc.sequence_name:
+            report += 'Processing sequence ' + desc.sequence_name + '<br>'
 
-            for gd in sub.genotype_descriptions:
-                report += 'Processing genotype ' + gd.genotype_name + '<br>'
+            if desc.coding_seq_imgt and len(desc.coding_seq_imgt) > 0:
+                desc.coding_sequence_identifier = sequence_identifier(desc.coding_seq_imgt)
+            else:
+                report += 'no sequence<br>'
 
-                if gd.sequence_type == 'V':
-                    for gen in gd.genotypes:
-                        #if gen.nt_sequence_gapped is None or len(gen.nt_sequence_gapped) < 1:
-                        if gen.sequence_id in refs[sub.species]:
-                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id].upper())
-                        elif gen.closest_reference in refs[sub.species]:
-                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.closest_reference])
-                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.closest_reference + '<br>'
-                        elif '_' in gen.sequence_id and gen.sequence_id.split('_')[0] in refs[sub.species]:
-                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id.split('_')[0]])
-                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.sequence_id.split('_')[0] + '<br>'
-                        elif '+' in gen.sequence_id and gen.sequence_id.split('+')[0] in refs[sub.species]:
-                            gen.nt_sequence_gapped = gap_sequence(gen.nt_sequence, refs[sub.species][gen.sequence_id.split('+')[0]])
-                            report += 'Gapping ' + gen.sequence_id + ' against ' + gen.sequence_id.split('+')[0] + '<br>'
-                        else:
-                            report += 'Not sure how to gap ' + gen.sequence_id + ' - skipping <br>'
+        if desc.locus == 'IGH':
+            desc.chromosome = 14
+        if desc.locus == 'IGK':
+            desc.chromosome = 2
+        if desc.locus == 'IGL':
+            desc.chromosome = 22
 
-                db.session.commit()
+            db.session.commit()
 
     return report
 

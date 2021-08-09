@@ -919,6 +919,14 @@ GeneDescription:
             description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
             label: Coding Sequence
             rows: 12
+        coding_sequence_identifier:
+            type: string
+            description: Unique identifier of the coding_sequence, allocated automatically
+            label: Seq ID
+            hide: true
+            inview: true
+            tableview: true
+            width: narrow
         gene_start:
             type: integer
             nullable: true
@@ -1202,6 +1210,7 @@ GermlineSet:
             tableview: true
             width: narrow
             hide: true
+            inview: true
             label: Release Version
         release_description:
             type: string
@@ -1213,6 +1222,7 @@ GermlineSet:
             tableview: true
             width: narrow
             hide: true
+            inview: true
             label: Release Date
         germline_set_name:
             type: string
@@ -1259,3 +1269,17 @@ GermlineSet:
             type: list of gene descriptions
             many-relationship: [GeneDescription, germline_sets, gene_description, germline_set]
             hide: true
+
+
+# Unique identifiers for encountered sequences
+SequenceIdentifier:
+    discriminator: AIRR
+    description: Unique identifiers for encountered sequences
+    type: object
+    properties:
+        sequence:
+            type: string
+            nonblank: true
+        sequence_identifier:
+            type: string
+            nonblank: true

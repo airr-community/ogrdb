@@ -15,22 +15,22 @@ class GermlineSetMixin:
 
     def can_see(self, user):
         return(self.status == 'published' or
-            user.is_authenticated and
+            user and user.is_authenticated and
                #(user.has_role('Admin') or
                 user.has_role(self.species))
 
     def can_edit(self, user):
-        return(user.is_authenticated and
+        return((user and user.is_authenticated) and
             ((user.has_role('AdminEdit') or
             (user.has_role(self.species) and self.status == 'draft'))))
 
     def can_draft(self, user):
-        return(user.is_authenticated and
+        return((user and user.is_authenticated) and
             #(user.has_role('Admin') or
              (user.has_role(self.species) and self.status == 'published'))
 
     def can_see_notes(self, user):
-        return(user.is_authenticated and
+        return((user and user.is_authenticated) and
             #(user.has_role('Admin') or
              user.has_role(self.species))
 

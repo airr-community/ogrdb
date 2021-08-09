@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
@@ -8,10 +8,10 @@ import re
 from app import app
 import textile
 
-from jinja2 import evalcontextfilter, Markup
+from jinja2 import pass_eval_context, Markup
 
 @app.template_filter()
-@evalcontextfilter
+@pass_eval_context
 def textile_filter(eval_ctx, value):
     result = safe_textile(value)
     if eval_ctx.autoescape:

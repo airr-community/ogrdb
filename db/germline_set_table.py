@@ -30,6 +30,7 @@ class DescLinkCol(StyledCol):
 
 class GeneDescriptionTable(StyledTable):
     name = DescLinkCol("Gene Name")
+    seq_id = StyledCol("Seq ID")
     imgt_name = StyledCol("IMGT Name")
     status = StyledCol("Status")
 
@@ -44,7 +45,13 @@ def setup_gene_description_table(germline_set, action=True):
     results = []
     for gene_description in germline_set.gene_descriptions:
         desc = Markup('<a href="%s">%s</a>' % (url_for('sequence', id=gene_description.id), gene_description.sequence_name))
-        results.append({'name': desc, 'imgt_name': gene_description.imgt_name, 'status': gene_description.status, 'gene_id': gene_description.id, 'set_id': germline_set.id})
+        results.append({
+            'name': desc,
+            'imgt_name': gene_description.imgt_name,
+            'status': gene_description.status,
+            'gene_id': gene_description.id,
+            'set_id': germline_set.id,
+            'seq_id': gene_description.coding_sequence_identifier})
 
     table = make_GeneDescription_table(results)
 
