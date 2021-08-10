@@ -305,7 +305,8 @@ class GenomicSupportTableActionCol(StyledCol):
 def setup_genomic_support_table(seq, action=True):
         table = make_GenomicSupport_table(seq.genomic_accessions)
         del(table._cols['accession'])
-        table.add_column('acc', StyledCol("Acc", tooltip="Genbank or ENA accession number, e.g MK321684"))
+        table.add_column('acc', StyledCol("Accession", tooltip="Genbank or ENA accession number, e.g MK321684"))
+        table._cols.move_to_end('acc', last=False)
 
         if action:
             table.add_column('action', GenomicSupportTableActionCol(""))

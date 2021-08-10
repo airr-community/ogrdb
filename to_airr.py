@@ -21,7 +21,7 @@ class AIRRGeneDescription:
             })
         self.lab_address = gd.lab_address
         self.release_version = gd.release_version
-        self.release_date = gd.release_date
+        self.release_date = gd.release_date.strftime('%d-%b-%Y')
         self.gene_symbol = gd.sequence_name
         self.sequence = gd.sequence
         self.coding_sequence = gd.coding_seq_imgt
@@ -89,17 +89,15 @@ class AIRRGeneDescription:
         for gen in gd.genomic_accessions:
             self.genomic_support.append({
                 'sequence_id': gen.id,
-                # Current AIRR schema has 'sequence' rather than co-ordinates
-                'sequence_start': gen.sequence_start,
-                'sequence_end': gen.sequence_end,
-                'notes': '',
+                'sequence': gen.sequence,
+                'notes': gen.notes,
                 'repository_name': gen.repository,
                 'assembly_id': gen.accession,
-                'patch_no': '',
-                'gff_seqid': '',
-                'gff_start': '',
-                'gff_end': '',
-                'strand': ''
+                'patch_no': gen.patch_no,
+                'gff_seqid': gen.gff_seqid,
+                'sequence_start': gen.sequence_start,
+                'sequence_end': gen.sequence_end,
+                'strand': gen.sense,
             })
 
         self.rearranged_support = []
@@ -123,3 +121,35 @@ class AIRRGeneDescription:
 
         self.notes = gd.notes
         self.curational_tags = gd.curational_tags
+
+
+class AIRRGermlineSet:
+    def __init__(self, gs, gds):
+        self.germline_set_id = 'OGRDB:' + gs.germline_set_id
+        self.author = gs.author
+        self.lab_name = gs.lab_name
+        self.lab_address = gs.lab_address
+        self.acknowledgements = []
+        for ack in gs.acknowledgements:
+            self.acknowledgements.append({
+                'acknowledgement_id': ack.id,
+                'name': ack.ack_name,
+                'institution_name': ack.ack_institution_name,
+                'ORCID_id': ack.ack_ORCID_id
+            })
+        self.release_version = gs.release_version
+        self.release_description = gs.release_description
+        self.release_date = gs.release_date
+        self.germline_set_name = gs.germline_set_name
+        self.germline_set_ref = 'OGRDB:' + gs.germline_set_id + '.' + str(gs.release_version)
+        self.pub_ids = []
+        for pub_id in gs.pub_ids:
+            self.pub_ids.append('PMID:' + pub_id.pubmed_id)
+        self.species = gs.species
+        self.species_subgroup = gs.species_subgroup
+        self.species_subgroup_type = gs.species_subgroup_type
+        self.locus = gs.locus
+        self.gene_descriptions = gds
+        self.notes = ''
+        if len(gs.notes_entries) > 0:
+            self.notes = gs.notes_entries[0].notes_text

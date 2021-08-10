@@ -269,6 +269,12 @@ PubId:
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, pub_ids]
             hide: true
+        germline_set_id:
+            type: integer
+            foreign_key: germline_set.id
+            relationship: [germline_set, GermlineSet, pub_ids]
+            hide: true
+
 
 # Primers
 PrimerSet:
@@ -1137,38 +1143,53 @@ GenomicSupport:
             tableview: true
             nonblank: true
             label: Type
+        sequence:
+            type: text
+            description: Sequence of interest described in this record (typically this will include gene and promoter region)
+            label: Sequence
+            rows: 6
+        notes:
+            type: text
+            description: Notes
+            label: Notes
+            rows: 4
         repository:
-            type: [Genbank, ENA]
-            description: Repository
+            type: string
             tableview: true
-            label: Repo
-        sequence_start:
-            type: integer
-            description: start location of the sequence of this gene in the genomic sequence
-            nonblank: true
-            label: Start
-            tableview: true
-        sequence_end:
-            type: integer
-            description: end location of the sequence of this gene in the genomic sequence
-            nonblank: true
-            label: End
-            tableview: true
+            description: Name of the repository in which the assembly or sequence is deposited
+            label: Repository
         accession:
             type: string
-            description: Genbank or ENA accession number, e.g MK321684
+            description: Accession number of the assembly or sequence within the repository
+            label: Accession
             tableview: true
-            label: Acc
-        title:
-            type: text
-            description: Title
+        patch_no:
+            type: string
+            description: Patch number of the assembly or sequence within the repository
+            label: Patch
+        gff_seqid:
+            type: string
+            description: name of the chromosome or scaffold (for assemblies only)
+            label: gff seqid
+        sequence_start:
+            type: integer
+            description: start co-ordinate of the sequence of this gene in the assembly or sequence
+            label: Start
             tableview: true
-            hide: true
-            label: Title
+            nonblank: false
+        sequence_end:
+            type: integer
+            description: end co-ordinate of the sequence of this gene in the assembly or sequence
+            label: End
+            tableview: true
+            nonblank: false
+        sense:
+            type: [forward,reverse]
+            description: + (forward) or - (reverse)
+            label: Sense
         url:
             type: text
             description: Link to record
-            hide: true
             label: URL
         sequence_id:
             type: integer
@@ -1242,10 +1263,6 @@ GermlineSet:
             label: Status
             width: narrow
             hide: true
-        pub_ids:
-            type: string
-            description: Publications describing the germline set
-            label: PubMed Ids
         species:
             type: string
             nonblank: true

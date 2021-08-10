@@ -29,7 +29,6 @@ class GermlineSet(db.Model, GermlineSetMixin):
     germline_set_name = db.Column(db.String(1000))
     germline_set_ref = db.Column(db.String(1000))
     status = db.Column(db.String(255))
-    pub_ids = db.Column(db.String(1000))
     species = db.Column(db.String(1000))
     species_subgroup = db.Column(db.String(1000))
     species_subgroup_type = db.Column(db.String(255))
@@ -44,7 +43,6 @@ def save_GermlineSet(db, object, form, new=False):
     object.lab_address = form.lab_address.data
     object.release_description = form.release_description.data
     object.germline_set_name = form.germline_set_name.data
-    object.pub_ids = form.pub_ids.data
     object.species = form.species.data
     object.species_subgroup = form.species_subgroup.data
     object.species_subgroup_type = form.species_subgroup_type.data
@@ -63,7 +61,6 @@ def populate_GermlineSet(db, object, form):
     form.lab_address.data = object.lab_address
     form.release_description.data = object.release_description
     form.germline_set_name.data = object.germline_set_name
-    form.pub_ids.data = object.pub_ids
     form.species.data = object.species
     form.species_subgroup.data = object.species_subgroup
     form.species_subgroup_type.data = object.species_subgroup_type
@@ -83,7 +80,6 @@ def copy_GermlineSet(c_from, c_to):
     c_to.germline_set_name = c_from.germline_set_name
     c_to.germline_set_ref = c_from.germline_set_ref
     c_to.status = c_from.status
-    c_to.pub_ids = c_from.pub_ids
     c_to.species = c_from.species
     c_to.species_subgroup = c_from.species_subgroup
     c_to.species_subgroup_type = c_from.species_subgroup_type
@@ -118,7 +114,6 @@ def make_GermlineSet_view(sub, private = False):
     ret.items.append({"item": "Release Description", "value": sub.release_description, "field": "release_description"})
     ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     ret.items.append({"item": "Name", "value": sub.germline_set_name, "tooltip": "descriptive name of this germline set", "field": "germline_set_name"})
-    ret.items.append({"item": "PubMed Ids", "value": sub.pub_ids, "tooltip": "Publications describing the germline set", "field": "pub_ids"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})
     ret.items.append({"item": "Species subgroup", "value": sub.species_subgroup, "tooltip": "Race, strain or other species subgroup to which this subject belongs", "field": "species_subgroup"})
     ret.items.append({"item": "Subgroup type", "value": sub.species_subgroup_type, "tooltip": "Category of subgroup", "field": "species_subgroup_type"})

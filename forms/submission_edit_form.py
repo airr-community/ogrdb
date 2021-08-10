@@ -39,7 +39,7 @@ class EditablePubIdTable(EditableTable):
             try:
                 if self.form.pubmed_id.data in [i.pubmed_id for i in self.items]:
                     raise ValueError('That publication is already in the table')
-                res = get_pmid_details( self.form.pubmed_id.data)
+                res = get_pmid_details(self.form.pubmed_id.data)
                 p = PubId()
                 p.pub_title = res['title']
                 p.pub_authors = res['authors']

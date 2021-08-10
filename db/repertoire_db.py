@@ -18,6 +18,8 @@ class PubId(db.Model):
     repertoire = db.relationship('Repertoire', backref = 'pub_ids')
     sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'pub_ids')
+    germline_set_id = db.Column(db.Integer, db.ForeignKey('germline_set.id'))
+    germline_set = db.relationship('GermlineSet', backref = 'pub_ids')
 
 
 def save_PubId(db, object, form, new=False):   

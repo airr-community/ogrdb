@@ -64,9 +64,15 @@ from custom_validators import *
 from wtforms import StringField, SelectField, DateField, BooleanField, IntegerField, DecimalField, TextAreaField, HiddenField, validators, MultipleFileField
 class GenomicSupportForm(FlaskForm):
     sequence_type = SelectField('Type', choices=[('Locational', 'Locational'), ('Nonlocational', 'Nonlocational')], description="Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others")
-    repository = SelectField('Repo', choices=[('Genbank', 'Genbank'), ('ENA', 'ENA')], description="Repository")
-    sequence_start = IntegerField('Start', [NonEmpty()], description="start location of the sequence of this gene in the genomic sequence")
-    sequence_end = IntegerField('End', [NonEmpty()], description="end location of the sequence of this gene in the genomic sequence")
-    accession = StringField('Acc', [validators.Length(max=255)], description="Genbank or ENA accession number, e.g MK321684")
+    sequence = TextAreaField('Sequence', [validators.Length(max=10000)], description="Sequence of interest described in this record (typically this will include gene and promoter region)")
+    notes = TextAreaField('Notes', [validators.Length(max=10000)], description="Notes")
+    repository = StringField('Repository', [validators.Length(max=255)], description="Name of the repository in which the assembly or sequence is deposited")
+    accession = StringField('Accession', [validators.Length(max=255)], description="Accession number of the assembly or sequence within the repository")
+    patch_no = StringField('Patch', [validators.Length(max=255)], description="Patch number of the assembly or sequence within the repository")
+    gff_seqid = StringField('gff seqid', [validators.Length(max=255)], description="name of the chromosome or scaffold (for assemblies only)")
+    sequence_start = IntegerField('Start', [validators.Optional()], description="start co-ordinate of the sequence of this gene in the assembly or sequence")
+    sequence_end = IntegerField('End', [validators.Optional()], description="end co-ordinate of the sequence of this gene in the assembly or sequence")
+    sense = SelectField('Sense', choices=[('forward', 'forward'), ('reverse', 'reverse')], description="+ (forward) or - (reverse)")
+    url = TextAreaField('URL', [validators.Length(max=10000)], description="Link to record")
 
 

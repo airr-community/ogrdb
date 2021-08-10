@@ -332,11 +332,15 @@ def make_GeneDescription_view(sub, private = False):
 class GenomicSupport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sequence_type = db.Column(db.String(255))
-    repository = db.Column(db.String(255))
+    sequence = db.Column(db.Text())
+    notes = db.Column(db.Text())
+    repository = db.Column(db.String(1000))
+    accession = db.Column(db.String(1000))
+    patch_no = db.Column(db.String(1000))
+    gff_seqid = db.Column(db.String(1000))
     sequence_start = db.Column(db.Integer)
     sequence_end = db.Column(db.Integer)
-    accession = db.Column(db.String(1000))
-    title = db.Column(db.Text())
+    sense = db.Column(db.String(255))
     url = db.Column(db.Text())
     sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
@@ -344,10 +348,16 @@ class GenomicSupport(db.Model):
 
 def save_GenomicSupport(db, object, form, new=False):   
     object.sequence_type = form.sequence_type.data
+    object.sequence = form.sequence.data
+    object.notes = form.notes.data
     object.repository = form.repository.data
+    object.accession = form.accession.data
+    object.patch_no = form.patch_no.data
+    object.gff_seqid = form.gff_seqid.data
     object.sequence_start = form.sequence_start.data
     object.sequence_end = form.sequence_end.data
-    object.accession = form.accession.data
+    object.sense = form.sense.data
+    object.url = form.url.data
 
     if new:
         db.session.add(object)
@@ -358,21 +368,31 @@ def save_GenomicSupport(db, object, form, new=False):
 
 def populate_GenomicSupport(db, object, form):   
     form.sequence_type.data = object.sequence_type
+    form.sequence.data = object.sequence
+    form.notes.data = object.notes
     form.repository.data = object.repository
+    form.accession.data = object.accession
+    form.patch_no.data = object.patch_no
+    form.gff_seqid.data = object.gff_seqid
     form.sequence_start.data = object.sequence_start
     form.sequence_end.data = object.sequence_end
-    form.accession.data = object.accession
+    form.sense.data = object.sense
+    form.url.data = object.url
 
 
 
 
 def copy_GenomicSupport(c_from, c_to):   
     c_to.sequence_type = c_from.sequence_type
+    c_to.sequence = c_from.sequence
+    c_to.notes = c_from.notes
     c_to.repository = c_from.repository
+    c_to.accession = c_from.accession
+    c_to.patch_no = c_from.patch_no
+    c_to.gff_seqid = c_from.gff_seqid
     c_to.sequence_start = c_from.sequence_start
     c_to.sequence_end = c_from.sequence_end
-    c_to.accession = c_from.accession
-    c_to.title = c_from.title
+    c_to.sense = c_from.sense
     c_to.url = c_from.url
 
 
@@ -380,11 +400,10 @@ def copy_GenomicSupport(c_from, c_to):
 class GenomicSupport_table(StyledTable):
     id = Col("id", show=False)
     sequence_type = StyledCol("Type", tooltip="Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others")
-    repository = StyledCol("Repo", tooltip="Repository")
-    sequence_start = StyledCol("Start", tooltip="start location of the sequence of this gene in the genomic sequence")
-    sequence_end = StyledCol("End", tooltip="end location of the sequence of this gene in the genomic sequence")
-    accession = StyledCol("Acc", tooltip="Genbank or ENA accession number, e.g MK321684")
-    title = StyledCol("Title", tooltip="Title")
+    repository = StyledCol("Repository", tooltip="Name of the repository in which the assembly or sequence is deposited")
+    accession = StyledCol("Accession", tooltip="Accession number of the assembly or sequence within the repository")
+    sequence_start = StyledCol("Start", tooltip="start co-ordinate of the sequence of this gene in the assembly or sequence")
+    sequence_end = StyledCol("End", tooltip="end co-ordinate of the sequence of this gene in the assembly or sequence")
 
 
 def make_GenomicSupport_table(results, private = False, classes=()):
@@ -400,9 +419,15 @@ class GenomicSupport_view(Table):
 def make_GenomicSupport_view(sub, private = False):
     ret = GenomicSupport_view([])
     ret.items.append({"item": "Type", "value": sub.sequence_type, "tooltip": "Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others", "field": "sequence_type"})
-    ret.items.append({"item": "Repo", "value": sub.repository, "tooltip": "Repository", "field": "repository"})
-    ret.items.append({"item": "Start", "value": sub.sequence_start, "tooltip": "start location of the sequence of this gene in the genomic sequence", "field": "sequence_start"})
-    ret.items.append({"item": "End", "value": sub.sequence_end, "tooltip": "end location of the sequence of this gene in the genomic sequence", "field": "sequence_end"})
-    ret.items.append({"item": "Acc", "value": sub.accession, "tooltip": "Genbank or ENA accession number, e.g MK321684", "field": "accession"})
+    ret.items.append({"item": "Sequence", "value": sub.sequence, "tooltip": "Sequence of interest described in this record (typically this will include gene and promoter region)", "field": "sequence"})
+    ret.items.append({"item": "Notes", "value": sub.notes, "tooltip": "Notes", "field": "notes"})
+    ret.items.append({"item": "Repository", "value": sub.repository, "tooltip": "Name of the repository in which the assembly or sequence is deposited", "field": "repository"})
+    ret.items.append({"item": "Accession", "value": sub.accession, "tooltip": "Accession number of the assembly or sequence within the repository", "field": "accession"})
+    ret.items.append({"item": "Patch", "value": sub.patch_no, "tooltip": "Patch number of the assembly or sequence within the repository", "field": "patch_no"})
+    ret.items.append({"item": "gff seqid", "value": sub.gff_seqid, "tooltip": "name of the chromosome or scaffold (for assemblies only)", "field": "gff_seqid"})
+    ret.items.append({"item": "Start", "value": sub.sequence_start, "tooltip": "start co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_start"})
+    ret.items.append({"item": "End", "value": sub.sequence_end, "tooltip": "end co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_end"})
+    ret.items.append({"item": "Sense", "value": sub.sense, "tooltip": "+ (forward) or - (reverse)", "field": "sense"})
+    ret.items.append({"item": "URL", "value": sub.url, "tooltip": "Link to record", "field": "url"})
     return ret
 

@@ -312,7 +312,7 @@ def edit_submission(id):
         populate_Submission(db, sub, form)
         populate_Repertoire(db, sub.repertoire[0], form)
         form.repository_select.data = sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else 'Other'
-        return render_template('submission_edit.html', form = form, id=id, tables=tables, attachment=len(sub.notes_entries[0].attached_files) > 0)
+        return render_template('submission_edit.html', form=form, id=id, tables=tables, attachment=len(sub.notes_entries[0].attached_files) > 0)
 
     missing_sequence_error = False
     validation_result = ValidationResult()
@@ -1424,22 +1424,17 @@ def seq_add_genomic(id):
             if support is None:
                 support = GenomicSupport()
 
-            support.accession = form.accession.data
-            support.repository = form.repository.data
             support.sequence_type = form.sequence_type.data
+            support.sequence = form.sequence.data
+            support.notes = form.notes.data
+            support.repository = form.repository.data
+            support.accession = form.accession.data
+            support.patch_no = form.patch_no.data
+            support.gff_seqid = form.gff_seqid.data
             support.sequence_start = form.sequence_start.data
             support.sequence_end = form.sequence_end.data
-
-            try:
-                if support.repository == 'Genbank':
-                    resp = get_nih_nuc_details(support.accession)
-                elif support.repository == 'ENA':
-                    resp = get_ena_nuc_details(support.accession)
-                support.title = resp['title']
-                support.url = resp['url']
-            except ValueError as e:
-                form.accession.errors = [e.args[0]]
-                return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=id, support_id="", action="Add")
+            support.sense = form.sense.data
+            support.url = form.url.data
 
             if append:
                 db.session.add(support)
@@ -2161,7 +2156,7 @@ def edit_germline_set(id):
     notes_entry_form = NotesEntryForm(obj=germline_set.notes_entries[0])
     history_form = JournalEntryForm()
     hidden_return_form = HiddenReturnForm()
-    form = AggregateForm(germline_set_form, notes_entry_form, history_form, hidden_return_form, tables['ack'].form)
+    form = AggregateForm(germline_set_form, notes_entry_form, history_form, hidden_return_form, tables['ack'].form, tables['pubmed_table'].form)
 
     foo = tables['attachments'].__html__()
 
@@ -2195,7 +2190,7 @@ def edit_germline_set(id):
 
         if valid:
             try:
-                validation_result = process_table_updates({'ack': tables['ack']}, request, db)
+                validation_result = process_table_updates({'ack': tables['ack'], 'pubmed_table': tables['pubmed_table']}, request, db)
                 if not validation_result.valid:
                     raise ValidationError()
 
@@ -2658,13 +2653,14 @@ def descs_to_fasta(descs, format):
 
 
 def germline_set_to_airr(germline_set):
-    ret = []
+    ad = []
     for desc in germline_set.gene_descriptions:
         name = desc.sequence_name
-        ad = vars(AIRRGeneDescription(desc))
-        ret.append(ad)
+        ad.append(vars(AIRRGeneDescription(desc)))
 
-    return json.dumps(ret, default=str, indent=4)
+    gs = vars(AIRRGermlineSet(germline_set, ad))
+
+    return json.dumps(gs, default=str, indent=4)
 
 
 @app.route('/download_sequences/<species>/<format>/<exc>')

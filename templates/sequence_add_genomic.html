@@ -14,14 +14,15 @@
 
             <p class="col-sm-offset-1">Please enter the repository and accession number of the supporting record.</p>
             {{ render_field_with_errors(form.sequence_type, class="form-control") }}
-
+            {{ render_field_with_errors(form.sequence, class="form-control") }}
+            {{ render_field_with_errors(form.notes, class="form-control") }}
             {{ render_field_with_errors(form.repository, class="form-control") }}
-
             {{ render_field_with_errors(form.accession, class="form-control") }}
-
+            {{ render_field_with_errors(form.patch_no, class="form-control") }}
+            {{ render_field_with_errors(form.gff_seqid, class="form-control") }}
             {{ render_field_with_errors(form.sequence_start, class="form-control") }}
-
             {{ render_field_with_errors(form.sequence_end, class="form-control") }}
+            {{ render_field_with_errors(form.sense, class="form-control") }}
 
             <div class="form-group row col-sm-10">
                 <input type="submit" value="Cancel" class="btn btn-default col-sm-offset-1" id="cancel" name="cancel">

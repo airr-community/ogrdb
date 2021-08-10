@@ -12,7 +12,6 @@ class GermlineSetForm(FlaskForm):
     lab_address = StringField('Lab Address', [validators.Length(max=255)], description="Institutional address of corresponding author")
     release_description = StringField('Release Description', [validators.Length(max=255)])
     germline_set_name = StringField('Name', [validators.Length(max=255), NonEmpty()], description="descriptive name of this germline set")
-    pub_ids = StringField('PubMed Ids', [validators.Length(max=255)], description="Publications describing the germline set")
     species = StringField('Species', [validators.Length(max=255), NonEmpty()], description="Binomial designation of subject's species")
     species_subgroup = StringField('Species subgroup', [validators.Length(max=255)], description="Race, strain or other species subgroup to which this subject belongs")
     species_subgroup_type = SelectField('Subgroup type', choices=[('none', 'none'), ('breed', 'breed'), ('strain', 'strain'), ('inbred', 'inbred'), ('outbred', 'outbred'), ('locational', 'locational')], description="Category of subgroup")

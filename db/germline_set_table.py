@@ -6,10 +6,10 @@
 from db.attached_file_db import make_AttachedFile_table
 from db.notes_entry_db import NotesEntry
 from forms.attached_file_form import AttachedFileForm
-from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable
-from db.repertoire_db import make_Acknowledgements_table
+from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable, EditablePubIdTable
+from db.repertoire_db import make_Acknowledgements_table, make_PubId_table
 from db.journal_entry_db import *
-from forms.repertoire_form import AcknowledgementsForm
+from forms.repertoire_form import AcknowledgementsForm, PubIdForm
 from textile_filter import *
 from flask import url_for
 from db.gene_description_db import *
@@ -73,6 +73,7 @@ def setup_germline_set_edit_tables(db, germline_set):
                                                       delete_route='delete_germline_set_attachment',
                                                       delete_message='Are you sure you wish to delete the attachment?',
                                                       download_route='download_germline_set_attachment')
+    tables['pubmed_table'] = EditablePubIdTable(make_PubId_table(germline_set.pub_ids), 'pubmed', PubIdForm, germline_set.pub_ids, legend='Add Publication')
 
     history = db.session.query(JournalEntry).filter_by(germline_set_id = germline_set.id, type ='history').all()
     tables['history'] = []
