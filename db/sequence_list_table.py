@@ -51,6 +51,10 @@ class SequenceListActionCol(StyledCol):
 
 class SequenceListIMGTCol(StyledCol):
     def td_contents(self, item, attr_list):
+        if item is None:
+            print('item is nome')
+        else:
+            print('imgt_name: %s item.species: %s' % (item.imgt_name, item.species))
         if item.imgt_name:
             imgt_config = get_imgt_config()
             imgt_species = {v['alias']: k for k, v in imgt_config['species'].items()}
