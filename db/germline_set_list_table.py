@@ -17,7 +17,7 @@ class GermlineSetListActionCol(StyledCol):
         if item.viewable:
             fmt_string.append('<a href="%s">%s</a>' % (url_for('germline_set', id=item.id), item.germline_set_name))
         else:
-            fmt_string.append(item.id)
+            fmt_string.append(item.germline_set_name)
 
         if item.editable:
             fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for('edit_germline_set', id=item.id)))
