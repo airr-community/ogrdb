@@ -2655,7 +2655,6 @@ def descs_to_fasta(descs, format):
 def germline_set_to_airr(germline_set):
     ad = []
     for desc in germline_set.gene_descriptions:
-        name = desc.sequence_name
         ad.append(vars(AIRRGeneDescription(desc)))
 
     gs = vars(AIRRGermlineSet(germline_set, ad))
@@ -2691,8 +2690,12 @@ def download_sequences(species, format, exc):
         return redirect('/')
 
     if format == 'airr':
-        dl = descs_to_airr(results)
-        ext = 'yaml'
+        ad = []
+        for desc in results:
+            ad.append(vars(AIRRGeneDescription(desc)))
+
+        dl = json.dumps(ad, default=str, indent=4)
+        ext = 'json'
     else:
         dl = descs_to_fasta(results, format)
         ext = 'fa'
