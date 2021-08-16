@@ -2732,7 +2732,10 @@ def add_gapped():
         if desc.locus == 'IGL':
             desc.chromosome = 22
 
-            db.session.commit()
+        if desc.species is None:
+            desc.species = 'Human'
+
+        db.session.commit()
 
     return report
 
