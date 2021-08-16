@@ -1514,8 +1514,8 @@ def edit_sequence(id):
                     valid = False
 
         if form.action.data == 'published':
-            if len(seq.inferred_sequences) < 1:
-                flash("Please provide at least one inferred sequence as evidence.")
+            if len(seq.inferred_sequences) < 1 and len(seq.genomic_accessions) < 1:
+                flash("Please provide at least one inferred sequence or genomic sequence as evidence.")
                 form.action.data = ''
                 valid = False
 
