@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from flask import Flask, render_template, request, redirect, Response, Blueprint
+from flask import Flask, render_template, request, redirect, Response, Blueprint, jsonify
 from flask_security import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -1778,6 +1778,9 @@ def draft_sequence(id):
         for gen in seq.supporting_observations:
             new_seq.supporting_observations.append(gen)
 
+        for acc in seq.genomic_accessions:
+            new_seq.genomic_accessions.append(acc)
+
         for journal_entry in seq.journal_entries:
             new_entry = JournalEntry()
             copy_JournalEntry(journal_entry, new_entry)
@@ -2151,14 +2154,16 @@ def edit_germline_set(id):
         germline_set.notes_entries.append(NotesEntry())
         db.session.commit()
 
+    update_germline_set_seqs(germline_set)
+    db.session.commit()
+
     tables = setup_germline_set_edit_tables(db, germline_set)
     germline_set_form = GermlineSetForm(obj=germline_set)
     notes_entry_form = NotesEntryForm(obj=germline_set.notes_entries[0])
     history_form = JournalEntryForm()
     hidden_return_form = HiddenReturnForm()
+    changes = list_germline_set_changes(germline_set)
     form = AggregateForm(germline_set_form, notes_entry_form, history_form, hidden_return_form, tables['ack'].form, tables['pubmed_table'].form)
-
-    foo = tables['attachments'].__html__()
 
     if request.method == 'POST':
         form.validate()
@@ -2211,7 +2216,12 @@ def edit_germline_set(id):
 
                     germline_set.release_version = max_version[0] + 1 if max_version[0] else 1
                     germline_set.release_date = datetime.date.today()
-                    add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=form.body.data)
+
+                    hist_notes = form.body.data
+                    if changes != '':
+                        hist_notes += Markup('<br>') + changes
+
+                    add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=hist_notes)
                     send_mail('Sequence %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
 
                     germline_set.status = 'published'
@@ -2253,7 +2263,15 @@ def edit_germline_set(id):
                     db.session.commit()
 
             except ValidationError:
-                return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, jump=validation_result.tag, version=germline_set.release_version)
+                return render_template('germline_set_edit.html',
+                                       form=form,
+                                       germline_set_name=germline_set.germline_set_name,
+                                       id=id,
+                                       set_id=germline_set.germline_set_id,
+                                       tables=tables,
+                                       changes=changes,
+                                       jump=validation_result.tag,
+                                       version=germline_set.release_version)
 
             if validation_result.tag:
                 return redirect(url_for('edit_germline_set', id=id, _anchor=validation_result.tag))
@@ -2263,14 +2281,30 @@ def edit_germline_set(id):
         else:
             for field in tables['ack'].form:
                 if len(field.errors) > 0:
-                    return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, jump='ack', version=germline_set.release_version)
+                    return render_template('germline_set_edit.html',
+                                           form=form,
+                                           germline_set_name=germline_set.germline_set_name,
+                                           id=id,
+                                           set_id=germline_set.germline_set_id,
+                                           tables=tables,
+                                           changes=changes,
+                                           jump='ack',
+                                           version=germline_set.release_version)
 
-    return render_template('germline_set_edit.html', form=form, germline_set_name=germline_set.germline_set_name, id=id, set_id=germline_set.germline_set_id, tables=tables, version=germline_set.release_version)
+    return render_template('germline_set_edit.html',
+                           form=form,
+                           germline_set_name=germline_set.germline_set_name,
+                           id=id,
+                           set_id=germline_set.germline_set_id,
+                           tables=tables,
+                           version=germline_set.release_version,
+                           changes=changes,
+                           )
 
 
 def check_set_view(id):
     try:
-        set = db.session.query(GermlineSet).filter_by(id = id).one_or_none()
+        set = db.session.query(GermlineSet).filter_by(id=id).one_or_none()
         if set is None:
             flash('Record not found')
             return None
@@ -2407,6 +2441,8 @@ def draft_germline_set(id):
             copy_JournalEntry(journal_entry, new_entry)
             new_set.journal_entries.append(new_entry)
 
+        update_germline_set_seqs(new_set)
+
         db.session.commit()
     return ''
 
@@ -2432,6 +2468,62 @@ def check_set_withdraw(id):
         return None
 
     return set
+
+
+def update_germline_set_seqs(germline_set):
+    for desc in list(germline_set.gene_descriptions):
+        gd = db.session.query(GeneDescription).filter(GeneDescription.description_id == desc.description_id, GeneDescription.status == 'draft').one_or_none()
+        if gd is None:
+            gd = db.session.query(GeneDescription).filter(GeneDescription.description_id == desc.description_id, GeneDescription.status == 'published').one_or_none()
+        if gd and gd != desc:
+            germline_set.gene_descriptions.remove(desc)
+            germline_set.gene_descriptions.append(gd)
+
+
+def list_germline_set_changes(germline_set):
+    prev = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'published').one_or_none()
+    if prev is None:
+        prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'withdrawn').all()
+
+        if len(prevs) > 0:
+            prev = prevs.sorted(key=attrgetter('release_version'))[0]
+
+    if prev is None:
+        return ''
+
+    current_descs = {}
+    for desc in germline_set.gene_descriptions:
+        current_descs[desc.description_id] = desc
+
+    prev_descs = {}
+    for desc in prev.gene_descriptions:
+        prev_descs[desc.description_id] = desc
+
+    history = ['Changes compared to version %d:' % prev.release_version]
+
+    for gid, prev_desc in prev_descs.items():
+        if gid not in current_descs.keys():
+            history.append('Sequence %s (%s) removed' % (prev_desc.sequence_name, prev_desc.coding_sequence_identifier))
+
+    for gid, current_desc in current_descs.items():
+        if gid not in prev_descs.keys():
+            history.append('Sequence %s (%s) added' % (current_desc.sequence_name, current_desc.coding_sequence_identifier))
+        elif current_desc.id != prev_descs[gid].id:
+            if current_desc.status == 'draft':
+                history.append('Sequence %s updated from v %d to draft' % (current_desc.sequence_name, prev_descs[gid].release_version))
+            else:
+                history.append('Sequence %s updated: v %d -> %d' % (current_desc.sequence_name, prev_descs[gid].release_version, current_desc.release_version))
+            if current_desc.coding_sequence_identifier != prev_descs[gid].coding_sequence_identifier:
+                history.append('Sequence %s updated: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].coding_sequence_identifier, current_desc.coding_sequence_identifier))
+            if current_desc.sequence_name != prev_descs[gid].sequence_name:
+                history.append('Sequence name changed: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].sequence_name))
+            if current_desc.imgt_name != prev_descs[gid].imgt_name:
+                history.append('Sequence %s IUIS name changed: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].imgt_name, current_desc.imgt_name))
+
+    if len(history) == 1:
+        history.append('None')
+
+    return Markup('<br>'.join(history))
 
 
 @app.route('/withdraw_germline_set/<id>', methods=['POST'])

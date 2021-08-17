@@ -87,6 +87,14 @@
                         {% endfor %}
                     </div>
                 </div>
+                {% if changes != '' %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Changes from published version</h3>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            {{  changes }}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -114,10 +122,13 @@
           </div>
         </div>
 
-        <input type="submit" value="Save Draft" class="btn btn-primary col-sm-offset-1" id="save_draft_btn" name="save_draft_btn">
-        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
-                data-header="Publish Germline Set" data-instr="Please provide brief notes on this version"
-                data-title="Germline Set {{ set_id }} - Publish" id="published">Publish</button>
+        <div class="row">
+            <h3></h3>
+            <input type="submit" value="Save Draft" class="btn btn-primary col-sm-offset-1" id="save_draft_btn" name="save_draft_btn">
+            <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
+                    data-header="Publish Germline Set" data-instr="Please provide brief notes on this version"
+                    data-title="Germline Set {{ set_id }} - Publish" id="published">Publish</button>
+        </div>
     </div>
 
 </form>

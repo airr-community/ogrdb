@@ -9,7 +9,7 @@ from wtforms import StringField, SelectField, DateField, BooleanField, IntegerFi
 class GeneDescriptionForm(FlaskForm):
     maintainer = StringField('Curator', [validators.Length(max=255)], description="Maintainer of this sequence record")
     lab_address = StringField('Curator address', [validators.Length(max=255)], description="Institution and full address of corresponding author")
-    imgt_name = StringField('IMGT Name', [validators.Length(max=255)], description="The name of this sequence as assigned by IMGT")
+    imgt_name = StringField('IUIS Name', [validators.Length(max=255)], description="The name of this sequence as assigned by IUIS")
     sequence_name = StringField('Sequence Name', [validators.Length(max=255), NonEmpty()], description="The canonical name of this sequence as assigned by IARC")
     alt_names = StringField('Alternative names', [validators.Length(max=255)], description="Alternative names for this sequence")
     chromosome = IntegerField('Chromosome', [validators.Optional()], description="chromosome on which the gene is located")

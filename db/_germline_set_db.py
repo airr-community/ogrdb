@@ -14,10 +14,10 @@ class GermlineSetMixin:
             db.session.delete(a)
 
     def can_see(self, user):
-        return(self.status == 'published' or
-            user and user.is_authenticated and
+        return(self.status == 'published' or self.status == 'superceded' or
+               (user and user.is_authenticated and
                #(user.has_role('Admin') or
-                user.has_role(self.species))
+                user.has_role(self.species)))
 
     def can_edit(self, user):
         return((user and user.is_authenticated) and
