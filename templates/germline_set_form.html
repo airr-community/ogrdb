@@ -7,8 +7,6 @@
 
         {{ render_field_with_errors(form.lab_address, class="form-control") }}
 
-        {{ render_field_with_errors(form.release_description, class="form-control") }}
-
         {{ render_field_with_errors(form.germline_set_name, class="form-control") }}
 
         {{ render_field_with_errors(form.species, class="form-control") }}
@@ -18,3 +16,5 @@
         {{ render_field_with_errors(form.species_subgroup_type, class="form-control") }}
 
         {{ render_narrow_field_with_errors(form.locus, class="form-control") }}
+
+        {{ render_field_with_errors(form.release_description, class="form-control") }}

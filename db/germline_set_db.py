@@ -23,9 +23,6 @@ class GermlineSet(db.Model, GermlineSetMixin):
     author = db.Column(db.String(1000))
     lab_name = db.Column(db.String(1000))
     lab_address = db.Column(db.String(1000))
-    release_version = db.Column(db.Integer)
-    release_description = db.Column(db.String(1000))
-    release_date = db.Column(db.String(1000))
     germline_set_name = db.Column(db.String(1000))
     germline_set_ref = db.Column(db.String(1000))
     status = db.Column(db.String(255))
@@ -33,6 +30,9 @@ class GermlineSet(db.Model, GermlineSetMixin):
     species_subgroup = db.Column(db.String(1000))
     species_subgroup_type = db.Column(db.String(255))
     locus = db.Column(db.String(255))
+    release_version = db.Column(db.Integer)
+    release_description = db.Column(db.String(1000))
+    release_date = db.Column(db.String(1000))
 
     gene_descriptions = db.relationship('GeneDescription', secondary = gene_descriptions_germline_sets, backref = db.backref('germline_sets', lazy='dynamic'))
 
@@ -41,12 +41,12 @@ def save_GermlineSet(db, object, form, new=False):
     object.author = form.author.data
     object.lab_name = form.lab_name.data
     object.lab_address = form.lab_address.data
-    object.release_description = form.release_description.data
     object.germline_set_name = form.germline_set_name.data
     object.species = form.species.data
     object.species_subgroup = form.species_subgroup.data
     object.species_subgroup_type = form.species_subgroup_type.data
     object.locus = form.locus.data
+    object.release_description = form.release_description.data
 
     if new:
         db.session.add(object)
@@ -59,12 +59,12 @@ def populate_GermlineSet(db, object, form):
     form.author.data = object.author
     form.lab_name.data = object.lab_name
     form.lab_address.data = object.lab_address
-    form.release_description.data = object.release_description
     form.germline_set_name.data = object.germline_set_name
     form.species.data = object.species
     form.species_subgroup.data = object.species_subgroup
     form.species_subgroup_type.data = object.species_subgroup_type
     form.locus.data = object.locus
+    form.release_description.data = object.release_description
 
 
 
@@ -74,9 +74,6 @@ def copy_GermlineSet(c_from, c_to):
     c_to.author = c_from.author
     c_to.lab_name = c_from.lab_name
     c_to.lab_address = c_from.lab_address
-    c_to.release_version = c_from.release_version
-    c_to.release_description = c_from.release_description
-    c_to.release_date = c_from.release_date
     c_to.germline_set_name = c_from.germline_set_name
     c_to.germline_set_ref = c_from.germline_set_ref
     c_to.status = c_from.status
@@ -84,15 +81,19 @@ def copy_GermlineSet(c_from, c_to):
     c_to.species_subgroup = c_from.species_subgroup
     c_to.species_subgroup_type = c_from.species_subgroup_type
     c_to.locus = c_from.locus
+    c_to.release_version = c_from.release_version
+    c_to.release_description = c_from.release_description
+    c_to.release_date = c_from.release_date
 
 
 
 class GermlineSet_table(StyledTable):
     id = Col("id", show=False)
-    author = StyledCol("Author", tooltip="Corresponding author")
+    species = StyledCol("Species", tooltip="Binomial designation of subject's species")
+    species_subgroup = StyledCol("Species subgroup", tooltip="Race, strain or other species subgroup to which this subject belongs")
+    locus = StyledCol("Locus", tooltip="Gene locus")
     release_version = StyledCol("Release Version", tooltip="Version number of this record, allocated automatically")
     release_date = StyledCol("Release Date", tooltip="Date of this release")
-    locus = StyledCol("Locus", tooltip="Gene locus")
 
 
 def make_GermlineSet_table(results, private = False, classes=()):
@@ -110,13 +111,13 @@ def make_GermlineSet_view(sub, private = False):
     ret.items.append({"item": "Author", "value": sub.author, "tooltip": "Corresponding author", "field": "author"})
     ret.items.append({"item": "Lab Name", "value": sub.lab_name, "tooltip": "Department of corresponding author", "field": "lab_name"})
     ret.items.append({"item": "Lab Address", "value": sub.lab_address, "tooltip": "Institutional address of corresponding author", "field": "lab_address"})
-    ret.items.append({"item": "Release Version", "value": sub.release_version, "tooltip": "Version number of this record, allocated automatically", "field": "release_version"})
-    ret.items.append({"item": "Release Description", "value": sub.release_description, "field": "release_description"})
-    ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     ret.items.append({"item": "Name", "value": sub.germline_set_name, "tooltip": "descriptive name of this germline set", "field": "germline_set_name"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})
     ret.items.append({"item": "Species subgroup", "value": sub.species_subgroup, "tooltip": "Race, strain or other species subgroup to which this subject belongs", "field": "species_subgroup"})
     ret.items.append({"item": "Subgroup type", "value": sub.species_subgroup_type, "tooltip": "Category of subgroup", "field": "species_subgroup_type"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
+    ret.items.append({"item": "Release Version", "value": sub.release_version, "tooltip": "Version number of this record, allocated automatically", "field": "release_version"})
+    ret.items.append({"item": "Release Description", "value": sub.release_description, "field": "release_description"})
+    ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
     return ret
 

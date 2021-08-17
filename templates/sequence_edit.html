@@ -258,14 +258,22 @@
 
     function utr_display() {
         if($("#inference_type").val() != 'Rearranged Only') {
-            $("label[for='l_region_start']").parent().show();
-            $("label[for='l_region_end']").parent().show();
             if($("#sequence_type").val() == 'V') {
                 $("label[for='utr_5_prime_start']").parent().show();
                 $("label[for='utr_5_prime_end']").parent().show();
+                $("label[for='leader_1_start']").parent().show();
+                $("label[for='leader_1_end']").parent().show();
+                $("label[for='leader_2_start']").parent().show();
+                $("label[for='leader_2_end']").parent().show();
                 $("label[for='v_rs_start']").parent().show();
                 $("label[for='v_rs_end']").parent().show();
             } else {
+                $("label[for='utr_5_prime_start']").parent().hide();
+                $("label[for='utr_5_prime_end']").parent().hide();
+                $("label[for='leader_1_start']").parent().hide();
+                $("label[for='leader_1_end']").parent().hide();
+                $("label[for='leader_2_start']").parent().hide();
+                $("label[for='leader_2_end']").parent().hide();
                 $("label[for='v_rs_start']").parent().hide();
                 $("label[for='v_rs_end']").parent().hide();
             }
@@ -288,10 +296,21 @@
                 $("label[for='j_rs_end']").parent().hide();
             }
         } else {
-            $("label[for='l_region_start']").parent().hide();
-            $("label[for='l_region_end']").parent().hide();
-            $("label[for='utr_5_prime_start']").parent().hide();
-            $("label[for='utr_5_prime_end']").parent().hide();
+            if($("#sequence_type").val() == 'V') {
+                $("label[for='leader_1_start']").parent().show();
+                $("label[for='leader_1_end']").parent().show();
+                $("label[for='leader_2_start']").parent().show();
+                $("label[for='leader_2_end']").parent().show();
+                $("label[for='utr_5_prime_start']").parent().show();
+                $("label[for='utr_5_prime_end']").parent().show();
+            } else {
+                $("label[for='leader_1_start']").parent().hide();
+                $("label[for='leader_1_end']").parent().hide();
+                $("label[for='leader_2_start']").parent().hide();
+                $("label[for='leader_2_end']").parent().hide();
+                $("label[for='utr_5_prime_start']").parent().hide();
+                $("label[for='utr_5_prime_end']").parent().hide();
+            }
             $("label[for='v_rs_start']").parent().hide();
             $("label[for='v_rs_end']").parent().hide();
             $("label[for='d_rs_3_prime_start']").parent().hide();

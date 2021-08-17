@@ -1214,7 +1214,6 @@ GermlineSet:
             type: string
             nonblank: true
             description: Corresponding author
-            tableview: true
             label: Author
         lab_name:
             type: string
@@ -1224,27 +1223,6 @@ GermlineSet:
             type: string
             description: Institutional address of corresponding author
             label: Lab Address
-        release_version:
-            type: integer
-            nonblank: true
-            description: Version number of this record, allocated automatically
-            tableview: true
-            width: narrow
-            hide: true
-            inview: true
-            label: Release Version
-        release_description:
-            type: string
-            label: Release Description
-        release_date:
-            type: string
-            nonblank: true
-            description: Date of this release
-            tableview: true
-            width: narrow
-            hide: true
-            inview: true
-            label: Release Date
         germline_set_name:
             type: string
             nonblank: true
@@ -1268,10 +1246,12 @@ GermlineSet:
             nonblank: true
             description: Binomial designation of subject's species
             label: Species
+            tableview: true
         species_subgroup:
             type: string
             description: Race, strain or other species subgroup to which this subject belongs
             label: Species subgroup
+            tableview: true
         species_subgroup_type:
             type: ['none', 'breed', 'strain', 'inbred', 'outbred', 'locational']
             description: Category of subgroup
@@ -1282,6 +1262,27 @@ GermlineSet:
             label: Locus
             tableview: true
             width: narrow
+        release_version:
+            type: integer
+            nonblank: true
+            description: Version number of this record, allocated automatically
+            tableview: true
+            width: narrow
+            hide: true
+            inview: true
+            label: Release Version
+        release_description:
+            type: string
+            label: Release Description
+        release_date:
+            type: string
+            nonblank: true
+            description: Date of this release
+            tableview: true
+            width: narrow
+            hide: true
+            inview: true
+            label: Release Date
         gene_descriptions:
             type: list of gene descriptions
             many-relationship: [GeneDescription, germline_sets, gene_description, germline_set]
