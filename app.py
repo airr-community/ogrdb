@@ -2474,6 +2474,7 @@ def add_gene_to_set(id):
     gene_descriptions = db.session.query(GeneDescription).filter(GeneDescription.species == germline_set.species)\
         .filter(GeneDescription.status.in_(['published', 'draft'])).all()
     gene_descriptions = [g for g in gene_descriptions if g not in germline_set.gene_descriptions]
+    gene_descriptions = [g for g in gene_descriptions if germline_set.locus == g.locus]
     gene_descriptions.sort(key=attrgetter('sequence_name'))
     form.create.label.text = "Add"
     form.gene_description_id.choices = [(g.id, '%s (%s)' % (g.sequence_name, g.status)) for g in gene_descriptions]
