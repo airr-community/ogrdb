@@ -99,12 +99,11 @@ def list_germline_set_changes(germline_set):
 
     for gid, prev_desc in prev_descs.items():
         if gid not in current_descs.keys():
-            removed.append(prev_descs[gid].sequence_name)
+            removed.append('<a href="%s">%s</a>' % (url_for('sequence', id=prev_descs[gid].id), prev_descs[gid].sequence_name))
 
     for gid, current_desc in current_descs.items():
         if gid not in prev_descs.keys():
-            added.append(current_desc.sequence_name)
-
+            added.append('<a href="%s">%s</a>' % (url_for('sequence', id=current_desc.id), current_desc.sequence_name))
 
     for gid, current_desc in current_descs.items():
         if gid in prev_descs.keys() and current_desc.id != prev_descs[gid].id:
@@ -128,16 +127,18 @@ def list_germline_set_changes(germline_set):
     history = []
 
     if len(added) > 0:
-        history.append(Markup(','.join(added)))
+        history.append(Markup('<b>Added</b><br>' + ','.join(added)))
 
     if len(removed) > 0:
-        history.append(Markup(','.join(removed)))
+        history.append(Markup('<b>Removed</b><br>' + ','.join(removed)))
 
     if len(changed) > 0:
         history.append(Markup('<b>Changed</b><br>' + '<br>'.join(changed)))
 
     if len(history) > 0:
         return Markup('<br>'.join(history))
+
+    return ''
 
 
 def setup_germline_set_edit_tables(db, germline_set):

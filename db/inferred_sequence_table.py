@@ -352,7 +352,7 @@ def list_sequence_changes(gene_description):
 
     for i in range(len(prev_view.items)):
         if prev_view.items[i]['value'] != this_view.items[i]['value'] \
-                and prev_view.items[i]['item'] not in ('Version', 'Release Notes'):
+                and prev_view.items[i]['item'] not in ('Version', 'Release Notes', 'Release Date'):
             item = prev_view.items[i]
             item['value2'] = this_view.items[i]['value']
             diff_view.items.append(item)

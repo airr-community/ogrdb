@@ -2189,12 +2189,15 @@ def edit_germline_set(id):
             for gene_description in germline_set.gene_descriptions:
                 if gene_description.status == 'draft':
                     flash("Can't publish this set while gene %s is in draft." % gene_description.sequence_name)
+                    form.action.data = ''
                     valid = False
                 if gene_description.status == 'published' and gene_description.affirmation_level == 0:
                     flash("Can't publish this set while gene %s is at affirmation level 0." % gene_description.sequence_name)
+                    form.action.data = ''
                     valid = False
                 if gene_description.status == 'withdrawn':
                     flash("Can't publish this set while gene %s is withdrawn." % gene_description.sequence_name)
+                    form.action.data = ''
                     valid = False
 
         if valid:
