@@ -360,6 +360,10 @@ def list_sequence_changes(gene_description):
             diff_view.value.name = 'v' + str(prev_view.items[i]['value'])
             diff_view.value2.name = ('v' + str(this_view.items[i]['value']) if gene_description.status != 'draft' else 'draft')
 
+    if prev.notes != gene_description.notes:
+        item = {'item': 'Notes', 'value': '', 'value2': 'changed', 'field': 'notea'}
+        diff_view.items.append(item)
+
     return diff_view if len(diff_view.items) > 0 else None
 
 
