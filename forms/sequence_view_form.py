@@ -128,9 +128,10 @@ def setup_sequence_view_tables(db, seq, private):
     tables['history'] = []
     tables['diffs'] = list_sequence_changes(seq)
 
-    for row in tables['diffs'].items:
-        row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text)
-        row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text)
+    if tables['diffs'] is not None:
+        for row in tables['diffs'].items:
+            row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text)
+            row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text)
 
     for entry in history:
         t = StyledTable([entry], classes=['tablefixed'])
