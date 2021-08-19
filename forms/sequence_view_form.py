@@ -8,7 +8,7 @@
 
 from db.gene_description_db import *
 from db.journal_entry_db import *
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table
+from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table, list_sequence_changes
 from forms.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
@@ -24,6 +24,31 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
     t=create_table(base=GeneDescriptionNotes_table)
     ret = t(results, classes=classes)
     return ret
+
+
+def pretty_item(fn, value, seq, trailer_text):
+    if fn == 'sequence':
+        if value is not None and len(value) > 0:
+            value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
+                % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
+        else:
+            value = 'None'
+    elif fn == 'coding_seq_imgt':
+        if value is not None and len(value) > 0:
+            if seq.sequence_type == 'V':
+                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt).replace('btn_view_seq', 'seq_coding_view'))
+            else:
+                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '').replace('btn_view_seq', 'seq_coding_view'))
+        else:
+            value = 'None'
+    elif fn == 'release_description':
+        if value is not None and len(value) > 0:
+            value = Markup(safe_textile(value))
+    elif fn == 'release_date':
+        if value is not None:
+            value = value.strftime('%Y-%m-%d')
+
+    return value
 
 
 def setup_sequence_view_tables(db, seq, private):
@@ -76,26 +101,10 @@ def setup_sequence_view_tables(db, seq, private):
         trailer_text = ''
 
     for fn, field in gv_items.items():
-        if fn == 'sequence':
-            if field['value'] is not None and len(field['value']) > 0:
-                field['value'] =  Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                    % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
-            else:
-                field['value'] = 'None'
-        elif fn == 'coding_seq_imgt':
-            if field['value'] is not None and len(field['value']) > 0:
-                if seq.sequence_type == 'V':
-                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt).replace('btn_view_seq', 'seq_coding_view'))
-                else:
-                    field['value'] = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '').replace('btn_view_seq', 'seq_coding_view'))
-            else:
-                field['value'] = 'None'
-        elif fn == 'release_description':
-            if field['value'] is not None and len(field['value']) > 0:
-                field['value'] = Markup(safe_textile(field['value']))
+        rep = pretty_item(fn, field['value'], seq, trailer_text)
+        gv_items[fn]['value'] = rep
 
     tables = {}
-
     tables['description'] = {}
 
     for sn, fields in sections.items():
@@ -117,6 +126,11 @@ def setup_sequence_view_tables(db, seq, private):
     tables['genomic_observations'] = setup_genomic_support_table(seq, action=False)
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []
+    tables['diffs'] = list_sequence_changes(seq)
+
+    for row in tables['diffs'].items:
+        row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text)
+        row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text)
 
     for entry in history:
         t = StyledTable([entry], classes=['tablefixed'])

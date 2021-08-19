@@ -1,12 +1,12 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2, 
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
 # subclasses for flask_table that impose styles we want and allow columnm header text to be rotated and to have tooltips
 
-from flask_table import Table, Col, LinkCol
+from flask_table import Table, Col, LinkCol, DateCol
 from flask_table.html import element
 from flask import Markup
 from sequence_format import *
@@ -65,6 +65,20 @@ class StyledCol(Col):
             kwargs['th_html_attrs'] = {'class':'th_back'}
 
         super(StyledCol, self).__init__(*args, **kwargs)
+
+
+class StyledDateCol(DateCol):
+    def __init__(self, *args, **kwargs):
+        if 'tooltip' in kwargs:
+            kwargs['th_html_attrs'] = {'class':'th_back', 'data-toggle':"tooltip", 'data-placement':"top", 'data-container':"body", 'title':kwargs['tooltip']}
+            del(kwargs['tooltip'])
+        else:
+            kwargs['th_html_attrs'] = {'class':'th_back'}
+
+        if 'date_format' not in kwargs:
+            kwargs['date_format'] = 'y-MM-dd'
+
+        super(StyledDateCol, self).__init__(*args, **kwargs)
 
 
 class StyledLinkCol(LinkCol):

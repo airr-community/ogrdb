@@ -9,23 +9,23 @@ from flask_table import Table, Col, LinkCol, create_table
 from db.view_table import ViewCol
 from sqlalchemy.orm import backref
 
-
+                        
 inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descriptions',
     db.Column('inferred_sequences_id', db.Integer(), db.ForeignKey('inferred_sequence.id')),
     db.Column('gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
+    
 
-
-
+                        
 supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions',
     db.Column('supporting_observations_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('supporting_gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
+    
 
-
-
+                        
 duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates',
     db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('published_duplicates_id', db.Integer(), db.ForeignKey('gene_description.id')))
-
+    
 
 from db._gene_description_db import *
 
@@ -78,11 +78,11 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     paralogs = db.Column(db.String(1000))
     notes = db.Column(db.Text())
 
-    inferred_sequences = db.relationship('InferredSequence', secondary=inferred_sequences_gene_descriptions, backref=db.backref('gene_descriptions', lazy='dynamic'))
+    inferred_sequences = db.relationship('InferredSequence', secondary = inferred_sequences_gene_descriptions, backref = db.backref('gene_descriptions', lazy='dynamic'))
 
-    supporting_observations = db.relationship('Genotype', secondary=supporting_observations_supporting_gene_descriptions, backref=db.backref('supporting_gene_descriptions', lazy='dynamic'))
+    supporting_observations = db.relationship('Genotype', secondary = supporting_observations_supporting_gene_descriptions, backref = db.backref('supporting_gene_descriptions', lazy='dynamic'))
 
-    duplicate_sequences = db.relationship('Genotype', secondary=duplicate_sequences_published_duplicates, backref=db.backref('published_duplicates', lazy='dynamic'))
+    duplicate_sequences = db.relationship('Genotype', secondary = duplicate_sequences_published_duplicates, backref = db.backref('published_duplicates', lazy='dynamic'))
     inferred_extension = db.Column(db.Boolean)
     ext_3prime = db.Column(db.Text())
     start_3prime_ext = db.Column(db.Integer)
@@ -93,7 +93,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     curational_tags = db.Column(db.String(255))
 
 
-def save_GeneDescription(db, object, form, new=False):
+def save_GeneDescription(db, object, form, new=False):   
     object.maintainer = form.maintainer.data
     object.lab_address = form.lab_address.data
     object.imgt_name = form.imgt_name.data
@@ -142,12 +142,12 @@ def save_GeneDescription(db, object, form, new=False):
 
     if new:
         db.session.add(object)
+        
+    db.session.commit()   
 
-    db.session.commit()
 
 
-
-def populate_GeneDescription(db, object, form):
+def populate_GeneDescription(db, object, form):   
     form.maintainer.data = object.maintainer
     form.lab_address.data = object.lab_address
     form.imgt_name.data = object.imgt_name
@@ -197,7 +197,7 @@ def populate_GeneDescription(db, object, form):
 
 
 
-def copy_GeneDescription(c_from, c_to):
+def copy_GeneDescription(c_from, c_to):   
     c_to.maintainer = c_from.maintainer
     c_to.lab_address = c_from.lab_address
     c_to.release_version = c_from.release_version
@@ -346,7 +346,7 @@ class GenomicSupport(db.Model):
     gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
 
 
-def save_GenomicSupport(db, object, form, new=False):
+def save_GenomicSupport(db, object, form, new=False):   
     object.sequence_type = form.sequence_type.data
     object.sequence = form.sequence.data
     object.notes = form.notes.data
@@ -361,12 +361,12 @@ def save_GenomicSupport(db, object, form, new=False):
 
     if new:
         db.session.add(object)
+        
+    db.session.commit()   
 
-    db.session.commit()
 
 
-
-def populate_GenomicSupport(db, object, form):
+def populate_GenomicSupport(db, object, form):   
     form.sequence_type.data = object.sequence_type
     form.sequence.data = object.sequence
     form.notes.data = object.notes
@@ -382,7 +382,7 @@ def populate_GenomicSupport(db, object, form):
 
 
 
-def copy_GenomicSupport(c_from, c_to):
+def copy_GenomicSupport(c_from, c_to):   
     c_to.sequence_type = c_from.sequence_type
     c_to.sequence = c_from.sequence
     c_to.notes = c_from.notes

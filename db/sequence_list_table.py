@@ -6,6 +6,9 @@
 
 from flask import url_for
 from copy import deepcopy
+
+from flask_table import DateCol
+
 from imgt.imgt_ref import get_imgt_config
 from db.styled_table import *
 from db.gene_description_db import *
@@ -15,9 +18,9 @@ class SequenceListActionCol(StyledCol):
         fmt_string = []
 
         if item.viewable:
-            fmt_string.append('<a href="%s">%s</a>'  % (url_for('sequence', id=item.id), item.sequence_name))
+            fmt_string.append('<a href="%s">%s</a>' % (url_for('sequence', id=item.id), item.sequence_name))
         else:
-            fmt_string.append(item.submission_id)
+            fmt_string.append(item.sequence_name)
 
         if item.editable:
             fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
@@ -76,3 +79,14 @@ def setup_sequence_list_table(results, current_user):
     table._cols.move_to_end('sequence_name', last=False)
     return table
 
+
+def setup_sequence_version_table(results, current_user):
+    table = setup_sequence_list_table(results, current_user)
+    del table._cols['locus']
+    del table._cols['sequence_type']
+    del table._cols['species']
+    table.add_column('release_version', StyledCol("Version", tooltip="Release version"))
+    table._cols.move_to_end('release_version')
+    table.add_column('release_date', StyledDateCol("Date", tooltip="Release date"))
+    table._cols.move_to_end('release_date')
+    return table

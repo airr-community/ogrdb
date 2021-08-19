@@ -1001,7 +1001,7 @@ def render_page(page):
 
 def check_seq_view(id):
     try:
-        desc = db.session.query(GeneDescription).filter_by(id = id).one_or_none()
+        desc = db.session.query(GeneDescription).filter_by(id=id).one_or_none()
         if desc is None:
             flash('Record not found')
             return None
@@ -1477,6 +1477,11 @@ def sequence(id):
 
     form = FlaskForm()
     tables = setup_sequence_view_tables(db, seq, current_user.has_role(seq.species))
+    versions = db.session.query(GeneDescription).filter(GeneDescription.species == seq.species)\
+        .filter(GeneDescription.description_id == seq.description_id)\
+        .filter(GeneDescription.status.in_(['published', 'superceded']))\
+        .all()
+    tables['versions'] = setup_sequence_version_table(versions, None)
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
 
 
@@ -1679,7 +1684,6 @@ def delete_sequence_attachment(id):
     db.session.delete(att)
     db.session.commit()
     return ''
-
 
 
 @app.route('/delete_sequence/<id>', methods=['POST'])
@@ -2478,52 +2482,6 @@ def update_germline_set_seqs(germline_set):
         if gd and gd != desc:
             germline_set.gene_descriptions.remove(desc)
             germline_set.gene_descriptions.append(gd)
-
-
-def list_germline_set_changes(germline_set):
-    prev = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'published').one_or_none()
-    if prev is None:
-        prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'withdrawn').all()
-
-        if len(prevs) > 0:
-            prev = prevs.sorted(key=attrgetter('release_version'))[0]
-
-    if prev is None:
-        return ''
-
-    current_descs = {}
-    for desc in germline_set.gene_descriptions:
-        current_descs[desc.description_id] = desc
-
-    prev_descs = {}
-    for desc in prev.gene_descriptions:
-        prev_descs[desc.description_id] = desc
-
-    history = ['Changes compared to version %d:' % prev.release_version]
-
-    for gid, prev_desc in prev_descs.items():
-        if gid not in current_descs.keys():
-            history.append('Sequence %s (%s) removed' % (prev_desc.sequence_name, prev_desc.coding_sequence_identifier))
-
-    for gid, current_desc in current_descs.items():
-        if gid not in prev_descs.keys():
-            history.append('Sequence %s (%s) added' % (current_desc.sequence_name, current_desc.coding_sequence_identifier))
-        elif current_desc.id != prev_descs[gid].id:
-            if current_desc.status == 'draft':
-                history.append('Sequence %s updated from v %d to draft' % (current_desc.sequence_name, prev_descs[gid].release_version))
-            else:
-                history.append('Sequence %s updated: v %d -> %d' % (current_desc.sequence_name, prev_descs[gid].release_version, current_desc.release_version))
-            if current_desc.coding_sequence_identifier != prev_descs[gid].coding_sequence_identifier:
-                history.append('Sequence %s updated: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].coding_sequence_identifier, current_desc.coding_sequence_identifier))
-            if current_desc.sequence_name != prev_descs[gid].sequence_name:
-                history.append('Sequence name changed: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].sequence_name))
-            if current_desc.imgt_name != prev_descs[gid].imgt_name:
-                history.append('Sequence %s IUIS name changed: %s -> %s' % (current_desc.sequence_name, prev_descs[gid].imgt_name, current_desc.imgt_name))
-
-    if len(history) == 1:
-        history.append('None')
-
-    return Markup('<br>'.join(history))
 
 
 @app.route('/withdraw_germline_set/<id>', methods=['POST'])

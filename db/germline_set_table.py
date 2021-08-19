@@ -3,7 +3,10 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
+from operator import attrgetter
+
 from db.attached_file_db import make_AttachedFile_table
+from db.germline_set_db import GermlineSet
 from db.notes_entry_db import NotesEntry
 from forms.attached_file_form import AttachedFileForm
 from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable, EditablePubIdTable
@@ -60,6 +63,81 @@ def setup_gene_description_table(germline_set, action=True):
         table._cols.move_to_end('action', last=False)
 
     return table
+
+def list_germline_set_changes(germline_set):
+    if germline_set.status == 'draft':
+        prev = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'published').one_or_none()
+
+        if prev is None:
+            prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'superceded').all()
+
+            if len(prevs) > 0:
+                prev = prevs.sorted(key=attrgetter('release_version'), reverse=True)[0]
+    else:
+        prev = None
+        prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status.in_(['published', 'superceded']))\
+            .filter(GermlineSet.release_version < germline_set.release_version)\
+            .all()
+
+        if len(prevs) > 0:
+            prev = prevs.sorted(key=attrgetter('release_version'), reverse=True)[0]
+
+    if prev is None:
+        return ''
+
+    current_descs = {}
+    for desc in germline_set.gene_descriptions:
+        current_descs[desc.description_id] = desc
+
+    prev_descs = {}
+    for desc in prev.gene_descriptions:
+        prev_descs[desc.description_id] = desc
+
+    added = []
+    removed = []
+    changed = []
+
+    for gid, prev_desc in prev_descs.items():
+        if gid not in current_descs.keys():
+            removed.append(prev_descs[gid].sequence_name)
+
+    for gid, current_desc in current_descs.items():
+        if gid not in prev_descs.keys():
+            added.append(current_desc.sequence_name)
+
+
+    for gid, current_desc in current_descs.items():
+        if gid in prev_descs.keys() and current_desc.id != prev_descs[gid].id:
+            if current_desc.coding_sequence_identifier == prev_descs[gid].coding_sequence_identifier:
+                changed.append('<a href="%s">%s</a>: v%d->%s' % (
+                    url_for('sequence', id=current_desc.id),
+                    current_desc.sequence_name,
+                    prev_descs[gid].release_version,
+                    'v%d' % current_desc.release_version if current_desc.status != 'draft' else 'draft',
+                ))
+            else:
+                changed.append('<a href="%s">%s</a>: v%d->%s, sequence_id %s->%s' % (
+                    url_for('sequence', id=current_desc.id),
+                    current_desc.sequence_name,
+                    prev_descs[gid].release_version,
+                    'v%d' % current_desc.release_version if current_desc.status != 'draft' else 'draft',
+                    prev_descs[gid].coding_sequence_identifier,
+                    current_desc.coding_sequence_identifier
+                ))
+
+    history = []
+
+    if len(added) > 0:
+        history.append(Markup(','.join(added)))
+
+    if len(removed) > 0:
+        history.append(Markup(','.join(removed)))
+
+    if len(changed) > 0:
+        history.append(Markup('<b>Changed</b><br>' + '<br>'.join(changed)))
+
+    if len(history) > 0:
+        return Markup('<br>'.join(history))
 
 
 def setup_germline_set_edit_tables(db, germline_set):

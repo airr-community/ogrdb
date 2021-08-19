@@ -3,6 +3,7 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
+from operator import attrgetter
 
 from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable
 from db.repertoire_db import make_Acknowledgements_table
@@ -317,6 +318,52 @@ def setup_genomic_support_table(seq, action=True):
 
         return table
 
+
+class GeneDescription_difference_view(Table):
+    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    value = Col("")
+    value2 = Col("")
+
+
+def list_sequence_changes(gene_description):
+    if gene_description.status == 'draft':
+        prev = db.session.query(GeneDescription).filter(GeneDescription.description_id == gene_description.description_id, GeneDescription.status == 'published').one_or_none()
+        if prev is None:
+            prevs = db.session.query(GeneDescription).filter(GeneDescription.description_id == gene_description.description_id, GeneDescription.status == 'superceded').all()
+
+            if len(prevs) > 0:
+                prev = prevs.sorted(key=attrgetter('release_version'))[0]
+    else:
+        prev = None
+        prevs = db.session.query(GeneDescription)\
+            .filter(GeneDescription.description_id == gene_description.description_id, GeneDescription.status.in_(['published', 'superceded']))\
+            .filter(GeneDescription.release_version < gene_description.release_version)\
+            .all()
+
+        if len(prevs) > 0:
+            prev = sorted(prevs, key=attrgetter('release_version'), reverse=True)[0]
+
+    if prev is None:
+        return None
+
+    prev_view = make_GeneDescription_view(prev)
+    this_view = make_GeneDescription_view(gene_description)
+    diff_view = GeneDescription_difference_view([])
+
+    for i in range(len(prev_view.items)):
+        if prev_view.items[i]['value'] != this_view.items[i]['value'] \
+                and prev_view.items[i]['item'] not in ('Version', 'Release Notes'):
+            item = prev_view.items[i]
+            item['value2'] = this_view.items[i]['value']
+            diff_view.items.append(item)
+        elif prev_view.items[i]['item'] == 'Version':
+            diff_view.value.name = 'v' + str(prev_view.items[i]['value'])
+            diff_view.value2.name = ('v' + str(this_view.items[i]['value']) if gene_description.status != 'draft' else 'draft')
+
+    return diff_view if len(diff_view.items) > 0 else None
+
+
+
 def setup_sequence_edit_tables(db, seq):
     tables = {}
     tables['inferred_sequence'] = setup_inferred_sequence_table(seq.inferred_sequences, seq)
@@ -325,6 +372,7 @@ def setup_sequence_edit_tables(db, seq):
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(seq.acknowledgements), 'ack', AcknowledgementsForm, seq.acknowledgements, legend='Add Acknowledgement')
     tables['matches'] = setup_matching_submissions_table(seq)
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(seq.attached_files), 'attached_files', AttachedFileForm, seq.attached_files, legend='Attachments', delete_route='delete_sequence_attachment', delete_message='Are you sure you wish to delete the attachment?', download_route='download_sequence_attachment')
+    tables['diffs'] = list_sequence_changes(seq)
 
     history = db.session.query(JournalEntry).filter_by(gene_description_id = seq.id, type = 'history').all()
     tables['history'] = []
