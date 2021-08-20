@@ -33,12 +33,14 @@ class DescLinkCol(StyledCol):
 
 class GeneDescriptionTable(StyledTable):
     name = DescLinkCol("Gene Name")
+    version = StyledCol("Version")
+    date = StyledDateCol("Date")
     seq_id = StyledCol("Seq ID")
     imgt_name = StyledCol("IMGT Name")
     status = StyledCol("Status")
 
 
-def make_GeneDescription_table(results, private = False, classes=()):
+def make_GeneDescription_table(results, private=False, classes=()):
     t = create_table(base=GeneDescriptionTable)
     ret = t(results, classes=classes)
     return ret
@@ -51,6 +53,8 @@ def setup_gene_description_table(germline_set, action=True):
         results.append({
             'name': desc,
             'imgt_name': gene_description.imgt_name,
+            'version': gene_description.release_version,
+            'date': gene_description.release_date,
             'status': gene_description.status,
             'gene_id': gene_description.id,
             'set_id': germline_set.id,
@@ -61,6 +65,8 @@ def setup_gene_description_table(germline_set, action=True):
     if action:
         table.add_column('action', GeneDescriptionTableActionCol(''))
         table._cols.move_to_end('action', last=False)
+    else:
+        del table._cols['status']
 
     return table
 
@@ -72,7 +78,7 @@ def list_germline_set_changes(germline_set):
             prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status == 'superceded').all()
 
             if len(prevs) > 0:
-                prev = prevs.sorted(key=attrgetter('release_version'), reverse=True)[0]
+                prev = sorted(prevs, key=attrgetter('release_version'), reverse=True)[0]
     else:
         prev = None
         prevs = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set.germline_set_id, GermlineSet.status.in_(['published', 'superceded']))\
@@ -80,7 +86,7 @@ def list_germline_set_changes(germline_set):
             .all()
 
         if len(prevs) > 0:
-            prev = prevs.sorted(key=attrgetter('release_version'), reverse=True)[0]
+            prev = sorted(prevs, key=attrgetter('release_version'), reverse=True)[0]
 
     if prev is None:
         return ''

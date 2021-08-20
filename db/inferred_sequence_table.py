@@ -314,7 +314,7 @@ def setup_genomic_support_table(seq, action=True):
             table._cols.move_to_end('action', last=False)
 
         for item in table.items:
-            item.acc = Markup('<a href="%s">%s</a>' % (item.url, item.accession)) if item.url is not None else item.accession
+            item.acc = Markup('<a href="%s">%s</a>' % (url_for('genomic_support', id=item.id), item.accession))
 
         return table
 

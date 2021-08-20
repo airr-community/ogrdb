@@ -68,11 +68,11 @@ class GenomicSupportForm(FlaskForm):
     notes = TextAreaField('Notes', [validators.Length(max=10000)], description="Notes")
     repository = StringField('Repository', [validators.Length(max=255)], description="Name of the repository in which the assembly or sequence is deposited")
     accession = StringField('Accession', [validators.Length(max=255)], description="Accession number of the assembly or sequence within the repository")
+    url = StringField('URL', [validators.Length(max=255)], description="Link to record")
     patch_no = StringField('Patch', [validators.Length(max=255)], description="Patch number of the assembly or sequence within the repository")
     gff_seqid = StringField('gff seqid', [validators.Length(max=255)], description="name of the chromosome or scaffold (for assemblies only)")
     sequence_start = IntegerField('Start', [validators.Optional()], description="start co-ordinate of the sequence of this gene in the assembly or sequence")
     sequence_end = IntegerField('End', [validators.Optional()], description="end co-ordinate of the sequence of this gene in the assembly or sequence")
     sense = SelectField('Sense', choices=[('forward', 'forward'), ('reverse', 'reverse')], description="+ (forward) or - (reverse)")
-    url = TextAreaField('URL', [validators.Length(max=10000)], description="Link to record")
 
 

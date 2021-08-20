@@ -255,6 +255,7 @@ def copy_GeneDescription(c_from, c_to):
 
 class GeneDescription_table(StyledTable):
     id = Col("id", show=False)
+    release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
     imgt_name = StyledCol("IUIS Name", tooltip="The name of this sequence as assigned by IUIS")
     locus = StyledCol("Locus", tooltip="Gene locus")
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
@@ -336,12 +337,12 @@ class GenomicSupport(db.Model):
     notes = db.Column(db.Text())
     repository = db.Column(db.String(1000))
     accession = db.Column(db.String(1000))
+    url = db.Column(db.String(1000))
     patch_no = db.Column(db.String(1000))
     gff_seqid = db.Column(db.String(1000))
     sequence_start = db.Column(db.Integer)
     sequence_end = db.Column(db.Integer)
     sense = db.Column(db.String(255))
-    url = db.Column(db.Text())
     sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
 
@@ -352,12 +353,12 @@ def save_GenomicSupport(db, object, form, new=False):
     object.notes = form.notes.data
     object.repository = form.repository.data
     object.accession = form.accession.data
+    object.url = form.url.data
     object.patch_no = form.patch_no.data
     object.gff_seqid = form.gff_seqid.data
     object.sequence_start = form.sequence_start.data
     object.sequence_end = form.sequence_end.data
     object.sense = form.sense.data
-    object.url = form.url.data
 
     if new:
         db.session.add(object)
@@ -372,12 +373,12 @@ def populate_GenomicSupport(db, object, form):
     form.notes.data = object.notes
     form.repository.data = object.repository
     form.accession.data = object.accession
+    form.url.data = object.url
     form.patch_no.data = object.patch_no
     form.gff_seqid.data = object.gff_seqid
     form.sequence_start.data = object.sequence_start
     form.sequence_end.data = object.sequence_end
     form.sense.data = object.sense
-    form.url.data = object.url
 
 
 
@@ -388,12 +389,12 @@ def copy_GenomicSupport(c_from, c_to):
     c_to.notes = c_from.notes
     c_to.repository = c_from.repository
     c_to.accession = c_from.accession
+    c_to.url = c_from.url
     c_to.patch_no = c_from.patch_no
     c_to.gff_seqid = c_from.gff_seqid
     c_to.sequence_start = c_from.sequence_start
     c_to.sequence_end = c_from.sequence_end
     c_to.sense = c_from.sense
-    c_to.url = c_from.url
 
 
 
@@ -423,11 +424,11 @@ def make_GenomicSupport_view(sub, private = False):
     ret.items.append({"item": "Notes", "value": sub.notes, "tooltip": "Notes", "field": "notes"})
     ret.items.append({"item": "Repository", "value": sub.repository, "tooltip": "Name of the repository in which the assembly or sequence is deposited", "field": "repository"})
     ret.items.append({"item": "Accession", "value": sub.accession, "tooltip": "Accession number of the assembly or sequence within the repository", "field": "accession"})
+    ret.items.append({"item": "URL", "value": sub.url, "tooltip": "Link to record", "field": "url"})
     ret.items.append({"item": "Patch", "value": sub.patch_no, "tooltip": "Patch number of the assembly or sequence within the repository", "field": "patch_no"})
     ret.items.append({"item": "gff seqid", "value": sub.gff_seqid, "tooltip": "name of the chromosome or scaffold (for assemblies only)", "field": "gff_seqid"})
     ret.items.append({"item": "Start", "value": sub.sequence_start, "tooltip": "start co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_start"})
     ret.items.append({"item": "End", "value": sub.sequence_end, "tooltip": "end co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_end"})
     ret.items.append({"item": "Sense", "value": sub.sense, "tooltip": "+ (forward) or - (reverse)", "field": "sense"})
-    ret.items.append({"item": "URL", "value": sub.url, "tooltip": "Link to record", "field": "url"})
     return ret
 

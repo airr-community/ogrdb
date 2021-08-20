@@ -811,6 +811,7 @@ GeneDescription:
             label: Version
             hide: true
             inview: true
+            tableview: true
         release_date:
             type: date
             description: Date of this release
@@ -1163,6 +1164,10 @@ GenomicSupport:
             description: Accession number of the assembly or sequence within the repository
             label: Accession
             tableview: true
+        url:
+            type: string
+            description: Link to record
+            label: URL
         patch_no:
             type: string
             description: Patch number of the assembly or sequence within the repository
@@ -1187,10 +1192,6 @@ GenomicSupport:
             type: [forward,reverse]
             description: + (forward) or - (reverse)
             label: Sense
-        url:
-            type: text
-            description: Link to record
-            label: URL
         sequence_id:
             type: integer
             foreign_key: gene_description.id

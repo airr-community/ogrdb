@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Genomic support for {{ name }} {% endblock %}
+
+{% block c_body %}
+        <div class=".table">
+            {{ table }}
+        </div>
+        <div class="row col-sm-offset-1">
+                <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
+        </div>
+{% endblock %}
+
+

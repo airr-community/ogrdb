@@ -29,9 +29,14 @@
         <div class="col-md-8"><h2>Published Sets</h2></div>
     </row>
     <row class="col-md-12">
+        {% if any_published %}
         <div class=".table col-md-12">
             {{ tables['affirmed'] }}
         </div>
+        {% else %}
+            Coming soon! We expect to start publishing germline sets over the next few months.
+        {% endif %}
+        <h3></h3>
     </row>
 
 

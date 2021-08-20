@@ -1424,17 +1424,7 @@ def seq_add_genomic(id):
             if support is None:
                 support = GenomicSupport()
 
-            support.sequence_type = form.sequence_type.data
-            support.sequence = form.sequence.data
-            support.notes = form.notes.data
-            support.repository = form.repository.data
-            support.accession = form.accession.data
-            support.patch_no = form.patch_no.data
-            support.gff_seqid = form.gff_seqid.data
-            support.sequence_start = form.sequence_start.data
-            support.sequence_end = form.sequence_end.data
-            support.sense = form.sense.data
-            support.url = form.url.data
+            save_GenomicSupport(db, support, form, False)
 
             if append:
                 db.session.add(support)
@@ -1459,12 +1449,7 @@ def seq_edit_genomic(seq_id, support_id):
 
     form = GenomicSupportForm()
     if request.method == 'GET':
-        form.accession.data = support.accession
-        form.repository.data = support.repository
-        form.sequence_type.data = support.sequence_type
-        form.sequence_start.data = support.sequence_start
-        form.sequence_end.data = support.sequence_end
-        form.support_id = support_id
+        populate_GenomicSupport(db, support, form)
         return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=seq_id, action="Save", support_id=support_id)
 
     # POST goes back to seq_add_genomic
@@ -2102,7 +2087,7 @@ def germline_sets():
         if len(db.session.query(GermlineSet).filter(GermlineSet.status == 'published', GermlineSet.species == sp).all()) < 1:
             species.remove(sp)
 
-    return render_template('germline_set_list.html', tables=tables, show_withdrawn=show_withdrawn)
+    return render_template('germline_set_list.html', tables=tables, show_withdrawn=show_withdrawn, any_published=(len(tables['affirmed'].items) > 0))
 
 
 @app.route('/new_germline_set/<species>', methods=['GET', 'POST'])
@@ -2757,6 +2742,24 @@ def download_sequences(species, format, exc):
 
     filename = 'affirmed_germlines_%s_%s.%s' % (species, format, ext)
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+
+
+@app.route('/genomic_support/<id>', methods=['GET'])
+def genomic_support(id):
+    genomic_support = db.session.query(GenomicSupport).filter(GenomicSupport.id == id).one_or_none()
+
+    if genomic_support is None or not genomic_support.gene_description.can_see(current_user):
+        return redirect('/')
+
+    table = make_GenomicSupport_view(genomic_support, genomic_support.gene_description.can_edit(current_user))
+
+    for item in table.items:
+        if item['item'] == 'URL':
+            item['value'] = Markup('<a href="%s">%s</a>' % (item['value'], item['value']))
+
+    return render_template('genomic_support_view.html', table=table, name=genomic_support.gene_description.sequence_name)
+
+
 
 from imgt.imgt_ref import gap_sequence
 
