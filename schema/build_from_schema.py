@@ -189,6 +189,8 @@ class %s(db.Model):
                         fo.write("\n    %s = db.relationship('%s', secondary = %s, backref = db.backref('%s', lazy='dynamic'))" % (k, rel[0], k +'_'+ rel[1], rel[1]))
                 elif p_type == 'string':
                     fo.write("    %s = db.Column(db.String(1000))" % k)
+                elif p_type == 'string_50':
+                    fo.write("    %s = db.Column(db.String(50))" % k)
                 elif p_type == 'hidden':
                     fo.write("    %s = db.Column(db.String(1000))" % k)
                 elif p_type == 'date':
@@ -393,6 +395,8 @@ class %sForm(FlaskForm):
                         choices = [(str(item), str(item)) for item in p_type]
                         fo.write("    %s = SelectField('%s', choices=%s%s)" % (k, label, repr(choices), description))
                 elif p_type == 'string':
+                    fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (k, label, nonblank, description))
+                elif p_type == 'string_50':
                     fo.write("    %s = StringField('%s', [validators.Length(max=255)%s]%s)" % (k, label, nonblank, description))
                 elif p_type == 'hidden':
                     fo.write("    %s = HiddenField('%s', [validators.Length(max=255)%s]%s)" % (k, label, nonblank, description))
