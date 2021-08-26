@@ -15,7 +15,6 @@ ogre.wsgi
 /static/docs/IMGT*
 /static/docs/igpdb*
 /imgt/imgt_files
-/imgt/track_imgt_config.yaml
 static/docs/codon_usage.pickle
 static/docs/ref_gapped_genes.pickle
 static/docs/ref_genes.pickle
