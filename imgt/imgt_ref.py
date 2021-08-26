@@ -180,7 +180,7 @@ def init_igpdb_ref():
     global igpdb_genes
     igpdb_genes = {}
 
-    for rec in SeqIO.parse('static/docs/igpdb.fasta', 'fasta'):
+    for rec in SeqIO.parse(os.path.join(imgt_config['update_file_dir'], 'igpdb.fasta'), 'fasta'):
         rd = rec.description.split('|')
         igpdb_genes[rd[0]] = str(rec.seq.lower())
 
@@ -188,7 +188,7 @@ def init_vdjbase_ref():
     global vdjbase_genes
     vdjbase_genes = {}
 
-    for rec in SeqIO.parse('static/docs/vdjbase.fasta', 'fasta'):
+    for rec in SeqIO.parse(os.path.join(imgt_config['update_file_dir'], 'vdjbase.fasta'), 'fasta'):
         try:
             rd = rec.description.split(' ')
             occ = rd[1].split('=')[1]

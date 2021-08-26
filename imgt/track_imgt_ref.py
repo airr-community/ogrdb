@@ -47,14 +47,15 @@ def main(argv):
         with open(newfile, 'wb') as fo:
             fo.write(response.read())
 
-    if oldfile:
-        species = config['species']
-        old_recs = read_reference(oldfile, species)
-        new_recs = read_reference(newfile, species)
+    changes = True
+    with open(config['log_file'], 'a') as fl:
+        if oldfile:
+            species = config['species']
+            old_recs = read_reference(oldfile, species)
+            new_recs = read_reference(newfile, species)
 
-        changes = False
+            changes = False
 
-        with open(config['log_file'], 'a') as fl:
             for sp in species:
                 for rec in old_recs[sp].keys():
                     if rec not in new_recs[sp]:
@@ -69,23 +70,22 @@ def main(argv):
                         fl.write('%s ADDED %s %s\n' % (datetime.datetime.now().isoformat(timespec='minutes'), sp, rec))
                         changes = True
 
-            if changes:
-                with open(config['ogre_file'], 'w') as fo, open(newfile, 'r') as fi:
-                    fo.write(fi.read())
-                if config['ogre_touch'] != 'none':
-                    os.system('touch %s' % config['ogre_touch'])
-                fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['ogre_file']))
+        if changes:
+            with open(config['ogre_ref_file'], 'w') as fo, open(newfile, 'r') as fi:
+                fo.write(fi.read())
+            if config['ogre_touch'] != 'none':
+                os.system('touch %s' % config['ogre_touch'])
+            fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['ogre_ref_file']))
 
-                # download a new gapped reference set from IMGT
-                with urllib.request.urlopen(config['gapped_file_url']) as response:
-                    with open(config['gapped_ogre_file'], 'wb') as fo:
-                        fo.write(response.read())
-                fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['gapped_ogre_file']))
+            # download a new gapped reference set from IMGT
+            with urllib.request.urlopen(config['gapped_file_url']) as response:
+                with open(config['gapped_ogre_ref_file'], 'wb') as fo:
+                    fo.write(response.read())
+            fl.write('%s OGRDB file %s updated\n' % (datetime.datetime.now().isoformat(timespec='minutes'), config['gapped_ogre_ref_file']))
 
-
-            else:
-                fl.write('%s No changes detected.\n' % (datetime.datetime.now().isoformat(timespec='minutes')))
-                os.remove(newfile)
+        else:
+            fl.write('%s No changes detected.\n' % (datetime.datetime.now().isoformat(timespec='minutes')))
+            os.remove(newfile)
 
 if __name__ == "__main__":
     main(sys.argv)
