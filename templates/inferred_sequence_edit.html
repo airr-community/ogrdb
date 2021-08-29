@@ -47,7 +47,7 @@
             success: function(data)
             {
                 helpers.buildDropdown(
-                    jQuery.parseJSON(data),
+                    data,
                     $('#sequence_id'),
                     'Select a sequence'
                 );
