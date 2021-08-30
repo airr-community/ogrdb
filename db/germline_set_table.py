@@ -17,7 +17,7 @@ from textile_filter import *
 from flask import url_for
 from db.gene_description_db import *
 from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol
-
+from operator import attrgetter
 
 
 class GeneDescriptionTableActionCol(StyledCol):
@@ -52,6 +52,7 @@ def setup_gene_description_table(germline_set, action=True):
         desc = Markup('<a href="%s">%s</a>' % (url_for('sequence', id=gene_description.id), gene_description.sequence_name))
         results.append({
             'name': desc,
+            'raw_name': gene_description.sequence_name,
             'imgt_name': gene_description.imgt_name,
             'version': gene_description.release_version,
             'date': gene_description.release_date,
@@ -60,6 +61,7 @@ def setup_gene_description_table(germline_set, action=True):
             'set_id': germline_set.id,
             'seq_id': gene_description.coding_sequence_identifier})
 
+    results.sort(key=lambda res: res['raw_name'].upper())
     table = make_GeneDescription_table(results)
 
     if action:
