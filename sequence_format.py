@@ -78,7 +78,10 @@ def format_imgt_v(seq, width, ra=None):
         if '.' in cd or '-' in cd or len(cd) < 3:
             fmt_aa += '    '
         else:
-            fmt_aa += ' ' + str(Seq(cd).translate()) + '  '
+            try:
+                fmt_aa += ' ' + str(Seq(cd).translate()) + '  '
+            except:
+                fmt_aa += ' X '
 
     # this will deliberately truncate at the end of the shortest line - which will never be imgt_leg or imgt_num unless the sequence is longer than it should be...
     res = splitlines(imgt_leg + '\n' + imgt_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0).split('\n')
@@ -101,7 +104,10 @@ def format_translated_fasta(name, seq, width):
         if '.' in cd or '-' in cd or len(cd) < 3:
             tr_seq += '.'
         else:
-            tr_seq += str(Seq(cd).translate())
+            try:
+                tr_seq += str(Seq(cd).translate())
+            except:
+                tr_seq += 'X'
 
     return format_fasta_sequence(name, tr_seq, width)
 
