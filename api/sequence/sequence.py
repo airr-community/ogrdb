@@ -1,4 +1,4 @@
-# Services related to vdjbase repseq-based data sets
+# REST services for OGRDB
 
 from flask import request
 from flask_restx import Resource, reqparse, fields, marshal, inputs

@@ -12,6 +12,7 @@ from app import app
 import sys
 import os.path
 import pickle
+import json
 
 imgt_reference_genes = None
 imgt_gapped_reference_genes = None
@@ -93,12 +94,14 @@ def read_reference(filename, species):
     records = {}
 
     for sp in species.keys():
-        records[species[sp]['alias']] = {}
+        for al in species[sp]['alias'].split(','):
+            records[al] = {}
 
     for rec in SeqIO.parse(filename, 'fasta'):
         rd = rec.description.split('|')
         if rd[2] in species.keys() and (rd[4] in ['V-REGION', 'D-REGION', 'J-REGION']) and (rec.seq is not None):
-            records[species[rd[2]]['alias']][rd[1]] = rec.seq.lower()
+            for al in species[rd[2]]['alias'].split(','):
+                records[al][rd[1]] = rec.seq.lower()
 
     return records
 
@@ -188,13 +191,14 @@ def init_vdjbase_ref():
     global vdjbase_genes
     vdjbase_genes = {}
 
-    for rec in SeqIO.parse(os.path.join(imgt_config['update_file_dir'], 'vdjbase.fasta'), 'fasta'):
-        try:
-            rd = rec.description.split(' ')
-            occ = rd[1].split('=')[1]
-            vdjbase_genes[rd[0]] = (str(rec.seq.lower()).replace('.', ''), occ)
-        except:
-            pass
+    try:
+        with open(os.path.join(imgt_config['update_file_dir'], 'vdjbase.json'), 'r') as fi:
+            content = json.load(fi)
+
+            for k, v in content.items():
+                vdjbase_genes[k] = (v[0].replace('.', ''), '%d' % v[1])
+    except:
+        app.logger.error('Error loading VDJbase sequences')
 
 # if we just import the global variables in another module, they are empty
 # I suspect this is related to threading but it could be a basic coding error

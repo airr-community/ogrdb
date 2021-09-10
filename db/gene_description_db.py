@@ -289,7 +289,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
     ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
     ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
-    ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
+    ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Genomic (Unrearranged) and Rearranged, Genomic Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})
     ret.items.append({"item": "Species subgroup", "value": sub.species_subgroup, "tooltip": "Race, strain or other species subgroup to which this subject belongs", "field": "species_subgroup"})
@@ -400,7 +400,7 @@ def copy_GenomicSupport(c_from, c_to):
 
 class GenomicSupport_table(StyledTable):
     id = Col("id", show=False)
-    sequence_type = StyledCol("Type", tooltip="Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others")
+    sequence_type = StyledCol("Type", tooltip="Locational should be used where the unrearranged sequence includes multiple genes, enabling the location of this gene to be determined relative to others")
     repository = StyledCol("Repository", tooltip="Name of the repository in which the assembly or sequence is deposited")
     accession = StyledCol("Accession", tooltip="Accession number of the assembly or sequence within the repository")
     sequence_start = StyledCol("Start", tooltip="start co-ordinate of the sequence of this gene in the assembly or sequence")
@@ -419,7 +419,7 @@ class GenomicSupport_view(Table):
 
 def make_GenomicSupport_view(sub, private = False):
     ret = GenomicSupport_view([])
-    ret.items.append({"item": "Type", "value": sub.sequence_type, "tooltip": "Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others", "field": "sequence_type"})
+    ret.items.append({"item": "Type", "value": sub.sequence_type, "tooltip": "Locational should be used where the unrearranged sequence includes multiple genes, enabling the location of this gene to be determined relative to others", "field": "sequence_type"})
     ret.items.append({"item": "Sequence", "value": sub.sequence, "tooltip": "Sequence of interest described in this record (typically this will include gene and promoter region)", "field": "sequence"})
     ret.items.append({"item": "Notes", "value": sub.notes, "tooltip": "Notes", "field": "notes"})
     ret.items.append({"item": "Repository", "value": sub.repository, "tooltip": "Name of the repository in which the assembly or sequence is deposited", "field": "repository"})

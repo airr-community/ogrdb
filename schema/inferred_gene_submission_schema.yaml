@@ -873,7 +873,7 @@ GeneDescription:
         inference_type:
             type: [Genomic and Rearranged, Genomic Only, Rearranged Only]
             label: Inference Type
-            description: Type of inference(s) from which this gene sequence was inferred (Genomic and Rearranged, Genomic Only, Rearranged Only)
+            description: Type of inference(s) from which this gene sequence was inferred (Genomic (Unrearranged) and Rearranged, Genomic Only, Rearranged Only)
         affirmation_level:
             type: [0,1,2,3]
             description: Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)
@@ -1140,7 +1140,7 @@ GenomicSupport:
     properties:
         sequence_type:
             type: [Locational, Nonlocational]
-            description: Locational should be used where the genomic sequence includes multiple genes, enabling the location of this gene to be determined relative to others
+            description: Locational should be used where the unrearranged sequence includes multiple genes, enabling the location of this gene to be determined relative to others
             tableview: true
             nonblank: true
             label: Type
