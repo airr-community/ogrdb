@@ -209,8 +209,8 @@ def update_sra_rep_details(form):
     if form.repository_select.data == 'NCBI SRA':
         form.repository_name.data = 'NCBI SRA'
 
-        if form.rep_accession_no.data[:5] != 'PRJNA':
-            form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143']
+        if form.rep_accession_no.data[:5] != 'PRJNA' and form.rep_accession_no.data[:5] != 'PRJEB':
+            form.rep_accession_no.errors = ['Please provide the Bioproject id, eg PRJNA349143 or PRJEB30386']
             raise ValidationError()
 
         try:

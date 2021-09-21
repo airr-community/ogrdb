@@ -58,13 +58,14 @@ def get_pmid_details(pmid):
 def get_nih_project_details(prj_id):
     ret = {}
 
-    if len(prj_id) < 5 or (prj_id[:3] != 'SRP' and prj_id[:5] != 'PRJNA'):
+    if len(prj_id) < 5 or (prj_id[:3] != 'SRP' and prj_id[:5] != 'PRJNA' and prj_id[:5] != 'PRJEB'):
         raise ValueError('bady formatted project id: %s' % (prj_id))
 
     try:
         if prj_id[:5] != 'PRJNA':
             time.sleep(0.11)
-            r = requests.get('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?api_key=%s&db=sra&retmode=json&term=%s[accn]' % (ncbi_api_key, prj_id))
+            foo = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?api_key=%s&db=sra&retmode=json&term=%s' % (ncbi_api_key, prj_id)
+            r = requests.get('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?api_key=%s&db=sra&retmode=json&term=%s' % (ncbi_api_key, prj_id))
             if r.status_code != 200:
                 raise ValueError('Unexpected response from NIH: status %d' % r.status_code)
             c = r.json()
@@ -89,7 +90,7 @@ def get_nih_project_details(prj_id):
             exp = re.compile('Title.*?>(?P<title>.*?)<')
             m = exp.search(xml)
             ret['title'] = m.group('title')
-            ret['url'] = 'https://www.ncbi.nlm.nih.gov/sra/?term=%s[accn]' % prj_id
+            ret['url'] = 'https://www.ncbi.nlm.nih.gov/sra/?term=%s' % prj_id
         else:
             id = prj_id[5:]
             time.sleep(0.11)
@@ -152,7 +153,7 @@ def get_nih_nuc_details(nuc_id):
 def get_nih_srr_details(srr_id):
     ret = {}
 
-    if len(srr_id) < 5 or srr_id[:3] != 'SRR':
+    if len(srr_id) < 5 or (srr_id[:3] != 'SRR' and srr_id[:3] != 'ERR'):
         raise ValueError('badly formatted SRR record accession number: %s' % (srr_id))
 
     try:
@@ -193,8 +194,8 @@ def get_nih_srr_details(srr_id):
 def get_nih_samn_details(sam_id):
     ret = {}
 
-    if len(sam_id) < 5 or sam_id[:4] != 'SAMN':
-        raise ValueError('badly formatted SAMN record accession number: %s' % (sam_id))
+    if len(sam_id) < 5 or (sam_id[:4] != 'SAMN' and sam_id[:4] != 'SAME'):
+        raise ValueError('badly formatted sample record accession number: %s' % (sam_id))
 
     try:
         time.sleep(0.11)
