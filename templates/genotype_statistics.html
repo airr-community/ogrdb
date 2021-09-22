@@ -29,7 +29,7 @@
                 <h4>Within-Allele Critera</h4>
                 <p>The allele's sequence count must meet the following thresholds:</p>
 
-                {{ render_field_with_errors(form.allelic_threshold, class="form-control") }}
+                {{ render_narrow_field_with_errors(form.allelic_threshold, class="form-control") }}
                 {{ render_narrow_field_with_errors(form.assigned_unmutated_threshold, class="form-control") }}
 
                 <h4>Within-Genotype Criteria</h4>
@@ -38,11 +38,11 @@
                     assigned to this allele, expressed as a percentage, must exceed the threshold below.
                 Allowances can be made for groups of alleles that are known generally to be present at lower levels:</p>
 
-                {{ render_field_with_errors(form.freq_threshold, class="form-control") }}
+                {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
                 {{ render_field_with_errors(form.rare_genes, class="form-control") }}
-                {{ render_field_with_errors(form.rare_threshold, class="form-control") }}
+                {{ render_narrow_field_with_errors(form.rare_threshold, class="form-control") }}
                 {{ render_field_with_errors(form.very_rare_genes, class="form-control") }}
-                {{ render_field_with_errors(form.very_rare_threshold, class="form-control") }}
+                {{ render_narrow_field_with_errors(form.very_rare_threshold, class="form-control") }}
 
                 <div class="form-group row col-sm-10">
                     {{ form.create(class="btn btn-primary col-sm-offset-2") }}
