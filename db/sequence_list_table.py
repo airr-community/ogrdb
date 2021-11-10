@@ -56,7 +56,12 @@ class SequenceListIMGTCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item.imgt_name:
             imgt_config = get_imgt_config()
-            imgt_species = {v['alias']: k for k, v in imgt_config['species'].items()}
+            # imgt_species = {v['alias']: k for k, v in imgt_config['species'].items()}
+            imgt_species = {}
+            for k,v in imgt_config['species'].items():
+                aliases = v['alias'].split(',')
+                for alias in aliases:
+                    imgt_species[alias] = k
             fmt_string = '<a href="http://www.imgt.org/IMGTrepertoire/Proteins/alleles/index.php?species=%s&group=%s%s&gene=%s">%s</a>' % (imgt_species[item.species], item.locus, item.sequence_type, item.imgt_name.split('*')[0], item.imgt_name)
         else:
             fmt_string = ''

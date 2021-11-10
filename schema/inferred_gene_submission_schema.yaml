@@ -926,14 +926,6 @@ GeneDescription:
             description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
             label: Coding Sequence
             rows: 12
-        coding_sequence_identifier:
-            type: string_50
-            description: Unique identifier of the coding_sequence, allocated automatically
-            label: Seq ID
-            hide: true
-            inview: true
-            tableview: true
-            width: narrow
         gene_start:
             type: integer
             nullable: true

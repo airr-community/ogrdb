@@ -56,7 +56,6 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     allele_designation = db.Column(db.String(50))
     sequence = db.Column(db.Text())
     coding_seq_imgt = db.Column(db.Text())
-    coding_sequence_identifier = db.Column(db.String(50))
     gene_start = db.Column(db.Integer)
     gene_end = db.Column(db.Integer)
     utr_5_prime_start = db.Column(db.Integer)
@@ -221,7 +220,6 @@ def copy_GeneDescription(c_from, c_to):
     c_to.allele_designation = c_from.allele_designation
     c_to.sequence = c_from.sequence
     c_to.coding_seq_imgt = c_from.coding_seq_imgt
-    c_to.coding_sequence_identifier = c_from.coding_sequence_identifier
     c_to.gene_start = c_from.gene_start
     c_to.gene_end = c_from.gene_end
     c_to.utr_5_prime_start = c_from.utr_5_prime_start
@@ -261,7 +259,6 @@ class GeneDescription_table(StyledTable):
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
     species = StyledCol("Species", tooltip="Binomial designation of subject's species")
-    coding_sequence_identifier = StyledCol("Seq ID", tooltip="Unique identifier of the coding_sequence, allocated automatically")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):
@@ -299,7 +296,6 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Allele Designation", "value": sub.allele_designation, "tooltip": "Allele designation, if identified", "field": "allele_designation"})
     ret.items.append({"item": "Full Sequence", "value": sub.sequence, "tooltip": "nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences", "field": "sequence"})
     ret.items.append({"item": "Coding Sequence", "value": sub.coding_seq_imgt, "tooltip": "nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme", "field": "coding_seq_imgt"})
-    ret.items.append({"item": "Seq ID", "value": sub.coding_sequence_identifier, "tooltip": "Unique identifier of the coding_sequence, allocated automatically", "field": "coding_sequence_identifier"})
     ret.items.append({"item": "Gene start", "value": sub.gene_start, "tooltip": "Co-ordinate (in the sequence field) of the first nucleotide in the coding_sequence field", "field": "gene_start"})
     ret.items.append({"item": "Gene end", "value": sub.gene_end, "tooltip": "Co-ordinate (in the sequence field) of the last gene-coding nucleotide in the coding_sequence field", "field": "gene_end"})
     ret.items.append({"item": "UTR 5\' Start", "value": sub.utr_5_prime_start, "tooltip": "Start co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)", "field": "utr_5_prime_start"})

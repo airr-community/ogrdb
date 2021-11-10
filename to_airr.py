@@ -25,7 +25,6 @@ class AIRRGeneDescription:
         self.gene_symbol = gd.sequence_name
         self.sequence = gd.sequence
         self.coding_sequence = gd.coding_seq_imgt
-        self.coding_sequence_identifier = gd.coding_sequence_identifier
         self.alt_names = []
         if gd.alt_names and len(gd.alt_names) > 0:
             self.alt_names = gd.alt_names.split(',')
