@@ -58,8 +58,7 @@ def setup_gene_description_table(germline_set, action=True):
             'date': gene_description.release_date,
             'status': gene_description.status,
             'gene_id': gene_description.id,
-            'set_id': germline_set.id,
-            'seq_id': gene_description.coding_sequence_identifier})
+            'set_id': germline_set.id})
 
     results.sort(key=lambda res: res['raw_name'].upper())
     table = make_GeneDescription_table(results)
@@ -115,7 +114,7 @@ def list_germline_set_changes(germline_set):
 
     for gid, current_desc in current_descs.items():
         if gid in prev_descs.keys() and current_desc.id != prev_descs[gid].id:
-            if current_desc.coding_sequence_identifier == prev_descs[gid].coding_sequence_identifier:
+            if current_desc.coding_seq_imgt == prev_descs[gid].coding_seq_imgt:
                 changed.append('<a href="%s">%s</a>: v%d->%s' % (
                     url_for('sequence', id=current_desc.id),
                     current_desc.sequence_name,
@@ -123,13 +122,11 @@ def list_germline_set_changes(germline_set):
                     'v%d' % current_desc.release_version if current_desc.status != 'draft' else 'draft',
                 ))
             else:
-                changed.append('<a href="%s">%s</a>: v%d->%s, sequence_id %s->%s' % (
+                changed.append('<a href="%s">%s</a>: v%d->%s, sequence changed' % (
                     url_for('sequence', id=current_desc.id),
                     current_desc.sequence_name,
                     prev_descs[gid].release_version,
-                    'v%d' % current_desc.release_version if current_desc.status != 'draft' else 'draft',
-                    prev_descs[gid].coding_sequence_identifier,
-                    current_desc.coding_sequence_identifier
+                    'v%d' % current_desc.release_version if current_desc.status != 'draft' else 'draft'
                 ))
 
     history = []

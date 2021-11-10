@@ -4,7 +4,6 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-import re
 from app import app
 import textile
 

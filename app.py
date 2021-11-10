@@ -118,7 +118,6 @@ from forms.sequences_species_form import *
 
 from genotype_stats import *
 from get_ncbi_details import *
-from sequence_identifier import *
 from to_airr import *
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -1557,7 +1556,6 @@ def edit_sequence(id):
                             return redirect(url_for('edit_submission', id=seq.id))
 
                 seq.notes = form.notes.data      # this was left out of the form definition in the schema so it could go on its own tab
-                seq.coding_sequence_identifier = sequence_identifier(form.coding_seq_imgt.data)
 
                 rearranged = len(seq.inferred_sequences) > 0
                 genomic = len(seq.genomic_accessions) > 0
@@ -2781,10 +2779,8 @@ def add_gapped():
         if desc.sequence_name:
             report += 'Processing sequence ' + desc.sequence_name + '<br>'
 
-            if desc.coding_seq_imgt and len(desc.coding_seq_imgt) > 0:
-                desc.coding_sequence_identifier = sequence_identifier(desc.coding_seq_imgt)
-            else:
-                report += 'no sequence<br>'
+        if not desc.coding_seq_imgt or len(desc.coding_seq_imgt) > 0:
+            report += 'no sequence<br>'
 
         if desc.locus == 'IGH':
             desc.chromosome = 14
