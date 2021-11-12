@@ -1215,12 +1215,19 @@ def new_sequence(species):
         if form.cancel.data:
             return redirect('/sequences')
 
+        if form.upload_file.data:
+            return upload_sequences(form, species)
+
         try:
             if form.new_name.data is None or len(form.new_name.data) < 1:
                 form.new_name.errors = ['Name cannot be blank.']
                 raise ValidationError()
 
-            if db.session.query(GeneDescription).filter(and_(GeneDescription.species == species, GeneDescription.sequence_name == form.new_name.data, ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
+            if db.session.query(GeneDescription).filter(
+                    and_(GeneDescription.species == species,
+                         GeneDescription.sequence_name == form.new_name.data,
+                         GeneDescription.species_subgroup == form.new_name.data,
+                         ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
                 form.new_name.errors = ['A sequence already exists with that name.']
                 raise ValidationError()
 
@@ -1324,6 +1331,84 @@ def new_sequence(species):
 
     return render_template('sequence_new.html', form=form, species=species)
 
+
+def upload_sequences(form, species):
+    # check file
+    errors = []
+    fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
+    reader = csv.DictReader(fi)
+    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup']
+    headers = None
+    row_count = 2
+    for row in reader:
+        if headers is None:
+            headers = row.keys()
+            missing_headers = set(required_headers) - set(headers)
+            if len(missing_headers) > 0:
+                errors.append('Missing column headers: %s' % ','.join(list(missing_headers)))
+                break
+        if not row['gene_label']:
+            errors.append('row %d: no gene label' % row_count)
+        elif db.session.query(GeneDescription).filter(
+                and_(GeneDescription.species == species,
+                     GeneDescription.sequence_name == row['gene_label'],
+                     GeneDescription.species_subgroup == row['species_subgroup'],
+                     ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
+            errors.append('row %d: a gene with the name %s and subgroup %s is already in the database' % (row_count, row['gene_label'], row['species_subgroup']))
+        if row['functional'] not in ['Y', 'N']:
+            errors.append('row %d: functional must be Y or N' % row_count)
+        if row['type'][:3] not in ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG']:
+            errors.append('row %d: locus in type must be one of %s' % (row_count, ','.join(['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG'])))
+        if row['type'][3:] not in ['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader']:
+            errors.append('row %d: sequence_type in type must be one of %s' % (row_count, ','.join(['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader'])))
+        if not row['sequence']:
+            errors.append('row %d: no sequence' % row_count)
+        if not row['sequence_gapped']:
+            errors.append('row %d: no sequence_gapped' % row_count)
+        row_count += 1
+
+        if len(errors) >= 5:
+            errors.append('(Only showing first few errors)')
+            break
+
+    if len(errors) > 0:
+        errors.append('Sequences not uploaded: please fix errors and try again')
+        form.upload_file.errors = errors
+        return render_template('sequence_new.html', form=form, species=species)
+
+    fi.seek(0)
+    reader = csv.DictReader(fi)
+    for row in reader:
+        gene_description = GeneDescription()
+        gene_description.sequence_name = row['gene_label']
+        gene_description.imgt_name = row['imgt']
+        gene_description.alt_names = row['alt_names']
+        gene_description.species = species
+        gene_description.species_subgroup = row['species_subgroup']
+        gene_description.status = 'draft'
+        gene_description.maintainer = current_user.name
+        gene_description.lab_address = current_user.address
+        gene_description.functional = row['functional'] == 'Y'
+        gene_description.inference_type = row['inference_type']
+        gene_description.release_version = 1
+        gene_description.affirmation_level = 0
+        gene_description.inferred_extension = False
+        gene_description.ext_3prime = None
+        gene_description.start_3prime_ext = None
+        gene_description.end_3prime_ext = None
+        gene_description.ext_5prime = None
+        gene_description.start_5prime_ext = None
+        gene_description.end_5prime_ext = None
+        gene_description.sequence = row['sequence']
+        gene_description.locus = row['type'][0:3]
+        gene_description.sequence_type = row['type'][3:]
+        gene_description.coding_seq_imgt = row['sequence_gapped']
+        db.session.add(gene_description)
+        db.session.commit()
+        gene_description.description_id = "A%05d" % gene_description.id
+        db.session.commit()
+
+    return redirect('/sequences')
 
 @app.route('/get_sequences/<id>', methods=['GET'])
 @login_required

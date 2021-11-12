@@ -33,6 +33,8 @@ def init_imgt_ref():
 
     with open('imgt/track_imgt_config.yaml', 'r') as fc:
         imgt_config = yaml.load(fc, Loader=yaml.FullLoader)
+        if 'Test' not in imgt_config['species']:
+            imgt_config['species']['Test'] = {'alias': 'Test'}
 
     species = imgt_config['species']
 

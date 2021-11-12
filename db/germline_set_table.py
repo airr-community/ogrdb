@@ -35,7 +35,6 @@ class GeneDescriptionTable(StyledTable):
     name = DescLinkCol("Gene Name")
     version = StyledCol("Version")
     date = StyledDateCol("Date")
-    seq_id = StyledCol("Seq ID")
     imgt_name = StyledCol("IMGT Name")
     status = StyledCol("Status")
 

@@ -5,6 +5,7 @@
 #
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from custom_validators import *
 from wtforms import SelectField, SubmitField, StringField, validators
 
@@ -13,5 +14,7 @@ class NewSequenceForm(FlaskForm):
     new_name = StringField('New Sequence Name', description="The name for this new sequence")
     submission_id = SelectField('Submission ID', description="Inference study on which this new sequence is based")
     sequence_name = SelectField('Sequence', description="Inferred sequence on which this new sequence is based")
+    species_subgroup = SelectField('Species Subgroup', description="Species subgroup for this new sequence, if any")
+    upload_file = FileField('Sequence File', description="CSV file containing sequence metadata")
     create = SubmitField('Create')
     cancel = SubmitField('Cancel')

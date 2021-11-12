@@ -3,38 +3,67 @@
 {% block pagetitle %} New Sequence - {{ species }}{% endblock %}
 
 {% block c_body %}
+        <div class="col-sm-12">
+        <form action="{{ url_for('new_sequence', species=species) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
 
-
-
-        <form action="{{ url_for('new_sequence', species=species) }}" method="POST" name="form" class="form-horizontal">
-
-            <div class="row pad">
-                {{ form.hidden_tag() }}
-
-                {{ render_field_with_errors(form.new_name, class="form-control") }}
-            </div>
-
-            <div class="row pad">
-                <div class="col-sm-6 col-sm-offset-3">
-                    <input type="radio" name="record_type" id="rad_submission" value="submission" checked> The sequence will be based on information from a submission </input><br>
-                    <input type="radio" name="record_type" id="rad_genomic" value="genomic"> The sequence will be based on un-rearranged information </input><br>
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1">
+                    <p>Please complete one section below</p>
                 </div>
             </div>
 
-            <div class="row pad" id="submit_details">
-                <p class="col-sm-offset-1">Please select the submission and inferred sequence on which this affirmation should be based.</p>
-                {{ render_field_with_errors(form.submission_id, class="form-control") }}
+            <div class="_panel col-sm-10 col-sm-offset-1">
+                <div class="row pad">
+                    <div class="col-sm-12">
+                            <b>Single Sequence Entry</b>
+                    </div>
+                </div>
+                <div class="row pad">
+                    <div class="col-sm-12">
+                        {{ form.hidden_tag() }}
 
-                {{ render_field_with_errors(form.sequence_name, class="form-control") }}
+                        {{ render_field_with_errors(form.new_name, class="form-control") }}
+                        {{ render_field_with_errors(form.species_subgroup, class="form-control") }}
+                    </div>
+                </div>
 
+                <div class="row pad">
+                    <div class="col-sm-9 col-sm-offset-3">
+                        <input type="radio" name="record_type" id="rad_submission" value="submission" checked> The sequence will be based on information from a submission </input><br>
+                        <input type="radio" name="record_type" id="rad_genomic" value="genomic"> The sequence will not be based on information from a submission </input><br>
+                    </div>
+                </div>
+
+                <div class="row pad" id="submit_details">
+                    <div class="col-sm-9 col-sm-offset-1">
+                            <p>If the sequence is based on information from a submission, please select the submission and inferred sequence on which this affirmation should be based.</p>
+                    </div>
+                    <div class="col-sm-12">
+                        {{ render_wide_field_with_errors(form.submission_id, class="form-control") }}
+
+                        {{ render_wide_field_with_errors(form.sequence_name, class="form-control") }}
+                    </div>
+
+                </div>
             </div>
 
-            <div class="form-group row col-sm-10">
+            <div class="_panel col-sm-10 col-sm-offset-1">
+                <div class="row pad">
+                    <div class="col-sm-10">
+                            <b>Bulk Sequence Entry</b>
+                    </div>
+                </div>
+                <div class="row pad">
+                    {{ render_field_with_errors(form.upload_file, class="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-group row col-sm-6">
                 {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
                 {{ form.create(class="btn btn-primary") }}
             </div>
         </form>
-
+        </div>
 
 {% endblock %}
 
