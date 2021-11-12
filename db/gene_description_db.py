@@ -255,10 +255,13 @@ class GeneDescription_table(StyledTable):
     id = Col("id", show=False)
     release_version = StyledCol("Version", tooltip="Version number of this record, updated whenever a revised version is published or released")
     imgt_name = StyledCol("IUIS Name", tooltip="The name of this sequence as assigned by IUIS")
+    alt_names = StyledCol("Alternative names", tooltip="Alternative names for this sequence")
     locus = StyledCol("Locus", tooltip="Gene locus")
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
+    inference_type = StyledCol("Inference Type", tooltip="Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
-    species = StyledCol("Species", tooltip="Binomial designation of subject's species")
+    species_subgroup = StyledCol("Species subgroup", tooltip="Race, strain or other species subgroup to which this subject belongs")
+    species_subgroup_type = StyledCol("Subgroup type", tooltip="Category of subgroup")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):

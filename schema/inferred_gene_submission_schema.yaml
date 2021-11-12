@@ -847,6 +847,7 @@ GeneDescription:
             type: string
             description: Alternative names for this sequence
             label: Alternative names
+            tableview: true
         chromosome:
             type: integer
             description: chromosome on which the gene is located
@@ -874,6 +875,7 @@ GeneDescription:
             type: [Unrearranged and Rearranged, Unrearrange Only, Rearranged Only]
             label: Inference Type
             description: Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)
+            tableview: true
         affirmation_level:
             type: [0,1,2,3]
             description: Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)
@@ -885,16 +887,17 @@ GeneDescription:
             description: Binomial designation of subject's species
             label: Species
             hide: true
-            tableview: true
             inview: true
         species_subgroup:
             type: string_50
             description: Race, strain or other species subgroup to which this subject belongs
             label: Species subgroup
+            tableview: true
         species_subgroup_type:
             type: ['none', 'breed', 'strain', 'inbred', 'outbred', 'locational']
             description: Category of subgroup
             label: Subgroup type
+            tableview: true
         status:
             type: [published,draft,retired,withdrawn]
             description: Status of record

@@ -1253,6 +1253,7 @@ def new_sequence(species):
             gene_description = GeneDescription()
             gene_description.sequence_name = form.new_name.data
             gene_description.species = species
+            gene_description.species_subgroup = form.species_subgroup.data
             gene_description.status = 'draft'
             gene_description.maintainer = current_user.name
             gene_description.lab_address = current_user.address
