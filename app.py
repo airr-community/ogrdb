@@ -1257,7 +1257,7 @@ def new_sequence(species):
             gene_description.maintainer = current_user.name
             gene_description.lab_address = current_user.address
             gene_description.functional = True
-            gene_description.inference_type = 'Rearranged Only' if record_type == 'submission' else 'Genomic Only'
+            gene_description.inference_type = 'Rearranged Only' if record_type == 'submission' else 'Unrearranged Only'
             gene_description.release_version = 1
             gene_description.affirmation_level = 0
 
@@ -2846,8 +2846,8 @@ def genomic_support(id):
 
 from imgt.imgt_ref import gap_sequence
 
-# Temp route to add sequence id and chromosome to gene descriptions
-@app.route('/add_seq_id', methods=['GET'])
+# Temp route to change Genomic to Unrearranged in GeneDescription
+@app.route('/upgrade_db', methods=['GET'])
 @login_required
 def add_gapped():
     if not current_user.has_role('Admin'):
@@ -2864,18 +2864,8 @@ def add_gapped():
         if desc.sequence_name:
             report += 'Processing sequence ' + desc.sequence_name + '<br>'
 
-        if not desc.coding_seq_imgt or len(desc.coding_seq_imgt) > 0:
-            report += 'no sequence<br>'
-
-        if desc.locus == 'IGH':
-            desc.chromosome = 14
-        if desc.locus == 'IGK':
-            desc.chromosome = 2
-        if desc.locus == 'IGL':
-            desc.chromosome = 22
-
-        if desc.species is None:
-            desc.species = 'Human'
+        if 'Genomic' in desc.inference_type:
+            desc.inference_type = desc.inference_type.replace('Genomic', 'Unrearranged')
 
         db.session.commit()
 

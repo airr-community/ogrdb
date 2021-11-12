@@ -871,9 +871,9 @@ GeneDescription:
             width: narrow
             label: Functional
         inference_type:
-            type: [Genomic and Rearranged, Genomic Only, Rearranged Only]
+            type: [Unrearranged and Rearranged, Unrearrange Only, Rearranged Only]
             label: Inference Type
-            description: Type of inference(s) from which this gene sequence was inferred (Genomic (Unrearranged) and Rearranged, Genomic Only, Rearranged Only)
+            description: Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)
         affirmation_level:
             type: [0,1,2,3]
             description: Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)
