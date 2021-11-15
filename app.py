@@ -2796,7 +2796,7 @@ def descs_to_fasta(descs, format):
 def germline_set_to_airr(germline_set):
     ad = []
     for desc in germline_set.gene_descriptions:
-        ad.append(vars(AIRRGeneDescription(desc)))
+        ad.append(vars(AIRRAlleleDescription(desc)))
 
     gs = vars(AIRRGermlineSet(germline_set, ad))
 
@@ -2833,7 +2833,7 @@ def download_sequences(species, format, exc):
     if format == 'airr':
         ad = []
         for desc in results:
-            ad.append(vars(AIRRGeneDescription(desc)))
+            ad.append(vars(AIRRAlleleDescription(desc)))
 
         dl = json.dumps(ad, default=str, indent=4)
         ext = 'json'

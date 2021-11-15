@@ -7,9 +7,9 @@
 # Create AIRR representation of items defined in the schema
 
 
-class AIRRGeneDescription:
+class AIRRAlleleDescription:
     def __init__(self, gd):
-        self.gene_description_id = 'OGRDB:' + gd.description_id
+        self.allele_description_id = 'OGRDB:' + gd.description_id
         self.maintainer = gd.maintainer
         self.acknowledgements = []
         for ack in gd.acknowledgements:
@@ -22,7 +22,8 @@ class AIRRGeneDescription:
         self.lab_address = gd.lab_address
         self.release_version = gd.release_version
         self.release_date = gd.release_date.strftime('%d-%b-%Y')
-        self.gene_symbol = gd.sequence_name
+        self.release_description = gd.release_description
+        self.label = gd.sequence_name
         self.sequence = gd.sequence
         self.coding_sequence = gd.coding_seq_imgt
         self.alt_names = []
@@ -37,7 +38,7 @@ class AIRRGeneDescription:
         self.species_subgroup = gd.species_subgroup
         self.species_subgroup_type = gd.species_subgroup_type
         self.status = gd.status if gd.status != 'published' else 'active'
-        self.gene_subgroup = gd.gene_subgroup
+        self.gene_designation = gd.gene_subgroup
         self.subgroup_designation = gd.subgroup_designation
         self.allele_designation = gd.allele_designation
         self.gene_start = gd.gene_start
@@ -84,9 +85,9 @@ class AIRRGeneDescription:
             self.j_rs_end = gd.v
             self.j_donor_splice = gd.j_donor_splice
 
-        self.genomic_support = []
+        self.unrearranged_support = []
         for gen in gd.genomic_accessions:
-            self.genomic_support.append({
+            self.unrearranged_support.append({
                 'sequence_id': gen.id,
                 'sequence': gen.sequence,
                 'notes': gen.notes,
@@ -94,8 +95,8 @@ class AIRRGeneDescription:
                 'assembly_id': gen.accession,
                 'patch_no': gen.patch_no,
                 'gff_seqid': gen.gff_seqid,
-                'sequence_start': gen.sequence_start,
-                'sequence_end': gen.sequence_end,
+                'gff_start': gen.sequence_start,
+                'gff_end': gen.sequence_end,
                 'strand': gen.sense,
             })
 
