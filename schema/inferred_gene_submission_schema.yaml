@@ -887,6 +887,7 @@ GeneDescription:
             description: Binomial designation of subject's species
             label: Species
             hide: true
+            tableview: true
             inview: true
         species_subgroup:
             type: string_50

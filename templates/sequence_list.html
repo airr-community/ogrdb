@@ -10,9 +10,9 @@
                 <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-default heading-btn">New Sequence</a>
                 {% if loop.previtem is not defined %}
                    {% if show_withdrawn %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Withdrawn</a>
+                        <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Withdrawn</a>
                     {% else %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Withdrawn</a>
+                        <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Withdrawn</a>
                     {% endif %}
                 {% endif %}
                 </div>
@@ -134,14 +134,18 @@
         {% for sp, t in tables['species'].items() %}
                 $(document).ready(function() {
                     $("#{{ t['draft'].table_id }}").DataTable({
-                        "paging":   false,
-                        "searching": false,
-                        "info":     false
+                        "paging":   true,
+                        "searching": true,
+                        "info":     false,
+                         "lengthMenu": [ 25, 100, 500, 5000 ],
+                        "colReorder": true,
                     });
                     $("#{{ t['level_0'].table_id }}").DataTable({
-                        "paging":   false,
-                        "searching": false,
-                        "info":     false
+                        "paging":   true,
+                        "searching": true,
+                        "info":     false,
+                        "lengthMenu": [ 25, 100, 500, 5000 ],
+                        "colReorder": true,
                     })
                 })
         {% endfor %}
@@ -149,9 +153,11 @@
 
     $(document).ready(function() {
         $("#{{ tables['affirmed'].table_id }}").DataTable({
-            "paging":   false,
-            "searching": false,
-            "info":     false
+            "paging":   true,
+            "searching": true,
+            "info":     false,
+            "lengthMenu": [ 25, 100, 500, 5000 ],
+            "colReorder": true,
         });
     } );
 

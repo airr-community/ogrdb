@@ -1127,50 +1127,46 @@ def check_seq_withdraw(id):
     return desc
 
 
-@app.route('/sequences', methods=['GET', 'POST'])
-def sequences():
+@app.route('/sequences/<sp>', methods=['GET', 'POST'])
+def sequences(sp):
     tables = {}
     show_withdrawn = False
 
+    species = [s[0] for s in db.session.query(Committee.species).all()]
+
+    if sp not in species:
+        return redirect('/')
+
     if current_user.is_authenticated:
-        species = [s[0] for s in db.session.query(Committee.species).all()]
-        for sp in species:
-            if current_user.has_role(sp):
-                if 'species' not in tables:
-                    tables['species'] = {}
-                tables['species'][sp] = {}
+        if current_user.has_role(sp):
+            if 'species' not in tables:
+                tables['species'] = {}
+            tables['species'][sp] = {}
 
-                if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
-                    q = db.session.query(GeneDescription).filter(GeneDescription.species==sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
-                    show_withdrawn = True
-                else:
-                    q = db.session.query(GeneDescription).filter(GeneDescription.species==sp).filter(GeneDescription.status.in_(['draft']))
-                    show_withdrawn = False
-                results = q.all()
+            if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
+                q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
+                show_withdrawn = True
+            else:
+                q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft']))
+                show_withdrawn = False
+            results = q.all()
 
-                tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
-                tables['species'][sp]['draft'].table_id = sp + '_draft'
+            tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
+            tables['species'][sp]['draft'].table_id = sp + '_draft'
 
-                q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species==sp, GeneDescription.affirmation_level == '0')
-                results = q.all()
-                tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
-                tables['species'][sp]['level_0'].table_id = sp + '_level_0'
+            q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level == '0')
+            results = q.all()
+            tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
+            tables['species'][sp]['level_0'].table_id = sp + '_level_0'
 
     q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0')
     results = q.all()
     tables['affirmed'] = setup_sequence_list_table(results, current_user)
     tables['affirmed'].table_id = 'affirmed'
 
-    species = db.session.query(Committee.species).all()
-    species = [s[0] for s in species]
-
-    for sp in list(species):
-        if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == sp).all()) < 1:
-            species.remove(sp)
-
-    if len(species) > 0:
+    if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == sp).all()) >= 1:
         form = SpeciesForm()
-        form.species.choices = [(s,s) for s in species]
+        form.species.choices = [sp]
     else:
         form = None
 
@@ -1338,7 +1334,7 @@ def upload_sequences(form, species):
     errors = []
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup']
+    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'alt_names']
     headers = None
     row_count = 2
     for row in reader:
@@ -1404,6 +1400,15 @@ def upload_sequences(form, species):
         gene_description.locus = row['type'][0:3]
         gene_description.sequence_type = row['type'][3:]
         gene_description.coding_seq_imgt = row['sequence_gapped']
+
+        notes = []
+        for field in row.keys():
+            if field not in required_headers and len(row[field]):
+                notes.append('%s: %s' % (field, row[field]))
+
+        if len(notes):
+            gene_description.notes = '\r\n'.join(notes)
+
         db.session.add(gene_description)
         db.session.commit()
         gene_description.description_id = "A%05d" % gene_description.id
@@ -2599,14 +2604,26 @@ def add_gene_to_set(id):
     gene_descriptions = [g for g in gene_descriptions if germline_set.locus == g.locus]
     gene_descriptions.sort(key=attrgetter('sequence_name'))
     form.create.label.text = "Add"
-    form.gene_description_id.choices = [(g.id, '%s (%s)' % (g.sequence_name, g.status)) for g in gene_descriptions]
 
-    if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
+    gene_table = setup_sequence_list_table(gene_descriptions, current_user, edit=False)
+    gene_table.table_id = "genetable"
+
+    if request.method == 'POST':
         if form.cancel.data:
             return redirect(url_for('edit_sequence', id=id, _anchor='inf'))
 
         if form.validate():
-            for gid in form.gene_description_id.data:
+            selected = form.results.data.split(',')
+            selected_ids = []
+
+            for sel in selected:
+                if "/sequence/" in sel:
+                    try:
+                        selected_ids.append(int(sel.split("/sequence/")[1].split('">')[0]))
+                    except:
+                        pass
+
+            for gid in selected_ids:
                 gene_description = db.session.query(GeneDescription).filter(GeneDescription.id == gid).one_or_none()
 
                 if gene_description and gene_description not in germline_set.gene_descriptions:
@@ -2615,7 +2632,7 @@ def add_gene_to_set(id):
             db.session.commit()
         return redirect(url_for('edit_germline_set', id=id, _anchor='genes'))
 
-    return render_template('germline_set_add_gene.html', form=form, name=germline_set.germline_set_name, id=id)
+    return render_template('germline_set_add_gene.html', form=form, name=germline_set.germline_set_name, gene_table=gene_table, id=id)
 
 
 def check_germline_set_attachment_edit(af_id):

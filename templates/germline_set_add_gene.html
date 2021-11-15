@@ -1,24 +1,59 @@
-{% extends "base.html" %}
+{% extends "base_wide.html" %}
 
 {% block pagetitle %} Add Gene(s) - {{ name }}{% endblock %}
 
 {% block c_body %}
 
-    <div class="row pad">
+    <row class="col-md-12">
 
         <form action="{{ url_for('add_gene_to_set', id=id) }}" method="POST" name="form" class="form-horizontal">
 
             {{ form.hidden_tag() }}
 
             <p class="col-sm-offset-1">Please select the genes to add. Use Ctrl-click to select multiple genes.</p>
-            {{ render_field_with_errors(form.gene_description_id, class="form-control") }}
+            {{ gene_table }}
 
             <div class="form-group row col-sm-10">
+                {{  form.results() }}
                 {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
                 {{ form.create(class="btn btn-primary") }}
             </div>
         </form>
-    </div>
+    </row>
 
 {% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script>
+
+    function on_create() {
+        table = $("#{{ gene_table.table_id }}").DataTable();
+        messages = [];
+
+        table.rows({ selected: true }).every( function (x) {
+            messages.push(this.data()[0]);
+        });
+
+        $("#results").val(messages)
+    }
+
+    $(document).ready(function() {
+        $("#{{ gene_table.table_id }}").DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'colvis',
+                'selectAll',
+                'selectNone',
+            ],
+            "paging":   true,
+            "searching": true,
+            "select":   true,
+            "info":     false,
+            "lengthMenu": [ 25, 100, 500, 5000 ],
+            "colReorder": true,
+        });
+    } );
+
+    </script>
+{% endblock %}

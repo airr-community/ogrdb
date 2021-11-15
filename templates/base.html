@@ -3,9 +3,10 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
+    <title>OGRDB</title>
 {% endblock %}
 
 {% block content %}
@@ -27,11 +28,26 @@
                 {% include "_messages.html" %}
             </div>
         </div>
-        <div class="row">
+            <div class="row">
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
                     <a href="{{ url_for('germline_sets') }}" class="m-item">Germline Sets</a> |
-                    <a href="{{ url_for('sequences') }}" class="m-item">Sequences</a> |
+                    <span class="dropdown">
+                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-toggle="dropdown">
+                            Sequences
+                            <span class="caret"></span>
+                        </a>
+                        <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <ul>
+                                <li><a href="{{ url_for('sequences', sp='Human') }}" class="m-item">Human</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Mouse') }}" class="m-item">Mouse</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Macaque') }}" class="m-item">Macaque</a></li>
+                                {% if current_user.has_role('Admin') %}
+                                    <li><a href="{{ url_for('sequences', sp='Test') }}" class="m-item">Test</a></li>
+                                {% endif %}
+                            </ul>
+                        </span>
+                    </span> |
                     <a href="{{ url_for('genotype_statistics') }}" class="m-item">Statistics</a> |
                     <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
                     {% if current_user.active %}
@@ -45,7 +61,7 @@
                     <a href="{{ url_for_security('login') }}" class="m-item">Login</a>
                     {% endif %}
                 </div>
-        </div>
+            </div>
 
             {% block c_body %}{% endblock %}
 

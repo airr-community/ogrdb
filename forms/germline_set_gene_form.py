@@ -6,11 +6,10 @@
 
 from flask_wtf import FlaskForm
 from custom_validators import *
-from wtforms import SelectMultipleField, SubmitField
+from wtforms import SubmitField, HiddenField
 
 
 class NewGermlineSetGeneForm(FlaskForm):
-    gene_description_id = SelectMultipleField('Gene', description="Select the gene to be added (use Ctr-click to select multiple genes", coerce=int)
-    add = SubmitField('Add')
-    create = SubmitField('Create')
+    create = SubmitField('Create', render_kw={"onclick": "on_create()"})
+    results = HiddenField('Results')
     cancel = SubmitField('Cancel')

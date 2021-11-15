@@ -69,12 +69,12 @@ class SequenceListIMGTCol(StyledCol):
         return fmt_string
 
 
-def setup_sequence_list_table(results, current_user):
+def setup_sequence_list_table(results, current_user, edit=True):
     table = make_GeneDescription_table(results)
     for item in table.items:
         item.viewable = item.can_see(current_user)
-        item.editable = item.can_edit(current_user)
-        item.draftable = item.can_draft(current_user)
+        item.editable = item.can_edit(current_user) if edit else False
+        item.draftable = item.can_draft(current_user)  if edit else False
 
     del table._cols['imgt_name']
     table.add_column('imgt_name', SequenceListIMGTCol('IMGT Name'))
