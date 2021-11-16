@@ -166,6 +166,8 @@
         {% if form.title.errors or form.body.errors %}
            $('#publish_btn').trigger('click');
         {% endif %}
+
+        init_datatable();
     });
 
     // Change hash for page-reload
@@ -179,6 +181,10 @@
 
     skip_to_anchor = function(anchor) {
         $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+
+      /*  if(anchor === "genes") {
+            init_datatable();
+        } */
     };
 
     {% if jump %}
@@ -189,14 +195,6 @@
             skip_to_anchor(anchor)
         }
     {% endif %}
-
-    $(document).ready(function ()
-    {
-        if(jump != '') {
-            window.location.hash = "";
-            window.location.hash = "#" + jump
-        }
-    });
 
     $('#messageModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget); // Button that triggered the modal
@@ -251,6 +249,30 @@
         });
     }
 
-   </script>
+    // Note that the table MUST have a style of width: 100% or DataTables will not resize it properly
+
+    function init_datatable() {
+        if(!$.fn.DataTable.isDataTable($("#{{ tables['genes'].table_id }}"))) {
+            console.log("initialising table");
+            $("#{{ tables['genes'].table_id }}").DataTable({
+                dom: 'Blfrtip',
+                "paging":   true,
+                "searching": true,
+                "select":   false,
+                "info":     false,
+                "lengthMenu": [ 25, 100, 500, 5000 ],
+                "colReorder": true,
+                "columnDefs": [
+                    {"visible": false, "targets": [-1,-2]},
+                    {"width": "0px", "targets": [-1,-2]},
+                ],
+                "buttons": [
+                    "excel", "csv"
+                ]
+            });
+        }
+    }
+
+    </script>
 
 {% endblock %}

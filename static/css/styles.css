@@ -158,7 +158,8 @@ td {
 }
 
 th {
-  word-wrap: break-word !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
 }
 
 /*
@@ -332,6 +333,10 @@ pre.lead {
     display: none;
 }
 
+.collapsed {
+    visibility: collapse;
+}
+
 .tablebutton {
     margin-left: 2%;
     margin-right: 2%;
@@ -340,6 +345,10 @@ pre.lead {
 .tablefixed {
     table-layout: fixed;
     white-space: nowrap;
+}
+
+.row-0 {
+    width: 0;
 }
 
 .row-20 {

@@ -59,10 +59,10 @@ class StyledTable(Table):
 class StyledCol(Col):
     def __init__(self, *args, **kwargs):
         if 'tooltip' in kwargs:
-            kwargs['th_html_attrs'] = {'class':'th_back', 'data-toggle':"tooltip", 'data-placement':"top", 'data-container':"body", 'title':kwargs['tooltip']}
+            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
             del(kwargs['tooltip'])
         else:
-            kwargs['th_html_attrs'] = {'class':'th_back'}
+            kwargs['th_html_attrs'] = {'class': 'th_back'}
 
         super(StyledCol, self).__init__(*args, **kwargs)
 
@@ -70,10 +70,10 @@ class StyledCol(Col):
 class StyledDateCol(DateCol):
     def __init__(self, *args, **kwargs):
         if 'tooltip' in kwargs:
-            kwargs['th_html_attrs'] = {'class':'th_back', 'data-toggle':"tooltip", 'data-placement':"top", 'data-container':"body", 'title':kwargs['tooltip']}
+            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
             del(kwargs['tooltip'])
         else:
-            kwargs['th_html_attrs'] = {'class':'th_back'}
+            kwargs['th_html_attrs'] = {'class': 'th_back'}
 
         if 'date_format' not in kwargs:
             kwargs['date_format'] = 'y-MM-dd'
@@ -83,8 +83,16 @@ class StyledDateCol(DateCol):
 
 class StyledLinkCol(LinkCol):
     def __init__(self, *args, **kwargs):
-        kwargs['th_html_attrs'] = {'class':'th_back'}
+        kwargs['th_html_attrs'] = {'class': 'th_back'}
         super(StyledLinkCol, self).__init__(*args, **kwargs)
+
+
+class HiddenCol(Col):
+    def __init__(self, *args, **kwargs):
+        #kwargs['th_html_attrs'] = {'class': 'collapsed, row-0'}
+        #kwargs['td_html_attrs'] = {'class': 'collapsed, row-0'}
+
+        super(HiddenCol, self).__init__(*args, **kwargs)
 
 
 

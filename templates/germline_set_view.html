@@ -112,4 +112,34 @@
     {{ super() }}
     <script src="/static/script/helpers.js"></script>
 
+    <script>
+
+    $(document).ready(function() {
+        init_datatable();
+    } );
+
+    function init_datatable() {
+        if(!$.fn.DataTable.isDataTable($("#{{ tables['genes'].table_id }}"))) {
+            console.log("initialising table");
+            $("#{{ tables['genes'].table_id }}").DataTable({
+                dom: 'Blfrtip',
+                "paging":   true,
+                "searching": true,
+                "select":   false,
+                "info":     false,
+                "lengthMenu": [ 25, 100, 500, 5000 ],
+                "colReorder": true,
+                "columnDefs": [
+                    {"visible": false, "targets": [-1,-2]},
+                    {"width": "0px", "targets": [-1,-2]},
+                ],
+                "buttons": [
+                    "excel", "csv"
+                ]
+            });
+        }
+    }
+
+    </script>
+
 {% endblock %}

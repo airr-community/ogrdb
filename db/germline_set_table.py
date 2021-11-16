@@ -7,7 +7,6 @@ from operator import attrgetter
 
 from db.attached_file_db import make_AttachedFile_table
 from db.germline_set_db import GermlineSet
-from db.notes_entry_db import NotesEntry
 from forms.attached_file_form import AttachedFileForm
 from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable, EditablePubIdTable
 from db.repertoire_db import make_Acknowledgements_table, make_PubId_table
@@ -32,11 +31,15 @@ class DescLinkCol(StyledCol):
 
 
 class GeneDescriptionTable(StyledTable):
-    name = DescLinkCol("Gene Name")
-    version = StyledCol("Version")
+    name = DescLinkCol("Label")
+    version = StyledCol("Vn")
     date = StyledDateCol("Date")
     imgt_name = StyledCol("IMGT Name")
+    subgroup = StyledCol("Subgrp")
+    subgroup_type = StyledCol("Subgrp Type")
     status = StyledCol("Status")
+    sequence = HiddenCol("Sequence")
+    sequence_gapped = HiddenCol("Gapped Sequence")
 
 
 def make_GeneDescription_table(results, private=False, classes=()):
@@ -56,6 +59,10 @@ def setup_gene_description_table(germline_set, action=True):
             'version': gene_description.release_version,
             'date': gene_description.release_date,
             'status': gene_description.status,
+            'subgroup': gene_description.species_subgroup,
+            'subgroup_type': gene_description.species_subgroup_type,
+            'sequence': gene_description.sequence,
+            'sequence_gapped': gene_description.coding_seq_imgt,
             'gene_id': gene_description.id,
             'set_id': germline_set.id})
 

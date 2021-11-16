@@ -1159,7 +1159,7 @@ def sequences(sp):
             tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
             tables['species'][sp]['level_0'].table_id = sp + '_level_0'
 
-    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0')
+    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level != '0')
     results = q.all()
     tables['affirmed'] = setup_sequence_list_table(results, current_user)
     tables['affirmed'].table_id = 'affirmed'
@@ -1209,7 +1209,7 @@ def new_sequence(species):
 
     if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
         if form.cancel.data:
-            return redirect('/sequences')
+            return redirect(url_for('sequences', sp=species))
 
         if form.upload_file.data:
             return upload_sequences(form, species)
@@ -1239,12 +1239,12 @@ def new_sequence(species):
 
                 sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
                 if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
-                    return redirect('/sequences')
+                    return redirect(url_for('sequences', sp=species))
 
                 seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
 
                 if seq is None or seq not in sub.inferred_sequences:
-                    return redirect('/sequences')
+                    return redirect(url_for('sequences', sp=species))
 
             gene_description = GeneDescription()
             gene_description.sequence_name = form.new_name.data
@@ -1320,7 +1320,7 @@ def new_sequence(species):
             db.session.commit()
             if record_type == 'submission':
                 gene_description.build_duplicate_list(db, seq.sequence_details.nt_sequence)
-            return redirect('/sequences')
+            return redirect(url_for('sequences', sp=species))
 
         except ValidationError as e:
             return render_template('sequence_new.html', form=form, species=species)
@@ -1334,7 +1334,7 @@ def upload_sequences(form, species):
     errors = []
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'alt_names']
+    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation']
     headers = None
     row_count = 2
     for row in reader:
@@ -1362,11 +1362,19 @@ def upload_sequences(form, species):
             errors.append('row %d: no sequence' % row_count)
         if not row['sequence_gapped']:
             errors.append('row %d: no sequence_gapped' % row_count)
-        row_count += 1
+
+        try:
+            level = int(row['affirmation'])
+            if level < 0 or level > 3:
+                errors.append('row %d: affirmation level must be an integer between 0 and 3' % row_count)
+        except:
+            errors.append('row %d: affirmation level must be an integer between 0 and 3' % row_count)
 
         if len(errors) >= 5:
             errors.append('(Only showing first few errors)')
             break
+
+        row_count += 1
 
     if len(errors) > 0:
         errors.append('Sequences not uploaded: please fix errors and try again')
@@ -1382,13 +1390,14 @@ def upload_sequences(form, species):
         gene_description.alt_names = row['alt_names']
         gene_description.species = species
         gene_description.species_subgroup = row['species_subgroup']
+        gene_description.species_subgroup_type = row['subgroup_type']
         gene_description.status = 'draft'
         gene_description.maintainer = current_user.name
         gene_description.lab_address = current_user.address
         gene_description.functional = row['functional'] == 'Y'
         gene_description.inference_type = row['inference_type']
         gene_description.release_version = 1
-        gene_description.affirmation_level = 0
+        gene_description.affirmation_level = int(row['affirmation'])
         gene_description.inferred_extension = False
         gene_description.ext_3prime = None
         gene_description.start_3prime_ext = None
@@ -1401,12 +1410,12 @@ def upload_sequences(form, species):
         gene_description.sequence_type = row['type'][3:]
         gene_description.coding_seq_imgt = row['sequence_gapped']
 
-        notes = []
+        notes = ['Imported to OGRDB with the following notes:']
         for field in row.keys():
             if field not in required_headers and len(row[field]):
                 notes.append('%s: %s' % (field, row[field]))
 
-        if len(notes):
+        if len(notes) > 1:
             gene_description.notes = '\r\n'.join(notes)
 
         db.session.add(gene_description)
@@ -1414,7 +1423,7 @@ def upload_sequences(form, species):
         gene_description.description_id = "A%05d" % gene_description.id
         db.session.commit()
 
-    return redirect('/sequences')
+    return redirect(url_for('sequences', sp=species))
 
 @app.route('/get_sequences/<id>', methods=['GET'])
 @login_required
@@ -1594,14 +1603,9 @@ def edit_sequence(id):
                     valid = False
 
         if form.action.data == 'published':
-            if len(seq.inferred_sequences) < 1 and len(seq.genomic_accessions) < 1:
-                flash("Please provide at least one inferred sequence or genomic sequence as evidence.")
-                form.action.data = ''
-                valid = False
-
             for inferred_sequence in seq.inferred_sequences:
                 if inferred_sequence.submission.submission_status == 'draft':
-                    flash("Can't publish this sequence while submission %s is in draft." % inferred_sequence.submission.submission_id)
+                    inferred_sequence.submission.submission_status = 'published'
                     valid = False
                 if inferred_sequence.submission.submission_status == 'withdrawn':
                     flash("Can't publish this sequence: submission %s is withdrawn." % inferred_sequence.submission.submission_id)
@@ -1669,40 +1673,9 @@ def edit_sequence(id):
                     return redirect(url_for('seq_add_genomic', id=id))
 
                 if form.action.data == 'published':
-                    old_seq = db.session.query(GeneDescription).filter_by(description_id = seq.description_id, status='published').one_or_none()
-                    if old_seq:
-                        old_seq.status = 'superceded'
-                        old_seq.duplicate_sequences = list()
-                        seq.release_version = old_seq.release_version + 1
-                    else:
-                        seq.release_version = 1
-
-                    # Mark any referenced submissions as public
-
-                    for inferred_sequence in seq.inferred_sequences:
-                        sub = inferred_sequence.submission
-                        if not inferred_sequence.submission.public:
-                            inferred_sequence.submission.public = True
-                            db.session.commit()
-                            add_history(current_user, 'Submission published', sub, db)
-                            send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, sequence=seq)
-                            send_mail('Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species), [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name, submission=sub, sequence=seq)
-
-                        # Make a note in submission history if we haven't already
-                        title = 'Sequence %s listed in affirmation' % inferred_sequence.sequence_details.sequence_id
-                        entry = db.session.query(JournalEntry).filter_by(type = 'note', submission=sub, title=title).all()
-                        if not entry:
-                            add_note(current_user, title, safe_textile('* Sequence: %s\n* Genotype: %s\n* Subject ID: %s\nis referenced in affirmation %s (sequence name %s)' %
-                                (inferred_sequence.sequence_details.sequence_id, inferred_sequence.genotype_description.genotype_name, inferred_sequence.genotype_description.genotype_subject_id, seq.description_id, seq.sequence_name)), sub, db)
-
-                    seq.release_date = datetime.date.today()
-                    add_history(current_user, 'Version %s published' % seq.release_version, seq, db, body = form.body.data)
-                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (seq.description_id, seq.release_version, seq.species), [seq.species], 'iarc_sequence_released', reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment=form.body.data)
-                    seq.release_description = form.body.data
-                    seq.status = 'published'
-                    db.session.commit()
+                    publish_sequence(seq, form.body.data, True)
                     flash('Sequence published')
-                    return redirect('/sequences')
+                    return redirect(url_for('sequences', sp=seq.species))
 
             except ValidationError:
                 return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version, attachment=len(seq.attached_files) > 0)
@@ -1710,7 +1683,7 @@ def edit_sequence(id):
             if validation_result.tag:
                 return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
             else:
-                return redirect(url_for('sequences'))
+                return redirect(url_for('sequences', sp=seq.species))
 
         else:
             for field in tables['ack'].form:
@@ -1718,6 +1691,54 @@ def edit_sequence(id):
                     return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version, attachment=len(seq.attached_files) > 0)
 
     return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, version=seq.release_version, attachment=len(seq.attached_files) > 0)
+
+
+def publish_sequence(seq, notes, email):
+    old_seq = db.session.query(GeneDescription).filter_by(description_id=seq.description_id,
+                                                          status='published').one_or_none()
+    if old_seq:
+        old_seq.status = 'superceded'
+        old_seq.duplicate_sequences = list()
+        seq.release_version = old_seq.release_version + 1
+    else:
+        seq.release_version = 1
+    # Mark any referenced submissions as public
+    for inferred_sequence in seq.inferred_sequences:
+        sub = inferred_sequence.submission
+        if not inferred_sequence.submission.public:
+            inferred_sequence.submission.public = True
+            db.session.commit()
+            add_history(current_user, 'Submission published', sub, db)
+            send_mail(
+                'Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species),
+                [sub.submitter_email], 'user_submission_published', reviewer=current_user, user_name=sub.submitter_name,
+                submission=sub, sequence=seq)
+            send_mail(
+                'Submission %s accepted and published by the IARC %s Committee' % (sub.submission_id, sub.species),
+                [sub.species], 'iarc_submission_published', reviewer=current_user, user_name=sub.submitter_name,
+                submission=sub, sequence=seq)
+
+        # Make a note in submission history if we haven't already
+        title = 'Sequence %s listed in affirmation' % inferred_sequence.sequence_details.sequence_id
+        entry = db.session.query(JournalEntry).filter_by(type='note', submission=sub, title=title).all()
+        if not entry:
+            add_note(current_user, title, safe_textile(
+                '* Sequence: %s\n* Genotype: %s\n* Subject ID: %s\nis referenced in affirmation %s (sequence name %s)' %
+                (inferred_sequence.sequence_details.sequence_id, inferred_sequence.genotype_description.genotype_name,
+                 inferred_sequence.genotype_description.genotype_subject_id, seq.description_id, seq.sequence_name)),
+                     sub, db)
+    seq.release_date = datetime.date.today()
+    add_history(current_user, 'Version %s published' % seq.release_version, seq, db, body=notes)
+
+    if email:
+        send_mail('Sequence %s version %d published by the IARC %s Committee' % (
+
+    seq.description_id, seq.release_version, seq.species), [seq.species], 'iarc_sequence_released',
+              reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment=notes)
+    seq.release_description = notes
+    seq.status = 'published'
+    db.session.commit()
+
 
 @app.route('/download_sequence_attachment/<id>')
 def download_sequence_attachment(id):
@@ -2236,6 +2257,8 @@ def edit_germline_set(id):
     db.session.commit()
 
     tables = setup_germline_set_edit_tables(db, germline_set)
+    tables['genes'].table_id = "genetable"
+    tables['genes'].html_attrs = {'style': 'width: 100%'}
     germline_set_form = GermlineSetForm(obj=germline_set)
     notes_entry_form = NotesEntryForm(obj=germline_set.notes_entries[0])
     history_form = JournalEntryForm()
@@ -2262,15 +2285,17 @@ def edit_germline_set(id):
 
             for gene_description in germline_set.gene_descriptions:
                 if gene_description.status == 'draft':
-                    flash("Can't publish this set while gene %s is in draft." % gene_description.sequence_name)
-                    form.action.data = ''
-                    valid = False
+                    publish_sequence(gene_description, form.body.data, False)
                 if gene_description.status == 'published' and gene_description.affirmation_level == 0:
                     flash("Can't publish this set while gene %s is at affirmation level 0." % gene_description.sequence_name)
                     form.action.data = ''
                     valid = False
                 if gene_description.status == 'withdrawn':
                     flash("Can't publish this set while gene %s is withdrawn." % gene_description.sequence_name)
+                    form.action.data = ''
+                    valid = False
+                if gene_description.species_subgroup != germline_set.species_subgroup or gene_description.species_subgroup_type != germline_set.species_subgroup_type:
+                    flash("Can't publish this set while gene %s species subgroup/subgroup type disagreees with the germline set values." % gene_description.sequence_name)
                     form.action.data = ''
                     valid = False
 
@@ -2517,6 +2542,15 @@ def draft_germline_set(id):
         for gene_description in set.gene_descriptions:
             new_set.gene_descriptions.append(gene_description)
 
+        new_set.notes_entries.append(NotesEntry())
+        new_set.notes_entries[0].notes_text = set.notes_entries[0].notes_text
+
+        for af in set.notes_entries[0].attached_files:
+            new_af = AttachedFile()
+            new_af.notes_entry = new_set.notes_entries[0]
+            new_af.filename = af.filename
+            db.session.add(af)
+
         for journal_entry in set.journal_entries:
             new_entry = JournalEntry()
             copy_JournalEntry(journal_entry, new_entry)
@@ -2607,6 +2641,7 @@ def add_gene_to_set(id):
 
     gene_table = setup_sequence_list_table(gene_descriptions, current_user, edit=False)
     gene_table.table_id = "genetable"
+    gene_table.html_attrs = {'style': 'width: 100%'}
 
     if request.method == 'POST':
         if form.cancel.data:
@@ -2712,6 +2747,8 @@ def germline_set(id):
 
     form = FlaskForm()
     tables = setup_germline_set_view_tables(db, germline_set, current_user.has_role(germline_set.species))
+    tables['genes'].table_id = "genetable"
+    tables['genes'].html_attrs = {'style': 'width: 100%'}
     versions = db.session.query(GermlineSet).filter(GermlineSet.species == germline_set.species)\
         .filter(GermlineSet.germline_set_name == germline_set.germline_set_name)\
         .filter(GermlineSet.status.in_(['published', 'superceded']))\
@@ -2770,7 +2807,7 @@ def download_germline_set(set_id, format):
 
     if format == 'airr':
         dl = germline_set_to_airr(germline_set)
-        filename = '%s_%s_rev_%d.yml' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+        filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format)
         filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)

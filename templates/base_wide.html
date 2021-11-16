@@ -39,7 +39,8 @@
                         </a>
                         <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
                             <ul>
-                                <li><a href="{{ url_for('sequences', sp='Human') }}" class="m-item">Human</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Human') }}" class="m-item">Human BCR</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Human_TCR') }}" class="m-item">Human TCR</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Mouse') }}" class="m-item">Mouse</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Macaque') }}" class="m-item">Macaque</a></li>
                                 {% if current_user.has_role('Admin') %}

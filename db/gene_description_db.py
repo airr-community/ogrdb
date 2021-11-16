@@ -263,6 +263,8 @@ class GeneDescription_table(StyledTable):
     species = StyledCol("Species", tooltip="Binomial designation of subject's species")
     species_subgroup = StyledCol("Species subgroup", tooltip="Race, strain or other species subgroup to which this subject belongs")
     species_subgroup_type = StyledCol("Subgroup type", tooltip="Category of subgroup")
+    sequence = StyledCol("Full Sequence", tooltip="nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences")
+    coding_seq_imgt = StyledCol("Coding Sequence", tooltip="nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):

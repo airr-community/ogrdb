@@ -39,7 +39,8 @@
                         </a>
                         <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
                             <ul>
-                                <li><a href="{{ url_for('sequences', sp='Human') }}" class="m-item">Human</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Human') }}" class="m-item">Human BCR</a></li>
+                                <li><a href="{{ url_for('sequences', sp='Human_TCR') }}" class="m-item">Human TCR</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Mouse') }}" class="m-item">Mouse</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Macaque') }}" class="m-item">Macaque</a></li>
                                 {% if current_user.has_role('Admin') %}
@@ -83,9 +84,9 @@
 {% block scripts %}
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.js"></script>
     <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()

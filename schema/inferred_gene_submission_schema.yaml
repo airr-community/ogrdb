@@ -925,11 +925,13 @@ GeneDescription:
             description: nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences
             label: Full Sequence
             rows: 8
+            tableview: true
         coding_seq_imgt:
             type: IUPAC GAPPED
             description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
             label: Coding Sequence
             rows: 12
+            tableview: true
         gene_start:
             type: integer
             nullable: true
