@@ -30,6 +30,27 @@ class GermlineSetListActionCol(StyledCol):
         return ''.join(fmt_string)
 
 
+class GermlineSetListDownloadCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        fmt_string = []
+        fmt_string.append(
+            '<a href="%s" class="btn btn-xs text-primary icon_back"><span class="glyphicon glyphicon-file" data-toggle="tooltip" title="AIRR (JSON)"></span>&nbsp;</a>' %
+            url_for('download_germline_set', set_id=item.id, format='airr'))
+        fmt_string.append(
+            '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file" data-toggle="tooltip" title="FASTA Gapped"></span>&nbsp;</a>' %
+            url_for('download_germline_set', set_id=item.id, format='gapped'))
+        fmt_string.append(
+            '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file" data-toggle="tooltip" title="FASTA Ungapped"></span>&nbsp;</a>' %
+            url_for('download_germline_set', set_id=item.id, format='ungapped'))
+
+        for af in item.notes_entries[0].attached_files:
+            fmt_string.append(
+                '<a href="%s" class="btn btn-xs text-muted icon_back"><span class="glyphicon glyphicon-file" data-toggle="tooltip" title="%s"></span>&nbsp;</a>' %
+                (url_for('download_germline_set_attachment', id=af.id), af.filename))
+
+        return ''.join(fmt_string)
+
+
 def setup_germline_set_list_table(results, current_user):
     table = make_GermlineSet_table(results)
     for item in table.items:
@@ -37,7 +58,23 @@ def setup_germline_set_list_table(results, current_user):
         item.editable = item.can_edit(current_user)
         item.draftable = item.can_draft(current_user)
 
-    table.add_column('sequence_name', GermlineSetListActionCol('Set Name'))
-    table._cols.move_to_end('sequence_name', last=False)
+    table.add_column('set_name', GermlineSetListActionCol('Set Name'))
+    table._cols.move_to_end('set_name', last=False)
+    return table
+
+
+def setup_published_germline_set_list_table(results, current_user):
+    table = make_GermlineSet_table(results)
+    for item in table.items:
+        item.viewable = item.can_see(current_user)
+        item.editable = item.can_edit(current_user)
+        item.draftable = item.can_draft(current_user)
+
+    table.add_column('download', GermlineSetListDownloadCol('Downloads'))
+    table._cols.move_to_end('download', last=False)
+
+    table.add_column('set_name', GermlineSetListActionCol('Set Name'))
+    table._cols.move_to_end('set_name', last=False)
+    del table._cols['locus']
     return table
 

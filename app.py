@@ -2187,15 +2187,8 @@ def germline_sets():
 
     q = db.session.query(GermlineSet).filter(GermlineSet.status == 'published')
     results = q.all()
-    tables['affirmed'] = setup_germline_set_list_table(results, current_user)
+    tables['affirmed'] = setup_published_germline_set_list_table(results, current_user)
     tables['affirmed'].table_id = 'affirmed'
-
-    species = db.session.query(Committee.species).all()
-    species = [s[0] for s in species]
-
-    for sp in list(species):
-        if len(db.session.query(GermlineSet).filter(GermlineSet.status == 'published', GermlineSet.species == sp).all()) < 1:
-            species.remove(sp)
 
     return render_template('germline_set_list.html', tables=tables, show_withdrawn=show_withdrawn, any_published=(len(tables['affirmed'].items) > 0))
 
