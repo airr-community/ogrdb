@@ -52,7 +52,13 @@
                     {"width": "0px", "targets": [-1,-2]},
                 ],
                 "buttons": [
-                    "selectAll", "selectNone", "excel", "csv"
+                    {
+                        text: 'Select All',
+                        action: function () {
+                            $("#{{ gene_table.table_id }}").DataTable().rows( {search:'applied'} ).select();
+                        }
+                    },
+                    "selectNone", "excel", "csv",
                 ]
         });
     } );
