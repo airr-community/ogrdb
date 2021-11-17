@@ -1454,7 +1454,7 @@ def get_sequences(id):
 def seq_add_inference(id):
     seq = check_seq_edit(id)
     if seq is None:
-        return redirect('/sequences')
+        return redirect('/')
 
     form = NewSequenceForm()
     subs = db.session.query(Submission).filter(Submission.species==seq.species).filter(Submission.submission_status.in_(['reviewing', 'complete', 'published'])).all()
@@ -1480,13 +1480,13 @@ def seq_add_inference(id):
         sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
         if sub.species != seq.species or sub.submission_status not in ('reviewing', 'published', 'complete'):
             flash('Submission is for the wrong species, or still in draft.')
-            return redirect(url_for(sequences, id=id))
+            return redirect('/')
 
         inferred_seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
 
         if inferred_seq is None or inferred_seq not in sub.inferred_sequences:
             flash('Inferred sequence cannot be found in that submission.')
-            return redirect(url_for(sequences, id=id))
+            return redirect('/')
 
         seq.inferred_sequences.append(inferred_seq)
         copy_acknowledgements(inferred_seq, seq)
@@ -1502,7 +1502,7 @@ def seq_add_inference(id):
 def seq_add_genomic(id):
     seq = check_seq_edit(id)
     if seq is None:
-        return redirect('/sequences')
+        return redirect('/')
 
     form = GenomicSupportForm()
 
@@ -1540,7 +1540,7 @@ def seq_add_genomic(id):
 def seq_edit_genomic(seq_id, support_id):
     seq = check_seq_edit(seq_id)
     if seq is None:
-        return redirect('/sequences')
+        return redirect('/')
 
     support = db.session.query(GenomicSupport).filter_by(id=support_id).one_or_none()
     if support is None:
@@ -1557,7 +1557,7 @@ def seq_edit_genomic(seq_id, support_id):
 def sequence(id):
     seq = check_seq_view(id)
     if seq is None:
-        return redirect('/sequences')
+        return redirect('/')
 
     form = FlaskForm()
     tables = setup_sequence_view_tables(db, seq, current_user.has_role(seq.species))
@@ -1574,7 +1574,7 @@ def sequence(id):
 def edit_sequence(id):
     seq = check_seq_edit(id)
     if seq is None:
-        return redirect('/sequences')
+        return redirect('/')
 
     tables = setup_sequence_edit_tables(db, seq)
     desc_form = GeneDescriptionForm(obj=seq)
