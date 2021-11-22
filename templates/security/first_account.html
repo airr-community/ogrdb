@@ -1,0 +1,42 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}Change Password{% endblock %}
+{% block s_body %}
+{% include "security/_messages.html" %}
+<div class="pageTitle">{{ _('Create Admin Account') }}</div>
+
+<div class="row pad">
+    <div class="col-lg-10 col-lg-offset-1">
+
+    <form action="{{ url_for('create_user') }}" method="POST" name="create_user_form">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ render_field_with_errors(form.name, class="form-control", placeholder="Enter name") }}
+        </div>
+
+        <div class="form-group">
+            {{ render_field_with_errors(form.email, class="form-control", placeholder="Enter email") }}
+        </div>
+
+        <div class="form-group">
+            {{ render_field_with_errors(form.password, class="form-control", placeholder="Enter password") }}
+        </div>
+
+        <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" name="submit_btn" id="submit_btn">
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                  <a href="{{ url_for('index') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Cancel</a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+
+{% endblock %}
+

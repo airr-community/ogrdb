@@ -872,7 +872,7 @@ GeneDescription:
             width: narrow
             label: Functional
         inference_type:
-            type: [Unrearranged and Rearranged, Unrearrange Only, Rearranged Only]
+            type: [Unrearranged and Rearranged, Unrearranged, Rearranged]
             label: Inference Type
             description: Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)
             tableview: true

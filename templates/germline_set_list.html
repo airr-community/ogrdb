@@ -4,40 +4,76 @@
 {% block c_body %}
     {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
-            <row class="col-md-12">
+            <div class="row">
                 <div class="col-md-8"><h2>Draft Sets for IARC {{ sp }} Committee</h2></div>
-                <div class="col-md-offset-10">
-                <a href="{{ url_for('new_germline_set', species=sp) }}" class="btn btn-default heading-btn">New Set</a>
+                <div class="col-md-4">
+                <a href="{{ url_for('new_germline_set', species=sp) }}" class="btn btn-default heading-btn pull-right">New Set</a>
                 {% if loop.previtem is not defined %}
                    {% if show_withdrawn %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Previous Versions</a>
+                        <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn pull-right">Hide Previous Versions</a>
                     {% else %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Previous Versions</a>
+                        <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn pull-right">Show Previous Versions</a>
                     {% endif %}
                 {% endif %}
                 </div>
-            </row>
-            <row class="col-md-12">
+            </div>
+            <div class="row">
                 <div class=".table col-md-12">
                     {{ t['draft'] }}
                 </div>
-            </row>
+            </div>
         {% endfor %}
+
+        <div class="row">
+            <div class="col-md-8"><h2>Published Sets</h2></div>
+        </div>
     {% endif %}
 
-    <row class="col-md-12">
-        <div class="col-md-8"><h2>Published Sets</h2></div>
-    </row>
-    <row class="col-md-12">
         {% if any_published %}
-        <div class=".table col-md-12">
-            {{ tables['affirmed'] }}
-        </div>
+            {% for species, sets in affirmed.items() %}
+                <div class="row">
+                    <div class="col-md-8"><h3>{{ species }}</h3></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        {% for set in sets %}
+                            <div class="dlentry">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        {{ set['name'] | safe }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        Revision: {{ set['rev'] }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        Date: {{ set['date'] }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        {{ set['synopsis'] | safe }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                {% for dl in set['files'] %}
+                                        <div class="col-md-2">
+                                            {{ dl | safe }}
+                                        </div>
+                                {% endfor %}
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
         {% else %}
-            Coming soon! We expect to start publishing germline sets over the next few months.
+            <div class="row">
+                Coming soon! We expect to start publishing germline sets over the next few months.
+            </div>
         {% endif %}
         <h3></h3>
-    </row>
 
 
 {% endblock %}
@@ -57,14 +93,6 @@
                 })
         {% endfor %}
     {% endif %}
-
-    $(document).ready(function() {
-        $("#{{ tables['affirmed'].table_id }}").DataTable({
-            "paging":   false,
-            "searching": false,
-            "info":     false
-        });
-    } );
 
     function set_delete(id) {
         foo = BootstrapDialog.confirm({

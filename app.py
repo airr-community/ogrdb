@@ -6,6 +6,7 @@
 
 from flask import Flask, render_template, request, redirect, Response, Blueprint, jsonify
 from flask_security import current_user
+from flask_security.utils import hash_password
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, login_required, logout_user
@@ -150,6 +151,11 @@ app.register_blueprint(blueprint)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Add the admin user, if we don't have one yet
+
+    if user_datastore.find_role('Admin') is None:
+        return redirect(url_for('create_user'))
+
     # Add the test role if we are in UAT
 
     if 'UAT' in app.config and app.config['UAT']:
@@ -166,7 +172,50 @@ def index():
             user_datastore.add_role_to_user(current_user, 'Test')
             db.session.commit()
 
-    return render_template('index.html', current_user=current_user)
+    # Get news from Wordpress
+
+    WORDPRESS_ENDPOINT = 'https://wordpress.vdjbase.org/index.php/wp-json/wp/v2/'
+
+    news_items = []
+
+    try:
+        r = requests.get(WORDPRESS_ENDPOINT + 'posts?categories=13&per_page=5')
+        if r.status_code == 200:
+            resp = r.content.decode("utf-8")
+            resp = json.loads(resp)
+
+            for item in resp:
+                news_items.append({
+                    'date': item['date'].split('T')[0],
+                    'title': item['title']['rendered'],
+                    'excerpt': item['excerpt']['rendered'],
+                    'link': item['link'],
+                })
+    except:
+        pass
+
+
+    return render_template('index.html', current_user=current_user, news_items=news_items)
+
+
+@app.route('/create_user', methods=['GET', 'POST'])
+def create_user():
+    if user_datastore.find_role('Admin') is not None:
+        return redirect('/')
+
+    form = FirstAccountForm()
+
+    if request.method == 'POST':
+        if form.validate():
+            user = user_datastore.create_user(email=form.email.data, password=hash_password(form.password.data), name=form.name.data, confirmed_at='2018-11-14')
+            db.session.commit()
+            user_datastore.create_role(name='Admin')
+            user_datastore.add_role_to_user(user, 'Admin')
+            db.session.commit()
+            flash("User created")
+            return redirect('/')
+
+    return render_template('security/first_account.html', form=form)
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -1566,6 +1615,8 @@ def sequence(id):
         .filter(GeneDescription.status.in_(['published', 'superceded']))\
         .all()
     tables['versions'] = setup_sequence_version_table(versions, None)
+    del tables['versions']._cols['sequence']
+    del tables['versions']._cols['coding_seq_imgt']
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
 
 
@@ -2187,10 +2238,9 @@ def germline_sets():
 
     q = db.session.query(GermlineSet).filter(GermlineSet.status == 'published')
     results = q.all()
-    tables['affirmed'] = setup_published_germline_set_list_table(results, current_user)
-    tables['affirmed'].table_id = 'affirmed'
+    affirmed = setup_published_germline_set_list_info(results, current_user)
 
-    return render_template('germline_set_list.html', tables=tables, show_withdrawn=show_withdrawn, any_published=(len(tables['affirmed'].items) > 0))
+    return render_template('germline_set_list.html', tables=tables, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed) > 0))
 
 
 @app.route('/new_germline_set/<species>', methods=['GET', 'POST'])
@@ -2272,7 +2322,7 @@ def edit_germline_set(id):
 
         if form.action.data == 'published':
             if len(germline_set.gene_descriptions) < 1:
-                flash("Please provide at least one gene in the set!")
+                flash("Please add at least one gene to the set!")
                 form.action.data = ''
                 valid = False
 
@@ -2317,6 +2367,7 @@ def edit_germline_set(id):
                     germline_set.release_date = datetime.date.today()
 
                     hist_notes = form.body.data
+                    changes = list_germline_set_changes(germline_set)   # to get updated versions
                     if changes != '':
                         hist_notes += Markup('<br>') + changes
 

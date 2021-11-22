@@ -6,46 +6,39 @@
     <div class="row">
         {% include '/static/doclinks.html' %}
     <div class="big col-sm-8">
-    <h3>Welcome to OGRDB - the curated Open Germline Receptor Database!</h3>
 
-    <h3>News</h3>
-    <ul>
-        <li>The <a href="https://wordpress.vdjbase.org/index.php/ogrdb/submitting-inferences-to-ogrdb/">Submission Guide</a> has been updated and extended, with step-by-step instructions for ENA submission.</li>
-        <li>23 alleles have been affirmed by IARC to date. You can find them on the Sequences tab</a>.</li>
-        <li>OGRDB is now accepting V- and J- sequence inferences from the human BCR light and heavy chain. Analysis scripts and submission pages have been updated accordingly.</li>
-    </ul>
-    <h3>Introduction to OGRDB</h3>
+    <div class="row">
+        <h3>Welcome to OGRDB - the curated Open Germline Receptor Database!</h3>
 
-    <p>In recent years it has become possible to sequence immune receptor repertoires (immunoglobulins and T cell receptors) at great depth. The accurate analysis of these
-    repertoires requires a comprehensive understanding of the germline genes that give rise to the repertoire through V(D)J gene recombination.</p>
+        <p>The immune receptors of B and T cells are central to the body's response to pathogens, and implicated in autoimmune disease.
+        High-throughput sequencing of receptor repertoires - AIRR-Seq - is widely used to study receptor development, however a comprehensive
+        understanding of the genes from which development starts - the germline genes - is crucial for accurate interpretation.
+        Our knowledge of human receptor alleles is incomplete, and that of other species at an early stage. OGRDB
+        is an open database of newly discovered alleles, through which researchers can contribute newly discovered alleles for
+        analysis, and download those that have been reviewed and affirmed. <a href="https://wordpress.vdjbase.org/index.php/ogrdb/introduction-to-ogrdb/">Read more...</a></p>
+    </div>
+    {% for news in news_items %}
+         <div class="row">
+             <h3><a href="{{ news['link'] }}">{{ news['title']|safe }}</a></h3>
+             <p>{{ news['excerpt']|safe }}</p>
+             <p>Published {{ news['date']|safe }}</p>
+         </div>
+    {% endfor %}
 
-    <p>Even for well-studied species such as humans and mice, our knowledge of allelic variation is incomplete.
-    Identifying new immunoglobulin and T cell receptor polymorphisms from the genome using traditional methods is technically challenging, because of the
-    complex sequence architecture and repetitive nature of these loci. More recently, methods have been developed
-    to infer novel sequences and alleles from sequenced repertoires.</p>
 
-    <p>The <a href="https://www.antibodysociety.org/the-airr-community/">Adaptive Immune Receptor Repertoire (AIRR) Community</a> was formed
-    to promote and share good practice in adaptive immune repertoire sequencing. In 2017, it established the
-        <a href="https://www.antibodysociety.org/inferred-allele-review-committee-iarc/">Inferred Allele Review Committee (IARC)</a> to evaluate inferred alleles
-        for inclusion in relevant germline databases. IARC's
-        work is outlined in more detail in a <a href="/static/docs/IARC_Surrey.pdf">poster</a>, which was presented at a Systems Immunology Workshop at the University of
-        Surrey, England, in March 2018, and in a <a href="https://www.frontiersin.org/article/10.3389/fimmu.2019.00435"> recent paper</a>. IARC has worked, together with colleagues at IMGT and the US National Institute of Health, to establish a systematic submission and
-        review process. OGRDB was created and designed to support that process, and provide a real-time record of affirmed sequences. Affirmed sequences will be listed under the
-        Sequences tab above, and the submissions that underpin them will be found under the Submissions tab. You can make your own submissions by following the steps below.</p>
-
-    <h3>How to submit your sequences</h3>
-
-        <p>Please follow <a href="https://wordpress.vdjbase.org/index.php/ogrdb/submitting-inferences-to-ogrdb/">this guide</a> to submit sequences for review.</p>
-
-    <h3>Citation</h3>
-    <p>If you use OGRDB in your research, please cite this paper:<br>
-        <a href="https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkz822/5576123?guestAccessKey=37bf9026-b574-4add-b00c-67308925a37d">
-        <i>OGRDB: a reference database of inferred immune receptor genes</i></a><br>
-        Lees et al., Nucleic Acids Research, September 2019.</p>
-    <p>Acknowledgements and citations for individual sequences are provided under each sequence and submission.</p>
-    <h3>Contacts and Support</h3>
-    <p>For help in using OGRDB, or if you encounter any issues, please <a href="mailto:william@lees.org.uk">contact us</a>.</p>
-    <p>The site is developed and maintained by <a href="http://shepherd-group.ismb.lon.ac.uk/people.html" target="_blank">William Lees</a> (william@lees.org.uk)</p>
+    <div class="row">
+        <h3>Citation</h3>
+        <p>If you use OGRDB in your research, please cite this paper:<br>
+            <a href="https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkz822/5576123?guestAccessKey=37bf9026-b574-4add-b00c-67308925a37d">
+            <i>OGRDB: a reference database of inferred immune receptor genes</i></a><br>
+            Lees et al., Nucleic Acids Research, September 2019.</p>
+        <p>Acknowledgements and citations for individual sequences are provided under each sequence and submission.</p>
+    </div>
+    <div class="row">
+        <h3>Contacts and Support</h3>
+        <p>For help in using OGRDB, or if you encounter any issues, please <a href="mailto:william@lees.org.uk">contact us</a>.</p>
+        <p>The site is developed and maintained by <a href="http://shepherd-group.ismb.lon.ac.uk/people.html" target="_blank">William Lees</a> (william@lees.org.uk)</p>
+    </div>
     </div>
     </div>
 {% endblock %}

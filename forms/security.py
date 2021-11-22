@@ -7,9 +7,11 @@
 # Form definitions for user with flask-security
 
 from flask_security import RegisterForm
-from wtforms import StringField, BooleanField
+from wtforms import StringField, BooleanField, PasswordField
+from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
+
 
 class ExtendedRegisterForm(RegisterForm):
     name = StringField('Full Name', [DataRequired()])
@@ -33,3 +35,8 @@ def save_Profile(db, object, form, new=False):
 
     db.session.commit()
 
+
+class FirstAccountForm(FlaskForm):
+    name = StringField('Full Name', [DataRequired()])
+    email = EmailField('Email', [DataRequired()])
+    password = PasswordField('Password', [DataRequired()])
