@@ -174,18 +174,28 @@ def index():
 
     # Get news from Wordpress
 
-    WORDPRESS_ENDPOINT = 'https://wordpress.vdjbase.org/index.php/wp-json/wp/v2/'
-
     news_items = []
 
     try:
-        r = requests.get(WORDPRESS_ENDPOINT + 'posts?categories=13&per_page=5')
+        cat_url = None
+        wp_url = app.config['WORDPRESS_NEWS_URL'] + app.config['WORDPRESS_REST']
+        r = requests.get(wp_url + 'categories')
         if r.status_code == 200:
             resp = r.content.decode("utf-8")
             resp = json.loads(resp)
 
-            for item in resp:
-                news_items.append({
+            for rec in resp:
+                if rec['slug'] == 'ogrdb_news':
+                    cat_url = '%sposts?categories=%s' % (wp_url, rec['id'])
+
+        if cat_url:
+            r = requests.get(cat_url + '&per_page=5')
+            if r.status_code == 200:
+                resp = r.content.decode("utf-8")
+                resp = json.loads(resp)
+
+                for item in resp:
+                    news_items.append({
                     'date': item['date'].split('T')[0],
                     'title': item['title']['rendered'],
                     'excerpt': item['excerpt']['rendered'],
