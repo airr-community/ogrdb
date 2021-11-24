@@ -99,7 +99,7 @@ def setup_published_germline_set_list_info(results, current_user):
             info[header] = []
         info[header].append(row)
 
-    info = {k: v for k, v in sorted(info.items(), key=lambda item: item[1])}
+    info = {k: v for k, v in sorted(info.items(), key=lambda item: item[0])}
 
     for k, v in info.items():
         info[k] = sorted(v, key=lambda item: item['raw_name'])
