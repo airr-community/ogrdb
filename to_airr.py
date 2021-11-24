@@ -4,7 +4,19 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
+import json
+
 # Create AIRR representation of items defined in the schema
+
+
+def germline_set_to_airr(germline_set):
+    ad = []
+    for desc in germline_set.gene_descriptions:
+        ad.append(vars(AIRRAlleleDescription(desc)))
+
+    gs = vars(AIRRGermlineSet(germline_set, ad))
+
+    return gs
 
 
 class AIRRAlleleDescription:

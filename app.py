@@ -142,10 +142,12 @@ init_vdjbase_ref()
 
 from api.restplus import api
 from api.sequence.sequence import ns as sequence
+from api.sequence.germline import ns as germline
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
 api.add_namespace(sequence)
+api.add_namespace(germline)
 app.register_blueprint(blueprint)
 
 
@@ -2860,7 +2862,7 @@ def download_germline_set(set_id, format):
         return redirect('/')
 
     if format == 'airr':
-        dl = germline_set_to_airr(germline_set)
+        dl = json.dumps(germline_set, default=str, indent=4)
         filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format)
@@ -2882,16 +2884,6 @@ def descs_to_fasta(descs, format):
             seq = seq.replace('-','')
             ret += format_fasta_sequence(name, seq, 60)
     return ret
-
-
-def germline_set_to_airr(germline_set):
-    ad = []
-    for desc in germline_set.gene_descriptions:
-        ad.append(vars(AIRRAlleleDescription(desc)))
-
-    gs = vars(AIRRGermlineSet(germline_set, ad))
-
-    return json.dumps(gs, default=str, indent=4)
 
 
 @app.route('/download_sequences/<species>/<format>/<exc>')
