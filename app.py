@@ -2862,7 +2862,7 @@ def download_germline_set(set_id, format):
         return redirect('/')
 
     if format == 'airr':
-        dl = json.dumps(germline_set, default=str, indent=4)
+        dl = json.dumps(germline_set_to_airr(germline_set), default=str, indent=4)
         filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format)
