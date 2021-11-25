@@ -63,6 +63,7 @@ class SequenceListIMGTCol(StyledCol):
                 for alias in aliases:
                     imgt_species[alias] = k
             fmt_string = '<a href="http://www.imgt.org/IMGTrepertoire/Proteins/alleles/index.php?species=%s&group=%s%s&gene=%s">%s</a>' % (imgt_species[item.species], item.locus, item.sequence_type, item.imgt_name.split('*')[0], item.imgt_name)
+            fmt_string = '<a href="http://www.imgt.org/genedb/GENElect?query=2+%s&species=%s">%s</a>' % (item.imgt_name.split('*')[0], imgt_species[item.species], item.imgt_name)
         else:
             fmt_string = ''
 
