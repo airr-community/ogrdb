@@ -90,6 +90,8 @@ from db.sample_name_db import *
 from db.attached_file_db import *
 from db.dupe_gene_note_db import *
 from db.sequence_identifier_db import *
+from db.novel_vdjbase_db import *
+from db.vdjbase import *
 
 import db_events
 
@@ -2944,8 +2946,11 @@ def genomic_support(id):
     return render_template('genomic_support_view.html', table=table, name=genomic_support.gene_description.sequence_name)
 
 
+@app.route('/vdjbase_import', methods=['GET'])
+def vdjbase_import():
+    return update_from_vdjbase()
 
-from imgt.imgt_ref import gap_sequence
+
 
 # Temp route to change Genomic to Unrearranged in GeneDescription
 @app.route('/upgrade_db', methods=['GET'])

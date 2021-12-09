@@ -1300,3 +1300,60 @@ SequenceIdentifier:
         sequence_identifier:
             type: string
             nonblank: true
+
+
+# Novel alleles collected from VDJbase for review
+NovelVdjbase:
+    description: Novel alleles collected from VDJbase for review
+    type: object
+    properties:
+        vdjbase_name:
+            type: string
+            nonblank: true
+            description: Allele name (as recorded in VDJbase)
+            width: narrow
+        species:
+            type: string
+            nonblank: true
+            description: Species
+            width: narrow
+        locus:
+            type: [IGH, IGK, IGL, TRA, TRB, TRG, TRD]
+            description: Gene locus
+            label: Locus
+            tableview: true
+            width: narrow
+        first_seen:
+            type: date
+            nonblank: true
+            description: Date VDJbase record was first seen
+            width: narrow
+        last_seen:
+            type: date
+            nonblank: true
+            description: Date VDJbase record was last seen
+            width: narrow
+        status:
+            type: [not reviewed, in review, rejected, holding, submitted, not current, modified]
+            nonblank: true
+            description: Review status
+            width: narrow
+        last_updated:
+            type: date
+            description: Date the comments or status were last updated
+            width: narrow
+        updated_by:
+            type: string
+            description: Name of last updater
+        notes_attachment:
+            type: multifile
+            description: File attachments from submitter accompanying submission
+            label: Attachments
+            hide: true
+            nocopy: 10
+        notes:
+            type: text
+            description: Notes from OGRDB reviewers
+            label: Notes
+            rows: 20
+            width: wide

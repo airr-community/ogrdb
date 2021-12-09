@@ -46,6 +46,8 @@
                                 {% if current_user.has_role('Admin') %}
                                     <li><a href="{{ url_for('sequences', sp='Test') }}" class="m-item">Test</a></li>
                                 {% endif %}
+                                <li role="separator" class="divider"></li></li>
+                                <li><a href="{{ url_for('vdjbase_review') }}" class="m-item">Review VDJbase</a></li>
                             </ul>
                         </span>
                     </span> |
