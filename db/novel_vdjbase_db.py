@@ -11,20 +11,15 @@ from sqlalchemy.orm import backref
 
 class NovelVdjbase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    vdjbase_name = db.Column(db.String(200))
-    species = db.Column(db.String(100))
-    locus = db.Column(db.String(100))
+    vdjbase_name = db.Column(db.String(1000))
+    species = db.Column(db.String(1000))
+    locus = db.Column(db.String(255))
     first_seen = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime)
-    status = db.Column(db.String(50))
+    status = db.Column(db.String(255))
     last_updated = db.Column(db.DateTime)
-    updated_by = db.Column(db.String(100))
-    sequence = db.Column(db.String(500))
-    subject_count = db.Column(db.Integer)
-    j_haplotypes = db.Column(db.Integer)
-    d_haplotypes = db.Column(db.Integer)
-    hetero_alleleic_j_haplotypes = db.Column(db.Integer)
-    example = db.Column(db.String(200))
+    updated_by = db.Column(db.String(1000))
+
     notes = db.Column(db.Text())
 
 
@@ -75,7 +70,12 @@ def copy_NovelVdjbase(c_from, c_to):
 
 class NovelVdjbase_table(StyledTable):
     id = Col("id", show=False)
-    locus = StyledCol("Locus", tooltip="Gene locus")
+    vdjbase_name = StyledCol("Name", tooltip="Allele name (as recorded in VDJbase)")
+    first_seen = StyledCol("First seen", tooltip="Date VDJbase record was first seen")
+    last_seen = StyledCol("Last seeen", tooltip="Date VDJbase record was last seen")
+    status = StyledCol("Status", tooltip="Review status")
+    last_updated = StyledCol("Last updated", tooltip="Date the comments or status were last updated")
+    updated_by = StyledCol("Updated by", tooltip="Name of last updater")
 
 
 def make_NovelVdjbase_table(results, private = False, classes=()):
@@ -90,14 +90,14 @@ class NovelVdjbase_view(Table):
 
 def make_NovelVdjbase_view(sub, private = False):
     ret = NovelVdjbase_view([])
-    ret.items.append({"item": "vdjbase_name", "value": sub.vdjbase_name, "tooltip": "Allele name (as recorded in VDJbase)", "field": "vdjbase_name"})
+    ret.items.append({"item": "Name", "value": sub.vdjbase_name, "tooltip": "Allele name (as recorded in VDJbase)", "field": "vdjbase_name"})
     ret.items.append({"item": "species", "value": sub.species, "tooltip": "Species", "field": "species"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
-    ret.items.append({"item": "first_seen", "value": sub.first_seen, "tooltip": "Date VDJbase record was first seen", "field": "first_seen"})
-    ret.items.append({"item": "last_seen", "value": sub.last_seen, "tooltip": "Date VDJbase record was last seen", "field": "last_seen"})
-    ret.items.append({"item": "status", "value": sub.status, "tooltip": "Review status", "field": "status"})
-    ret.items.append({"item": "last_updated", "value": sub.last_updated, "tooltip": "Date the comments or status were last updated", "field": "last_updated"})
-    ret.items.append({"item": "updated_by", "value": sub.updated_by, "tooltip": "Name of last updater", "field": "updated_by"})
+    ret.items.append({"item": "First seen", "value": sub.first_seen, "tooltip": "Date VDJbase record was first seen", "field": "first_seen"})
+    ret.items.append({"item": "Last seeen", "value": sub.last_seen, "tooltip": "Date VDJbase record was last seen", "field": "last_seen"})
+    ret.items.append({"item": "Status", "value": sub.status, "tooltip": "Review status", "field": "status"})
+    ret.items.append({"item": "Last updated", "value": sub.last_updated, "tooltip": "Date the comments or status were last updated", "field": "last_updated"})
+    ret.items.append({"item": "Updated by", "value": sub.updated_by, "tooltip": "Name of last updater", "field": "updated_by"})
     ret.items.append({"item": "Notes", "value": sub.notes, "tooltip": "Notes from OGRDB reviewers", "field": "notes"})
     return ret
 

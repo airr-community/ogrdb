@@ -1310,8 +1310,10 @@ NovelVdjbase:
         vdjbase_name:
             type: string
             nonblank: true
+            label: Name
             description: Allele name (as recorded in VDJbase)
             width: narrow
+            tableview: true
         species:
             type: string
             nonblank: true
@@ -1321,30 +1323,39 @@ NovelVdjbase:
             type: [IGH, IGK, IGL, TRA, TRB, TRG, TRD]
             description: Gene locus
             label: Locus
-            tableview: true
             width: narrow
         first_seen:
             type: date
             nonblank: true
             description: Date VDJbase record was first seen
+            label: First seen
+            tableview: true
             width: narrow
         last_seen:
             type: date
             nonblank: true
             description: Date VDJbase record was last seen
+            label: Last seeen
+            tableview: true
             width: narrow
         status:
             type: [not reviewed, in review, rejected, holding, submitted, not current, modified]
             nonblank: true
             description: Review status
+            label: Status
+            tableview: true
             width: narrow
         last_updated:
             type: date
             description: Date the comments or status were last updated
+            label: Last updated
+            tableview: true
             width: narrow
         updated_by:
             type: string
             description: Name of last updater
+            label: Updated by
+            tableview: true
         notes_attachment:
             type: multifile
             description: File attachments from submitter accompanying submission

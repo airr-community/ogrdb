@@ -7,7 +7,7 @@ from sqlalchemy import and_, func
 from db.misc_db import Committee
 import requests
 from app import app, db
-from db.novel_vdjbase_db import NovelVdjbase
+from db.novel_vdjbase_db import NovelVdjbase, make_NovelVdjbase_table
 
 
 class VDJbaseError(Exception):
@@ -68,8 +68,13 @@ def update_from_vdjbase():
 
     for species, datasets in vdjbase_sets.items():
         for dataset in datasets:
+            # fudge for dual Human committees
+            ogrdb_species = species
+            if species == "Human" and dataset in ['TRA', 'TRB', 'TRD', 'TRG']:
+                ogrdb_species = "Human_TCR"
+
             expected_alleles = db.session.query(NovelVdjbase.vdjbase_name) \
-                .filter(and_(NovelVdjbase.species == species, NovelVdjbase.locus == dataset)).all()
+                .filter(and_(NovelVdjbase.species == ogrdb_species, NovelVdjbase.locus == dataset)).all()
             expected_alleles = [r[0] for r in expected_alleles]
 
             try:
@@ -77,7 +82,7 @@ def update_from_vdjbase():
 
                 for allele, row in results.items():
                     db_rec = db.session.query(NovelVdjbase)\
-                        .filter(and_(NovelVdjbase.species == species,
+                        .filter(and_(NovelVdjbase.species == ogrdb_species,
                                      NovelVdjbase.locus == dataset,
                                      NovelVdjbase.vdjbase_name == row['name']))\
                         .one_or_none()
@@ -102,7 +107,7 @@ def update_from_vdjbase():
                     else:
                         db_rec = NovelVdjbase(
                             vdjbase_name = row['name'],
-                            species = species,
+                            species = ogrdb_species,
                             locus = dataset,
                             first_seen = func.now(),
                             last_seen = func.now(),
@@ -120,7 +125,7 @@ def update_from_vdjbase():
                 if expected_alleles:
                     for name in expected_alleles:
                         db_rec = db.session.query(NovelVdjbase)\
-                                    .filter(and_(NovelVdjbase.species == species,
+                                    .filter(and_(NovelVdjbase.species == ogrdb_species,
                                      NovelVdjbase.locus == dataset,
                                      NovelVdjbase.vdjbase_name == name))\
                                     .one_or_none()
@@ -136,4 +141,6 @@ def update_from_vdjbase():
     return 'Import complete'
 
 
-
+def setup_vdjbase_review_tables(results):
+    table = make_NovelVdjbase_table(results)
+    return table

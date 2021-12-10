@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block pagetitle %} Review VDJbase Inferences {% endblock %}
+
+{% block c_body %}
+
+<form action="{{ url_for('vdjbase_review', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="form-inline">
+                <div class="col-sm-offset-1 col-sm-3">
+                    {{ form.species.label(class="") }}
+                    {{ form.species(class="form-control")|safe }}
+                </div>
+
+                <div class="col-sm-3">
+                    {{ form.locus.label() }}
+                    {{ form.locus(class="form-control")|safe }}
+                </div>
+
+                <div class="col-sm-2">
+                    <input type="submit" value="View" class="btn btn-primary" id="view_btn" name="view_btn">
+                </div>
+        </div>
+    </div>
+
+    {% if table %}
+        <div class="row">
+            <h3 class="col-sm-offset-1 col-sm-11">Sequences</h3>
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="form-group">
+                   {{ table }}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+
+    <script>
+
+
+    $(document).ready(function ()
+    {
+        //init_datatable();
+
+
+        const selected = $(this).find("option:selected").val();
+
+        if (selected == 'Select') {
+            $("#view_btn").prop('disabled', true);
+        }
+    });
+
+    $("#species").change(function(e) {
+        console.log('changed');
+        $("#locus").empty();
+        const choices = JSON.parse('{{ locus_choices | safe }}');
+        const selected = $(this).find("option:selected").val();
+        const opts = Reflect.get(choices, selected);
+
+        if (opts) {
+            for (let opt of opts) {
+                $("#locus").append('<option value="' + opt + '">' + opt + '</option>');
+            }
+        }
+
+        $("#view_btn").prop('disabled', (selected == 'Select'));
+    });
+
+    // Note that the table MUST have a style of width: 100% or DataTables will not resize it properly
+
+    function init_datatable() {
+        if(!$.fn.DataTable.isDataTable($("#"))) {
+            console.log("initialising table");
+            $("#").DataTable({
+                dom: 'Blfrtip',
+                "paging":   true,
+                "searching": true,
+                "select":   false,
+                "info":     false,
+                "lengthMenu": [ 25, 100, 500, 5000 ],
+                "colReorder": true,
+                "columnDefs": [
+                    {"visible": false, "targets": [-1,-2]},
+                    {"width": "0px", "targets": [-1,-2]},
+                ],
+                "buttons": [
+                    "excel", "csv"
+                ]
+            });
+        }
+    }
+
+    </script>
+
+{% endblock %}

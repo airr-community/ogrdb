@@ -118,6 +118,7 @@ from forms.genotype_view_options_form import *
 from forms.inferred_sequence_compound_form import *
 from forms.genotype_description_compound_form import *
 from forms.sequences_species_form import *
+from forms.review_vdjbase_form import *
 
 from genotype_stats import *
 from get_ncbi_details import *
@@ -2949,6 +2950,36 @@ def genomic_support(id):
 @app.route('/vdjbase_import', methods=['GET'])
 def vdjbase_import():
     return update_from_vdjbase()
+
+
+@app.route('/vdjbase_review', methods=['GET', 'POST'])
+def vdjbase_review():
+    form = ReviewVdjbaseForm()
+    recs = db.session.query(NovelVdjbase.species, NovelVdjbase.locus).distinct().all()
+    locus_choices = {}
+
+    for (species, locus) in recs:
+        if species not in locus_choices:
+            locus_choices[species] = []
+        if locus not in locus_choices[species]:
+            locus_choices[species].append(locus)
+
+    if request.method == 'POST':
+        if form.species.data in locus_choices and form.locus.data in locus_choices[form.species.data]:
+            form.species.choices = [('Select', 'Select')]
+            form.species.choices.extend([(s, s) for s in locus_choices.keys()])
+            form.locus.choices = locus_choices[form.species.data]
+
+            results = db.session.query(NovelVdjbase)\
+                .filter(and_(NovelVdjbase.species == form.species.data, NovelVdjbase.locus == form.locus.data))\
+                .all()
+            table = setup_vdjbase_review_tables(results)
+            return render_template('vdjbase_review.html', form=form, table=table, logged_in=current_user.is_authenticated, locus_choices=json.dumps(locus_choices))
+
+    form.species.choices = [('Select', 'Select')]
+    form.species.choices.extend([(s, s) for s in locus_choices.keys()])
+    form.locus.choices = []
+    return render_template('vdjbase_review.html', form=form, table=None, locus_choices=json.dumps(locus_choices))
 
 
 
