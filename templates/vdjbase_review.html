@@ -1,9 +1,14 @@
-{% extends "base.html" %}
+{% extends "base_wide.html" %}
 {% block pagetitle %} Review VDJbase Inferences {% endblock %}
+
+{% block content %}
+    {% include 'sequence_popup.html' %}
+    {{ super() }}
+{% endblock %}
 
 {% block c_body %}
 
-<form action="{{ url_for('vdjbase_review', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+<form action="{{ url_for('vdjbase_review') }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
 
     {{ form.hidden_tag() }}
     <div class="row">
@@ -26,7 +31,7 @@
 
     {% if table %}
         <div class="row">
-            <h3 class="col-sm-offset-1 col-sm-11">Sequences</h3>
+            <h4 class="col-sm-offset-1 col-sm-11 edit">Sequences observed in full-length repertoires</h4>
             <div class="col-sm-10 col-sm-offset-1">
                 <div class="form-group">
                    {{ table }}
@@ -36,6 +41,7 @@
     {% endif %}
 
 </form>
+
 
 {% endblock %}
 
@@ -49,8 +55,9 @@
 
     $(document).ready(function ()
     {
-        //init_datatable();
-
+        {% if table %}
+            init_datatable();
+        {% endif %}
 
         const selected = $(this).find("option:selected").val();
 
@@ -78,27 +85,68 @@
     // Note that the table MUST have a style of width: 100% or DataTables will not resize it properly
 
     function init_datatable() {
-        if(!$.fn.DataTable.isDataTable($("#"))) {
-            console.log("initialising table");
-            $("#").DataTable({
+        if(!$.fn.DataTable.isDataTable($("#seq_table"))) {
+            $("#seq_table").DataTable({
                 dom: 'Blfrtip',
                 "paging":   true,
                 "searching": true,
-                "select":   false,
+                "select": false,
                 "info":     false,
                 "lengthMenu": [ 25, 100, 500, 5000 ],
                 "colReorder": true,
                 "columnDefs": [
-                    {"visible": false, "targets": [-1,-2]},
-                    {"width": "0px", "targets": [-1,-2]},
+                    {"visible": false, "targets": [0, -1]},
+                    {"width": "0px", "targets": [0, -1]},
                 ],
                 "buttons": [
-                    "excel", "csv"
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: [1,2,3,4,5,6,7,8,9,11]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: [1,2,3,4,5,6,7,8,9,11]
+                        }
+                    }
                 ]
             });
         }
+
+        const table = $('#seq_table').DataTable();
+        const statusOptions = {
+            'not reviewed':'not reviewed',
+            'in review':'in review',
+            'rejected':'rejected',
+            'holding':'holding',
+            'submitted':'submitted',
+            'not current':'not current',
+            'modified':'modified',
+        }
+
+        {% if editor %}
+        $( table.column(6).nodes() ).editable( '/vdjbase_status', {
+            type: 'select',
+            data   : JSON.stringify(statusOptions),
+            submit: 'OK',
+            callback: function( value, y ) {
+                table.cell( this ).data( value ).draw();
+            },
+            submitdata: function ( value, settings ) {
+                return {
+                    'id': table.row( this ).data()[0],
+                    'current': table.row( this ).data()[6],
+                };
+            }
+        } );
+        {% endif %}
+
     }
 
+
     </script>
+    {% include 'sequence_popup_script.html' %}
 
 {% endblock %}

@@ -81,6 +81,8 @@ def main(argv):
     write_flaskform(schema, 'AttachedFile', 'forms/attached_file_form.py')
     write_model(schema, 'SequenceIdentifier', 'db/sequence_identifier_db.py')
     write_model(schema, 'NovelVdjbase', 'db/novel_vdjbase_db.py')
+    write_flaskform(schema, 'NovelVdjbase', 'forms/novel_vdjbase_form.py')
+
 
 # Merge markup properties with schema
 # In the event of a conflict, markup always wins. Otherwise properties are merged.

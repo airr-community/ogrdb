@@ -95,6 +95,11 @@ NotesEntry:
             foreign_key: germline_set.id
             relationship: [germline_set, GermlineSet, notes_entries]
             hide: true
+        novel_vdjbase_id:
+            type: integer
+            foreign_key: novel_vdjbase.id
+            relationship: [novel_vdjbase, NovelVdjbase, notes_entries]
+            hide: true
 
 AttachedFile:
     discriminator: AIRR
@@ -116,6 +121,11 @@ AttachedFile:
             type: integer
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, attached_files]
+            hide: true
+        novel_vdjbase_id:
+            type: integer
+            foreign_key: novel_vdjbase.id
+            relationship: [novel_vdjbase, NovelVdjbase, attached_files]
             hide: true
 
 #Journal Entries
@@ -1315,7 +1325,7 @@ NovelVdjbase:
             width: narrow
             tableview: true
         species:
-            type: string
+            type: string_50
             nonblank: true
             description: Species
             width: narrow
@@ -1324,18 +1334,28 @@ NovelVdjbase:
             description: Gene locus
             label: Locus
             width: narrow
-        first_seen:
-            type: date
-            nonblank: true
-            description: Date VDJbase record was first seen
-            label: First seen
+        subject_count:
+            type: integer
+            description: Number of subjects in which this allele is found
+            label: Subjects
             tableview: true
             width: narrow
-        last_seen:
-            type: date
-            nonblank: true
-            description: Date VDJbase record was last seen
-            label: Last seeen
+        j_haplotypes:
+            type: integer
+            description: Number of samples in which this allele is J-haplotyped
+            label: J-haplotypes
+            tableview: true
+            width: narrow
+        d_haplotypes:
+            type: integer
+            description: Number of samples in which this allele is D-haplotyped
+            label: D-haplotypes
+            tableview: true
+            width: narrow
+        hetero_alleleic_j_haplotypes:
+            type: integer
+            description: Number of samples in which this allele and at least one other allele of this gene are haplotyped
+            label: hetero J-haplotypes
             tableview: true
             width: narrow
         status:
@@ -1345,6 +1365,28 @@ NovelVdjbase:
             label: Status
             tableview: true
             width: narrow
+        sequence:
+            type: string
+            description: Sequence in VDJbase
+            label: VDJbase sequence
+            tableview: true
+        example:
+            type: string_50
+            description: Example sample in VDJbase displaying this allele
+            label: Example
+            tableview: true
+        first_seen:
+            type: date
+            nonblank: true
+            description: Date VDJbase record was first seen
+            label: First seen
+            width: narrow
+        last_seen:
+            type: date
+            nonblank: true
+            description: Date VDJbase record was last seen
+            label: Last seeen
+            width: narrow
         last_updated:
             type: date
             description: Date the comments or status were last updated
@@ -1352,19 +1394,7 @@ NovelVdjbase:
             tableview: true
             width: narrow
         updated_by:
-            type: string
+            type: string_50
             description: Name of last updater
             label: Updated by
             tableview: true
-        notes_attachment:
-            type: multifile
-            description: File attachments from submitter accompanying submission
-            label: Attachments
-            hide: true
-            nocopy: 10
-        notes:
-            type: text
-            description: Notes from OGRDB reviewers
-            label: Notes
-            rows: 20
-            width: wide

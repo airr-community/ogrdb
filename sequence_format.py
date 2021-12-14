@@ -197,7 +197,7 @@ def popup_seq_button(sequence_id, sequence, gapped, annots=[]):
                ra[ind] = text
 
     return (
-        ('<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-toggle="tooltip" title="View"' 
+        ('<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-toggle="tooltip" title="View Sequence"' 
          ' data-sequence="%s"' 
          ' data-gapped-sequence="%s"' 
          ' data-name="%s"' 

@@ -18,6 +18,8 @@ class NotesEntry(db.Model):
     submission = db.relationship('Submission', backref = 'notes_entries')
     germline_set_id = db.Column(db.Integer, db.ForeignKey('germline_set.id'))
     germline_set = db.relationship('GermlineSet', backref = 'notes_entries')
+    novel_vdjbase_id = db.Column(db.Integer, db.ForeignKey('novel_vdjbase.id'))
+    novel_vdjbase = db.relationship('NovelVdjbase', backref = 'notes_entries')
 
 
 def save_NotesEntry(db, object, form, new=False):   

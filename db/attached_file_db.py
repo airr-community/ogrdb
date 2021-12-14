@@ -16,6 +16,8 @@ class AttachedFile(db.Model):
     notes_entry = db.relationship('NotesEntry', backref = 'attached_files')
     gene_description_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'attached_files')
+    novel_vdjbase_id = db.Column(db.Integer, db.ForeignKey('novel_vdjbase.id'))
+    novel_vdjbase = db.relationship('NovelVdjbase', backref = 'attached_files')
 
 
 def save_AttachedFile(db, object, form, new=False):   

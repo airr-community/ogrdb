@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block pagetitle %} VDJbase Inference Notes {% endblock %}
+
+{% block content %}
+    {{ super() }}
+{% endblock %}
+
+{% block c_body %}
+
+<form action="{{ url_for('vdjbase_review_detail', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <h3 class="col-sm-offset-1 col-sm-11 edit">VDJbase Inferred Sequence {{ header }} </h3>
+        {% if editor %}
+            <div class="col-sm-10 col-sm-offset-1 edit_field">
+                    <p>Formatting available: *<b>bold</b>*, _<i>italic</i>_, * bulleted list</p>
+                    {{ render_wide_field_with_errors(form.notes_text, class="form-control", rows="20") }}
+                     {{ render_field_with_errors(form.notes_attachment, class="form-control") }}
+            </div>
+        {% endif %}
+        <div class="col-sm-10 col-sm-offset-1 display_field">
+            <h4>Notes</h4>
+                {{ notes | textile_filter }}
+        </div>
+        <div class="col-sm-10 col-sm-offset-1">
+            <h4>Attached Files</h4>
+                {{ file_table }}
+        </div>
+    </div>
+    <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+            <div class="form-group">
+                <input type="submit" value="Close" class="btn btn-primary" id="close_btn" name="close_btn">
+                {% if editor %}
+                    <button type="button" class="btn btn-primary display_field" id="edit_btn" name="edit_btn">Edit</button>
+                    <input type="submit" value="Save" class="btn btn-primary edit_field" id="edit_btn" name="edit_btn">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+    {% if editor %}
+    $(document).ready(function ()
+    {
+            $(".edit_field").hide();
+
+            $("#edit_btn").click(() => {
+                $(".display_field").hide();
+                $(".edit_field").show();
+            });
+    });
+
+    function delete_warn(route, message) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete?',
+            message: message,
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: ' Delete ',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: route,
+                        success: function(data) {
+                            window.location.assign("{{ url_for('vdjbase_review_detail', id=id) }}");
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+
+
+    {% endif %}
+
+
+
+    </script>
+{% endblock %}

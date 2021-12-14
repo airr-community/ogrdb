@@ -10,6 +10,7 @@ from db.genotype_tables import *
 import sys
 import re
 from db.genotype_db import Genotype
+from app import app
 
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -58,7 +59,7 @@ class SeqCol(StyledCol):
                     (name, species, dataset) = k.split('|')
                     name = name.replace('>', '')
                     bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
-                                 (Markup("'https://vdjbase.org/generep/%s/%s/%s'" % (species, dataset, name)), name, v[1])
+                                 (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], species.replace('Human_TCR', 'Human'), dataset, name)), name, v[1])
                     break
 
         bt_indels = ''

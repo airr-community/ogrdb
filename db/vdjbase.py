@@ -2,12 +2,46 @@
 import json
 from datetime import date, datetime, timedelta
 
+from flask import url_for
+from markupsafe import Markup
 from sqlalchemy import and_, func
 
 from db.misc_db import Committee
 import requests
 from app import app, db
+from db.notes_entry_db import NotesEntry
 from db.novel_vdjbase_db import NovelVdjbase, make_NovelVdjbase_table
+from db.styled_table import StyledCol
+from sequence_format import popup_seq_button
+
+
+class DetailsCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        value = ''
+        if item.sequence:
+            if 'V' in item.vdjbase_name:
+                value = popup_seq_button(item.vdjbase_name, item.sequence.replace('.', ''), item.sequence).replace(
+                        'btn_view_seq', 'seq_coding_view')
+            else:
+                value = popup_seq_button(item.vdjbase_name, item.sequence, '').replace('btn_view_seq', 'seq_coding_view')
+
+        value += '''<a href=%s id="btn_view_notes" class="btn btn-xs text-info icon_back">
+                     <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Notes">
+                     </a>
+                 ''' % (url_for('vdjbase_review_detail', id=item.id))
+
+        return Markup(value)
+
+class VdjbaseAlleleCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        value = ''
+        if item.vdjbase_name:
+            value = '<a href=%sgenerep/%s/%s/%s>%s</a>' % (app.config['VDJBASE_URL'],
+                                                           item.species.replace('Human_TCR', 'Human'),
+                                                           item.locus,
+                                                           item.vdjbase_name,
+                                                           item.vdjbase_name)
+        return Markup(value)
 
 
 class VDJbaseError(Exception):
@@ -16,7 +50,7 @@ class VDJbaseError(Exception):
 
 
 def call_vdjbase(payload):
-    resp = requests.get(app.config['VDJBASE_URL'] + payload)
+    resp = requests.get(app.config['VDJBASE_API'] + payload)
     if resp.status_code != 200:
         raise VDJbaseError('Error contacting VDJbase: status code %d' % resp.status_code)
     return json.loads(resp.text)
@@ -106,17 +140,19 @@ def update_from_vdjbase():
                             db_rec.status = 'modified'
                     else:
                         db_rec = NovelVdjbase(
-                            vdjbase_name = row['name'],
-                            species = ogrdb_species,
-                            locus = dataset,
-                            first_seen = func.now(),
-                            last_seen = func.now(),
-                            status = 'not reviewed',
-                            updated_by = '',
-                            notes = ''
+                            vdjbase_name=row['name'],
+                            species=ogrdb_species,
+                            locus=dataset,
+                            first_seen=func.now(),
+                            last_seen=func.now(),
+                            status='not reviewed',
+                            updated_by='',
                         )
                         for el in corresp_fields:
                             setattr(db_rec, el, row[el])
+
+                        db_rec.notes_entries.append(NotesEntry())
+                        db_rec.notes_entries[0].notes_text = ''
                         db.session.add(db_rec)
 
                     if row['name'] in expected_alleles:
@@ -140,7 +176,12 @@ def update_from_vdjbase():
 
     return 'Import complete'
 
-
 def setup_vdjbase_review_tables(results):
     table = make_NovelVdjbase_table(results)
+    table._cols['id'].show = True
+    table._cols['vdjbase_name'] = VdjbaseAlleleCol('VDJbase Name')
+    del table._cols['sequence']     # put the full sequence at the end
+    table.add_column('sequence2', DetailsCol(""))
+    table.add_column('sequence', StyledCol("VDJbase sequence"))
+
     return table
