@@ -137,10 +137,10 @@ def update_from_vdjbase():
 
                         if db_rec.status == 'not current':
                             db_rec.status = 'not reviewed'
-                            db_rec.notes += '\rPresent again in VDJbase at %s' % datetime.ctime(datetime.now())
+                            db_rec.notes_entries[0].notes_text += '\rPresent again in VDJbase at %s' % datetime.ctime(datetime.now())
 
                         if changed:
-                            db_rec.notes += '\rfields changed at %s: %s\rPrevious status: %s' % (datetime.ctime(datetime.now()), ','.join(changed), db_rec.status)
+                            db_rec.notes_entries[0].notes_text += '\rfields changed at %s: %s\rPrevious status: %s' % (datetime.ctime(datetime.now()), ','.join(changed), db_rec.status)
                             db_rec.status = 'modified'
                     else:
                         db_rec = NovelVdjbase(

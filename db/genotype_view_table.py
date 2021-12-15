@@ -54,14 +54,16 @@ class SeqCol(StyledCol):
         bt_vdjbase = ''
 
         if item.genotype_description.submission.species == 'Human' and item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
-            vdjbase_genes = get_vdjbase_ref()
-            for k,v in vdjbase_genes.items():
-                if item.nt_sequence.lower() in v[0] or v[0] in item.nt_sequence.lower():
-                    (name, species, dataset) = k.split('|')
-                    name = name.replace('>', '')
-                    bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
-                                 (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], species.replace('Human_TCR', 'Human'), dataset, name)), name, v[1])
-                    break
+            vdjbase_ref = get_vdjbase_ref()
+            vdjbase_species = item.genotype_description.submission.species.replace('Human_TCR', 'Human')
+            locus = item.genotype_description.locus
+            if vdjbase_species in vdjbase_ref and locus in vdjbase_ref[vdjbase_species]:
+                vdjbase_genes = vdjbase_ref[vdjbase_species][locus]
+                for vdjbase_name, (vdjbase_seq, vdjbase_count) in vdjbase_genes.items():
+                    if item.nt_sequence.lower() in vdjbase_seq or vdjbase_seq in item.nt_sequence.lower():
+                        bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
+                                     (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], vdjbase_species, locus, vdjbase_name)), vdjbase_name, vdjbase_count)
+                        break
 
         bt_indels = ''
         bt_imgt = ''

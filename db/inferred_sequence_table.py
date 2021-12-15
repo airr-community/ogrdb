@@ -147,18 +147,19 @@ def make_VDJbase_table(results, private = False, classes=()):
 def setup_vdjbase_matches_table(seq):
     results = []
 
-    if seq.species == 'Human':
-        vdjbase_genes = get_vdjbase_ref()
-        if seq.coding_seq_imgt is None:
-            seq.coding_seq_imgt = ''
+    vdjbase_ref = get_vdjbase_ref()
+    vdjbase_species = seq.species.replace('Human_TCR', 'Human')
+    if seq.coding_seq_imgt is not None and len(seq.coding_seq_imgt) > 0 \
+            and vdjbase_species in vdjbase_ref and seq.locus in vdjbase_ref[vdjbase_species]:
+        vdjbase_genes = vdjbase_ref[vdjbase_species][seq.locus]
         gene_seq = seq.coding_seq_imgt.lower().replace('.', '')
-        for k,v in vdjbase_genes.items():
-            if (gene_seq in v[0] or v[0] in gene_seq) and v[1] != '0':
+        for vdjbase_name, (vdjbase_seq, vdjbase_count) in vdjbase_genes.items():
+            if (gene_seq in vdjbase_seq or vdjbase_seq in gene_seq) and vdjbase_count != '0':
                 results.append(
-                    {'vdjbase_name': Markup('<a href="%sdata/Samples?alleles_n=%s"> %s </a>' % (app.config['VDJBASE_URL'], k, k)),
-                     'allele_name': k,
-                     'subjects': v[1],
-                     'nt_sequence': v[0],
+                    {'vdjbase_name': Markup('<a href="%sgenerep/%s/%s/%s"> %s </a>' % (app.config['VDJBASE_URL'], vdjbase_species, seq.locus, vdjbase_name, vdjbase_name)),
+                     'allele_name': vdjbase_name,
+                     'subjects': vdjbase_count,
+                     'nt_sequence': vdjbase_seq,
                      'sequence_name': seq.sequence_name,
                      'gene_sequence': gene_seq})
 

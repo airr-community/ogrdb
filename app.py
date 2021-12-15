@@ -23,21 +23,11 @@ from head import app, db, bootstrap, admin_obj, mail, security
 
 
 
-import json
-from Bio import SeqIO
 import io
 from os.path import isdir
 from os import mkdir, remove
-from operator import attrgetter
-
-
-
-
-
 
 # Check log file can be opened for writing, default otherwise
-
-from traceback import format_exc
 
 try:
     with(open(app.config["LOGPATH"], 'w')) as fp:
@@ -59,9 +49,6 @@ if not isdir(attach_path):
 user_attach_path = attach_path + 'user/'
 if not isdir(user_attach_path):
     mkdir(user_attach_path)
-
-# At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
-#db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
 
 from mail import send_mail
 
