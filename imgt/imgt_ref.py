@@ -8,7 +8,7 @@
 
 from Bio import SeqIO
 import yaml
-from app import app
+from head import app
 import sys
 import os.path
 import pickle
@@ -17,7 +17,6 @@ import json
 imgt_reference_genes = None
 imgt_gapped_reference_genes = None
 igpdb_genes = None
-vdjbase_genes = None
 imgt_config = None
 
 # indexed by species and then by codon (first codon = 1), lists the residues found in that location in the reference set
@@ -189,18 +188,7 @@ def init_igpdb_ref():
         rd = rec.description.split('|')
         igpdb_genes[rd[0]] = str(rec.seq.lower())
 
-def init_vdjbase_ref():
-    global vdjbase_genes
-    vdjbase_genes = {}
 
-    try:
-        with open(os.path.join(imgt_config['update_file_dir'], 'vdjbase.json'), 'r') as fi:
-            content = json.load(fi)
-
-            for k, v in content.items():
-                vdjbase_genes[k] = (v[0].replace('.', ''), '%d' % v[1])
-    except:
-        app.logger.error('Error loading VDJbase sequences')
 
 # if we just import the global variables in another module, they are empty
 # I suspect this is related to threading but it could be a basic coding error
@@ -216,9 +204,6 @@ def get_imgt_gapped_reference_genes():
 
 def get_igpdb_ref():
     return igpdb_genes
-
-def get_vdjbase_ref():
-    return vdjbase_genes
 
 def get_imgt_config():
     return imgt_config

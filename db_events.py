@@ -12,7 +12,7 @@ from db.inferred_sequence_db import *
 from db.submission_db import *
 from db.submission_db import *
 
-from app import db
+from head import db
 
 # Keep the duplicate sequences/published duplicates mapping up-to-date
 

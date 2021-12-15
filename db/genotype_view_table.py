@@ -4,13 +4,14 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_vdjbase_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
+from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
 from Bio import pairwise2, Seq
 from db.genotype_tables import *
 import sys
 import re
 from db.genotype_db import Genotype
-from app import app
+from head import app
+from db.vdjbase import get_vdjbase_ref
 
 class SeqCol(StyledCol):
     def td_contents(self, item, attr_list):

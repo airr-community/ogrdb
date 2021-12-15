@@ -15,7 +15,7 @@ from textile_filter import *
 from flask import url_for
 from db.gene_description_db import *
 from sequence_format import *
-from imgt.imgt_ref import get_vdjbase_ref
+from db.vdjbase import get_vdjbase_ref
 
 class MessageHeaderCol(StyledCol):
     def td_contents(self, item, attr_list):

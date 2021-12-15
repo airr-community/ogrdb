@@ -13,7 +13,7 @@ import sys
 import re
 import html
 import time
-from app import ncbi_api_key
+from head import ncbi_api_key
 
 # Requests to NCBI are limited to 10 per second. There's a sleep before each call to limit request rate
 # Still no guarantee that we won't hit rate limiting if multiple users make requests at the same time

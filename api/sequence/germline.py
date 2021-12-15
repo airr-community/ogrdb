@@ -4,7 +4,7 @@ from flask_restx import Resource, reqparse, fields, marshal, inputs
 from sqlalchemy import or_
 from api.restplus import api
 from db.germline_set_db import GermlineSet
-from app import db
+from head import db
 from to_airr import germline_set_to_airr
 
 

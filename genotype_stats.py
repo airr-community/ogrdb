@@ -11,7 +11,7 @@ from Bio import SeqIO
 from io import StringIO
 import csv
 
-from app import db
+from head import db
 from db.submission_db import *
 from db.gene_description_db import *
 from imgt.imgt_ref import get_imgt_reference_genes

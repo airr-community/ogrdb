@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from app import app
+from head import app
 import textile
 
 from jinja2 import pass_eval_context, Markup

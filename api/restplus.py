@@ -1,7 +1,7 @@
 import traceback
 
 from flask_restx import Api
-from app import app
+from head import app
 from sqlalchemy.orm.exc import NoResultFound
 
 # Template modelled after https://github.com/postrational/rest_api_demo by Michał Karzyński

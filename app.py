@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 
-from flask import Flask, render_template, request, redirect, Response, Blueprint, jsonify
+from flask import Flask, render_template, request, redirect, Response, Blueprint, jsonify, current_app
 from flask_security import current_user
 from flask_security.utils import hash_password
 from flask_sqlalchemy import SQLAlchemy
@@ -17,6 +17,12 @@ from sqlalchemy import and_, or_
 from sqlalchemy.sql.expression import func
 
 
+import head
+head.create_app()
+from head import app, db, bootstrap, admin_obj, mail, security
+
+
+
 import json
 from Bio import SeqIO
 import io
@@ -26,10 +32,8 @@ from operator import attrgetter
 
 
 
-app = Flask(__name__)
-bootstrap = Bootstrap(app)
-app.config.from_pyfile('config.cfg')
-app.config.from_pyfile('secret.cfg')
+
+
 
 # Check log file can be opened for writing, default otherwise
 
@@ -42,12 +46,13 @@ except:
     app.config["LOGPATH"] = 'app.log'
 
 ncbi_api_key = app.config['NCBI_API_KEY']
+head.ncbi_api_key = app.config['NCBI_API_KEY']
 
-admin_obj = Admin(app, template_mode='bootstrap3')
 
 # Make the attachment directory, if it doesn't exist
 
 attach_path = app.config['ATTACHPATH'] + '/'
+head.attach_path = attach_path
 if not isdir(attach_path):
     mkdir(attach_path)
 
@@ -55,11 +60,9 @@ user_attach_path = attach_path + 'user/'
 if not isdir(user_attach_path):
     mkdir(user_attach_path)
 
-db = SQLAlchemy(app)
 # At the moment files are stored MEME encoded, so this needs to be at least 2 or 3 times max file size
 #db.session.execute('SET @@GLOBAL.max_allowed_packet=134217728')
 
-mail = Mail(app)
 from mail import send_mail
 
 
@@ -125,18 +128,14 @@ from genotype_stats import *
 from get_ncbi_details import *
 from to_airr import *
 
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-migrate = Migrate(app, db)
-
-security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
 
 from custom_logging import init_logging
-
 init_logging(app, mail)
 
 # Read IMGT germline reference sets
 
-from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, init_vdjbase_ref, get_imgt_reference_genes
+from imgt.imgt_ref import init_imgt_ref, init_igpdb_ref, get_imgt_reference_genes
+from db.vdjbase import init_vdjbase_ref
 
 init_imgt_ref()
 init_igpdb_ref()
@@ -147,6 +146,9 @@ init_vdjbase_ref()
 from api.restplus import api
 from api.sequence.sequence import ns as sequence
 from api.sequence.germline import ns as germline
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = security.init_app(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)

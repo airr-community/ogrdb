@@ -8,7 +8,7 @@
 
 from flask_security import current_user
 from flask_admin.contrib.sqla import ModelView
-from app import admin_obj, db
+from head import admin_obj
 from db.userdb import User, Role
 from db.submission_db import Submission
 from db.gene_description_db import GeneDescription

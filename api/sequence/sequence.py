@@ -5,8 +5,9 @@ from flask_restx import Resource, reqparse, fields, marshal, inputs
 from api.restplus import api
 from db.gene_description_db import make_GeneDescription_view
 from werkzeug.exceptions import BadRequest
-from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_vdjbase_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
-from app import db
+from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
+from db.vdjbase import get_vdjbase_ref
+from head import db
 from db.misc_db import Committee
 from db.gene_description_db import GeneDescription
 from datetime import datetime

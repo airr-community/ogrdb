@@ -5,7 +5,7 @@
 #
 
 from flask_mail import Message
-from app import db
+from head import db
 from db.userdb import Role, User
 from sqlalchemy import distinct
 import time

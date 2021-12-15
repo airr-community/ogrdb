@@ -1,5 +1,6 @@
 # FUnctions for the interface with VDJBase
 import json
+import os
 from datetime import date, datetime, timedelta
 
 from flask import url_for
@@ -8,7 +9,7 @@ from sqlalchemy import and_, func
 
 from db.misc_db import Committee
 import requests
-from app import app, db
+from head import app, db
 from db.notes_entry_db import NotesEntry
 from db.novel_vdjbase_db import NovelVdjbase, make_NovelVdjbase_table
 from db.styled_table import StyledCol
@@ -50,7 +51,7 @@ class VDJbaseError(Exception):
 
 
 def call_vdjbase(payload):
-    resp = requests.get(app.config['VDJBASE_API'] + payload)
+    resp = requests.get(os.path.join(app.config['VDJBASE_API'] + payload))
     if resp.status_code != 200:
         raise VDJbaseError('Error contacting VDJbase: status code %d' % resp.status_code)
     return json.loads(resp.text)
@@ -60,12 +61,15 @@ last_run = None
 
 def update_from_vdjbase():
     global last_run
-    # Need a check here to update just once a day
 
     if last_run and datetime.now() - last_run < timedelta(hours=21):
-        return('Frequency limit exceeded: restart to over-ride')
+        return('Update_from_VDJbase: frequency limit exceeded: restart to over-ride')
 
     last_run = datetime.now()
+
+    # Update set of oll novels not just full-length
+
+    update_vdjbase_ref()
 
     # Work out which datasets to collect from VDJbase and process
     ogrdb_sets = {}
@@ -185,3 +189,50 @@ def setup_vdjbase_review_tables(results):
     table.add_column('sequence', StyledCol("VDJbase sequence"))
 
     return table
+
+# Functions for managing ALL VDJbase inferences (not just full-length) used to annotate genotypes and submissions
+# These are kept in an in-memory structure for fast access
+
+vdjbase_genes = {}
+vdjbase_gene_update_stamp = 0
+
+
+def update_vdjbase_ref():
+    try:
+        ret = call_vdjbase('repseq/all_novels')
+    except VDJbaseError as e:
+        app.logger.error(e)
+        return
+
+    if len(ret) > 0:
+        with open(app.config['VDJBASE_NOVEL_FILE'], 'w') as fo:
+            json.dump(ret, fo)
+    else:
+        app.logger.error('Zero-length novels file returned from VDJbase')
+
+
+def init_vdjbase_ref():
+    global vdjbase_genes, vdjbase_gene_update_stamp
+
+    try:
+        if not os.path.isfile(app.config['VDJBASE_NOVEL_FILE']):
+            update_vdjbase_ref()
+
+        if os.path.isfile(app.config['VDJBASE_NOVEL_FILE']):
+            with open(app.config['VDJBASE_NOVEL_FILE'], 'r') as fi:
+                ret = json.load(fi)
+            if len(ret) > 0:
+                vdjbase_genes = ret
+                vdjbase_gene_update_stamp = os.path.getmtime(app.config['VDJBASE_NOVEL_FILE'])
+            else:
+                app.logger.error('Zero-length VDJbase novels file read from disk')
+    except:
+        app.logger.error('Error reading VDJbase novels file from disk')
+
+
+def get_vdjbase_ref():
+    if os.path.isfile(app.config['VDJBASE_NOVEL_FILE']) and os.path.getmtime(app.config['VDJBASE_NOVEL_FILE']) > vdjbase_gene_update_stamp:
+        init_vdjbase_ref()
+
+    return vdjbase_genes
+

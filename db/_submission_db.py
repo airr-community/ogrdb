@@ -8,7 +8,7 @@
 
 from shutil import rmtree
 from sys import exc_info
-from app import app, attach_path
+from head import app, attach_path
 from traceback import format_exc
 from os import path
 

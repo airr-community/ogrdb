@@ -12,7 +12,7 @@ from db.gene_description_db import GeneDescription
 from db.submission_db import Submission
 from db.germline_set_db import GermlineSet
 
-from textile_filter import safe_textile
+from textile_filter import *
 
 def add_note(user, title, body, obj, db, parent_id=None):
     journal_entry = JournalEntry()

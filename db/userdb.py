@@ -6,7 +6,7 @@
 
 # ORM definitions for user management
 
-from app import db
+from head import db
 from flask_security import UserMixin, RoleMixin
 
 roles_users = db.Table('roles_users',

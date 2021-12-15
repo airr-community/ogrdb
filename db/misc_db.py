@@ -6,7 +6,7 @@
 
 # ORM definitions for miscellaneous non schema generated tables
 
-from app import db
+from head import db
 
 class Committee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
