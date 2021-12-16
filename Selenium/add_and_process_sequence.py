@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait # available since 2.4.0
 from selenium.webdriver.support import expected_conditions as EC # available since 2.26.0
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.action_chains import ActionChains
 
 import random
 import string
@@ -31,7 +32,7 @@ driver = webdriver.Chrome()
 
 wait = WebDriverWait(driver, 10)
 
-host_address = "http://localhost:5000/"
+host_address = "http://localhost:5050/"
 
 def init():
     global host_address
@@ -71,6 +72,8 @@ def main():
     sub_download_stats()
     time.sleep(1)
     driver.find_element_by_link_text("Sequences").click()
+    time.sleep(1)
+    driver.find_element_by_link_text("Human BCR").click()
     sub_add_and_process()
 
 def sub_download_stats():
@@ -91,6 +94,7 @@ def sub_add_and_process():
 
     # Select an available inferred sequence from the submissions
 
+    print('Select an available inferred sequence from the submissions')
     sel_sub = Select(driver.find_element_by_id('submission_id'))
     sub_opts = sel_sub.options
 
@@ -109,6 +113,7 @@ def sub_add_and_process():
 
     # Edit the new sequence and add the IMGT alignment
 
+    print('Edit the new sequence and add the IMGT alignment')
     time.sleep(1)
     driver.find_element_by_link_text("Sequences").click()
     time.sleep(1)
@@ -127,6 +132,8 @@ gtgtattactgtgcgagaga""")
 
     # Add another inferred sequence from the edit screen
 
+    print('Add another inferred sequence from the edit screen')
+    driver.execute_script("window.scrollTo(0, 0);")
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
@@ -134,7 +141,7 @@ gtgtattactgtgcgagaga""")
 
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'submission_id')))
-    time.sleep(3)
+    time.sleep(2)
     sel_sub = Select(driver.find_element_by_id('submission_id'))
     sub_opts = sel_sub.options
 
@@ -148,11 +155,12 @@ gtgtattactgtgcgagaga""")
             seq_opts[0].click()
             break
 
-    time.sleep(3)
+    time.sleep(2)
     driver.find_element_by_id('create').click()
 
     # Check the number of inferred sequences and delete one
 
+    print('Check the number of inferred sequences and delete one')
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_inference_btn')))
     x = driver.find_elements(By.XPATH, '//*[contains(@class, "del_inf_button")]')
@@ -163,15 +171,18 @@ gtgtattactgtgcgagaga""")
 
     # View an alignment
 
+    print('View an alignment')
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'aln_view'))).click()
-    time.sleep(3)
+    time.sleep(2)
 
     wait.until(EC.element_to_be_clickable((By.CLASS_NAME,'btn-default'))).click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Add some acknowledgements
 
+    print('Add some acknowledgements')
+    driver.execute_script("window.scrollTo(0, 0);")
     driver.find_element_by_xpath('//*[@id="tab-ack"]').click()
     time.sleep(2)
     prev_items = len(driver.find_elements(By.XPATH, '//*[contains(@id, "ack_del_")]'))
@@ -201,6 +212,8 @@ gtgtattactgtgcgagaga""")
 
     # Add genomic evidence
 
+    print('Add genomic evidence')
+    driver.execute_script("window.scrollTo(0, 0);")
     driver.find_element_by_xpath('//*[@id="tab-inf"]').click()
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'add_genomic_btn'))).click()
@@ -213,8 +226,10 @@ gtgtattactgtgcgagaga""")
 
     # Add a note
 
-    time.sleep(1)
-    wait.until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-notes"]'))).click()
+    print('Add a note')
+    driver.execute_script("window.scrollTo(0, 0);")
+    time.sleep(3)
+    wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tab-notes"]'))).click()
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID,'notes')))
     driver.find_element_by_id('notes').send_keys(random_chars(size=random.randint(50,500), chars=string.ascii_lowercase + ' '))
@@ -224,6 +239,7 @@ gtgtattactgtgcgagaga""")
 
     # View the draft, and pop up both sequence views
 
+    print('View the draft, and pop up both sequence views')
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
     driver.find_element_by_link_text(name).click()
@@ -246,8 +262,11 @@ gtgtattactgtgcgagaga""")
 
     # Go back to Edit again, and publish
 
+    print('Go back to Edit again, and publish')
+    driver.execute_script("window.scrollTo(0, 0);")
     driver.find_element_by_link_text("Sequences").click()
     time.sleep(1)
+    driver.find_element_by_link_text("Human BCR").click()
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
     element = driver.find_element_by_link_text(name)
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
@@ -262,6 +281,7 @@ gtgtattactgtgcgagaga""")
 
     # New draft
 
+    print('New draft')
     time.sleep(3)
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button" % name).click()
     time.sleep(3)
@@ -270,6 +290,7 @@ gtgtattactgtgcgagaga""")
 
     # Promote
 
+    print('Promote')
     time.sleep(3)
     element = driver.find_element_by_link_text(name)
     element = element.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::a" % name).click()
@@ -283,6 +304,7 @@ gtgtattactgtgcgagaga""")
 
     # Change IMGT name
 
+    print('Change IMGT name')
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[2]" % name).click()
     time.sleep(3)
     driver.find_element_by_id('imgt_name_text').send_keys(random_chars(size=random.randint(5, 10), chars=string.ascii_lowercase))
@@ -291,6 +313,7 @@ gtgtattactgtgcgagaga""")
 
     # Withdraw
 
+    print('Withdraw')
     time.sleep(3)
     wait.until(EC.element_to_be_clickable((By.XPATH,"//*[text()[.='%s']]/following-sibling::button[3]" % name)))
     time.sleep(2)
@@ -301,6 +324,7 @@ gtgtattactgtgcgagaga""")
 
     # Download sequences
 
+    print('Download sequences')
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, 'dl-ungapped')))
     driver.find_element_by_id("dl-ungapped").click()

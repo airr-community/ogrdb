@@ -62,8 +62,8 @@
                 {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
                 {{ form.create(class="btn btn-primary") }}
             </div>
+            </div>
         </form>
-        </div>
 
 {% endblock %}
 
@@ -75,13 +75,17 @@
         var submission_id = $(this).find("option:selected").val();
 
         if(submission_id != '') {
+            console.log("sending request");
             $.ajax({
                 type: "GET",
                 url: '{{ url_for("get_sequences", id="xxx") }}'.replace("xxx", submission_id),
                 success: function (data) {
+                    console.log("processing response");
                     var opts = $.parseJSON(data);
                     $.each(opts, function (i, d) {
                         $("#sequence_name").append('<option value="' + d[0] + '">' + d[1] + '</option>');
+                    console.log("processed");
+
                     });
                 }
             })

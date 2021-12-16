@@ -14,6 +14,7 @@ from flask_security import SQLAlchemyUserDatastore, login_required, logout_user
 from sqlalchemy import or_
 
 import head
+
 head.create_app()
 from head import app, mail, security
 
@@ -199,6 +200,7 @@ def profile():
     return render_template('profile.html', form=form, current_user=current_user, url='profile')
 
 from ogrdb.submission.submission_routes import *
+from ogrdb.submission.submission_view_form import HiddenReturnForm
 
 
 def check_tool_edit(id):

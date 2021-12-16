@@ -30,7 +30,7 @@ driver = webdriver.Chrome()
 #driver = webdriver.Ie()
 wait = WebDriverWait(driver, 10)
 
-host_address = "http://localhost:5000/"
+host_address = "http://localhost:5050/"
 
 def init():
     global host_address
