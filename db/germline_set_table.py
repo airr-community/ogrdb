@@ -3,12 +3,11 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
-from operator import attrgetter
 
 from db.attached_file_db import make_AttachedFile_table
 from db.germline_set_db import GermlineSet
 from forms.attached_file_form import AttachedFileForm
-from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable, EditablePubIdTable
+from ogrdb.submission.submission_edit_form import EditableAckTable, EditableAttachedFileTable, EditablePubIdTable
 from db.repertoire_db import make_Acknowledgements_table, make_PubId_table
 from db.journal_entry_db import *
 from forms.repertoire_form import AcknowledgementsForm, PubIdForm

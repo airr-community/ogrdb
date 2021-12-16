@@ -5,7 +5,7 @@
 #
 from operator import attrgetter
 
-from forms.submission_edit_form import EditableAckTable, EditableAttachedFileTable
+from ogrdb.submission.submission_edit_form import EditableAckTable, EditableAttachedFileTable
 from db.repertoire_db import make_Acknowledgements_table
 from db.attached_file_db import *
 from db.journal_entry_db import *

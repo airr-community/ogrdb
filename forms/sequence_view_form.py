@@ -9,7 +9,7 @@
 from db.gene_description_db import *
 from db.journal_entry_db import *
 from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table, list_sequence_changes
-from forms.submission_edit_form import *
+from ogrdb.submission.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
 from textile_filter import safe_textile

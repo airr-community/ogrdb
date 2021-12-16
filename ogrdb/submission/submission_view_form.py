@@ -7,13 +7,7 @@
 # Composite tables for View Submission page - defined manually
 
 from textile_filter import safe_textile
-from flask import Markup
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField
 
-from copy import deepcopy
-
-from db.submission_db import *
 from db.repertoire_db import *
 from db.editable_table import *
 from db.genotype_description_db import *
@@ -21,12 +15,11 @@ from db.inference_tool_db import *
 from db.inferred_sequence_db import *
 from db.journal_entry_db import *
 from db.notes_entry_db import *
-from db.primer_set_db import *
 from db.primer_db import *
 from db.gene_description_db import *
 from db.attached_file_db import *
 
-from forms.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol, SubjCol, EditableAttachedFileTable
+from ogrdb.submission.submission_edit_form import ToolNameCol, SeqNameCol, GenNameCol, SubjCol, EditableAttachedFileTable
 from forms.journal_entry_form import JournalEntryForm
 from forms.aggregate_form import AggregateForm
 from forms.attached_file_form import *

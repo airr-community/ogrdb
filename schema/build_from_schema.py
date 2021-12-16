@@ -79,7 +79,6 @@ def main(argv):
     write_model(schema, 'SampleName', 'db/sample_name_db.py')
     write_model(schema, 'AttachedFile', 'db/attached_file_db.py')
     write_flaskform(schema, 'AttachedFile', 'forms/attached_file_form.py')
-    write_model(schema, 'SequenceIdentifier', 'db/sequence_identifier_db.py')
     write_model(schema, 'NovelVdjbase', 'db/novel_vdjbase_db.py')
     write_flaskform(schema, 'NovelVdjbase', 'forms/novel_vdjbase_form.py')
 

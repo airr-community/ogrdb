@@ -1298,20 +1298,6 @@ GermlineSet:
             hide: true
 
 
-# Unique identifiers for encountered sequences
-SequenceIdentifier:
-    discriminator: AIRR
-    description: Unique identifiers for encountered sequences
-    type: object
-    properties:
-        sequence:
-            type: string
-            nonblank: true
-        sequence_identifier:
-            type: string
-            nonblank: true
-
-
 # Novel alleles collected from VDJbase for review
 NovelVdjbase:
     description: Novel alleles collected from VDJbase for review
