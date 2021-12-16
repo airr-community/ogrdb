@@ -6,9 +6,8 @@
 
 # Obtain/display details for inferred sequence record  from NCBI
 
-from head import db
 from db.record_set_db import *
-from forms.cancel_form import *
+from ogrdb.submission.cancel_form import *
 from forms.inferred_sequence_form import *
 from forms.aggregate_form import *
 from get_ncbi_details import *

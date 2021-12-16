@@ -5,7 +5,6 @@
 #
 
 # Composite form for Edit Submission page - defined manually
-
 from db.repertoire_db import *
 from db.misc_db import *
 from db.inference_tool_db import *
@@ -22,13 +21,11 @@ from forms.genotype_description_form import *
 from forms.aggregate_form import *
 from forms.inferred_sequence_form import *
 from forms.notes_entry_form import *
-from forms.primer_set_form import *
 from forms.attached_file_form import *
-from sys import exc_info
 from get_ncbi_details import *
 from get_ena_details import *
-from collections import namedtuple
-from custom_validators import ValidNucleotideSequence, ValidOrcidID
+
+from custom_validators import ValidOrcidID
 from wtforms import HiddenField, SelectField
 
 class EditablePubIdTable(EditableTable):
@@ -281,7 +278,8 @@ def setup_submission_edit_forms_and_tables(sub, db):
     db.session.commit()
 
     tables['pubmed_table'] = EditablePubIdTable(make_PubId_table(sub.repertoire[0].pub_ids), 'pubmed', PubIdForm, sub.repertoire[0].pub_ids, legend='Add Publication')
-    tables['primer_sets'] = EditablePrimerSetTable(make_PrimerSet_table(sub.repertoire[0].primer_sets), 'primer_sets', FlaskForm, sub.repertoire[0].primer_sets, legend='Add Primer Set', edit_route='primer_sets')
+    tables['primer_sets'] = EditablePrimerSetTable(make_PrimerSet_table(sub.repertoire[0].primer_sets), 'primer_sets', FlaskForm,
+                                                   sub.repertoire[0].primer_sets, legend='Add Primer Set', edit_route='primer_sets')
     tables['ack'] = EditableAckTable(make_Acknowledgements_table(sub.acknowledgements), 'ack', AcknowledgementsForm, sub.acknowledgements, legend='Add Acknowledgement')
     tables['tools'] = EditableInferenceToolTable(make_InferenceTool_table(sub.inference_tools), 'tools', InferenceToolForm, sub.inference_tools, legend='Add Tool and Settings', edit_route='edit_tool', delete_route='delete_tool', delete_message='Are you sure you wish to delete the tool settings and any associated genotypes?')
     tables['genotype_description'] = EditableGenotypeDescriptionTable(make_GenotypeDescription_table(sub.genotype_descriptions), 'genotype_description', GenotypeDescriptionForm, sub.genotype_descriptions, legend='Add Genotype', edit_route='edit_genotype_description', view_route='genotype_e', delete_route='delete_genotype', delete_message='Are you sure you wish to delete the genotype and all associated information?')

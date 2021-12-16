@@ -9,6 +9,7 @@ from copy import deepcopy
 
 from flask_table import DateCol
 
+import ogrdb.submission.genotype_routes
 from imgt.imgt_ref import get_imgt_config
 from db.styled_table import *
 from db.gene_description_db import *
@@ -40,10 +41,10 @@ class SequenceListActionCol(StyledCol):
 
             dupe_notes = []
             for note in  item.dupe_notes:
-                if note.genotype is None:           # The submission has been deleted: we may as well tidy up
+                if ogrdb.submission.genotype_routes.genotype is None:           # The submission has been deleted: we may as well tidy up
                     db.session.delete(note)
                     db.session.commit()
-                elif note.genotype in item.duplicate_sequences:
+                elif ogrdb.submission.genotype_routes.genotype in item.duplicate_sequences:
                     dupe_notes.append(note)
 
             if len(set(item.duplicate_sequences) - set(inf_genotypes) - set(item.supporting_observations)) > len(dupe_notes):

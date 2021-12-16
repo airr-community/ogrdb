@@ -5,7 +5,7 @@
 #
 
 # Composite tables for View Submission page - defined manually
-
+import ogrdb.submission.primer_set_routes
 from textile_filter import safe_textile
 
 from db.repertoire_db import *
@@ -174,8 +174,8 @@ def setup_submission_view_forms_and_tables(sub, db, private):
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(sub.notes_entries[0].attached_files), 'attached_files', AttachedFileForm, sub.notes_entries[0].attached_files, legend='Attachments', delete=False, download_route='download_submission_attachment')
 
     tables['primer_sets'] = []
-    for set in sub.repertoire[0].primer_sets:
-        tables['primer_sets'].append((set.primer_set_name, set.primer_set_notes, make_Primer_table(set.primers)))
+    for primer_set in sub.repertoire[0].primer_sets:
+        tables['primer_sets'].append((primer_set.primer_set_name, primer_set.primer_set_notes, make_Primer_table(primer_set.primers)))
 
     if len(sub.repertoire) == 0:
         sub.repertoire.append(Repertoire())

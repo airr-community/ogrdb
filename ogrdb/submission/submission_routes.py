@@ -1,3 +1,9 @@
+# Copyright William Lees
+#
+# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
+# the English version of which is available here: https://perma.cc/DK5U-NDVE
+#
+
 import datetime
 from os import mkdir, remove
 from os.path import isdir
@@ -8,13 +14,13 @@ from flask_login import current_user, login_required
 
 from db.journal_entry_db import JournalEntry
 from db.submission_db import Submission, save_Submission, populate_Submission
-from ogrdb.submission.submission_list_table import setup_submission_list_table
-from ogrdb.submission.submission_view_form import setup_submission_view_forms_and_tables
 from head import app, attach_path
 from journal import add_history, add_note
 from mail import send_mail
-from ogrdb.submission.submission_edit_form import *
 from textile_filter import safe_textile
+from ogrdb.submission.submission_edit_form import *
+from ogrdb.submission.submission_list_table import setup_submission_list_table
+from ogrdb.submission.submission_view_form import setup_submission_view_forms_and_tables
 
 
 @app.route('/submissions', methods=['GET', 'POST'])
@@ -414,3 +420,6 @@ def submission(id):
 
         else:
            return render_template('submission_view.html', sub=sub, tables=tables, form=form, reviewer=reviewer, id=id, jump = validation_result.tag, status=sub.submission_status)
+
+
+

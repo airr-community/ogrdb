@@ -7,6 +7,7 @@
 import logging
 
 from flask_mail import Message
+from head import app
 
 
 class FlaskMailLogHandler(logging.Handler):
@@ -19,11 +20,12 @@ class FlaskMailLogHandler(logging.Handler):
         self.subject = subject
 
     def emit(self, record):
-        self.mail.send(
-            Message(
-                sender=self.sender,
-                recipients=self.recipients,
-                body=self.format(record),
-                subject=self.subject
+        with app.app_context():
+            self.mail.send(
+                Message(
+                    sender=self.sender,
+                    recipients=self.recipients,
+                    body=self.format(record),
+                    subject=self.subject
+                )
             )
-        )
