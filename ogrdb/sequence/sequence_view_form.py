@@ -3,12 +3,9 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
-
-
-
 from db.gene_description_db import *
 from db.journal_entry_db import *
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table, list_sequence_changes
+from ogrdb.sequence.inferred_sequence_table import MessageHeaderCol, MessageBodyCol, setup_inferred_sequence_table, setup_matching_submissions_table, setup_supporting_observation_table, setup_vdjbase_matches_table, setup_genomic_support_table, list_sequence_changes
 from ogrdb.submission.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
@@ -30,7 +27,7 @@ def pretty_item(fn, value, seq, trailer_text):
     if fn == 'sequence':
         if value is not None and len(value) > 0:
             value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
+                           % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
         else:
             value = 'None'
     elif fn == 'coding_seq_imgt':

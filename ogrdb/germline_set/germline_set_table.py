@@ -3,7 +3,6 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
-
 from db.attached_file_db import make_AttachedFile_table
 from db.germline_set_db import GermlineSet
 from forms.attached_file_form import AttachedFileForm
@@ -14,7 +13,7 @@ from forms.repertoire_form import AcknowledgementsForm, PubIdForm
 from textile_filter import *
 from flask import url_for
 from db.gene_description_db import *
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol
+from ogrdb.sequence.inferred_sequence_table import MessageHeaderCol, MessageBodyCol
 from operator import attrgetter
 
 

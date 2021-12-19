@@ -18,6 +18,7 @@ from head import app, attach_path
 from journal import add_history, add_note
 from mail import send_mail
 from textile_filter import safe_textile
+
 from ogrdb.submission.submission_edit_form import *
 from ogrdb.submission.submission_list_table import setup_submission_list_table
 from ogrdb.submission.submission_view_form import setup_submission_view_forms_and_tables

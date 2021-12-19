@@ -1,7 +1,7 @@
 # FUnctions for the interface with VDJBase
 import json
 import os
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from flask import url_for
 from markupsafe import Markup
@@ -21,7 +21,8 @@ class DetailsCol(StyledCol):
         value = ''
         if item.sequence:
             if 'V' in item.vdjbase_name:
-                value = popup_seq_button(item.vdjbase_name, item.sequence.replace('.', ''), item.sequence).replace(
+                value = popup_seq_button(item.vdjbase_name, item.sequence.replace('.', ''),
+                                         item.sequence).replace(
                         'btn_view_seq', 'seq_coding_view')
             else:
                 value = popup_seq_button(item.vdjbase_name, item.sequence, '').replace('btn_view_seq', 'seq_coding_view')

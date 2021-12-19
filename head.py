@@ -24,6 +24,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.cfg')
     app.config.from_pyfile('secret.cfg')
+    ncbi_api_key = app.config['NCBI_API_KEY']
 
     db.init_app(app)
     migrate.init_app(app, db)

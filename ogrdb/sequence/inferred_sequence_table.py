@@ -83,7 +83,7 @@ def setup_inferred_sequence_table(seqs, gene_desc, action=True):
             else seq.seq_accession_no
         name = Markup('<a href="%s">%s</a>' % (url_for('inferred_sequence', id=seq.id), seq.sequence_details.sequence_id))
         gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=seq.genotype_description.id), seq.genotype_description.genotype_name))
-        results.append({'submission_id': seq.submission.submission_id, 'accession_no': acc, 'sequence_link': name, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': gene_desc.sequence.replace('.', '').lower() if gene_desc.sequence else '',
+        results.append({'submission_id': seq.submission.submission_id, 'accession_no': acc, 'sequence_link': name, 'sequence_name': seq.sequence_details.sequence_id, 'id': gene_desc.id, 'gene_sequence': seq.sequence_details.sequence.replace('.', '').lower() if seq.sequence_details.sequence else '',
                         'sequence_id': seq.id, 'nt_sequence': seq.sequence_details.nt_sequence.lower() if seq.sequence_details.nt_sequence else '', 'subject_id': seq.genotype_description.genotype_subject_id,
                         'genotype_name': gen, 'allele_name': gene_desc.description_id})
     table = make_InferredSequence_table(results)
@@ -124,7 +124,7 @@ def setup_supporting_observation_table(seq, action=True):
     for genotype in seq.supporting_observations:
         gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=genotype.genotype_description.id), genotype.genotype_description.genotype_name))
         results.append({'submission_id': genotype.genotype_description.submission.submission_id, 'subject_id': genotype.genotype_description.genotype_subject_id, 'genotype_name': gen, 'sequence_name': genotype.sequence_id,
-                        'allele_name': genotype.sequence_id, 'gene_sequence': seq.sequence, 'nt_sequence': genotype.nt_sequence, 'genotype_id': genotype.id, 'gene_description_id': seq.id})
+                        'allele_name': genotype.sequence_id, 'gene_sequence': seq.sequence_details.sequence, 'nt_sequence': genotype.nt_sequence, 'genotype_id': genotype.id, 'gene_description_id': seq.id})
 
     table = make_SupportingObservation_table(results)
     table.add_column('match', InferredSequenceTableMatchCol('Sequence Match', tooltip="Ticked if the sequence exactly matches this inference. Click for alignment."))
@@ -277,7 +277,7 @@ def setup_matching_submissions_table(seq, add_action=True):
 
             gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=dup.genotype_description.id), dup.genotype_description.genotype_name))
             results.append({'submission_id': dup.genotype_description.submission.submission_id, 'accession_no': acc, 'allele_name': seq.description_id,
-                            'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': gen, 'gene_sequence': seq.sequence, 'nt_sequence': dup.nt_sequence,
+                            'subject_id': dup.genotype_description.genotype_subject_id, 'genotype_name': gen, 'gene_sequence': seq.sequence_details.sequence, 'nt_sequence': dup.nt_sequence,
                             'inferred_id': inferred_id, 'sequence_name': dup.sequence_id, 'gene_description_id': seq.id, 'genotype_id': dup.id, 'add_action': add_action,
                             'notes_present': dup.id in noted_dupes})
 

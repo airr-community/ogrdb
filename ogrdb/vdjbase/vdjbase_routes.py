@@ -9,7 +9,6 @@ from flask import request, render_template, redirect, url_for, flash, Response
 from flask_login import current_user, login_required
 from sqlalchemy import and_
 
-from app import attach_path
 from db.attached_file_db import AttachedFile, make_AttachedFile_table
 from db.novel_vdjbase_db import NovelVdjbase
 from db.vdjbase import update_from_vdjbase, setup_vdjbase_review_tables
@@ -17,7 +16,7 @@ from forms.attached_file_form import AttachedFileForm
 from forms.notes_entry_form import NotesEntryForm
 from forms.review_vdjbase_form import ReviewVdjbaseForm
 from ogrdb.submission.submission_edit_form import EditableAttachedFileTable
-from head import app, db
+from head import app, db, attach_path
 from textile_filter import safe_textile
 
 

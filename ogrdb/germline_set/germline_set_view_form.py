@@ -8,8 +8,8 @@
 
 from db.germline_set_db import *
 from db.journal_entry_db import *
-from db.inferred_sequence_table import MessageHeaderCol, MessageBodyCol
-from db.germline_set_table import setup_gene_description_table
+from ogrdb.sequence.inferred_sequence_table import MessageHeaderCol, MessageBodyCol
+from ogrdb.germline_set.germline_set_table import setup_gene_description_table
 from ogrdb.submission.submission_edit_form import *
 
 

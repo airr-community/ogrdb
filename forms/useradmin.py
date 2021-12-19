@@ -15,6 +15,9 @@ from db.gene_description_db import GeneDescription
 from db.misc_db import *
 from db.repertoire_db import Repertoire
 from db.attached_file_db import AttachedFile
+from db.genotype_db import Genotype
+from db.germline_set_db import GermlineSet
+from db.novel_vdjbase_db import NovelVdjbase
 from db.genotype_description_db import GenotypeDescription
 from db.inference_tool_db import InferenceTool
 from db.inferred_sequence_db import InferredSequence

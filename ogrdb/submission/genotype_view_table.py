@@ -3,7 +3,6 @@
 # This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
-
 from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
 from Bio import pairwise2, Seq
 from db.genotype_tables import *
@@ -206,7 +205,7 @@ def setup_gv_table(desc):
                 lh = int(gen.haplotyping_ratio.split(':')[0])
             totals.sequences += gen.sequences
             totals.unmutated_sequences += gen.unmutated_sequences
-            lh_seqs += lh * gen.sequences / 100
+            lh_seqs += lh * totals.sequences / 100
         except:
             pass
 

@@ -5,7 +5,6 @@
 #
 
 # Mixin methods for Genotype
-
 from db.gene_description_db import *
 from sequence_format import check_duplicate
 
@@ -19,7 +18,7 @@ class GenotypeMixin:
             genes = db.session.query(GeneDescription).filter(GeneDescription.status.in_(['draft', 'published']), GeneDescription.species == self.genotype_description.submission.species).all()
 
             for gene in genes:
-                if gene.sequence_type == self.genotype_description.sequence_type and check_duplicate(self.nt_sequence, gene.sequence.replace('.', ''), self.genotype_description.sequence_type):
+                if gene.sequence_type == self.genotype_description.sequence_type and check_duplicate(self.nt_sequence, self.sequence.replace('.', ''), self.genotype_description.sequence_type):
                     # gene.duplicate_sequences.append(self)
                     self.published_duplicates.append(gene)
 
