@@ -20,7 +20,7 @@ security = Security()
 
 
 def create_app():
-    global app, db, bootstrap, admin_obj, mail, security
+    global app, db, bootstrap, admin_obj, mail, security, ncbi_api_key
     app = Flask(__name__)
     app.config.from_pyfile('config.cfg')
     app.config.from_pyfile('secret.cfg')
