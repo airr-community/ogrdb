@@ -92,8 +92,8 @@ def vdjbase_status():
 
     row.status = form['value']
     row.notes_entries[0].notes_text += '\r%s: Status was changed from %s to %s by %s' % \
-                 (datetime.now().strftime("%d/%m/%y %H:%M"), form['current'], form['value'], current_user.name)
-    row.last_updated = datetime.now()
+                 (datetime.datetime.now().strftime("%d/%m/%y %H:%M"), form['current'], form['value'], current_user.name)
+    row.last_updated = datetime.datetime.now()
     row.updated_by = current_user.name
     db.session.commit()
 

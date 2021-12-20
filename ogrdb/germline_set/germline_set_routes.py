@@ -1,6 +1,6 @@
 import json
 import sys
-from datetime import datetime
+import datetime
 from operator import attrgetter
 from os import mkdir, remove
 from os.path import isdir
