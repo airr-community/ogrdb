@@ -57,12 +57,14 @@ def vdjbase_review(selected_species=None, selected_locus=None):
             results = db.session.query(NovelVdjbase)\
                 .filter(and_(NovelVdjbase.species == form.species.data, NovelVdjbase.locus == form.locus.data))\
                 .all()
-            table = setup_vdjbase_review_tables(results)
+
+            editor = can_edit_vdjbase_review(form.species.data)
+            table = setup_vdjbase_review_tables(results, editor)
             table.table_id = 'seq_table'
             return render_template('vdjbase_review.html',
                                    form=form,
                                    table=table,
-                                   editor=can_edit_vdjbase_review(form.species.data),
+                                   editor=editor,
                                    locus_choices=json.dumps(locus_choices))
 
     form.species.choices = [('Select', 'Select')]
@@ -129,9 +131,9 @@ def vdjbase_review_detail(id):
                                 break
                         if af is None:
                             af = AttachedFile()
+                            db.session.add(af)
                         af.notes_entry = details.notes_entries[0]
                         af.filename = file.filename
-                        db.session.add(af)
                         db.session.commit()
                         dirname = attach_path + 'V%5d' % details.id
 
@@ -218,3 +220,5 @@ def delete_vdjbase_attachment(id):
     db.session.delete(att)
     db.session.commit()
     return ''
+
+

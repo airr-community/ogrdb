@@ -32,6 +32,13 @@ class DetailsCol(StyledCol):
                      </a>
                  ''' % (url_for('vdjbase_review_detail', id=item.id))
 
+        if item.editable:
+            value += '''<button onclick="sequence_warn(%s, \'Press Create to create a sequence in OGRDB from this entry\')" 
+                        type="button" class="btn btn-xs text-warning icon_back" id="%s">
+                        <span class="glyphicon glyphicon-plus" data-toggle="tooltip" title="Create sequence in OGRDB">
+                        </span>&nbsp;</button>''' % (item.id, item.id)
+
+
         return Markup(value)
 
 class VdjbaseAlleleCol(StyledCol):
@@ -181,8 +188,12 @@ def update_from_vdjbase():
 
     return 'Import complete'
 
-def setup_vdjbase_review_tables(results):
+def setup_vdjbase_review_tables(results, editor):
     table = make_NovelVdjbase_table(results)
+
+    for item in table.items:
+        item.editable = editor
+
     table._cols['id'].show = True
     table._cols['vdjbase_name'] = VdjbaseAlleleCol('VDJbase Name')
     del table._cols['sequence']     # put the full sequence at the end

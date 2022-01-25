@@ -7,10 +7,12 @@ import csv
 import datetime
 import io
 import json
+import os
 import sys
 from os import mkdir, remove
 from os.path import isdir
 from traceback import format_exc
+import shutil
 
 from flask import flash, redirect, request, render_template, url_for, Response
 from flask_login import current_user, login_required
@@ -30,6 +32,7 @@ from db.journal_entry_db import JournalEntry, copy_JournalEntry
 from db.misc_db import Committee
 from db.repertoire_db import Acknowledgements
 from db.submission_db import Submission
+from db.novel_vdjbase_db import NovelVdjbase
 
 from forms.aggregate_form import AggregateForm
 from forms.gene_description_form import GenomicSupportForm, GeneDescriptionForm
@@ -112,7 +115,7 @@ def check_seq_see_notes(id):
 
 
 def check_seq_attachment_edit(id):
-    af = db.session.query(AttachedFile).filter_by(id = id).one_or_none()
+    af = db.session.query(AttachedFile).filter_by(id=id).one_or_none()
     if af is None:
         flash('Attachment not found')
         return None
@@ -342,34 +345,7 @@ def new_sequence(species):
                 gene_description.sequence_type = 'V'
                 gene_description.coding_seq_imgt = ''
 
-
-            # Parse the name, if it's tractable
-
-            try:
-                sn = gene_description.sequence_name
-                if sn[:2] == 'IG' or sn[:2] == 'TR':
-                    if record_type == 'genomic':
-                        gene_description.locus = sn[:3]
-                        gene_description.sequence_type = sn[3]
-                    if '-' in sn:
-                        if '*' in sn:
-                            snq = sn.split('*')
-                            gene_description.allele_designation = snq[1]
-                            sn = snq[0]
-                        else:
-                            gene_description.allele_designation = ''
-                        snq = sn.split('-')
-                        gene_description.subgroup_designation = snq[len(snq)-1]
-                        del(snq[len(snq)-1])
-                        gene_description.gene_subgroup = '-'.join(snq)[4:]
-                    elif '*' in sn:
-                        snq = sn.split('*')
-                        gene_description.gene_subgroup = snq[0][4:]
-                        gene_description.allele_designation = snq[1]
-                    else:
-                        gene_description.gene_subgroup = sn[4:]
-            except:
-                pass
+                parse_name_to_gene_description(gene_description)
 
             db.session.add(gene_description)
             db.session.commit()
@@ -385,6 +361,33 @@ def new_sequence(species):
 
     return render_template('sequence_new.html', form=form, species=species)
 
+
+# Parse the name, if it's tractable
+def parse_name_to_gene_description(gene_description):
+    try:
+        sn = gene_description.sequence_name
+        if sn[:2] == 'IG' or sn[:2] == 'TR':
+            gene_description.locus = sn[:3]
+            gene_description.sequence_type = sn[3]
+            if '-' in sn:
+                if '*' in sn:
+                    snq = sn.split('*')
+                    gene_description.allele_designation = snq[1]
+                    sn = snq[0]
+                else:
+                    gene_description.allele_designation = ''
+                snq = sn.split('-')
+                gene_description.subgroup_designation = snq[len(snq) - 1]
+                del (snq[len(snq) - 1])
+                gene_description.gene_subgroup = '-'.join(snq)[4:]
+            elif '*' in sn:
+                snq = sn.split('*')
+                gene_description.gene_subgroup = snq[0][4:]
+                gene_description.allele_designation = snq[1]
+            else:
+                gene_description.gene_subgroup = sn[4:]
+    except:
+        pass
 
 def upload_sequences(form, species):
     # check file
@@ -693,29 +696,30 @@ def edit_sequence(id):
 
                 if 'notes_attachment' in request.files:
                     for file in form.notes_attachment.data:
-                        af = None
-                        for at in seq.attached_files:
-                            if at.filename == file.filename:
-                                af = at
-                                break
-                        if af is None:
-                            af = AttachedFile()
-                        af.gene_description = seq
-                        af.filename = file.filename
-                        db.session.add(af)
-                        db.session.commit()
-                        dirname = attach_path + seq.description_id
+                        if file.filename != '':
+                            af = None
+                            for at in seq.attached_files:
+                                if at.filename == file.filename:
+                                    af = at
+                                    break
+                            if af is None:
+                                af = AttachedFile()
+                            af.gene_description = seq
+                            af.filename = file.filename
+                            db.session.add(af)
+                            db.session.commit()
+                            dirname = attach_path + seq.description_id
 
-                        try:
-                            if not isdir(dirname):
-                                mkdir(dirname)
-                            with open(dirname + '/multi_attachment_%s' % af.id, 'wb') as fo:
-                                fo.write(file.stream.read())
-                        except:
-                            info = sys.exc_info()
-                            flash('Error saving attachment: %s' % (info[1]))
-                            app.logger.error(format_exc())
-                            return redirect(url_for('edit_submission', id=seq.id))
+                            try:
+                                if not isdir(dirname):
+                                    mkdir(dirname)
+                                with open(dirname + '/multi_attachment_%s' % af.id, 'wb') as fo:
+                                    fo.write(file.stream.read())
+                            except:
+                                info = sys.exc_info()
+                                flash('Error saving attachment: %s' % (info[1]))
+                                app.logger.error(format_exc())
+                                return redirect(url_for('edit_submission', id=seq.id))
 
                 seq.notes = form.notes.data      # this was left out of the form definition in the schema so it could go on its own tab
 
@@ -1130,3 +1134,84 @@ def genomic_support(id):
             item['value'] = Markup('<a href="%s">%s</a>' % (item['value'], item['value']))
 
     return render_template('genomic_support_view.html', table=table, name=genomic_support.gene_description.sequence_name)
+
+
+@app.route('/sequence_from_vdjbase/<id>', methods=['GET', 'POST'])
+@login_required
+def sequence_from_vdjbase(id):
+    novel_rec = db.session.query(NovelVdjbase).filter(NovelVdjbase.id == id).one_or_none()
+
+    if not novel_rec:
+        flash('VDJbase sequence not found')
+        return redirect(url_for('vdjbase_review'))
+
+    if not current_user.has_role(novel_rec.species):
+        flash('You do not have rights to create the sequence')
+        return redirect(url_for('vdjbase_review'))
+
+    if db.session.query(GeneDescription).filter(and_(
+            GeneDescription.species == novel_rec.species,
+            GeneDescription.locus == novel_rec.locus,
+            GeneDescription.sequence_name == novel_rec.vdjbase_name
+            )).count():
+        flash('A sequence with that name already exists in OGRDB')
+        return redirect(url_for('vdjbase_review'))
+
+    gene_description = GeneDescription()
+    gene_description.sequence_name = novel_rec.vdjbase_name
+    gene_description.species = novel_rec.species
+    parse_name_to_gene_description(gene_description)
+    gene_description.status = 'draft'
+    gene_description.maintainer = current_user.name
+    gene_description.lab_address = current_user.address
+    gene_description.functional = True
+    gene_description.inference_type = 'Rearranged Only'
+    gene_description.release_version = 1
+    gene_description.affirmation_level = 0
+    gene_description.inferred_extension = False
+    gene_description.ext_3prime = None
+    gene_description.start_3prime_ext = None
+    gene_description.end_3prime_ext = None
+    gene_description.ext_5prime = None
+    gene_description.start_5prime_ext = None
+    gene_description.end_5prime_ext = None
+    gene_description.sequence = novel_rec.sequence.replace('.', '')
+    gene_description.locus = novel_rec.locus
+    gene_description.coding_seq_imgt = novel_rec.sequence
+    db.session.add(gene_description)
+    db.session.commit()
+    gene_description.description_id = "A%05d" % gene_description.id
+    db.session.commit()
+
+    if novel_rec.notes_entries:
+        notes = ['Imported to OGRDB from VDJbase with the following notes:']
+        notes.append(novel_rec.notes_entries[0].notes_text)
+    else:
+        notes = ['Imported to OGRDB from VDJbase']
+
+    gene_description.notes = '\r\n'.join(notes)
+
+    if novel_rec.notes_entries and novel_rec.notes_entries[0].attached_files:
+        for vdjbase_af in novel_rec.notes_entries[0].attached_files:
+            af = AttachedFile()
+            af.gene_description = gene_description
+            af.filename = vdjbase_af.filename
+            db.session.add(af)
+            db.session.commit()
+            vdjbase_dirname = attach_path + 'V%5d' % novel_rec.id
+            dirname = attach_path + gene_description.description_id
+
+            try:
+                if not isdir(dirname):
+                    mkdir(dirname)
+                vdjbase_fn = 'multi_attachment_%s' % vdjbase_af.id
+                fn = 'multi_attachment_%s' % af.id
+                full_path = os.path.join(dirname, fn)
+                shutil.copyfile(os.path.join(vdjbase_dirname, vdjbase_fn), full_path)
+            except:
+                flash('Error saving attachment: %s' % vdjbase_af.filename)
+                app.logger.error(format_exc())
+
+    db.session.commit()
+    return redirect(url_for('edit_sequence', id=gene_description.id))
+
