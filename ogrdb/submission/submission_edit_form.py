@@ -154,7 +154,10 @@ class GenNameCol(StyledCol):
 
 class SubjCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return self.td_format(item.genotype_description.genotype_subject_id if item.genotype_description.genotype_subject_id else '')
+        if item.genotype_description and item.genotype_description.genotype_subject_id:
+            return self.td_format(item.genotype_description.genotype_subject_id)
+        else:
+            return ''
 
 class EditableInferredSequenceTable(EditableTable):
     def check_add_item(self, request, db):
