@@ -27,7 +27,7 @@ def inferred_sequence(id):
         return redirect('/')
 
     sub = seq.submission
-    repo =  sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else None
+    repo = sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else None
 
     table = make_InferredSequence_view(seq)
     srr_table = LinkedRecordSet_table(seq.record_set)

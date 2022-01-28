@@ -150,7 +150,6 @@ def edit_submission(id):
         form.repository_select.data = sub.repertoire[0].repository_name if sub.repertoire[0].repository_name in ('NCBI SRA', 'ENA') else 'Other'
         return render_template('submission_edit.html', form=form, id=id, tables=tables, attachment=len(sub.notes_entries[0].attached_files) > 0)
 
-    missing_sequence_error = False
     validation_result = ValidationResult()
     try:
         if 'save_btn' in request.form or 'save_close_btn' or 'submit_btn' in request.form:
@@ -180,11 +179,7 @@ def edit_submission(id):
             raise ValidationError()
 
         if 'submit_btn' in request.form:
-            # Check we have at least one inferred sequence
-            if len(sub.inferred_sequences) == 0:
-                missing_sequence_error = True
-                validation_result.tag = 'inferred_sequence'
-                raise ValidationError()
+            check_submission_complete(sub, validation_result)
 
             sub.submission_status = 'reviewing'
             add_history(current_user, 'Submission submitted to IARC %s Committee for review' % sub.species, sub, db)
@@ -276,7 +271,62 @@ def edit_submission(id):
                         validation_result.tag = table.name
                         break
 
-        return render_template('submission_edit.html', form=form, id=id, tables=tables, jump = validation_result.tag, missing_sequence_error=missing_sequence_error)
+        return render_template('submission_edit.html', form=form, id=id, tables=tables, jump=validation_result.tag)
+
+
+# Check required components of submission are present (particularly this is aimed
+# at submissions created automatically from VDJbase
+
+def check_submission_complete(sub, validation_result):
+    incomplete = []
+
+    # At least one inferred sequence
+    if not sub.inferred_sequences:
+        incomplete.append('Submission must contain at least one inferred sequence')
+        validation_result.tag = 'inferred_sequence'
+
+    # Inferred sequences have accession number, select set
+
+    for inf in sub.inferred_sequences:
+        if not inf.seq_accession_no:
+            incomplete.append('Each inferred sequence must provide an accession number')
+            validation_result.tag = 'inferred_sequence'
+            break
+
+    for inf in sub.inferred_sequences:
+        if not inf.run_ids:
+            incomplete.append('Each inferred sequence must provide select sets')
+            validation_result.tag = 'inferred_sequence'
+            break
+
+    # Genotype records contain sample_ids and sequence sets
+    if not sub.genotype_descriptions:
+        incomplete.append('Submission must contain at least one inferred genotype')
+        validation_result.tag = 'genotype_description'
+
+    for gd in sub.genotype_descriptions:
+        if not gd.genotype_biosample_ids:
+            incomplete.append('Each genotype must specify the biosample ids')
+            validation_result.tag = 'genotype_description'
+            break
+
+    for gd in sub.genotype_descriptions:
+        if not gd.genotype_run_ids:
+            incomplete.append('Each genotype must specify the run ids')
+            validation_result.tag = 'genotype_description'
+            break
+
+    # At least one primer record
+
+    if not sub.repertoire[0].primer_sets:
+        incomplete.append('Submission must contain at least one set of primers')
+        validation_result.tag = 'primer_sets'
+
+    if incomplete:
+        flash(Markup('<br>'.join(incomplete)))
+        raise ValidationError()
+
+    return
 
 
 @app.route('/download_submission_attachment/<id>')

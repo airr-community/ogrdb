@@ -145,19 +145,17 @@
 
     }
 
-    function sequence_warn(seq_id, message) {
-        console.log('gogogogog');
+    function sequence_warn(seq_id, root_url, message) {
         foo = BootstrapDialog.confirm({
-            title: 'Create sequence?',
+            title: 'Create entry?',
             message: message,
             type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
             btnOKLabel: ' Create ',
             btnOKClass: 'btn-warning',
               callback: function(result) {
                 if(result) {
-                    console.log('fofofofofofof');
                     console.log(seq_id);
-                    window.location.assign("/sequence_from_vdjbase/" + seq_id);
+                    window.location.assign(root_url + seq_id);
                 }
             }
         });

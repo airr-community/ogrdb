@@ -33,9 +33,14 @@ class DetailsCol(StyledCol):
                  ''' % (url_for('vdjbase_review_detail', id=item.id))
 
         if item.editable:
-            value += '''<button onclick="sequence_warn(%s, \'Press Create to create a sequence in OGRDB from this entry\')" 
+            value += '''<button onclick="sequence_warn(%s, '/sequence_from_vdjbase/', \'Press Create to create a sequence in OGRDB from this entry\')" 
                         type="button" class="btn btn-xs text-warning icon_back" id="%s">
-                        <span class="glyphicon glyphicon-plus" data-toggle="tooltip" title="Create sequence in OGRDB">
+                        <span class="glyphicon glyphicon-save-file" data-toggle="tooltip" title="Create sequence in OGRDB">
+                        </span>&nbsp;</button>''' % (item.id, item.id)
+
+            value += '''<button onclick="sequence_warn(%s, '/submission_from_vdjbase/', \'Press Create to create or add to a submission in OGRDB from this entry\')" 
+                        type="button" class="btn btn-xs text-warning icon_back" id="%s">
+                        <span class="glyphicon glyphicon-inbox" data-toggle="tooltip" title="Create submission in OGRDB">
                         </span>&nbsp;</button>''' % (item.id, item.id)
 
 
@@ -59,10 +64,18 @@ class VDJbaseError(Exception):
 
 
 def call_vdjbase(payload):
-    resp = requests.get(os.path.join(app.config['VDJBASE_API'] + payload))
+    try:
+        resp = requests.get(os.path.join(app.config['VDJBASE_API'] + payload))
+    except Exception as e:
+        raise VDJbaseError(f'Error contacting VDJbase: {e}')
+
     if resp.status_code != 200:
         raise VDJbaseError('Error contacting VDJbase: status code %d' % resp.status_code)
     return json.loads(resp.text)
+
+
+def get_vdjbase_sample_details(species, dataset, sample_name):
+    return call_vdjbase(f'/repseq/sample_info/{species}/{dataset}/{sample_name}')
 
 
 last_run = None

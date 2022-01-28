@@ -91,6 +91,7 @@ from ogrdb.submission.genotype_routes import *
 from ogrdb.submission.inference_tool_routes import *
 from ogrdb.submission.inferred_sequence_routes import *
 from ogrdb.submission.primer_set_routes import *
+from ogrdb.submission.submission_from_vdjbase import *
 
 from ogrdb.sequence.sequence_routes import *
 from ogrdb.germline_set.germline_set_routes import *
