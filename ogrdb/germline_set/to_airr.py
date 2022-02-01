@@ -38,7 +38,7 @@ class AIRRAlleleDescription:
         self.label = gd.sequence_name
         self.sequence = gd.sequence
         self.coding_sequence = gd.coding_seq_imgt
-        self.alt_names = []
+        self.aliases = []
         if gd.alt_names and len(gd.alt_names) > 0:
             self.alt_names = gd.alt_names.split(',')
         self.locus = gd.locus
@@ -66,7 +66,7 @@ class AIRRAlleleDescription:
             self.v_rs_start = gd.v_rs_start
             self.v_rs_end = gd.v_rs_end
             self.v_gene_delineations = [{
-                'germline_delineation_id': 1,
+                'sequence_delineation_id': "1",
                 'delineation_scheme': 'IMGT',
                 'fwr1_start': 1,
                 'fwr1_end': 78,
@@ -157,11 +157,12 @@ class AIRRGermlineSet:
         self.pub_ids = []
         for pub_id in gs.pub_ids:
             self.pub_ids.append('PMID:' + pub_id.pubmed_id)
+        self.pub_ids = ','.join(self.pub_ids)
         self.species = gs.species
         self.species_subgroup = gs.species_subgroup
         self.species_subgroup_type = gs.species_subgroup_type
         self.locus = gs.locus
-        self.gene_descriptions = gds
+        self.allele_descriptions = gds
         self.notes = ''
         if len(gs.notes_entries) > 0:
             self.notes = gs.notes_entries[0].notes_text
