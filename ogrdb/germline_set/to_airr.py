@@ -14,7 +14,7 @@ def germline_set_to_airr(germline_set):
     for desc in germline_set.gene_descriptions:
         ad.append(vars(AIRRAlleleDescription(desc)))
 
-    gs = vars(AIRRGermlineSet(germline_set, ad))
+    gs = {'GermlineSet': vars(AIRRGermlineSet(germline_set, ad))}
 
     return gs
 
