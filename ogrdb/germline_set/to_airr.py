@@ -40,7 +40,7 @@ class AIRRAlleleDescription:
         self.coding_sequence = gd.coding_seq_imgt
         self.aliases = []
         if gd.alt_names and len(gd.alt_names) > 0:
-            self.alt_names = gd.alt_names.split(',')
+            self.aliases = gd.alt_names.split(',')
         self.locus = gd.locus
         self.chromosome = gd.chromosome
         self.sequence_type = gd.sequence_type
