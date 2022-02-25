@@ -51,6 +51,7 @@ def rebuild_duplicates():
     return('Gene description links rebuilt')
 
 
+# set functionality to F in all records where it is not set at the moment
 @app.route('/upgrade_db', methods=['GET'])
 @login_required
 def add_gapped():
@@ -68,8 +69,8 @@ def add_gapped():
         if desc.sequence_name:
             report += 'Processing sequence ' + desc.sequence_name + '<br>'
 
-        if 'Genomic' in desc.inference_type:
-            desc.inference_type = desc.inference_type.replace('Genomic', 'Unrearranged')
+        if desc.functionality is None or desc.functionality == '':
+            desc.functionality = 'F'
 
         db.session.commit()
 

@@ -33,8 +33,8 @@ class GeneDescriptionTable(StyledTable):
     version = StyledCol("Vn")
     date = StyledDateCol("Date")
     imgt_name = StyledCol("IMGT Name")
+    alt_names = StyledCol("Alt Names")
     subgroup = StyledCol("Subgrp")
-    subgroup_type = StyledCol("Subgrp Type")
     status = StyledCol("Status")
     sequence = HiddenCol("Sequence")
     sequence_gapped = HiddenCol("Gapped Sequence")
@@ -54,11 +54,11 @@ def setup_gene_description_table(germline_set, action=True):
             'name': desc,
             'raw_name': gene_description.sequence_name,
             'imgt_name': gene_description.imgt_name,
+            'alt_names': gene_description.alt_names,
             'version': gene_description.release_version,
             'date': gene_description.release_date,
             'status': gene_description.status,
             'subgroup': gene_description.species_subgroup,
-            'subgroup_type': gene_description.species_subgroup_type,
             'sequence': gene_description.sequence,
             'sequence_gapped': gene_description.coding_seq_imgt,
             'gene_id': gene_description.id,

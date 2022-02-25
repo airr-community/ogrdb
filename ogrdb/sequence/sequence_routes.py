@@ -313,7 +313,7 @@ def new_sequence(species):
             gene_description.status = 'draft'
             gene_description.maintainer = current_user.name
             gene_description.lab_address = current_user.address
-            gene_description.functional = True
+            gene_description.functionalionality = 'F'
             gene_description.inference_type = 'Rearranged Only' if record_type == 'submission' else 'Unrearranged Only'
             gene_description.release_version = 1
             gene_description.affirmation_level = 0
@@ -394,7 +394,7 @@ def upload_sequences(form, species):
     errors = []
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functional', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation']
+    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation']
     headers = None
     row_count = 2
     for row in reader:
@@ -412,8 +412,8 @@ def upload_sequences(form, species):
                      GeneDescription.species_subgroup == row['species_subgroup'],
                      ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
             errors.append('row %d: a gene with the name %s and subgroup %s is already in the database' % (row_count, row['gene_label'], row['species_subgroup']))
-        if row['functional'] not in ['Y', 'N']:
-            errors.append('row %d: functional must be Y or N' % row_count)
+        if row['functionality'] not in ['F', 'ORF', 'P']:
+            errors.append('row %d: functionality must be F, ORF or P' % row_count)
         if row['type'][:3] not in ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG']:
             errors.append('row %d: locus in type must be one of %s' % (row_count, ','.join(['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG'])))
         if row['type'][3:] not in ['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader']:
@@ -454,7 +454,7 @@ def upload_sequences(form, species):
         gene_description.status = 'draft'
         gene_description.maintainer = current_user.name
         gene_description.lab_address = current_user.address
-        gene_description.functional = row['functional'] == 'Y'
+        gene_description.functionality = row['functionality']
         gene_description.inference_type = row['inference_type']
         gene_description.release_version = 1
         gene_description.affirmation_level = int(row['affirmation'])
@@ -473,7 +473,10 @@ def upload_sequences(form, species):
         notes = ['Imported to OGRDB with the following notes:']
         for field in row.keys():
             if field not in required_headers and len(row[field]):
-                notes.append('%s: %s' % (field, row[field]))
+                if field != 'notes':
+                    notes.append('%s: %s' % (field, row[field]))
+                else:
+                    notes.append('%s' % row[field])
 
         if len(notes) > 1:
             gene_description.notes = '\r\n'.join(notes)
@@ -1164,7 +1167,7 @@ def sequence_from_vdjbase(id):
     gene_description.status = 'draft'
     gene_description.maintainer = current_user.name
     gene_description.lab_address = current_user.address
-    gene_description.functional = True
+    gene_description.functionality = 'F'
     gene_description.inference_type = 'Rearranged Only'
     gene_description.release_version = 1
     gene_description.affirmation_level = 0

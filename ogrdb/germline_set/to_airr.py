@@ -44,7 +44,7 @@ class AIRRAlleleDescription:
         self.locus = gd.locus
         self.chromosome = gd.chromosome
         self.sequence_type = gd.sequence_type
-        self.functional = gd.functional
+        self.functionality = gd.functionality
         self.inference_type = gd.inference_type
         self.species = gd.species
         self.species_subgroup = gd.species_subgroup

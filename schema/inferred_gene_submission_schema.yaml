@@ -876,11 +876,11 @@ GeneDescription:
             label: Sequence Type
             tableview: true
             width: narrow
-        functional:
-            type: boolean
-            description: Functional
+        functionality:
+            type: [F, ORF, P]
+            description: Functionality
             width: narrow
-            label: Functional
+            label: Functionality
         inference_type:
             type: [Unrearranged and Rearranged, Unrearranged, Rearranged]
             label: Inference Type

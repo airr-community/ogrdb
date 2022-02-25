@@ -50,7 +50,7 @@ def pretty_item(fn, value, seq, trailer_text):
 
 def setup_sequence_view_tables(db, seq, private):
     sections = {}
-    sections['details'] = ["species", "species_subgroup", "species_subgroup_type", "sequence_name", "imgt_name", "affirmation_level", "sequence", "coding_seq_imgt", "functional", "inference_type", "alt_names", "paralogs"]
+    sections['details'] = ["species", "species_subgroup", "species_subgroup_type", "sequence_name", "imgt_name", "alt_names", "affirmation_level", "sequence", "coding_seq_imgt", "functionality", "inference_type", "alt_names", "paralogs"]
     sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "leader_2_start", "leader_2_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "j_rs_start", "j_rs_end"]
     sections['extension'] = ["inferred_extension", "ext_3prime", "start_3prime_ext", "end_3prime_ext", "ext_5prime", "start_5prime_ext", "end_5prime_ext"]
     sections['meta'] = ["description_id", "author", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "j_codon_frame", "j_cdr3_end"]

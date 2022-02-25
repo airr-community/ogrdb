@@ -44,7 +44,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     chromosome = db.Column(db.Integer)
     locus = db.Column(db.String(255))
     sequence_type = db.Column(db.String(255))
-    functional = db.Column(db.Boolean)
+    functionality = db.Column(db.String(255))
     inference_type = db.Column(db.String(255))
     affirmation_level = db.Column(db.String(255))
     species = db.Column(db.String(1000))
@@ -101,7 +101,7 @@ def save_GeneDescription(db, object, form, new=False):
     object.chromosome = form.chromosome.data
     object.locus = form.locus.data
     object.sequence_type = form.sequence_type.data
-    object.functional = form.functional.data
+    object.functionality = form.functionality.data
     object.inference_type = form.inference_type.data
     object.affirmation_level = form.affirmation_level.data
     object.species_subgroup = form.species_subgroup.data
@@ -155,7 +155,7 @@ def populate_GeneDescription(db, object, form):
     form.chromosome.data = object.chromosome
     form.locus.data = object.locus
     form.sequence_type.data = object.sequence_type
-    form.functional.data = object.functional
+    form.functionality.data = object.functionality
     form.inference_type.data = object.inference_type
     form.affirmation_level.data = object.affirmation_level
     form.species_subgroup.data = object.species_subgroup
@@ -208,7 +208,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.chromosome = c_from.chromosome
     c_to.locus = c_from.locus
     c_to.sequence_type = c_from.sequence_type
-    c_to.functional = c_from.functional
+    c_to.functionality = c_from.functionality
     c_to.inference_type = c_from.inference_type
     c_to.affirmation_level = c_from.affirmation_level
     c_to.species = c_from.species
@@ -291,7 +291,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Chromosome", "value": sub.chromosome, "tooltip": "chromosome on which the gene is located", "field": "chromosome"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
     ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
-    ret.items.append({"item": "Functional", "value": sub.functional, "tooltip": "Functional", "field": "functional"})
+    ret.items.append({"item": "Functionality", "value": sub.functionality, "tooltip": "Functionality", "field": "functionality"})
     ret.items.append({"item": "Inference Type", "value": sub.inference_type, "tooltip": "Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)", "field": "inference_type"})
     ret.items.append({"item": "Affirmation Level", "value": sub.affirmation_level, "tooltip": "Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)", "field": "affirmation_level"})
     ret.items.append({"item": "Species", "value": sub.species, "tooltip": "Binomial designation of subject's species", "field": "species"})
