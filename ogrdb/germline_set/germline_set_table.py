@@ -34,6 +34,7 @@ class GeneDescriptionTable(StyledTable):
     date = StyledDateCol("Date")
     imgt_name = StyledCol("IMGT Name")
     alt_names = StyledCol("Alt Names")
+    functionality = StyledCol('Functionality')
     subgroup = StyledCol("Subgrp")
     status = StyledCol("Status")
     sequence = HiddenCol("Sequence")
@@ -55,6 +56,7 @@ def setup_gene_description_table(germline_set, action=True):
             'raw_name': gene_description.sequence_name,
             'imgt_name': gene_description.imgt_name,
             'alt_names': gene_description.alt_names,
+            'functionality': gene_description.functionality,
             'version': gene_description.release_version,
             'date': gene_description.release_date,
             'status': gene_description.status,
