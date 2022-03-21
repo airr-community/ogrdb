@@ -75,6 +75,8 @@ def call_vdjbase(payload):
 
 
 def get_vdjbase_sample_details(species, dataset, sample_name):
+    # fudge for Human_TCR 'species'
+    species = species.replace('_TCR', '')
     return call_vdjbase(f'/repseq/sample_info/{species}/{dataset}/{sample_name}')
 
 
