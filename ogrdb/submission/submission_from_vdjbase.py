@@ -226,7 +226,8 @@ def add_inference_tool(sub, sample_details):
     return tool
 
 def add_genotype_description(sub, sample_details, tool, species, locus):
-    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{species}/{sample_details['chain']}/{sample_details['genotype_stats'].replace('samples/', '')}"
+    vdjbase_species = species.replace('_TCR', '')
+    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{sample_details['chain']}/{sample_details['genotype_stats'].replace('samples/', '')}"
     try:
         contents = requests.get(gen_path)
     except Exception as e:
@@ -266,7 +267,7 @@ def add_genotype_description(sub, sample_details, tool, species, locus):
 
     # now download ogrdbstats report as a multi-attachment
 
-    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{species}/{sample_details['chain']}/{sample_details['genotype_report'].replace('samples/', '')}"
+    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{sample_details['chain']}/{sample_details['genotype_report'].replace('samples/', '')}"
     try:
         contents = requests.get(gen_path)
     except Exception as e:
