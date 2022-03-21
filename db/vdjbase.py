@@ -194,7 +194,7 @@ def update_from_vdjbase():
                                     .one_or_none()
                         if db_rec:
                             db_rec.status = 'not current'
-                            db_rec.notes += '\rNo longer seen in VDJbase at %s' % datetime.ctime(datetime.now())
+                            db_rec.notes_entries[0].notes_text += '\rNo longer seen in VDJbase at %s' % datetime.ctime(datetime.now())
 
                 db.session.commit()
 
