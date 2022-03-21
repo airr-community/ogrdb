@@ -238,7 +238,7 @@ def add_genotype_description(sub, sample_details, tool, species, locus):
     genotype_name = genotype_filename.replace('.csv', '')
     for gd in sub.genotype_descriptions:
         if gd.genotype_name == genotype_name:
-            return          # genotype already in submission
+            return gd         # genotype already in submission
 
     desc = GenotypeDescription()
     desc.genotype_name = genotype_name
