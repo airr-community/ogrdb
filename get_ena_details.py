@@ -47,7 +47,7 @@ def get_ena_project_details(prj_id):
 def get_ena_nuc_details(nuc_id):
     ret = {}
 
-    if len(nuc_id) < 5 or (nuc_id[:2] != 'MK' and nuc_id[:2] != 'MN' and nuc_id[:2] != 'OU'):
+    if len(nuc_id) < 5:
         raise ValueError('badly formatted nucleotide sequence record accession number: %s' % (nuc_id))
 
     try:
@@ -86,7 +86,7 @@ def get_ena_nuc_details(nuc_id):
 def get_ena_srr_details(srr_id):
     ret = {}
 
-    if len(srr_id) < 5 or srr_id[:3] not in ('ERX', 'SRR', 'ERR'):
+    if len(srr_id) < 5:
         raise ValueError('badly formatted sequence set accession number: %s' % (srr_id))
 
     try:
@@ -116,7 +116,7 @@ def get_ena_srr_details(srr_id):
 def get_ena_samn_details(sam_id):
     ret = {}
 
-    if len(sam_id) < 5 or (sam_id[:4] != 'SAME' and sam_id[:3] != 'ERS' and sam_id[:4] != 'SAMN'):
+    if len(sam_id) < 5:
         raise ValueError('badly formatted sample accession number: %s' % (sam_id))
 
     try:
