@@ -94,7 +94,7 @@ class AIRRAlleleDescription:
             self.j_codon_frame = gd.j_codon_frame
             self.j_cdr3_end = gd.j_cdr3_end
             self.j_rs_start = gd.j_rs_start
-            self.j_rs_end = gd.v
+            self.j_rs_end = gd.j_rs_end
             self.j_donor_splice = gd.j_donor_splice
 
         self.unrearranged_support = []
