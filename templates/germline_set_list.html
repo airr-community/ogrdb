@@ -30,6 +30,11 @@
     {% endif %}
 
         {% if any_published %}
+           <div class="row">
+                <div class="col-md-8">
+                    The <a href="/api" }}">OGRDB REST API</a> allows you to list and download germline sets programatically.
+                </div>
+            </div>
             {% for species, sets in affirmed.items() %}
                 <div class="row">
                     <div class="col-md-8"><h3>{{ species }}</h3></div>
