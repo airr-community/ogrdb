@@ -141,6 +141,9 @@ def update_from_vdjbase():
             try:
                 results = call_vdjbase('repseq/novels/%s/%s' % (species, dataset))
 
+                if not results or len(results) == 0:
+                    continue
+
                 for allele, row in results.items():
                     db_rec = db.session.query(NovelVdjbase)\
                         .filter(and_(NovelVdjbase.species == ogrdb_species,
@@ -192,7 +195,7 @@ def update_from_vdjbase():
                                      NovelVdjbase.locus == dataset,
                                      NovelVdjbase.vdjbase_name == name))\
                                     .one_or_none()
-                        if db_rec:
+                        if db_rec and db_rec.status != 'not current':
                             db_rec.status = 'not current'
                             db_rec.notes_entries[0].notes_text += '\rNo longer seen in VDJbase at %s' % datetime.ctime(datetime.now())
 

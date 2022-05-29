@@ -50,28 +50,29 @@ def rebuild_duplicates():
 
     return('Gene description links rebuilt')
 
+# Remove 'No longer seen' entries from vdjbase notes as they were all added by a bug
 
-# set functionality to F in all records where it is not set at the moment
-@app.route('/upgrade_db', methods=['GET'])
+from db.novel_vdjbase_db import NovelVdjbase
+
+@app.route('/clean_notes', methods=['GET'])
 @login_required
-def add_gapped():
+def clean_notes():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    descs = db.session.query(GeneDescription).all()
-    if descs is None:
-        flash('Gene descriptions not found')
-        return None
+    vdjbase_entries = db.session.query(NovelVdjbase).all()
 
-    report = ''
+    for entry in vdjbase_entries:
+        note_rows = entry.notes_entries[0].notes_text.split('\r')
+        new_rows = []
+        for row in note_rows:
+            if 'No longer seen in VDJbase' not in row:
+                new_rows.append(row)
+        entry.notes_entries[0].notes_text = '\r'.join(new_rows)
+        if entry.status == 'not current':
+            entry.status = 'not reviewed'
 
-    for desc in descs:
-        if desc.sequence_name:
-            report += 'Processing sequence ' + desc.sequence_name + '<br>'
+    db.session.commit()
+    return 'Success'
 
-        if desc.functionality is None or desc.functionality == '':
-            desc.functionality = 'F'
 
-        db.session.commit()
-
-    return report
