@@ -206,7 +206,7 @@ def edit_germline_set(id):
                         hist_notes += Markup('<br>') + changes
 
                     add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=hist_notes)
-                    send_mail('Sequence %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
+                    send_mail('Germline set %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
 
                     germline_set.status = 'published'
                     db.session.commit()
@@ -511,7 +511,13 @@ def add_gene_to_set(id):
 
     form = NewGermlineSetGeneForm()
     gene_descriptions = db.session.query(GeneDescription).filter(GeneDescription.species == germline_set.species)\
-        .filter(GeneDescription.status.in_(['published', 'draft'])).all()
+        .filter(GeneDescription.status.in_(['published', 'draft']))
+
+    if germline_set.species_subgroup:
+        gene_descriptions = gene_descriptions.filter(GeneDescription.species_subgroup == germline_set.species_subgroup)
+
+    gene_descriptions = gene_descriptions.all()
+
     gene_descriptions = [g for g in gene_descriptions if g not in germline_set.gene_descriptions]
     gene_descriptions = [g for g in gene_descriptions if germline_set.locus == g.locus]
     gene_descriptions.sort(key=attrgetter('sequence_name'))

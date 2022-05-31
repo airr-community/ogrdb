@@ -40,7 +40,7 @@ class SequenceListActionCol(StyledCol):
             # The loop below copes with the 'vanishing' notes when calculating whether to display an info icon
 
             dupe_notes = []
-            for note in  item.dupe_notes:
+            for note in item.dupe_notes:
                 if ogrdb.submission.genotype_routes.genotype is None:           # The submission has been deleted: we may as well tidy up
                     db.session.delete(note)
                     db.session.commit()

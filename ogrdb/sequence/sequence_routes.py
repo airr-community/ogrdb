@@ -394,7 +394,7 @@ def upload_sequences(form, species):
     errors = []
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation']
+    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end']
     headers = None
     row_count = 2
     for row in reader:
@@ -422,6 +422,10 @@ def upload_sequences(form, species):
             errors.append('row %d: no sequence' % row_count)
         if not row['sequence_gapped']:
             errors.append('row %d: no sequence_gapped' % row_count)
+        if row['type'][3:] == 'J' and not row['j_codon_frame']:
+            errors.append('row %d: no j_codon_frame' % row_count)
+        if row['type'][3:] == 'J' and not row['j_cdr3_end']:
+            errors.append('row %d: no j_cdr3_end' % row_count)
 
         try:
             level = int(row['affirmation'])
@@ -468,7 +472,11 @@ def upload_sequences(form, species):
         gene_description.sequence = row['sequence']
         gene_description.locus = row['type'][0:3]
         gene_description.sequence_type = row['type'][3:]
+
         gene_description.coding_seq_imgt = row['sequence_gapped']
+        if gene_description.sequence_type == 'J':
+            gene_description.j_codon_frame = row['j_codon_frame']
+            gene_description.j_cdr3_end = row['j_cdr3_end']
 
         notes = ['Imported to OGRDB with the following notes:']
         for field in row.keys():
