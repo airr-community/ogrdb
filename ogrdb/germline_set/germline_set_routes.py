@@ -171,7 +171,7 @@ def edit_germline_set(id):
                     flash("Can't publish this set while gene %s is withdrawn." % gene_description.sequence_name)
                     form.action.data = ''
                     valid = False
-                if gene_description.species_subgroup != germline_set.species_subgroup or gene_description.species_subgroup_type != germline_set.species_subgroup_type:
+                if (gene_description.species_subgroup or germline_set.species_subgroup) and (gene_description.species_subgroup != germline_set.species_subgroup or gene_description.species_subgroup_type != germline_set.species_subgroup_type):
                     flash("Can't publish this set while gene %s species subgroup/subgroup type disagreees with the germline set values." % gene_description.sequence_name)
                     form.action.data = ''
                     valid = False
