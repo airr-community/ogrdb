@@ -33,6 +33,9 @@ class GermlineSet(db.Model, GermlineSetMixin):
     release_version = db.Column(db.Integer)
     release_description = db.Column(db.String(1000))
     release_date = db.Column(db.String(1000))
+    zenodo_base_deposition = db.Column(db.String(1000))
+    zenodo_current_deposition = db.Column(db.String(1000))
+    doi = db.Column(db.String(1000))
 
     gene_descriptions = db.relationship('GeneDescription', secondary = gene_descriptions_germline_sets, backref = db.backref('germline_sets', lazy='dynamic'))
 
@@ -47,6 +50,7 @@ def save_GermlineSet(db, object, form, new=False):
     object.species_subgroup_type = form.species_subgroup_type.data
     object.locus = form.locus.data
     object.release_description = form.release_description.data
+    object.doi = form.doi.data
 
     if new:
         db.session.add(object)
@@ -65,6 +69,7 @@ def populate_GermlineSet(db, object, form):
     form.species_subgroup_type.data = object.species_subgroup_type
     form.locus.data = object.locus
     form.release_description.data = object.release_description
+    form.doi.data = object.doi
 
 
 
@@ -84,6 +89,9 @@ def copy_GermlineSet(c_from, c_to):
     c_to.release_version = c_from.release_version
     c_to.release_description = c_from.release_description
     c_to.release_date = c_from.release_date
+    c_to.zenodo_base_deposition = c_from.zenodo_base_deposition
+    c_to.zenodo_current_deposition = c_from.zenodo_current_deposition
+    c_to.doi = c_from.doi
 
 
 
@@ -94,6 +102,7 @@ class GermlineSet_table(StyledTable):
     locus = StyledCol("Locus", tooltip="Gene locus")
     release_version = StyledCol("Release Version", tooltip="Version number of this record, allocated automatically")
     release_date = StyledCol("Release Date", tooltip="Date of this release")
+    doi = StyledCol("doi", tooltip="DOI of germline set deposition at Zenodo")
 
 
 def make_GermlineSet_table(results, private = False, classes=()):
@@ -119,5 +128,6 @@ def make_GermlineSet_view(sub, private = False):
     ret.items.append({"item": "Release Version", "value": sub.release_version, "tooltip": "Version number of this record, allocated automatically", "field": "release_version"})
     ret.items.append({"item": "Release Description", "value": sub.release_description, "field": "release_description"})
     ret.items.append({"item": "Release Date", "value": sub.release_date, "tooltip": "Date of this release", "field": "release_date"})
+    ret.items.append({"item": "doi", "value": sub.doi, "tooltip": "DOI of germline set deposition at Zenodo", "field": "doi"})
     return ret
 

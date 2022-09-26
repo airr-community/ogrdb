@@ -6,18 +6,17 @@
 from operator import attrgetter
 
 from flask import url_for
-from copy import deepcopy
-from imgt.imgt_ref import get_imgt_config
-from db.styled_table import *
 from db.germline_set_db import *
 
 
 def make_germline_action_string(item):
     fmt_string = []
+
     if item.viewable:
         fmt_string.append('<a href="%s">%s</a>' % (url_for('germline_set', id=item.id), item.germline_set_name))
     else:
         fmt_string.append(item.germline_set_name)
+
     if item.editable:
         fmt_string.append(
             '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>' % (
@@ -31,6 +30,14 @@ def make_germline_action_string(item):
                 item.id))
         fmt_string.append(
             '<button onclick="set_withdraw(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span></button>' % (
+                item.id))
+    if item.zenodo_updateable:
+        fmt_string.append(
+            '<button onclick="set_update_doi(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-cloud-upload" data-toggle="tooltip" title="Update doi"></span>&nbsp;</button>' % (
+                item.id))
+    if item.zenodo_createable:
+        fmt_string.append(
+            '<button onclick="set_create_doi(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-tower" data-toggle="tooltip" title="Create doi"></span>&nbsp;</button>' % (
                 item.id))
     return ''.join(fmt_string)
 
@@ -53,9 +60,20 @@ def make_download_items(item):
     return fmt_string
 
 
-class GermlineSetListActionCol(StyledCol):
+class GermlineSetListNamedActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         return make_germline_action_string(item)
+
+class GermlineSetListDownloadCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        return make_download_items(item)
+
+class GermlineSetListDoiCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        if item.doi and len(item.doi) > 0:
+            return '<a href="https://doi.org/%s"><img src="https://sandbox.zenodo.org/badge/DOI/%s.svg" alt="DOI"></a>' % (item.doi, item.doi)
+        else:
+            return ''
 
 
 def setup_germline_set_list_table(results, current_user):
@@ -64,45 +82,46 @@ def setup_germline_set_list_table(results, current_user):
         item.viewable = item.can_see(current_user)
         item.editable = item.can_edit(current_user)
         item.draftable = item.can_draft(current_user)
+        item.zenodo_createable = False
+        item.zenodo_updateable = False
 
-    table.add_column('set_name', GermlineSetListActionCol('Set Name'))
+    table.add_column('set_name', GermlineSetListNamedActionCol('Set Name'))
     table._cols.move_to_end('set_name', last=False)
     return table
 
 
 def setup_published_germline_set_list_info(results, current_user):
-    info = {}
+    affirmed = make_GermlineSet_table(results)
+    del affirmed._cols['species']
+    affirmed.add_column('download', GermlineSetListDownloadCol('Download'))
 
-    class MyItem(object):
-        pass
+    add_actions = False
+    for item in affirmed.items:
+        item.viewable = item.can_see(current_user)
+        item.editable = item.can_edit(current_user)
+        item.draftable = item.can_draft(current_user)
+        item.zenodo_createable = item.draftable and (item.zenodo_base_deposition is None or len(item.zenodo_base_deposition) == 0)
+        item.zenodo_updateable = item.draftable and (not item.zenodo_createable) and (item.zenodo_current_deposition is None or len(item.zenodo_current_deposition) == 0)
 
-    for res in results:
-        header = res.species
-        if res.species_subgroup:
-            header = '%s %s %s' % (header, res.species_subgroup_type, res.species_subgroup)
+    affirmed.add_column('set_name', GermlineSetListNamedActionCol('Set Name'))
+    affirmed._cols.move_to_end('set_name', last=False)
 
-        res.viewable = res.can_see(current_user)
-        res.editable = res.can_edit(current_user)
-        res.draftable = res.can_draft(current_user)
+    # remove subgroup if all entries are blank
 
-        row = {
-            'raw_name': res.germline_set_name,
-            'name': make_germline_action_string(res),
-            'rev': res.release_version,
-            'date': res.release_date,
-            'synopsis': res.notes_entries[0].notes_text,
-            'id': res.id,
-            'files': make_download_items(res),
-        }
+    keep_subgroup = False
 
-        if header not in info:
-            info[header] = []
-        info[header].append(row)
+    for row in affirmed.items:
+        if row.species_subgroup and len(row.species_subgroup) > 0:
+            keep_subgroup = True
+            break
 
-    info = {k: v for k, v in sorted(info.items(), key=lambda item: item[0])}
+    if not keep_subgroup:
+        del affirmed._cols['species_subgroup']
 
-    for k, v in info.items():
-        info[k] = sorted(v, key=lambda item: item['raw_name'])
+    del affirmed._cols['doi']
+    affirmed.add_column('DOI', GermlineSetListDoiCol('DOI'))
 
-    return info
+    affirmed.table_id = 'affirmed_table'
+
+    return affirmed
 

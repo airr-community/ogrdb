@@ -1,3 +1,4 @@
+import copy
 import json
 import sys
 import datetime
@@ -5,6 +6,7 @@ from operator import attrgetter
 from os import mkdir, remove
 from os.path import isdir
 from traceback import format_exc
+import io
 
 from flask import request, render_template, redirect, flash, url_for, Response
 from flask_login import current_user, login_required
@@ -45,36 +47,38 @@ from ogrdb.germline_set.to_airr import germline_set_to_airr
 from journal import add_history
 from mail import send_mail
 
+import zenodo
 
-@app.route('/germline_sets', methods=['GET', 'POST'])
-def germline_sets():
+
+@app.route('/germline_sets/<species>', methods=['GET', 'POST'])
+def germline_sets(species):
     tables = {}
     show_withdrawn = False
 
     if current_user.is_authenticated:
-        species = [s[0] for s in db.session.query(Committee.species).all()]
-        for sp in species:
-            if current_user.has_role(sp):
-                if 'species' not in tables:
-                    tables['species'] = {}
-                tables['species'][sp] = {}
+        if current_user.has_role(species):
+            if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
+                q = db.session.query(GermlineSet).filter(GermlineSet.species == species).filter(GermlineSet.status.in_(['draft', 'withdrawn']))
+                show_withdrawn = True
+            else:
+                q = db.session.query(GermlineSet).filter(GermlineSet.species == species).filter(GermlineSet.status.in_(['draft']))
+                show_withdrawn = False
+            results = q.all()
 
-                if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
-                    q = db.session.query(GermlineSet).filter(GermlineSet.species == sp).filter(GermlineSet.status.in_(['draft', 'withdrawn']))
-                    show_withdrawn = True
-                else:
-                    q = db.session.query(GermlineSet).filter(GermlineSet.species == sp).filter(GermlineSet.status.in_(['draft']))
-                    show_withdrawn = False
-                results = q.all()
+            tables['species'] = {species: {}}
+            tables['species'][species]['draft'] = setup_germline_set_list_table(results, current_user)
+            tables['species'][species]['draft'].table_id = species + '_draft'
 
-                tables['species'][sp]['draft'] = setup_germline_set_list_table(results, current_user)
-                tables['species'][sp]['draft'].table_id = sp + '_draft'
+    q = db.session.query(GermlineSet)\
+        .filter(GermlineSet.species == species)\
+        .filter(GermlineSet.status == 'published')\
+        .order_by(GermlineSet.species_subgroup, GermlineSet.locus)
 
-    q = db.session.query(GermlineSet).filter(GermlineSet.status == 'published')
     results = q.all()
     affirmed = setup_published_germline_set_list_info(results, current_user)
 
-    return render_template('germline_set_list.html', tables=tables, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed) > 0))
+    foo =  render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
+    return foo
 
 
 @app.route('/new_germline_set/<species>', methods=['GET', 'POST'])
@@ -88,12 +92,12 @@ def new_germline_set(species):
 
     if request.method == 'POST':
         if form.cancel.data:
-            return redirect('/germline_sets')
+            return redirect(url_for('germline_sets', species=species))
 
         if form.validate():
             try:
                 if db.session.query(GermlineSet).filter(and_(GermlineSet.species == species, GermlineSet.germline_set_name == form.name.data, ~GermlineSet.status.in_(['withdrawn', 'superceded']))).count() > 0:
-                    form.new_name.errors = ['A germline set already exists with that name.']
+                    form.name.errors = ['A germline set already exists with that name.']
                     raise ValidationError()
 
                 germline_set = GermlineSet()
@@ -111,7 +115,7 @@ def new_germline_set(species):
                 add_history(current_user, '%s germline set %s (%s) created' % (germline_set.species, germline_set.germline_set_id, germline_set.germline_set_name), germline_set, db)
                 db.session.commit()
 
-                return redirect('/germline_sets')
+                return redirect(url_for('germline_sets', species=species))
 
             except ValidationError as e:
                 return render_template('germline_set_new.html', form=form, species=species)
@@ -124,7 +128,7 @@ def new_germline_set(species):
 def edit_germline_set(id):
     germline_set = check_set_edit(id)
     if germline_set is None:
-        return redirect('/germline_sets')
+        return redirect('/')
 
     if len(germline_set.notes_entries) == 0:
         germline_set.notes_entries.append(NotesEntry())
@@ -208,10 +212,12 @@ def edit_germline_set(id):
                     add_history(current_user, 'Version %s published' % (germline_set.release_version), germline_set, db, body=hist_notes)
                     send_mail('Germline set %s version %d published by the IARC %s Committee' % (germline_set.germline_set_id, germline_set.release_version, germline_set.species), [germline_set.species], 'iarc_germline_set_released', reviewer=current_user, user_name=germline_set.author, germline_set=germline_set, comment=form.body.data)
 
+                    germline_set.zenodo_current_deposition = ''
+                    germline_set.doi = ''
                     germline_set.status = 'published'
                     db.session.commit()
                     flash('Germline set published')
-                    return redirect('/germline_sets')
+                    return redirect(url_for('germline_sets', species=germline_set.species))
 
                 if 'notes_attachment' in request.files:
                     for file in form.notes_attachment.data:
@@ -260,7 +266,7 @@ def edit_germline_set(id):
             if validation_result.tag:
                 return redirect(url_for('edit_germline_set', id=id, _anchor=validation_result.tag))
             else:
-                return redirect(url_for('germline_sets'))
+                return redirect(url_for('germline_sets', species=germline_set.species))
 
         else:
             for field in tables['ack'].form:
@@ -383,7 +389,7 @@ def check_set_draft(id):
             return None
 
         if set.status != 'published':
-            flash('Only published sequences can be cloned.')
+            flash('Only published germline sets can be cloned.')
             return None
 
         clones = db.session.query(GermlineSet).filter_by(germline_set_name=set.germline_set_name).all()
@@ -394,6 +400,29 @@ def check_set_draft(id):
 
         if not set.can_draft(current_user):
             flash('You do not have rights to edit that entry')
+            return None
+
+    except Exception as e:
+        exc_type, exc_value = sys.exc_info()[:2]
+        flash('Error : exception %s with message %s' % (exc_type, exc_value))
+        return None
+
+    return set
+
+
+def check_set_zenodo(id):
+    try:
+        set = db.session.query(GermlineSet).filter_by(id = id).one_or_none()
+        if set is None:
+            flash('Record not found')
+            return None
+
+        if set.status != 'published':
+            flash('Only published germline sets can be deposited.')
+            return None
+
+        if not set.can_draft(current_user):
+            flash('You do not have rights to deposit that entry')
             return None
 
     except Exception as e:
@@ -416,6 +445,8 @@ def draft_germline_set(id):
         copy_GermlineSet(set, new_set)
         new_set.status = 'draft'
         new_set.release_version = 0
+        new_set.zenodo_current_deposition = ''
+        new_set.doi = ''
 
         for gene_description in set.gene_descriptions:
             new_set.gene_descriptions.append(gene_description)
@@ -507,7 +538,7 @@ def delete_gene_from_set():
 def add_gene_to_set(id):
     germline_set = check_set_edit(id)
     if germline_set is None:
-        return redirect('/germline_sets')
+        return redirect('/')
 
     form = NewGermlineSetGeneForm()
     gene_descriptions = db.session.query(GeneDescription).filter(GeneDescription.species == germline_set.species)\
@@ -623,7 +654,7 @@ def delete_set_attachment(id):
 def germline_set(id):
     germline_set = check_set_view(id)
     if germline_set is None:
-        return redirect('/germline_sets')
+        return redirect('/')
 
     if len(germline_set.notes_entries) == 0:
         germline_set.notes_entries.append(NotesEntry())
@@ -669,3 +700,122 @@ def download_germline_set(set_id, format):
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 
 
+zenodo_metadata_template = {
+    'access_right': 'open',
+    'communities': [{'identifier': 'zenodo'}],
+    'creators': [{'affiliation': 'Birkbeck College', 'name': 'Lees, William', 'orcid': '0000-0001-9834-6840'}],
+    'description': '<p>IG Germline Reference set published on the Open Germline Receptor Database (OGRDB)</p>',
+    'keywords': ['AIRR-seq', 'AIRR Community', 'IG Receptor', 'Antibody', 'T Cell', 'Receptor Repertoire', 'Immunology'],
+    'license': 'other-open',
+    'related_identifiers': [{'identifier': 'https://ogrdb.airr-community.org/', 'relation': 'isPublishedIn', 'resource_type': 'dataset', 'scheme': 'url'}],
+    'title': 'IG receptor Mouse Germline Set IGKJ (all strains)',
+    'upload_type': 'dataset',
+    'version': '1'
+}
+
+def make_files_for_zenodo(germline_set):
+    filenames = []
+    filedesc_pairs = []
+
+    filenames.append(app.config['ZENODO_COPYRIGHT_FILE'])
+
+    for af in germline_set.notes_entries[0].attached_files:
+        dirname = attach_path + germline_set.germline_set_id
+        fp = open(dirname + '/multi_attachment_%s' % af.id, 'rb')
+        filedesc_pairs.append((fp, af.filename))
+        info = sys.exc_info()
+
+    fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set), default=str, indent=4))
+    filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+    filedesc_pairs.append((fp, filename))
+
+    fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'gapped'))
+    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'gapped')
+    filedesc_pairs.append((fp, filename))
+
+    fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'ungapped'))
+    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'ungapped')
+    filedesc_pairs.append((fp, filename))
+
+    return filenames, filedesc_pairs
+
+
+@app.route('/create_germline_set_doi_series/<set_id>', methods=['GET', 'POST'])
+def create_germline_set_doi_series(set_id):
+    germline_set = check_set_zenodo(set_id)
+    if germline_set is None:
+        return redirect('/')
+
+    if germline_set.zenodo_base_deposition is not None and len(germline_set.zenodo_base_deposition) > 0:
+        flash('A base deposition id already exists')
+        return ''
+
+    zenodo_url = app.config['ZENODO_URL']
+    zenodo_access_token = app.config['ZENODO_ACCESS_TOKEN']
+
+    try:
+        subgroup = 'subgroup: ' + germline_set.species_subgroup if germline_set.species_subgroup else ''
+        sub_metadata = copy.deepcopy(zenodo_metadata_template)
+        title = f"IG receptor germline set for species: {germline_set.species} {subgroup} set_name: {germline_set.germline_set_name}"
+        sub_metadata['title'] = title
+        success_status, resp = zenodo.zenodo_new_deposition(zenodo_url, zenodo_access_token, sub_metadata)
+
+        if not success_status:
+            flash(resp)
+            return ''
+
+        deposition_id = resp
+        germline_set.zenodo_base_deposition = deposition_id
+        filenames, filedescs = make_files_for_zenodo(germline_set)
+        db.session.commit()
+
+        success_status, resp = zenodo.zenodo_new_version(zenodo_url, zenodo_access_token, deposition_id, filenames, filedescs, str(germline_set.release_version))
+        if not success_status:
+            flash(resp)
+            return ''
+
+        germline_set.zenodo_current_deposition = resp['id']
+        germline_set.doi = resp['doi']
+        db.session.commit()
+        flash('Deposition succeeded')
+        return ''
+
+    except Exception as e:
+        flash(str(e))
+        return ''
+
+    return ''
+
+
+@app.route('/update_germline_set_doi/<set_id>', methods=['GET', 'POST'])
+def update_germline_set_doi(set_id):
+    germline_set = check_set_zenodo(set_id)
+    if germline_set is None:
+        return redirect('/')
+
+    if germline_set.zenodo_current_deposition is None or len(germline_set.zenodo_current_deposition) > 0:
+        flash('A deposition id already exists')
+        return ''
+
+    zenodo_url = app.config['ZENODO_URL']
+    zenodo_access_token = app.config['ZENODO_ACCESS_TOKEN']
+
+    try:
+        filenames, filedescs = make_files_for_zenodo(germline_set)
+
+        success_status, resp = zenodo.zenodo_new_version(zenodo_url, zenodo_access_token, germline_set.zenodo_base_deposition, filenames, filedescs, str(germline_set.release_version))
+        if not success_status:
+            flash(resp)
+            return ''
+
+        germline_set.zenodo_current_deposition = resp['id']
+        germline_set.doi = resp['doi']
+        db.session.commit()
+        flash('Deposition succeeded')
+        return ''
+
+    except Exception as e:
+        flash(str(e))
+        return ''
+
+    return ''

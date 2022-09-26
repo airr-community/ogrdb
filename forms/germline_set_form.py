@@ -16,5 +16,6 @@ class GermlineSetForm(FlaskForm):
     species_subgroup_type = SelectField('Subgroup type', choices=[('none', 'none'), ('breed', 'breed'), ('strain', 'strain'), ('inbred', 'inbred'), ('outbred', 'outbred'), ('locational', 'locational')], description="Category of subgroup")
     locus = SelectField('Locus', choices=[('IGH', 'IGH'), ('IGK', 'IGK'), ('IGL', 'IGL'), ('TRA', 'TRA'), ('TRB', 'TRB'), ('TRG', 'TRG'), ('TRD', 'TRD')], description="Gene locus")
     release_description = StringField('Release Description', [validators.Length(max=255)])
+    doi = StringField('doi', [validators.Length(max=255)], description="DOI of germline set deposition at Zenodo")
 
 

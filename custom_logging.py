@@ -27,9 +27,7 @@ class RequestFormatter(logging.Formatter):
 
 
 formatter = RequestFormatter(
-    '--------------------------------\n'
-    '[%(asctime)s] %(levelname)s (%(module)s) :\n'
-    '%(remote_addr)s %(url)s\n%(message)s\n'
+    '[%(asctime)s] %(levelname)s (%(module)s) : %(remote_addr)s %(url)s %(message)s'
 )
 
 def init_logging(app, mail):
@@ -42,16 +40,22 @@ def init_logging(app, mail):
         pydevd.settrace('127.0.0.1', port=30000, stdoutToServer=True, stderrToServer=True)
 
     if app.config['MAIL_LOG']:
-        mail_handler = FlaskMailLogHandler(mail, 'wlees@mail.cryst.bbk.ac.uk', ['william@lees.org.uk'], 'Error from Shrek')
+        mail_handler = FlaskMailLogHandler(mail, 'william@lees.org.uk', ['william@lees.org.uk'], 'Error from OGRDB')
         mail_handler.setLevel(logging.ERROR)
         mail_handler.setFormatter(formatter)
         root.addHandler(mail_handler)
 
+    email_dispatched.connect(log_mail)
+    init_security_logging()
+
+    if 'CONSOLE_LOG' in app.config and app.config['CONSOLE_LOG']:
+        handler = logging.StreamHandler(stream=sys.stdout)
+        handler.setLevel(int(app.config['LOGLEVEL']))
+        root.addHandler(handler)
+
+
     handler = logging.handlers.RotatingFileHandler(app.config['LOGPATH'], maxBytes=1024 * 1024)
     handler.setLevel(int(app.config['LOGLEVEL']))
     handler.setFormatter(formatter)
-    app.logger.addHandler(handler)
-
-    email_dispatched.connect(log_mail)
-    init_security_logging()
+    root.addHandler(handler)
 

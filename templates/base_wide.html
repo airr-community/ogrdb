@@ -31,7 +31,18 @@
         <div class="row">
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
-                    <a href="{{ url_for('germline_sets') }}" class="m-item">Germline Sets</a> |
+                    <span class="dropdown">
+                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-toggle="dropdown">
+                            Germline Sets
+                            <span class="caret"></span>
+                        </a>
+                        <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <ul>
+                                <li><a href="{{ url_for('germline_sets', species='Mouse') }}" class="m-item">Mouse</a></li>
+                                <li><a href="{{ url_for('germline_sets', species='Human') }}" class="m-item">Human</a></li>
+                            </ul>
+                        </span>
+                    </span> |
                     <span class="dropdown">
                         <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-toggle="dropdown">
                             Sequences

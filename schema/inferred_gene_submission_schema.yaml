@@ -1292,6 +1292,18 @@ GermlineSet:
             hide: true
             inview: true
             label: Release Date
+        zenodo_base_deposition:
+          type: string
+          description: Base deposition id at zenodo
+          hide: true
+        zenodo_current_deposition:
+          type: string
+          description: Base deposition id at zenodo
+          hide: true
+        doi:
+          type: string
+          description: DOI of germline set deposition at Zenodo
+          tableview: true
         gene_descriptions:
             type: list of gene descriptions
             many-relationship: [GeneDescription, germline_sets, gene_description, germline_set]

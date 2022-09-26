@@ -1,18 +1,18 @@
-{% extends "base.html" %}
-{% block pagetitle %} Germline Sets {% endblock %}
+{% extends "base_wide.html" %}
+{% block pagetitle %} Germline Sets - {{ species }}{% endblock %}
 
 {% block c_body %}
     {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
             <div class="row">
-                <div class="col-md-8"><h2>Draft Sets for IARC {{ sp }} Committee</h2></div>
+                <div class="col-md-7 offset-md-1" style="margin-left: 15px;"><h2>Draft Sets for IARC {{ sp }} Committee</h2></div>
                 <div class="col-md-4">
                 <a href="{{ url_for('new_germline_set', species=sp) }}" class="btn btn-default heading-btn pull-right">New Set</a>
                 {% if loop.previtem is not defined %}
                    {% if show_withdrawn %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=no" class="btn btn-default heading-btn pull-right">Hide Previous Versions</a>
+                        <a href="{{ url_for(request.endpoint, species=sp) }}?withdrawn=no" class="btn btn-default heading-btn pull-right">Hide Previous Versions</a>
                     {% else %}
-                        <a href="{{ url_for(request.endpoint) }}?withdrawn=yes" class="btn btn-default heading-btn pull-right">Show Previous Versions</a>
+                        <a href="{{ url_for(request.endpoint, species=sp) }}?withdrawn=yes" class="btn btn-default heading-btn pull-right">Show Previous Versions</a>
                     {% endif %}
                 {% endif %}
                 </div>
@@ -25,80 +25,59 @@
         {% endfor %}
 
         <div class="row">
-            <div class="col-md-8"><h2>Published Sets</h2></div>
+            <div class="col-md-8" style="margin-left: 15px;"><h2>Published Sets</h2></div>
         </div>
     {% endif %}
 
         {% if any_published %}
            <div class="row">
-                <div class="col-md-8">
-                    For information on the names and approach used in these sets, please see <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/germline-set-creation-and-naming/">our poster.</a>
-                </div>
-                <div class="col-md-8">
-                    <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
-                </div>
-                <div class="col-md-8">
-                    For tools to help with the adoption of the new name format, please see <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
-                </div>
-                <div class="col-md-8">
-                    The <a href="/api">OGRDB REST API</a> allows you to list and download germline sets programatically.
-                </div>
-            </div>
-            {% for species, sets in affirmed.items() %}
-                <div class="row">
-                    <div class="col-md-8"><h3>{{ species }}</h3></div>
-                </div>
-                <div class="row">
-                    <div class="col-md-9">
-                        {% for set in sets %}
-                            <div class="dlentry">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        {{ set['name'] | safe }}
-                                    </div>
-                                    <div class="col-md-2">
-                                        Revision: {{ set['rev'] }}
-                                    </div>
-                                    <div class="col-md-3">
-                                        Date: {{ set['date'] }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-9">
-                                        {{ set['synopsis'] | safe }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                {% for dl in set['files'] %}
-                                        <div class="col-md-2">
-                                            {{ dl | safe }}
-                                        </div>
-                                {% endfor %}
-                                </div>
-                            </div>
-                            <div class="row">&nbsp;</div>
-                        {% endfor %}
+                <div style="margin-left: 15px;">
+                   {%  if species == 'Mouse' %}
+                        <div class="col-md-8">
+                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
+                        </div>
+                   {% endif %}
+                    <div class="col-md-8">
+                        For information on the names and approach used in these sets, please see <a href="https://wordpress.vdjbase.org/wp-content/uploads/2022/09/IMMREP22-Next-generation-germline-reference-sets-for-B-cell-and-T-cell-repertoire-sequencing.pdf">our poster.</a>
+                    </div>
+                    <div class="col-md-8">
+                        For tools to help with the adoption of the new name format, please see <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
+                    </div>
+                    <div class="col-md-8">
+                        The <a href="/api">OGRDB REST API</a> allows you to list and download germline sets programatically.
                     </div>
                 </div>
-            {% endfor %}
+           </div>
+
+            <row class="col-md-12">
+                <div class=".table col-md-12">
+                    {{ affirmed }}
+                </div>
+            </row>
+
+
             <div class="row">
+                <div style="margin-left: 15px;">
+               {%  if species == 'Mouse' %}
+                    <div class="col-md-8">
+                        <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
+                    </div>
+               {% endif %}
                 <div class="col-md-8">
                     For information on the names and approach used in these sets, please see <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/germline-set-creation-and-naming/">our poster.</a>
-                </div>
-                <div class="col-md-8">
-                    <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
                 </div>
                 <div class="col-md-8">
                     For tools to help with the adoption of the new name format, please see <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
                 </div>
                 <div class="col-md-8">
                     The <a href="/api">OGRDB REST API</a> allows you to list and download germline sets programatically.
+                </div>
                 </div>
             </div>
 
         {% else %}
             <div class="row">
-                Coming soon! We expect to start publishing germline sets over the next few months.
+                Coming soon! We expect to start publishing germline sets for this species over the next few months.
             </div>
         {% endif %}
         <h3></h3>
@@ -121,6 +100,15 @@
                 })
         {% endfor %}
     {% endif %}
+
+    $(document).ready(function() {
+        $("#{{ affirmed.table_id }}").DataTable({
+            "paging":   false,
+            "searching": false,
+            "info":     false
+        });
+    })
+
 
     function set_delete(id) {
         foo = BootstrapDialog.confirm({
@@ -176,6 +164,48 @@
                     $.ajax({
                         type: "POST",
                         url: "/withdraw_germline_set/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_update_doi(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Update germline set on Zenodo?',
+            message: 'This action cannot be reversed.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Update',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/update_germline_set_doi/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_create_doi(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Create germline set series on Zenodo?',
+            message: 'This action cannot be reversed.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Create',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/create_germline_set_doi_series/" + id,
                         success: function(data) {
                             window.location.reload(true);
                         }
