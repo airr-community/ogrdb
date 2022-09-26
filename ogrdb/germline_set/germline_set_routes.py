@@ -704,8 +704,8 @@ zenodo_metadata_template = {
     'access_right': 'open',
     'communities': [{'identifier': 'zenodo'}],
     'creators': [{'affiliation': 'Birkbeck College', 'name': 'Lees, William', 'orcid': '0000-0001-9834-6840'}],
-    'description': '<p>IG Germline Reference set published on the Open Germline Receptor Database (OGRDB)</p>',
-    'keywords': ['AIRR-seq', 'AIRR Community', 'IG Receptor', 'Antibody', 'T Cell', 'Receptor Repertoire', 'Immunology'],
+    'description': '<p>Germline Reference set published on the Open Germline Receptor Database (OGRDB)</p>',
+    'keywords': ['Receptor germline set', 'AIRR-seq', 'AIRR Community', 'Receptor Repertoire', 'Immunology'],
     'license': 'other-open',
     'related_identifiers': [{'identifier': 'https://ogrdb.airr-community.org/', 'relation': 'isPublishedIn', 'resource_type': 'dataset', 'scheme': 'url'}],
     'title': 'IG receptor Mouse Germline Set IGKJ (all strains)',
@@ -756,8 +756,15 @@ def create_germline_set_doi_series(set_id):
     try:
         subgroup = 'subgroup: ' + germline_set.species_subgroup if germline_set.species_subgroup else ''
         sub_metadata = copy.deepcopy(zenodo_metadata_template)
-        title = f"IG receptor germline set for species: {germline_set.species} {subgroup} set_name: {germline_set.germline_set_name}"
+        receptor_type = germline_set.locus[:2]
+        title = f"{receptor_type} receptor germline set for species: {germline_set.species} {subgroup} set_name: {germline_set.germline_set_name}"
         sub_metadata['title'] = title
+
+        if receptor_type == 'IG':
+            sub_metadata['keywords'].extend(['Antibody', 'B cell', 'IG receptor'])
+        else:
+            sub_metadata['keywords'].extend(['T cell', 'T cell receptor'])
+
         success_status, resp = zenodo.zenodo_new_deposition(zenodo_url, zenodo_access_token, sub_metadata)
 
         if not success_status:
