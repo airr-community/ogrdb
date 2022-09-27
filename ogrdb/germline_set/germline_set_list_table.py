@@ -71,7 +71,7 @@ class GermlineSetListDownloadCol(StyledCol):
 class GermlineSetListDoiCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item.doi and len(item.doi) > 0:
-            return '<a href="https://doi.org/%s"><img src="https://sandbox.zenodo.org/badge/DOI/%s.svg" alt="DOI"></a>' % (item.doi, item.doi)
+            return '<a href="https://doi.org/%s"><img src="https://zenodo.org/badge/DOI/%s.svg" alt="DOI"></a>' % (item.doi, item.doi)
         else:
             return ''
 
