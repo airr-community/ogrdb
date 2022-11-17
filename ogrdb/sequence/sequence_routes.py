@@ -17,6 +17,7 @@ import shutil
 from flask import flash, redirect, request, render_template, url_for, Response
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
+from markupsafe import Markup
 from sqlalchemy import and_
 from wtforms import ValidationError
 
@@ -25,7 +26,8 @@ from head import db, app, attach_path
 
 from db.attached_file_db import AttachedFile
 from db.dupe_gene_note_db import DupeGeneNote
-from db.gene_description_db import GeneDescription, GenomicSupport, save_GenomicSupport, populate_GenomicSupport, save_GeneDescription, copy_GeneDescription
+from db.gene_description_db import GeneDescription, GenomicSupport, save_GenomicSupport, populate_GenomicSupport, save_GeneDescription, copy_GeneDescription, \
+    make_GenomicSupport_view
 from db.genotype_db import Genotype
 from db.inferred_sequence_db import InferredSequence
 from db.journal_entry_db import JournalEntry, copy_JournalEntry
