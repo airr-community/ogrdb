@@ -4,7 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {   "name": "Build From Schema",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/schema/build_from_schema.py",
+            "args": ["schema/inferred_gene_submission_schema.yaml", "schema/inferred_gene_submission_schema_markup.yaml"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
         {
             "name": "Python: Flask",
             "type": "python",

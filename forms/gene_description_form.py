@@ -51,7 +51,7 @@ class GeneDescriptionForm(FlaskForm):
     ext_5prime = TextAreaField('5\' Extension', [ValidNucleotideSequence(ambiguous=False, gapped=True), validators.Optional()], description="Extending sequence at 5\' end (IMGT gapped)")
     start_5prime_ext = IntegerField('5\' start', [validators.Optional()], description="Start co-ordinate of 5\' extension (if any) in IMGT numbering")
     end_5prime_ext = IntegerField('5\' end', [validators.Optional()], description="End co-ordinate of 5\' extension (if any) in IMGT numbering")
-    curational_tags = SelectField('curational_tags', choices=[('none', 'none'), ('likely_truncated', 'likely_truncated'), ('likely-full_length', 'likely-full_length')], description="Controlled-vocabulary tags applied to this description")
+    curational_tags = SelectField('curational_tags', choices=[('none', 'none'), ('likely_truncated', 'likely_truncated'), ('likely_full-length', 'likely_full-length')], description="Controlled-vocabulary tags applied to this description")
 
 
 
