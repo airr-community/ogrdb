@@ -99,6 +99,28 @@
             </div>
     </div>
 
+    <div class="modal bootstrap-dialog type-warning fade size-normal" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="messageModallLabel">Publish selected sequences</h4>
+            </div>
+            <div class="modal-body">
+                <div class="modal-instructions">
+                    <p>The selected sequences will be published.</p>
+                </div>
+                <textarea id="publish-user-input" cols="40" rows="5" class="form-control" placeholder="Enter publication notes here."></textarea>
+                <br>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              <input type="submit" value="Save" class="btn" name="save_btn" id="publish-save-btn">
+            </div>
+          </div>
+        </div>
+    </div>
+
 
 {% endblock %}
 
@@ -137,15 +159,56 @@
                         dom: 'Blfrtip',
                         "paging":   true,
                         "searching": true,
+                        "select": true,
                         "info":     false,
-                         "lengthMenu": [ 25, 100, 500, 5000 ],
+                        "lengthMenu": [ 25, 100, 500, 5000 ],
                         "colReorder": true,
                         "columnDefs": [
                             {"visible": false, "targets": [-1,-2]},
                             {"width": "0px", "targets": [-1,-2]},
                         ],
                         "buttons": [
-                            "excel", "csv"
+                            {
+                                text: 'Select All',
+                                action: function () {
+                                    $("#{{ t['draft'].table_id }}").DataTable().rows( {search:'applied'} ).select();
+                                }
+                            },
+                            "selectNone", "excel", "csv",
+                            {
+                                text: 'Publish Selected',
+                                extend: 'selected',
+                                action: function () {
+                                    const re = /sequence\/(\d+)/;
+                                    var data = $("#{{ t['draft'].table_id }}").DataTable().rows( {selected:true} ).data();
+                                    var ids = [];
+                                    for(var i = 0; i < data.length; i++) {
+                                        id = re.exec(data[i][0]);
+                                        
+                                        if (id && id.length > 1) {
+                                            ids.push(id[1]);
+                                        }
+                                    }
+                                    seq_publish_selected(ids)                                        
+                                }
+                            },
+                            {
+                                text: 'Delete Selected',
+                                extend: 'selected',
+                                action: function () {
+                                    const re = /sequence\/(\d+)/;
+                                    var data = $("#{{ t['draft'].table_id }}").DataTable().rows( {selected:true} ).data();
+                                    var ids = [];
+                                    for(var i = 0; i < data.length; i++) {
+                                        id = re.exec(data[i][0]);
+                                        
+                                        if (id && id.length > 1) {
+                                            ids.push(id[1]);
+                                        }
+                                    }
+                                    seq_delete_selected(ids)
+                                }
+                            }
                         ]
                     });
                     $("#{{ t['level_0'].table_id }}").DataTable({
@@ -203,6 +266,47 @@
                     })
                 }
             }
+        });
+    }
+
+    function seq_delete_selected(ids) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete selected sequences?',
+            message: 'These draft sequences will be removed. You will not be able to recover them later.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Delete',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        url: "/delete_sequences",
+                        data: {'ids': ids.join(",")},
+                        type: "POST",
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function seq_publish_selected(ids) {
+        $('#publish-user-input').val('');
+        $('#publishModal').modal('show');
+
+        $('#publish-save-btn').off('click').on('click', function() {
+            var note = $('#publish-user-input').val();
+            $('#publishModal').modal('hide');
+
+            $.ajax({
+                url: "/publish_sequences",
+                data: {'ids': ids.join(","), 'note': note},
+                type: "POST",
+                success: function(data) {
+                    window.location.reload(true);
+                }
+            })
         });
     }
 
@@ -272,6 +376,7 @@
 
         $('#imgt_name_dlg').modal()
     }
+
 
 
 

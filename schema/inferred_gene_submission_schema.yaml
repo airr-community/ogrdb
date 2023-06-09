@@ -1100,7 +1100,7 @@ GeneDescription:
             description: End co-ordinate of 5\' extension (if any) in IMGT numbering
             nonblank: false
         curational_tags:
-            type: [none, likely_truncated, likely-full_length]
+            type: [none, likely_truncated, likely_full-length]
             description: Controlled-vocabulary tags applied to this description
 
 

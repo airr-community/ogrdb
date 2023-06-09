@@ -18,7 +18,7 @@ from flask import flash, redirect, request, render_template, url_for, Response
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from markupsafe import Markup
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from wtforms import ValidationError
 
 from head import db, app, attach_path
@@ -379,9 +379,8 @@ def parse_name_to_gene_description(gene_description):
                 else:
                     gene_description.allele_designation = ''
                 snq = sn.split('-')
-                gene_description.subgroup_designation = snq[len(snq) - 1]
-                del (snq[len(snq) - 1])
-                gene_description.gene_subgroup = '-'.join(snq)[4:]
+                gene_description.subgroup_designation = snq[-1:][0]
+                gene_description.gene_subgroup = '-'.join(snq[:-1])[4:]
             elif '*' in sn:
                 snq = sn.split('*')
                 gene_description.gene_subgroup = snq[0][4:]
@@ -390,6 +389,26 @@ def parse_name_to_gene_description(gene_description):
                 gene_description.gene_subgroup = sn[4:]
     except:
         pass
+
+
+def get_opt_int(row, key):  # get an optional integer value from a row
+    if key not in row or not row[key]:
+        return None
+    try:
+        return int(row[key])
+    except ValueError:
+        return None
+
+def get_opt_text(row, key):  # get an optional text value from a row
+    if key not in row or not row[key]:
+        return ''
+    return row[key]
+
+def get_opt_bool(row, key):  # get an optional bool value from a row
+    if key not in row or not row[key]:
+        return None
+    return bool(row[key])
+
 
 def upload_sequences(form, species):
     # check file
@@ -408,12 +427,6 @@ def upload_sequences(form, species):
                 break
         if not row['gene_label']:
             errors.append('row %d: no gene label' % row_count)
-        elif db.session.query(GeneDescription).filter(
-                and_(GeneDescription.species == species,
-                     GeneDescription.sequence_name == row['gene_label'],
-                     GeneDescription.species_subgroup == row['species_subgroup'],
-                     ~GeneDescription.status.in_(['withdrawn', 'superceded']))).count() > 0:
-            errors.append('row %d: a gene with the name %s and subgroup %s is already in the database' % (row_count, row['gene_label'], row['species_subgroup']))
         if row['functionality'] not in ['F', 'ORF', 'P']:
             errors.append('row %d: functionality must be F, ORF or P' % row_count)
         if row['type'][:3] not in ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG']:
@@ -422,7 +435,7 @@ def upload_sequences(form, species):
             errors.append('row %d: sequence_type in type must be one of %s' % (row_count, ','.join(['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader'])))
         if not row['sequence']:
             errors.append('row %d: no sequence' % row_count)
-        if not row['sequence_gapped']:
+        if row['type'][3:] == 'H' and not row['sequence_gapped']:
             errors.append('row %d: no sequence_gapped' % row_count)
         if row['type'][3:] == 'J' and not row['j_codon_frame']:
             errors.append('row %d: no j_codon_frame' % row_count)
@@ -449,9 +462,55 @@ def upload_sequences(form, species):
 
     fi.seek(0)
     reader = csv.DictReader(fi)
+
+    gene_descriptions_to_add = []
+    errors = []
+
     for row in reader:
+        row['sequence'] = row['sequence'].upper()
+        row['sequence_gapped'] = row['sequence_gapped'].upper()
         gene_description = GeneDescription()
-        gene_description.sequence_name = row['gene_label']
+
+        existing_entry = db.session.query(GeneDescription).filter(
+                and_(
+                    GeneDescription.species == species,
+                     or_(
+                        GeneDescription.sequence_name == row['gene_label'],
+                        GeneDescription.sequence_name == row['imgt'],
+                        GeneDescription.imgt_name == row['gene_label'],
+                        and_(GeneDescription.imgt_name == row['imgt'], row['imgt'] != '')
+                        ),
+                     or_(   
+                        GeneDescription.species_subgroup == row['species_subgroup'],
+                        GeneDescription.species_subgroup == None,
+                        GeneDescription.species_subgroup == 'none',
+                        ),
+                     ~GeneDescription.status.in_(['withdrawn', 'superceded'])
+                     )
+                ).all()
+
+        if existing_entry:
+            existing_entry = existing_entry[0]
+
+            merge_errors = merge_sequence_upload(existing_entry, row, gene_description)
+            if merge_errors:
+                errors.extend(merge_errors)
+                continue
+        else:
+            gene_description.release_version = 1
+            gene_description.notes = ''
+            gene_description.sequence_name = row['gene_label']
+            gene_description.inferred_extension = not (not get_opt_text(row, 'ext_3_prime')) and (not get_opt_text(row, 'ext_5_prime'))
+            gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
+            gene_description.start_3prime_ext = None
+            gene_description.end_3prime_ext = None
+            gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
+            gene_description.start_5prime_ext = None
+            gene_description.end_5prime_ext = None
+            gene_description.sequence = row['sequence']
+            gene_description.coding_seq_imgt = row['sequence_gapped']
+            gene_description.paralogs = get_opt_text(row, 'paralogs')       
+
         gene_description.imgt_name = row['imgt']
         gene_description.alt_names = row['alt_names']
         gene_description.species = species
@@ -462,41 +521,155 @@ def upload_sequences(form, species):
         gene_description.lab_address = current_user.address
         gene_description.functionality = row['functionality']
         gene_description.inference_type = row['inference_type']
-        gene_description.release_version = 1
         gene_description.affirmation_level = int(row['affirmation'])
-        gene_description.inferred_extension = False
-        gene_description.ext_3prime = None
-        gene_description.start_3prime_ext = None
-        gene_description.end_3prime_ext = None
-        gene_description.ext_5prime = None
-        gene_description.start_5prime_ext = None
-        gene_description.end_5prime_ext = None
-        gene_description.sequence = row['sequence']
         gene_description.locus = row['type'][0:3]
+        gene_description.chromosome = row['chromosome']
         gene_description.sequence_type = row['type'][3:]
 
-        gene_description.coding_seq_imgt = row['sequence_gapped']
-        if gene_description.sequence_type == 'J':
+        gene_description.curational_tags = get_opt_text(row, 'curational_tags')        
+        gene_description.gene_start = get_opt_int(row, 'gene_start')
+        gene_description.gene_end = get_opt_int(row, 'gene_end')
+
+
+        parse_name_to_gene_description(gene_description)
+
+        if gene_description.sequence_type == 'V':
+            gene_description.utr_5_prime_start = get_opt_int(row, 'utr_5_prime_start') 
+            gene_description.utr_5_prime_end = get_opt_int(row, 'utr_5_prime_end') 
+            gene_description.leader_1_start = get_opt_int(row, 'leader_1_start') 
+            gene_description.leader_1_end = get_opt_int(row, 'leader_1_end') 
+            gene_description.leader_2_start = get_opt_int(row, 'leader_2_start') 
+            gene_description.leader_2_end = get_opt_int(row, 'leader_2_end') 
+            gene_description.v_rs_start = get_opt_int(row, 'v_rs_start') 
+            gene_description.v_rs_end = get_opt_int(row, 'v_rs_end') 
+        elif gene_description.sequence_type == 'D':
+            gene_description.d_rs_3_prime_start = get_opt_int(row, 'd_rs_3_prime_start')  
+            gene_description.d_rs_3_prime_end = get_opt_int(row, 'd_rs_3_prime_end')  
+            gene_description.d_rs_5_prime_start = get_opt_int(row, 'd_rs_5_prime_start')  
+            gene_description.d_rs_5_prime_end = get_opt_int(row, 'd_rs_5_prime_end')  
+        elif gene_description.sequence_type == 'J':
+            gene_description.j_rs_start = get_opt_int(row, 'j_rs_start')  
+            gene_description.j_rs_end = get_opt_int(row, 'j_rs_end')  
             gene_description.j_codon_frame = row['j_codon_frame']
             gene_description.j_cdr3_end = row['j_cdr3_end']
 
         notes = ['Imported to OGRDB with the following notes:']
-        for field in row.keys():
-            if field not in required_headers and len(row[field]):
-                if field != 'notes':
-                    notes.append('%s: %s' % (field, row[field]))
-                else:
-                    notes.append('%s' % row[field])
+        notes.extend([x.strip() for x in row['notes'].split(',')])
 
         if len(notes) > 1:
-            gene_description.notes = '\r\n'.join(notes)
+            gene_description.notes += '\r\n'.join(notes)
 
-        db.session.add(gene_description)
-        db.session.commit()
-        gene_description.description_id = "A%05d" % gene_description.id
-        db.session.commit()
+        gene_descriptions_to_add.append(gene_description)
+
+    if errors:
+        db.session.rollback()
+        errors.append('Sequences not uploaded: please fix errors and try again')
+        form.upload_file.errors = errors
+        return render_template('sequence_new.html', form=form, species=species)
+    else:
+        for gene_description in gene_descriptions_to_add:
+            db.session.add(gene_description)
+            db.session.commit()
+
+            if not gene_description.description_id:
+                gene_description.description_id = "A%05d" % gene_description.id
+                db.session.commit()
 
     return redirect(url_for('sequences', sp=species))
+
+
+def merge_sequence_upload(existing_entry, row, gene_description):
+    errors = []
+    # only update if the existing record is an inference - we only want to merge if there's an IARC record in OGRDB that pre-dates the germline set
+    if existing_entry.inference_type != 'Rearranged Only' and existing_entry.inference_type != 'Rearranged':
+        errors.append(f"Cannot merge {existing_entry.sequence_name} as there is an existing record which is not simply an inference")
+
+    # don't update if there's an existing draft
+    if existing_entry.status == 'draft':
+        errors.append(f"Cannot merge {existing_entry.sequence_name} as there is an existing draft")
+
+    existing_ungapped = existing_entry.coding_seq_imgt.replace('.', '').upper()
+    new_ungapped = row['sequence_gapped'].replace('.', '').upper()
+
+    # Check that sequences match
+    if existing_ungapped not in new_ungapped:
+        errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: core sequences do not match")
+
+    if errors:
+        return errors
+    
+    # Replace extensions with info from the new record
+    gene_description.ext_3prime = ''
+    gene_description.start_3prime_ext = None
+    gene_description.end_3prime_ext = None
+    gene_description.ext_5prime = ''
+    gene_description.start_5prime_ext = None
+    gene_description.end_5prime_ext = None
+    gene_description.inferred_extension = False
+
+    if existing_ungapped == new_ungapped:
+        gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
+        gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
+    else:
+        # Retain the existing coding_sequence_imgt. Adjust extensions if necessary
+        pos = new_ungapped.find(existing_ungapped)
+
+        if pos > 0:
+            gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
+            gene_description.ext_5prime += new_ungapped.coding_seq_imgt[:pos]
+        if len(new_ungapped) > pos + len(existing_ungapped):
+            gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
+            gene_description.ext_3prime += new_ungapped[pos + len(existing_ungapped):]
+
+    if gene_description.ext_3prime or gene_description.ext_5prime:        
+        gene_description.inferred_extension = True
+
+    # If IARC thought the sequence should be extended, did we find an extension?
+
+    iarc_ext_length = 0
+    while existing_entry.coding_seq_imgt[0 - iarc_ext_length - 1] == '.':
+        iarc_ext_length += 1
+
+    if iarc_ext_length > 0 and not gene_description.ext_3prime or len(gene_description.ext_3prime) != iarc_ext_length:
+        errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: IARC extension length is {iarc_ext_length} but supplied ext_3prime length is {len(gene_description.ext_3prime)}")
+
+    gene_description.coding_seq_imgt = existing_entry.coding_seq_imgt.upper()
+    gene_description.sequence = row['sequence']
+    gene_description.sequence_name = existing_entry.sequence_name
+    gene_description.release_version = existing_entry.release_version + 1
+
+    # Capture any existing paralogs
+
+    new_paralogs = [x.strip() for x in row['paralogs'].split(',') if x.strip()]
+
+    if existing_entry.paralogs:
+        for x in existing_entry.paralogs.split(','):
+            x = x.strip()
+            if x and x not in new_paralogs:
+                new_paralogs.append(x)
+
+    gene_description.paralogs = ','.join(new_paralogs)
+
+    # Merge observations and journal entries
+    
+    gene_description.description_id = existing_entry.description_id
+    gene_description.notes = existing_entry.notes
+ 
+    for inferred_sequence in existing_entry.inferred_sequences:
+        gene_description.inferred_sequences.append(inferred_sequence)
+
+    for gen in existing_entry.supporting_observations:
+        gene_description.supporting_observations.append(gen)
+
+    for acc in existing_entry.genomic_accessions:
+        gene_description.genomic_accessions.append(acc)
+
+    for journal_entry in existing_entry.journal_entries:
+        new_entry = JournalEntry()
+        copy_JournalEntry(journal_entry, new_entry)
+        gene_description.journal_entries.append(new_entry)
+
+    return errors
 
 
 @app.route('/get_sequences/<id>', methods=['GET'])
@@ -646,9 +819,6 @@ def sequence(id):
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
 
 
-
-
-
 # Copy submitter and acknowledgements from sequence submission to gene_description
 
 
@@ -741,9 +911,9 @@ def edit_sequence(id):
                 if rearranged and genomic:
                     seq.inference_type = 'Genomic and rearranged'
                 elif rearranged:
-                    seq.inference_type = 'Rearranged'
+                    seq.inference_type = 'Rearranged Only'
                 elif genomic:
-                    seq.inference_type = 'Genomic'
+                    seq.inference_type = 'Genomic Only'
 
                 save_GeneDescription(db, seq, form)
 
@@ -873,6 +1043,27 @@ def delete_sequence(id):
         seq.delete_dependencies(db)
         db.session.delete(seq)
         db.session.commit()
+    return ''
+
+
+@app.route('/delete_sequences', methods=['POST'])
+def delete_sequences():
+    for id in request.form['ids'].split(','):
+        seq = check_seq_edit(id)
+        if seq is not None:
+            seq.delete_dependencies(db)
+            db.session.delete(seq)
+            db.session.commit()
+    return ''
+
+
+@app.route('/publish_sequences', methods=['POST'])
+def publish_sequences():
+    for id in request.form['ids'].split(','):
+        seq = check_seq_edit(id)
+        if seq is not None:
+            publish_sequence(seq, request.form['note'], False)
+    flash('Sequences published')
     return ''
 
 
