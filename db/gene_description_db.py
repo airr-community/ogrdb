@@ -42,6 +42,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     sequence_name = db.Column(db.String(50))
     alt_names = db.Column(db.String(1000))
     chromosome = db.Column(db.Integer)
+    mapped = db.Column(db.Boolean)
     locus = db.Column(db.String(255))
     sequence_type = db.Column(db.String(255))
     functionality = db.Column(db.String(255))
@@ -75,6 +76,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     j_codon_frame = db.Column(db.String(255))
     j_cdr3_end = db.Column(db.Integer)
     paralogs = db.Column(db.String(1000))
+    paralog_rep = db.Column(db.Boolean)
     notes = db.Column(db.Text())
 
     inferred_sequences = db.relationship('InferredSequence', secondary = inferred_sequences_gene_descriptions, backref = db.backref('gene_descriptions', lazy='dynamic'))
@@ -99,6 +101,7 @@ def save_GeneDescription(db, object, form, new=False):
     object.sequence_name = form.sequence_name.data
     object.alt_names = form.alt_names.data
     object.chromosome = form.chromosome.data
+    object.mapped = form.mapped.data
     object.locus = form.locus.data
     object.sequence_type = form.sequence_type.data
     object.functionality = form.functionality.data
@@ -130,6 +133,7 @@ def save_GeneDescription(db, object, form, new=False):
     object.j_codon_frame = form.j_codon_frame.data
     object.j_cdr3_end = form.j_cdr3_end.data
     object.paralogs = form.paralogs.data
+    object.paralog_rep = form.paralog_rep.data
     object.inferred_extension = form.inferred_extension.data
     object.ext_3prime = form.ext_3prime.data
     object.start_3prime_ext = form.start_3prime_ext.data
@@ -153,6 +157,7 @@ def populate_GeneDescription(db, object, form):
     form.sequence_name.data = object.sequence_name
     form.alt_names.data = object.alt_names
     form.chromosome.data = object.chromosome
+    form.mapped.data = object.mapped
     form.locus.data = object.locus
     form.sequence_type.data = object.sequence_type
     form.functionality.data = object.functionality
@@ -184,6 +189,7 @@ def populate_GeneDescription(db, object, form):
     form.j_codon_frame.data = object.j_codon_frame
     form.j_cdr3_end.data = object.j_cdr3_end
     form.paralogs.data = object.paralogs
+    form.paralog_rep.data = object.paralog_rep
     form.inferred_extension.data = object.inferred_extension
     form.ext_3prime.data = object.ext_3prime
     form.start_3prime_ext.data = object.start_3prime_ext
@@ -206,6 +212,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.sequence_name = c_from.sequence_name
     c_to.alt_names = c_from.alt_names
     c_to.chromosome = c_from.chromosome
+    c_to.mapped = c_from.mapped
     c_to.locus = c_from.locus
     c_to.sequence_type = c_from.sequence_type
     c_to.functionality = c_from.functionality
@@ -239,6 +246,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.j_codon_frame = c_from.j_codon_frame
     c_to.j_cdr3_end = c_from.j_cdr3_end
     c_to.paralogs = c_from.paralogs
+    c_to.paralog_rep = c_from.paralog_rep
     c_to.notes = c_from.notes
     c_to.inferred_extension = c_from.inferred_extension
     c_to.ext_3prime = c_from.ext_3prime
@@ -289,6 +297,7 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Sequence Name", "value": sub.sequence_name, "tooltip": "The canonical name of this sequence as assigned by IARC", "field": "sequence_name"})
     ret.items.append({"item": "Alternative names", "value": sub.alt_names, "tooltip": "Alternative names for this sequence", "field": "alt_names"})
     ret.items.append({"item": "Chromosome", "value": sub.chromosome, "tooltip": "chromosome on which the gene is located", "field": "chromosome"})
+    ret.items.append({"item": "Mapped", "value": sub.mapped, "tooltip": "Whether the gene has been mapped to a specific location in the chromosome", "field": "mapped"})
     ret.items.append({"item": "Locus", "value": sub.locus, "tooltip": "Gene locus", "field": "locus"})
     ret.items.append({"item": "Sequence Type", "value": sub.sequence_type, "tooltip": "Sequence type (V, D, J, CH1 ... CH4, Leader)", "field": "sequence_type"})
     ret.items.append({"item": "Functionality", "value": sub.functionality, "tooltip": "Functionality", "field": "functionality"})
@@ -321,7 +330,8 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Codon Frame", "value": sub.j_codon_frame, "tooltip": "Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)", "field": "j_codon_frame"})
     ret.items.append({"item": "J CDR3 End", "value": sub.j_cdr3_end, "tooltip": "In the case of a J-gene, the co-ordinate in the Coding Sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)", "field": "j_cdr3_end"})
     ret.items.append({"item": "Paralogs", "value": sub.paralogs, "tooltip": "Canonical names of 0 or more paralogs", "field": "paralogs"})
-    ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if the inference reports an extension to a known sequence", "field": "inferred_extension"})
+    ret.items.append({"item": "Paralog Rep", "value": sub.paralog_rep, "tooltip": "If true, use the name of this allele in sequence-distinct datasets. If no representative is specified, the paralog with the lowest gene number is used.", "field": "paralog_rep"})
+    ret.items.append({"item": "Extension?", "value": sub.inferred_extension, "tooltip": "Checked if there is an inferred extension to the canonical sequence", "field": "inferred_extension"})
     ret.items.append({"item": "3\'  Extension", "value": sub.ext_3prime, "tooltip": "Extending sequence at 3\' end (IMGT gapped)", "field": "ext_3prime"})
     ret.items.append({"item": "3\' start", "value": sub.start_3prime_ext, "tooltip": "Start co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "start_3prime_ext"})
     ret.items.append({"item": "3\' end", "value": sub.end_3prime_ext, "tooltip": "End co-ordinate of 3\' extension (if any) in IMGT numbering", "field": "end_3prime_ext"})

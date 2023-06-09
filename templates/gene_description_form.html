@@ -13,6 +13,8 @@
 
         {{ render_narrow_field_with_errors(form.chromosome, class="form-control") }}
 
+        {{ render_narrow_field_with_errors(form.mapped, class="checkbox") }}
+
         {{ render_narrow_field_with_errors(form.locus, class="form-control") }}
 
         {{ render_narrow_field_with_errors(form.sequence_type, class="form-control") }}
@@ -74,6 +76,8 @@
         {{ render_narrow_field_with_errors(form.j_cdr3_end, class="form-control") }}
 
         {{ render_field_with_errors(form.paralogs, class="form-control") }}
+
+        {{ render_narrow_field_with_errors(form.paralog_rep, class="checkbox") }}
 
         {{ render_field_with_errors(form.inferred_extension, class="checkbox") }}
 

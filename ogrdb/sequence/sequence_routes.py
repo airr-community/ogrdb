@@ -525,7 +525,8 @@ def upload_sequences(form, species):
         gene_description.locus = row['type'][0:3]
         gene_description.chromosome = row['chromosome']
         gene_description.sequence_type = row['type'][3:]
-
+        gene_description.mapped = get_opt_text(row, 'mapped') == 'Y'
+        gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'
         gene_description.curational_tags = get_opt_text(row, 'curational_tags')        
         gene_description.gene_start = get_opt_int(row, 'gene_start')
         gene_description.gene_end = get_opt_int(row, 'gene_end')

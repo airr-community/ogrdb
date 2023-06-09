@@ -864,6 +864,11 @@ GeneDescription:
             label: Chromosome
             nonblank: false
             width: narrow
+        mapped:
+            type: boolean
+            description: Whether the gene has been mapped to a specific location in the chromosome
+            label: Mapped
+            width: narrow
         locus:
             type: [IGH, IGK, IGL, TRA, TRB, TRG, TRD]
             description: Gene locus
@@ -1047,6 +1052,11 @@ GeneDescription:
             type: string
             label: Paralogs
             description: Canonical names of 0 or more paralogs
+        paralog_rep:
+            type: boolean
+            label: Paralog Rep
+            description: If true, use the name of this allele in sequence-distinct datasets. If no representative is specified, the paralog with the lowest gene number is used.
+            width: narrow
         notes:
             type: text
             description: Notes
@@ -1068,7 +1078,7 @@ GeneDescription:
         inferred_extension:
             type: boolean
             label: Extension?
-            description: Checked if the inference reports an extension to a known sequence
+            description: Checked if there is an inferred extension to the canonical sequence
         ext_3prime:
             type: IUPAC_GAPPED
             label: 3\'  Extension
