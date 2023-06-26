@@ -16,5 +16,6 @@ class NewSequenceForm(FlaskForm):
     submission_id = SelectField('Submission ID', description="Inference study on which this new sequence is based")
     sequence_name = SelectField('Sequence', description="Inferred sequence on which this new sequence is based")
     upload_file = FileField('Sequence File', description="CSV file containing sequence metadata")
+    evidence_file = FileField('Evidence File', description="CSV file containing sequence metadata")
     create = SubmitField('Create')
     cancel = SubmitField('Cancel')

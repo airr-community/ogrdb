@@ -1157,7 +1157,7 @@ GenomicSupport:
     occurrence: single
     properties:
         sequence_type:
-            type: [Locational, Nonlocational]
+            type: [Locational, Nonlocational, Inferred]
             description: Locational should be used where the unrearranged sequence includes multiple genes, enabling the location of this gene to be determined relative to others
             tableview: true
             nonblank: true
@@ -1215,6 +1215,107 @@ GenomicSupport:
             foreign_key: gene_description.id
             relationship: [gene_description, GeneDescription, genomic_accessions]
             hide: true
+        gene_start:
+            type: integer
+            nullable: true
+            description: Co-ordinate in the assembly or sequence of the first nucleotide in the coding_sequence field
+            label: Gene start
+            nonblank: false
+            width: narrow
+        gene_end:
+            type: integer
+            nullable: true
+            description: Co-ordinate in the assembly or sequence of the last gene-coding nucleotide in the coding_sequence field
+            label: Gene end
+            nonblank: false
+            width: narrow
+        utr_5_prime_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)
+            label: UTR 5\' Start
+            nonblank: false
+            width: narrow
+        utr_5_prime_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)
+            label: UTR 5\' End
+            nonblank: false
+            width: narrow
+        leader_1_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of L-PART1 (V-genes only)
+            label: L-PART1 Start
+            nonblank: false
+            width: narrow
+        leader_1_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of L-PART1 (V-genes only)
+            label: L-PART1 End
+            nonblank: false
+            width: narrow
+        leader_2_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of L-PART2 (V-genes only)
+            label: L-PART2 Start
+            nonblank: false
+            width: narrow
+        leader_2_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of L-PART2 (V-genes only)
+            label: L-PART2 End
+            nonblank: false
+            width: narrow
+        v_rs_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of V recombination site (V-genes only)
+            nonblank: false
+            width: narrow
+        v_rs_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of V recombination site (V-genes only)
+            nonblank: false
+            width: narrow
+        d_rs_3_prime_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
+        d_rs_3_prime_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
+        d_rs_5_prime_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
+        d_rs_5_prime_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)
+            nonblank: false
+            width: narrow
+        j_rs_start:
+            type: integer
+            description: Start co-ordinate in the assembly or sequence of J recombination site (J-genes only)
+            nonblank: false
+            width: narrow
+        j_rs_end:
+            type: integer
+            description: End co-ordinate in the assembly or sequence of J recombination site (J-genes only)
+            nonblank: false
+            width: narrow
+        j_codon_frame:
+            type: [1,2,3]
+            description: Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)
+            label: Codon Frame
+            width: narrow
+        j_cdr3_end:
+            type: integer
+            description: In the case of a J-gene, the co-ordinate in the assembly or sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)
+            label: J CDR3 End
+            nonblank: false
+            width: narrow
 
 
 # Collection of gene descriptions into a germline set

@@ -75,7 +75,8 @@ def germline_sets(species):
         .order_by(GermlineSet.species_subgroup, GermlineSet.locus)
 
     results = q.all()
-    affirmed = setup_published_germline_set_list_info(results, current_user)
+
+    affirmed = setup_published_germline_set_list_info(results, current_user, species=='Human')
 
     foo =  render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
     return foo
@@ -164,7 +165,13 @@ def edit_germline_set(id):
                 form.action.data = ''
                 valid = False
 
+            sequences = {}
+            
             for gene_description in germline_set.gene_descriptions:
+                if gene_description.coding_seq_imgt not in sequences:
+                    sequences[gene_description.coding_seq_imgt] = []
+                sequences[gene_description.coding_seq_imgt].append(gene_description.sequence_name)
+
                 if gene_description.status == 'draft':
                     publish_sequence(gene_description, form.body.data, False)
                 if gene_description.status == 'published' and gene_description.affirmation_level == 0:
@@ -179,6 +186,11 @@ def edit_germline_set(id):
                     flash("Can't publish this set while gene %s species subgroup/subgroup type disagreees with the germline set values." % gene_description.sequence_name)
                     form.action.data = ''
                     valid = False
+            
+            # assign paralogs
+            for gene_description in germline_set.gene_descriptions:
+                gene_description.paralogs = ','.join([x for x in sequences[gene_description.coding_seq_imgt] if x != gene_description.sequence_name])
+            db.session.commit()
 
         if valid:
             try:
@@ -677,7 +689,7 @@ def germline_set(id):
 
 @app.route('/download_germline_set/<set_id>/<format>')
 def download_germline_set(set_id, format):
-    if format not in ['gapped', 'ungapped', 'airr']:
+    if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
         flash('Invalid format')
         return redirect('/')
 
@@ -689,12 +701,16 @@ def download_germline_set(set_id, format):
     if len(germline_set.gene_descriptions) < 1:
         flash('No sequences to download')
         return redirect('/')
+    
+    extend = False
+    if '_ex' in format:
+        extend = True
 
-    if format == 'airr':
-        dl = json.dumps(germline_set_to_airr(germline_set), default=str, indent=4)
+    if 'airr' in format:
+        dl = json.dumps(germline_set_to_airr(germline_set, extend), default=str, indent=4)
         filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     else:
-        dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True)
+        dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
         filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
 
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})

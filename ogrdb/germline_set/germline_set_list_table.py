@@ -4,6 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 from operator import attrgetter
+import copy
 
 from flask import url_for
 from db.germline_set_db import *
@@ -21,9 +22,6 @@ def make_germline_action_string(item):
         fmt_string.append(
             '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>' % (
                 url_for('edit_germline_set', id=item.id)))
-        fmt_string.append(
-            '<button onclick="set_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (
-                item.id))
     if item.draftable:
         fmt_string.append(
             '<button onclick="set_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-duplicate" data-toggle="tooltip" title="Create Draft"></span></button>' % (
@@ -42,21 +40,27 @@ def make_germline_action_string(item):
     return ''.join(fmt_string)
 
 
-def make_download_items(item):
+def make_download_items(item, extended):
     fmt_string = []
+    if extended:
+        ext = '_ex'
+    else:
+        ext = ''
+
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-primary icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;AIRR (JSON)</a>' %
-        url_for('download_germline_set', set_id=item.id, format='airr'))
+        url_for('download_germline_set', set_id=item.id, format='airr'+ext))
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;FASTA Gapped</a>' %
-        url_for('download_germline_set', set_id=item.id, format='gapped'))
+        url_for('download_germline_set', set_id=item.id, format='gapped'+ext))
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;FASTA Ungapped</a>' %
-        url_for('download_germline_set', set_id=item.id, format='ungapped'))
-    for af in item.notes_entries[0].attached_files:
-        fmt_string.append(
-            '<a href="%s" class="btn btn-xs text-muted icon_back"><span class="glyphicon glyphicon-file""></span>&nbsp;%s</a>' %
-            (url_for('download_germline_set_attachment', id=af.id), af.filename))
+        url_for('download_germline_set', set_id=item.id, format='ungapped'+ext))
+    if item.notes_entries:
+        for af in item.notes_entries[0].attached_files:
+            fmt_string.append(
+                '<a href="%s" class="btn btn-xs text-muted icon_back"><span class="glyphicon glyphicon-file""></span>&nbsp;%s</a>' %
+                (url_for('download_germline_set_attachment', id=af.id), af.filename))
     return fmt_string
 
 
@@ -66,7 +70,11 @@ class GermlineSetListNamedActionCol(StyledCol):
 
 class GermlineSetListDownloadCol(StyledCol):
     def td_contents(self, item, attr_list):
-        return make_download_items(item)
+        return make_download_items(item, False)
+
+class GermlineSetListExtendedDownloadCol(StyledCol):
+    def td_contents(self, item, attr_list):
+        return make_download_items(item, True)
 
 class GermlineSetListDoiCol(StyledCol):
     def td_contents(self, item, attr_list):
@@ -90,10 +98,14 @@ def setup_germline_set_list_table(results, current_user):
     return table
 
 
-def setup_published_germline_set_list_info(results, current_user):
+def setup_published_germline_set_list_info(results, current_user, extended):
     affirmed = make_GermlineSet_table(results)
     del affirmed._cols['species']
-    affirmed.add_column('download', GermlineSetListDownloadCol('Download'))
+    if extended:
+        affirmed.add_column('download', GermlineSetListDownloadCol('Download Evidenced Set'))
+        affirmed.add_column('download_ext', GermlineSetListExtendedDownloadCol('Download Extended Set'))
+    else:
+        affirmed.add_column('download', GermlineSetListDownloadCol('Download'))
 
     add_actions = False
     for item in affirmed.items:

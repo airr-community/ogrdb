@@ -276,6 +276,9 @@ def new_sequence(species):
         if form.upload_file.data:
             return upload_sequences(form, species)
 
+        if form.evidence_file.data:
+            return upload_evidence(form, species)
+
         try:
             if form.new_name.data is None or len(form.new_name.data) < 1:
                 form.new_name.errors = ['Name cannot be blank.']
@@ -554,11 +557,25 @@ def upload_sequences(form, species):
             gene_description.j_codon_frame = row['j_codon_frame']
             gene_description.j_cdr3_end = row['j_cdr3_end']
 
-        notes = ['Imported to OGRDB with the following notes:']
+        notes = []
         notes.extend([x.strip() for x in row['notes'].split(',')])
 
-        if len(notes) > 1:
-            gene_description.notes += '\r\n'.join(notes)
+        if len(notes):
+            withnotes = ' with the following notes:'
+        else:
+            withnotes = '.'
+
+        if len(gene_description.notes):
+            additional = 'Additional information'
+        else:
+            additional = 'Information'
+
+        add_notes = [f"{additional} for this sequence was imported into OGRDB via bulk update{withnotes}"]
+        add_notes.extend(notes)
+
+        if gene_description.notes:
+            gene_description.notes += '\r\n\r\n'
+        gene_description.notes += '\r\n'.join(add_notes)
 
         gene_descriptions_to_add.append(gene_description)
 
@@ -636,7 +653,19 @@ def merge_sequence_upload(existing_entry, row, gene_description):
 
     gene_description.coding_seq_imgt = existing_entry.coding_seq_imgt.upper()
     gene_description.sequence = row['sequence']
-    gene_description.sequence_name = existing_entry.sequence_name
+    gene_description.sequence_name = row['gene_label']
+    gene_description.imgt_name = row['imgt'] if row['imgt'] else existing_entry.imgt_name
+
+    alt_names = existing_entry.alt_names.split(',') if existing_entry.alt_names else []
+    for an in row['alt_names'].split(','):
+        if an not in alt_names:
+            alt_names.append(an)
+
+    if existing_entry.sequence_name != gene_description.sequence_name and existing_entry.sequence_name not in alt_names:
+        alt_names.append(existing_entry.sequence_name)
+
+    gene_description.alt_names = ','.join(alt_names)
+
     gene_description.release_version = existing_entry.release_version + 1
 
     # Capture any existing paralogs
@@ -671,6 +700,121 @@ def merge_sequence_upload(existing_entry, row, gene_description):
         gene_description.journal_entries.append(new_entry)
 
     return errors
+
+
+def upload_evidence(form, species):
+    # check file
+    errors = []
+    fi = io.StringIO(form.evidence_file.data.read().decode("utf-8"))
+    reader = csv.DictReader(fi)
+    required_headers = ['gene_label', 'sequence', 'repository', 'accession', 'patch', 'start', 'end', 'sense', 'notes', 'species_subgroup', 'subgroup_type']
+    headers = None
+    row_count = 2
+    missing_drafts = False
+
+    gene_descriptions_to_update = {}
+
+    for row in reader:
+        if headers is None:
+            headers = row.keys()
+            missing_headers = set(required_headers) - set(headers)
+            if len(missing_headers) > 0:
+                errors.append('Missing column headers: %s' % ','.join(list(missing_headers)))
+                break
+
+        missing_fields = []
+        nonblank_fields = ['gene_label', 'sequence', 'repository', 'accession', 'start', 'end', 'sense']
+        for field in nonblank_fields:
+            if not row[field]:
+                missing_fields.append(field)
+
+        if missing_fields:
+            errors.append('row %s: missing fields: %s' % (row_count, ','.join(missing_fields)))
+
+        if row['gene_label'] not in gene_descriptions_to_update:
+            gene_description = db.session.query(GeneDescription).filter(
+                    and_(
+                        GeneDescription.species == species,
+                        GeneDescription.sequence_name == row['gene_label'],
+                        or_(   
+                            GeneDescription.species_subgroup == row['species_subgroup'],
+                            GeneDescription.species_subgroup == None,
+                            GeneDescription.species_subgroup == 'none',
+                            ),
+                        GeneDescription.status == 'draft')
+                    ).one_or_none()
+
+            if gene_description is None:
+                errors.append('row %s: no draft sequence found for %s' % (row_count, row['gene_label']))
+                missing_drafts = True
+                continue
+            else:
+                gene_descriptions_to_update[row['gene_label']] = {'gene_description': gene_description, 'rows': [row]}
+        else:
+            gene_descriptions_to_update[row['gene_label']]['rows'].append(row)
+
+        if len(errors) >= 5:
+            if missing_drafts:
+                errors.append('Please ensure that a draft sequence has been created for each sequence in the evidence file.')
+            errors.append('(Only showing first few errors)')
+            break
+
+        row_count += 1
+
+    fi.seek(0)
+    reader = csv.DictReader(fi)
+
+    if errors:
+        errors.append('Sequences not uploaded: please fix errors and try again')
+        form.evidence_file.errors = errors
+        return render_template('sequence_new.html', form=form, species=species)
+
+    for gd in gene_descriptions_to_update.values():
+        gene_description = gd['gene_description']
+        existing_accessions = []
+        for genomic_accession in gene_description.genomic_accessions:
+            existing_accessions.append(genomic_accession.accession)
+        for inferred_sequence in gene_description.inferred_sequences:
+            existing_accessions.append(inferred_sequence.seq_accession_no)
+        for row in gd['rows']:
+            if row['accession'] not in existing_accessions:
+                genomic_support = GenomicSupport()
+                genomic_support.sequence = row['sequence']
+                genomic_support.sequence_type = row['sequence_type']
+                genomic_support.repository = row['repository']
+                genomic_support.accession = row['accession']
+                genomic_support.patch_no = row['patch']
+                genomic_support.sequence_start = int(row['start'])
+                genomic_support.sequence_end = int(row['end'])
+                genomic_support.sense = 'forward' if row['sense'] == '+' else 'reverse'
+
+                if gene_description.sequence_type == 'V':
+                    genomic_support.utr_5_prime_start = get_opt_int(row, 'utr_5_prime_start') 
+                    genomic_support.utr_5_prime_end = get_opt_int(row, 'utr_5_prime_end') 
+                    genomic_support.leader_1_start = get_opt_int(row, 'leader_1_start') 
+                    genomic_support.leader_1_end = get_opt_int(row, 'leader_1_end') 
+                    genomic_support.leader_2_start = get_opt_int(row, 'leader_2_start') 
+                    genomic_support.leader_2_end = get_opt_int(row, 'leader_2_end') 
+                    genomic_support.v_rs_start = get_opt_int(row, 'v_rs_start') 
+                    genomic_support.v_rs_end = get_opt_int(row, 'v_rs_end') 
+                elif gene_description.sequence_type == 'D':
+                    genomic_support.d_rs_3_prime_start = get_opt_int(row, 'd_rs_3_prime_start')  
+                    genomic_support.d_rs_3_prime_end = get_opt_int(row, 'd_rs_3_prime_end')  
+                    genomic_support.d_rs_5_prime_start = get_opt_int(row, 'd_rs_5_prime_start')  
+                    genomic_support.d_rs_5_prime_end = get_opt_int(row, 'd_rs_5_prime_end')  
+                elif gene_description.sequence_type == 'J':
+                    genomic_support.j_rs_start = get_opt_int(row, 'j_rs_start')  
+                    genomic_support.j_rs_end = get_opt_int(row, 'j_rs_end')  
+                    genomic_support.j_codon_frame = row['j_codon_frame']
+                    genomic_support.j_cdr3_end = row['j_cdr3_end']
+
+                gene_description.genomic_accessions.append(genomic_support)
+                existing_accessions.append(row['accession'])
+
+    db.session.commit()
+    return redirect(url_for('sequences', sp=species))
+
+          
 
 
 @app.route('/get_sequences/<id>', methods=['GET'])

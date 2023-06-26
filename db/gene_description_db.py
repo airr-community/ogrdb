@@ -357,6 +357,24 @@ class GenomicSupport(db.Model):
     sense = db.Column(db.String(255))
     sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
+    gene_start = db.Column(db.Integer)
+    gene_end = db.Column(db.Integer)
+    utr_5_prime_start = db.Column(db.Integer)
+    utr_5_prime_end = db.Column(db.Integer)
+    leader_1_start = db.Column(db.Integer)
+    leader_1_end = db.Column(db.Integer)
+    leader_2_start = db.Column(db.Integer)
+    leader_2_end = db.Column(db.Integer)
+    v_rs_start = db.Column(db.Integer)
+    v_rs_end = db.Column(db.Integer)
+    d_rs_3_prime_start = db.Column(db.Integer)
+    d_rs_3_prime_end = db.Column(db.Integer)
+    d_rs_5_prime_start = db.Column(db.Integer)
+    d_rs_5_prime_end = db.Column(db.Integer)
+    j_rs_start = db.Column(db.Integer)
+    j_rs_end = db.Column(db.Integer)
+    j_codon_frame = db.Column(db.String(255))
+    j_cdr3_end = db.Column(db.Integer)
 
 
 def save_GenomicSupport(db, object, form, new=False):   
@@ -371,6 +389,24 @@ def save_GenomicSupport(db, object, form, new=False):
     object.sequence_start = form.sequence_start.data
     object.sequence_end = form.sequence_end.data
     object.sense = form.sense.data
+    object.gene_start = form.gene_start.data
+    object.gene_end = form.gene_end.data
+    object.utr_5_prime_start = form.utr_5_prime_start.data
+    object.utr_5_prime_end = form.utr_5_prime_end.data
+    object.leader_1_start = form.leader_1_start.data
+    object.leader_1_end = form.leader_1_end.data
+    object.leader_2_start = form.leader_2_start.data
+    object.leader_2_end = form.leader_2_end.data
+    object.v_rs_start = form.v_rs_start.data
+    object.v_rs_end = form.v_rs_end.data
+    object.d_rs_3_prime_start = form.d_rs_3_prime_start.data
+    object.d_rs_3_prime_end = form.d_rs_3_prime_end.data
+    object.d_rs_5_prime_start = form.d_rs_5_prime_start.data
+    object.d_rs_5_prime_end = form.d_rs_5_prime_end.data
+    object.j_rs_start = form.j_rs_start.data
+    object.j_rs_end = form.j_rs_end.data
+    object.j_codon_frame = form.j_codon_frame.data
+    object.j_cdr3_end = form.j_cdr3_end.data
 
     if new:
         db.session.add(object)
@@ -391,6 +427,24 @@ def populate_GenomicSupport(db, object, form):
     form.sequence_start.data = object.sequence_start
     form.sequence_end.data = object.sequence_end
     form.sense.data = object.sense
+    form.gene_start.data = object.gene_start
+    form.gene_end.data = object.gene_end
+    form.utr_5_prime_start.data = object.utr_5_prime_start
+    form.utr_5_prime_end.data = object.utr_5_prime_end
+    form.leader_1_start.data = object.leader_1_start
+    form.leader_1_end.data = object.leader_1_end
+    form.leader_2_start.data = object.leader_2_start
+    form.leader_2_end.data = object.leader_2_end
+    form.v_rs_start.data = object.v_rs_start
+    form.v_rs_end.data = object.v_rs_end
+    form.d_rs_3_prime_start.data = object.d_rs_3_prime_start
+    form.d_rs_3_prime_end.data = object.d_rs_3_prime_end
+    form.d_rs_5_prime_start.data = object.d_rs_5_prime_start
+    form.d_rs_5_prime_end.data = object.d_rs_5_prime_end
+    form.j_rs_start.data = object.j_rs_start
+    form.j_rs_end.data = object.j_rs_end
+    form.j_codon_frame.data = object.j_codon_frame
+    form.j_cdr3_end.data = object.j_cdr3_end
 
 
 
@@ -407,6 +461,24 @@ def copy_GenomicSupport(c_from, c_to):
     c_to.sequence_start = c_from.sequence_start
     c_to.sequence_end = c_from.sequence_end
     c_to.sense = c_from.sense
+    c_to.gene_start = c_from.gene_start
+    c_to.gene_end = c_from.gene_end
+    c_to.utr_5_prime_start = c_from.utr_5_prime_start
+    c_to.utr_5_prime_end = c_from.utr_5_prime_end
+    c_to.leader_1_start = c_from.leader_1_start
+    c_to.leader_1_end = c_from.leader_1_end
+    c_to.leader_2_start = c_from.leader_2_start
+    c_to.leader_2_end = c_from.leader_2_end
+    c_to.v_rs_start = c_from.v_rs_start
+    c_to.v_rs_end = c_from.v_rs_end
+    c_to.d_rs_3_prime_start = c_from.d_rs_3_prime_start
+    c_to.d_rs_3_prime_end = c_from.d_rs_3_prime_end
+    c_to.d_rs_5_prime_start = c_from.d_rs_5_prime_start
+    c_to.d_rs_5_prime_end = c_from.d_rs_5_prime_end
+    c_to.j_rs_start = c_from.j_rs_start
+    c_to.j_rs_end = c_from.j_rs_end
+    c_to.j_codon_frame = c_from.j_codon_frame
+    c_to.j_cdr3_end = c_from.j_cdr3_end
 
 
 
@@ -442,5 +514,23 @@ def make_GenomicSupport_view(sub, private = False):
     ret.items.append({"item": "Start", "value": sub.sequence_start, "tooltip": "start co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_start"})
     ret.items.append({"item": "End", "value": sub.sequence_end, "tooltip": "end co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_end"})
     ret.items.append({"item": "Sense", "value": sub.sense, "tooltip": "+ (forward) or - (reverse)", "field": "sense"})
+    ret.items.append({"item": "Gene start", "value": sub.gene_start, "tooltip": "Co-ordinate in the assembly or sequence of the first nucleotide in the coding_sequence field", "field": "gene_start"})
+    ret.items.append({"item": "Gene end", "value": sub.gene_end, "tooltip": "Co-ordinate in the assembly or sequence of the last gene-coding nucleotide in the coding_sequence field", "field": "gene_end"})
+    ret.items.append({"item": "UTR 5\' Start", "value": sub.utr_5_prime_start, "tooltip": "Start co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)", "field": "utr_5_prime_start"})
+    ret.items.append({"item": "UTR 5\' End", "value": sub.utr_5_prime_end, "tooltip": "End co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)", "field": "utr_5_prime_end"})
+    ret.items.append({"item": "L-PART1 Start", "value": sub.leader_1_start, "tooltip": "Start co-ordinate in the assembly or sequence of L-PART1 (V-genes only)", "field": "leader_1_start"})
+    ret.items.append({"item": "L-PART1 End", "value": sub.leader_1_end, "tooltip": "End co-ordinate in the assembly or sequence of L-PART1 (V-genes only)", "field": "leader_1_end"})
+    ret.items.append({"item": "L-PART2 Start", "value": sub.leader_2_start, "tooltip": "Start co-ordinate in the assembly or sequence of L-PART2 (V-genes only)", "field": "leader_2_start"})
+    ret.items.append({"item": "L-PART2 End", "value": sub.leader_2_end, "tooltip": "End co-ordinate in the assembly or sequence of L-PART2 (V-genes only)", "field": "leader_2_end"})
+    ret.items.append({"item": "v_rs_start", "value": sub.v_rs_start, "tooltip": "Start co-ordinate in the assembly or sequence of V recombination site (V-genes only)", "field": "v_rs_start"})
+    ret.items.append({"item": "v_rs_end", "value": sub.v_rs_end, "tooltip": "End co-ordinate in the assembly or sequence of V recombination site (V-genes only)", "field": "v_rs_end"})
+    ret.items.append({"item": "d_rs_3_prime_start", "value": sub.d_rs_3_prime_start, "tooltip": "Start co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)", "field": "d_rs_3_prime_start"})
+    ret.items.append({"item": "d_rs_3_prime_end", "value": sub.d_rs_3_prime_end, "tooltip": "End co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)", "field": "d_rs_3_prime_end"})
+    ret.items.append({"item": "d_rs_5_prime_start", "value": sub.d_rs_5_prime_start, "tooltip": "Start co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)", "field": "d_rs_5_prime_start"})
+    ret.items.append({"item": "d_rs_5_prime_end", "value": sub.d_rs_5_prime_end, "tooltip": "End co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)", "field": "d_rs_5_prime_end"})
+    ret.items.append({"item": "j_rs_start", "value": sub.j_rs_start, "tooltip": "Start co-ordinate in the assembly or sequence of J recombination site (J-genes only)", "field": "j_rs_start"})
+    ret.items.append({"item": "j_rs_end", "value": sub.j_rs_end, "tooltip": "End co-ordinate in the assembly or sequence of J recombination site (J-genes only)", "field": "j_rs_end"})
+    ret.items.append({"item": "Codon Frame", "value": sub.j_codon_frame, "tooltip": "Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)", "field": "j_codon_frame"})
+    ret.items.append({"item": "J CDR3 End", "value": sub.j_cdr3_end, "tooltip": "In the case of a J-gene, the co-ordinate in the assembly or sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)", "field": "j_cdr3_end"})
     return ret
 
