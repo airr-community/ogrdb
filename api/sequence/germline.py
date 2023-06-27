@@ -77,7 +77,7 @@ class versionsApi(Resource):
         result = q.one_or_none()
 
         if result:
-            return germline_set_to_airr(result)
+            return germline_set_to_airr(result, False)
         else:
             return {'error': 'Set not found'}
 
