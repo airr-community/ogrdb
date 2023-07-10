@@ -32,17 +32,25 @@
         {% if any_published %}
            <div class="row">
                 <div style="margin-left: 15px;">
-                   {%  if species == 'Mouse' %}
-                        <div class="col-md-8">
-                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
-                        </div>
-                   {% endif %}
+                    {%  if species == 'Mouse' %}
                     <div class="col-md-8">
-                        For information on the names and approach used in these sets, please see <a href="https://wordpress.vdjbase.org/wp-content/uploads/2022/09/IMMREP22-Next-generation-germline-reference-sets-for-B-cell-and-T-cell-repertoire-sequencing.pdf">our poster.</a>
+                        <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
                     </div>
+                    {% endif %}
+                    {%  if species == 'Human' %}
+                    <div class="col-md-8">
+                        <h2>These sets are not finalised. They are provided here so that you can provide feedback on their use, but they are not recommended for use in publication. Once they
+                        are finalised, this message will be removed and DOIs will be issued.</h2>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-8">
+                        For information on the names and approach used in these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
+                    </div>
+                    {%  if species != 'Human' %}
                     <div class="col-md-8">
                         For tools to help with the adoption of the new name format, please see <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
                     </div>
+                    {% endif %}
                     <div class="col-md-8">
                         The <a href="/api">OGRDB REST API</a> allows you to list and download germline sets programatically.
                     </div>
