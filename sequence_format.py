@@ -53,6 +53,40 @@ def format_nuc_sequence(seq, width, ra=None, gapped=False):
 
     return ret
 
+# Format an unarranged sequence, including feature annotations for
+# whatever indeces we have
+def format_unrearranged_sequence(seq, width, gv_items):
+    if seq is None or len(seq) == 0:
+        return ''
+
+    possible_features = {'utr_5_prime': 'UTR', 'leader_1': 'LDR1', 'leader_2': 'LDR2', 'v_rs': 'RSS', 'd_rs_3_prime': "3' RSS", 'd_rs_5_prime': "5' RSS", 'j_rs': 'RSS'}
+    feature_string = ' ' * len(seq)
+    for feature in possible_features.keys():
+        if feature + '_start' in gv_items and feature + '_end' in gv_items and gv_items[feature + '_start']['value'] and gv_items[feature + '_end']['value']:
+            try:
+                start = gv_items[feature + '_start']['value'] - 1
+                end = gv_items[feature + '_end']['value']
+
+                if start < end and start >= 0 and end <= len(feature_string) and end - start > len(possible_features[feature]) + 2:
+                    feat = possible_features[feature].center(end-start - 2, '-')
+                    feat = f"<{feat}>"
+                    feature_string = feature_string[:start] + feat + feature_string[end:]
+            except:
+                pass
+
+    ind = 1
+    ret = ''
+
+    for frag in chunks(seq, width):
+        ret += '%-5d' % ind
+        if len(frag) > 10:
+            ret += ' '*(len(frag)-10) + '%5d' % (ind + len(frag) - 1)
+        ret += '\n' + frag + '\n' + feature_string[ind-1:ind-1+len(frag)] + '\n\n'
+        ind += len(frag)
+
+    return ret
+
+
 def format_fasta_sequence(name, seq, width):
     ret = '>' + name + '\n'
 

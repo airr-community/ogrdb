@@ -23,11 +23,11 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
     return ret
 
 
-def pretty_item(fn, value, seq, trailer_text):
+def pretty_item(fn, value, seq, trailer_text, gv_items):
     if fn == 'sequence':
         if value is not None and len(value) > 0:
             value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
-                           % (format_nuc_sequence(seq.sequence, 50) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
+                           % (format_unrearranged_sequence(value, 50, gv_items) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
         else:
             value = 'None'
     elif fn == 'coding_seq_imgt':
@@ -98,7 +98,7 @@ def setup_sequence_view_tables(db, seq, private):
         trailer_text = ''
 
     for fn, field in gv_items.items():
-        rep = pretty_item(fn, field['value'], seq, trailer_text)
+        rep = pretty_item(fn, field['value'], seq, trailer_text, gv_items)
         gv_items[fn]['value'] = rep
 
     tables = {}
@@ -127,8 +127,8 @@ def setup_sequence_view_tables(db, seq, private):
 
     if tables['diffs'] is not None:
         for row in tables['diffs'].items:
-            row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text)
-            row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text)
+            row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text, gv_items)
+            row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text, gv_items)
 
     for entry in history:
         t = StyledTable([entry], classes=['tablefixed'])
