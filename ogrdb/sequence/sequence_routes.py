@@ -961,7 +961,13 @@ def sequence(id):
     tables['versions'] = setup_sequence_version_table(versions, None)
     del tables['versions']._cols['sequence']
     del tables['versions']._cols['coding_seq_imgt']
-    return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name)
+
+    vdjbase_link = Markup('<a href=%sgenerep/%s/%s/%s>here</a>' % (app.config['VDJBASE_URL'],
+                                                           seq.species.replace('Human_TCR', 'Human'),
+                                                           seq.locus,
+                                                           seq.sequence_name))
+
+    return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name, vdjbase_link=vdjbase_link)
 
 
 # Copy submitter and acknowledgements from sequence submission to gene_description

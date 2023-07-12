@@ -9,7 +9,6 @@
             <li role="presentation" class="active"><a href="#download" aria-controls="download" role="tab" data-toggle="tab" id="tab-download">Download</a></li>
             <li role="presentation"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
             <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-            <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
             <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
             <li role="presentation"><a href="#versions" aria-controls="versions" role="tab" data-toggle="tab" id="tab-versions">Versions</a></li>
         </ul>
@@ -79,20 +78,6 @@
                         <div class="col-sm-10 col-sm-offset-1">
                             {{ tables['acknowledgements'] }}
                         </div>
-                </div>
-            </div>
-
-            <div role="tabpanel" class="tab-pane" id="notes">
-                <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>
-                    <p class="col-sm-offset-1 col-sm-10">Notes are added by IARC reviewers.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
-                        {{ tables['notes'] }}
-                    </div>
-                    <h3 class="col-sm-offset-1 col-sm-11">Attachments</h3>
-                    <div class="col-sm-10 col-sm-offset-1">
-                        {{ tables['attachments'] }}
-                    </div>
                 </div>
             </div>
 

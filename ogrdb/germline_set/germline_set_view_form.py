@@ -32,7 +32,6 @@ def setup_germline_set_view_tables(db, germline_set, private):
     tables['description'] = make_GermlineSet_view(germline_set)
     tables['genes'] = setup_gene_description_table(germline_set, action=False)
     tables['acknowledgements'] = make_Acknowledgements_table(germline_set.acknowledgements)
-    tables['notes'] = make_GermlineSetNotes_table([{'notes': Markup(safe_textile(germline_set.notes_entries[0].notes_text)), 'id': germline_set.id}])
     tables['attachments'] = EditableAttachedFileTable(make_AttachedFile_table(germline_set.notes_entries[0].attached_files),
                                                       'attached_files', AttachedFileForm, germline_set.notes_entries[0].attached_files,
                                                       legend='Attachments',

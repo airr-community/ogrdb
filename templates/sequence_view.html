@@ -29,30 +29,34 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Evidence</h3>
-                    <p class="col-sm-offset-1 col-sm-10">The table below lists the submissions, and the inferences within them, on which this published sequence is based.
-                    The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
-                    over time as additional inferences are submitted. </p>
-                    <p class="col-sm-offset-1 col-sm-10">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
-                    tick or cross will provide an alignment. Mismatches may be caused, for example, by the inclusion of leader sequences, or nucleotides in the inference
-                    which do not in IARC's opinion have sufficient evidence for inclusion in the sequence.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
-                        <div class="form-group">
-                            {{ tables['inferred_sequences'] }}
+                {% if  tables['inferred_sequences'].items %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Evidence</h3>
+                        <p class="col-sm-offset-1 col-sm-10">The table below lists the submissions, and the inferences within them, on which this published sequence is based.
+                        The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
+                        over time as additional inferences are submitted. </p>
+                        <p class="col-sm-offset-1 col-sm-10">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
+                        tick or cross will provide an alignment. Mismatches may be caused, for example, by the inclusion of leader sequences, or nucleotides in the inference
+                        which do not in IARC's opinion have sufficient evidence for inclusion in the sequence.</p>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                {{ tables['inferred_sequences'] }}
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
 
-                <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Supporting Observations</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Sequences in other published genotypes which have been identified by IARC and support the inference: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
-                        <div class="form-group">
-                            {{ tables['supporting_observations'] }}
+                {% if  tables['supporting_observations'].items %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Supporting Observations</h3>
+                        <p class="col-sm-offset-1 col-sm-11">Sequences in other submitted genotypes which have been identified by IARC and support the inference: </p>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                {{ tables['supporting_observations'] }}
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
 
                 {% if  tables['matches'] %}
                     <div class="row">
@@ -66,15 +70,17 @@
                     </div>
                 {% endif %}
 
-                <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Observations in VDJbase</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Inferred sequences in VDJbase that match this sequence: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
-                        <div class="form-group">
-                            {{ tables['vdjbase_matches'] }}
+                {% if  tables['vdjbase_matches'].items %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Observations in VDJbase</h3>
+                        <p class="col-sm-offset-1 col-sm-11">Inferred sequences in VDJbase that match this sequence: </p>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                {{ tables['vdjbase_matches'] }}
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
 
                 <div class="row">
                     <h3 class="col-sm-offset-1 col-sm-11">Un-rearranged Observations</h3>
@@ -85,6 +91,15 @@
                         </div>
                     </div>
                 </div>
+
+                {% if not tables['vdjbase_matches'].items %}
+                    <div class="row">
+                        <h3 class="col-sm-offset-1 col-sm-11">Observations in AIRR-seq Repertoires</h3>
+                        <p class="col-sm-offset-1 col-sm-11">Click {{ vdjbase_link }} to review supporting data in VDJbase. </p>
+                        <p class="col-sm-offset-1 col-sm-11"> Clicking the link will take you to VDJbase. Open in a new tab if you want to keep this page open.
+                        In VDJbase, click on the count in the Apperances column to see a list of samples in which the sequence was found. </p>
+                    </div>
+                {% endif %}
 
                 <div class="row">
                     {% if tables['description']['non-coding'].items|length > 0 %}
