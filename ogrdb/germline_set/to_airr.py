@@ -218,7 +218,7 @@ class AIRRAlleleDescription:
             self.d_rs_5_prime_end = fnone(gd.d_rs_5_prime_end)
 
         if self.sequence_type == 'J':
-            self.j_codon_frame = gd.j_codon_frame if gd.j_codon_frame in [1,2,3] else None
+            self.j_codon_frame = None if not gd.j_codon_frame else (gd.j_codon_frame if gd.j_codon_frame in [1,2,3] else None)
             self.j_cdr3_end = fnone(gd.j_cdr3_end)
             self.j_rs_start = fnone(gd.j_rs_start)
             self.j_rs_end = fnone(gd.j_rs_end)
@@ -234,7 +234,7 @@ class AIRRAlleleDescription:
                 'gff_seqid': fnone(gen.gff_seqid),
                 'gff_start': fnone(gen.sequence_start),
                 'gff_end': fnone(gen.sequence_end),
-                'strand': '+' if gen.sense.lower == 'forward' else '-' if gen.sense.lower == 'reverse' else None,
+                'strand': None if not gen.sense else ('+' if gen.sense.lower == 'forward' else '-' if gen.sense.lower == 'reverse' else None)
             })
 
         self.rearranged_support = []
