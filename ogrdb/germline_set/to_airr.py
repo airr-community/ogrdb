@@ -257,7 +257,7 @@ class AIRRAlleleDescription:
         self.paralogs = fnone(self.paralogs)
 
         self.curation = fnone(gd.notes)
-        self.curational_tags = [enum_choice(x, ['likely_truncated', 'likely_full_length']) for x in gd.curational_tags.split(',')]
+        self.curational_tags = [enum_choice(x, ['likely_truncated', 'likely_full_length']) for x in gd.curational_tags.split(',')] if gd.curational_tags else []
         self.curational_tags = fnone(self.curational_tags)
 
 
