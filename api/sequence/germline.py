@@ -88,7 +88,7 @@ class versionsApi(Resource):
         if germline_set:
             return download_germline_set_by_id(germline_set.id, format)
         else:
-            return {'error': 'Set not found'}
+            return {'error': 'Set not found'}, 404
 
 
 @ns.route('/set/<species>/<set_name>/<release_version>/<format>')
@@ -125,7 +125,7 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
         q = q.filter(GermlineSet.status == 'published')
     else:
         if not version.isdigit():
-            return {'error': 'Invalid release_version'}
+            return {'error': 'Invalid release_version'}, 404
         
         q = q.filter(GermlineSet.release_version == int(version))\
             .filter(or_(GermlineSet.status == 'published', GermlineSet.status == 'superceded'))
@@ -135,26 +135,26 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
     if result:
         return download_germline_set_by_id(result[0], format)
     else:
-        return {'error': 'Set not found'}
+        return {'error': 'Set not found'}, 404
 
 
 def download_germline_set_by_id(germline_set_id, format):
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
-        return {'error': 'invalid format'}
+        return {'error': 'invalid format'}, 404
 
     q = db.session.query(GermlineSet).filter(GermlineSet.id == germline_set_id)
     germline_set = q.one_or_none()
 
     if not germline_set:
-        return {'error': 'Set not found'}
+        return {'error': 'Set not found'}, 404
 
     if len(germline_set.gene_descriptions) < 1:
-        return {'error': 'No sequences to download'}
+        return {'error': 'No sequences to download'}, 404
     
     extend = False
     if '_ex' in format:
         if 'Human' not in germline_set.species:
-            return {'error': 'Set not found'}
+            return {'error': 'Set not found'}, 404
         extend = True
 
     if 'airr' in format:
