@@ -146,6 +146,7 @@ class AIRRAlleleDescription:
         self.coding_sequence = gd.coding_seq_imgt.replace('.', '')
         if extend and gd.ext_3prime:
             self.coding_sequence += gd.ext_3prime
+        self.ext_3prime = fnone(gd.ext_3prime)
         self.aliases = []
         if gd.alt_names and len(gd.alt_names) > 0:
             self.aliases = gd.alt_names.split(',')

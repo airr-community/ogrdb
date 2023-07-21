@@ -1463,7 +1463,7 @@ def download_sequences(species, format, exc):
     if format == 'airr':
         ad = []
         for desc in results:
-            ad.append(vars(AIRRAlleleDescription(desc)))
+            ad.append(vars(AIRRAlleleDescription(desc, extend=False)))
 
         dl = json.dumps(ad, default=str, indent=4)
         ext = 'json'

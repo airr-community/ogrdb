@@ -7,6 +7,7 @@ from os import mkdir, remove
 from os.path import isdir
 from traceback import format_exc
 import io
+from urllib import parse
 
 from flask import request, render_template, redirect, flash, url_for, Response
 from flask_login import current_user, login_required
@@ -76,7 +77,7 @@ def germline_sets(species):
 
     results = q.all()
 
-    affirmed = setup_published_germline_set_list_info(results, current_user, species=='Human')
+    affirmed = setup_published_germline_set_list_info(results, current_user, 'Human' in species)
 
     foo =  render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
     return foo
@@ -684,11 +685,77 @@ def germline_set(id):
     supplementary_files = len(tables['attachments'].table.items) > 0
 
     notes = safe_textile(germline_set.notes_entries[0].notes_text)
-    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes, id=id)
+    extended = 'Human' in germline_set.species
+
+    if germline_set.status == 'published' or germline_set.status == 'superceded':
+        version = 'published' if germline_set.status == 'published' else str(germline_set.release_version)
+
+        if germline_set.species_subgroup:
+            dl_args = "%s/%s/%s/%s" % (germline_set.species, germline_set.species_subgroup.replace('/', '%252f'), germline_set.germline_set_name.replace('/', '%252f'), version)
+        else:
+            dl_args = "%s/%s/%s" % (germline_set.species, germline_set.germline_set_name.replace('/', '%252f'), version)
+    else:
+        dl_args = str(germline_set.id)
+
+    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes, dl_args=dl_args, extended=extended)
 
 
-@app.route('/download_germline_set/<set_id>/<format>')
-def download_germline_set(set_id, format):
+@app.route('/download_germline_set/<path:varargs>')
+def download_germline_set(varargs=None):
+    if not varargs:
+        flash('Invalid request')
+        return redirect('/')
+    
+    args = varargs.split('/')
+    if len(args) == 2 and args[0].isdigit():
+        return download_germline_set_by_id(int(args[0]), args[1])
+    
+    if len(args) == 4:
+        return download_germline_set_by_name(args[0], None, args[1], args[2], args[3])
+    elif len(args) == 5:
+        return download_germline_set_by_name(args[0], args[1], args[2], args[3], args[4])
+
+    flash('Invalid request')
+    return redirect('/')
+
+
+def download_germline_set_by_name(species, subspecies, germline_set_name, version, format):
+    subspecies = parse.unquote(parse.unquote(subspecies)) if subspecies else None
+    germline_set_name = parse.unquote(parse.unquote(germline_set_name))
+
+    q = db.session.query(
+            GermlineSet.id,
+        )\
+        .filter(GermlineSet.species == species)\
+        .filter(GermlineSet.germline_set_name == germline_set_name)\
+        .distinct()    
+    
+    if subspecies:
+        q = q.filter(GermlineSet.species_subgroup == subspecies)
+    
+    if version == 'published' or version == 'latest':
+        q = q.filter(GermlineSet.status == 'published')
+    else:
+        if not version.isdigit():
+            flash('Invalid version')
+            return redirect('/')
+        
+        q = q.filter(GermlineSet.release_version == int(version))\
+            .filter(or_(GermlineSet.status == 'published', GermlineSet.status == 'superceded'))
+
+    result = q.one_or_none()
+
+    if result:
+        return download_germline_set_by_id(result[0], format)
+    else:
+        flash('Invalid version')
+        return redirect('/')
+
+
+        
+
+
+def download_germline_set_by_id(set_id, format):
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
         flash('Invalid format')
         return redirect('/')
@@ -708,12 +775,13 @@ def download_germline_set(set_id, format):
 
     if 'airr' in format:
         dl = json.dumps(germline_set_to_airr(germline_set, extend), default=str, indent=4)
-        filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+        filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
         filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
 
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+
 
 
 zenodo_metadata_template = {

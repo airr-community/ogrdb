@@ -47,15 +47,22 @@ def make_download_items(item, extended):
     else:
         ext = ''
 
+    version = 'published' if item.status == 'published' else str(item.release_version)
+
+    if item.species_subgroup:
+        args = "%s/%s/%s/%s" % (item.species, item.species_subgroup.replace('/', '%252f'), item.germline_set_name.replace('/', '%252f'), version)
+    else:
+        args = "%s/%s/%s" % (item.species, item.germline_set_name.replace('/', '%252f'), version)
+
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-primary icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;AIRR (JSON)</a>' %
-        url_for('download_germline_set', set_id=item.id, format='airr'+ext))
+        url_for('download_germline_set', varargs='%s/%s' % (args, 'airr'+ext)))
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;FASTA Gapped</a>' %
-        url_for('download_germline_set', set_id=item.id, format='gapped'+ext))
+        url_for('download_germline_set', varargs='%s/%s' % (args, 'gapped'+ext)))
     fmt_string.append(
         '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-file"></span>&nbsp;FASTA Ungapped</a>' %
-        url_for('download_germline_set', set_id=item.id, format='ungapped'+ext))
+        url_for('download_germline_set', varargs='%s/%s' % (args, 'ungapped'+ext)))
     if item.notes_entries:
         for af in item.notes_entries[0].attached_files:
             fmt_string.append(
