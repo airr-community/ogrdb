@@ -158,9 +158,11 @@ def download_germline_set_by_id(germline_set_id, format):
         extend = True
 
     if 'airr' in format:
-        return(germline_set_to_airr(germline_set, extend))
+        dl = germline_set_to_airr(germline_set, extend)
+        filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
         filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
-        return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+    
+    return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 
