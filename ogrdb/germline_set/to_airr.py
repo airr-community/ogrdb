@@ -187,6 +187,10 @@ class AIRRAlleleDescription:
             self.v_rs_end = fnone(gd.v_rs_end)
 
             cs = gd.coding_seq_imgt
+
+            while cs[-1] == '.':    # remove trailing gaps
+                cs = cs[:-1]
+
             if extend and gd.ext_3prime:
                 cs += gd.ext_3prime
 
