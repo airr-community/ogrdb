@@ -37,8 +37,9 @@ from db.submission_db import Submission
 from db.novel_vdjbase_db import NovelVdjbase
 
 from forms.aggregate_form import AggregateForm
-from forms.gene_description_form import GenomicSupportForm, GeneDescriptionForm
+from forms.gene_description_form import GeneDescriptionForm
 from forms.gene_description_notes_form import GeneDescriptionNotesForm
+from forms.genomic_support_form import GenomicSupportForm
 from forms.journal_entry_form import JournalEntryForm
 from forms.sequence_new_form import NewSequenceForm
 from forms.sequences_species_form import SpeciesForm
