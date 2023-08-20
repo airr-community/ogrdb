@@ -769,6 +769,20 @@ def upload_evidence(form, species):
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.evidence_file.errors = errors
         return render_template('sequence_new.html', form=form, species=species)
+    
+    # remove existing evidence matching the uploaded evidence
+
+    for gd in gene_descriptions_to_update.values():
+        gene_description = gd['gene_description']
+        for row in gd['rows']:
+            for genomic_accession in gene_description.genomic_accessions:
+                if genomic_accession.accession == row['accession']:
+                    db.session.delete(genomic_accession)
+            for inferred_sequence in gene_description.inferred_sequences:
+                if inferred_sequence.seq_accession_no == row['accession']:
+                    db.session.delete(inferred_sequence)
+
+    db.session.commit()
 
     for gd in gene_descriptions_to_update.values():
         gene_description = gd['gene_description']
