@@ -809,7 +809,7 @@ def make_files_for_zenodo(germline_set):
         filedesc_pairs.append((fp, af.filename))
         info = sys.exc_info()
 
-    fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set), default=str, indent=4))
+    fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, False), default=str, indent=4))
     filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
     filedesc_pairs.append((fp, filename))
 
@@ -820,6 +820,20 @@ def make_files_for_zenodo(germline_set):
     fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'ungapped'))
     filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'ungapped')
     filedesc_pairs.append((fp, filename))
+
+    if 'Human' in germline_set.species:
+        fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, True), default=str, indent=4))
+        filename = '%s_%s_rev_%d_extended.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+        filedesc_pairs.append((fp, filename))
+
+        fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'gapped'))
+        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'gapped')
+        filedesc_pairs.append((fp, filename))
+
+        fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'ungapped'))
+        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'ungapped')
+        filedesc_pairs.append((fp, filename))
+
 
     return filenames, filedesc_pairs
 
