@@ -129,10 +129,11 @@ def make_SupportingObservation_table(results, private = False, classes=()):
 
 def setup_supporting_observation_table(seq, action=True):
     results = []
+    target_sequence = seq.coding_seq_imgt.replace('.', '')
     for genotype in seq.supporting_observations:
         gen = Markup('<a href="%s">%s</a>' % (url_for('genotype', id=genotype.genotype_description.id), genotype.genotype_description.genotype_name))
         results.append({'submission_id': genotype.genotype_description.submission.submission_id, 'subject_id': genotype.genotype_description.genotype_subject_id, 'genotype_name': gen, 'sequence_name': genotype.sequence_id,
-                        'allele_name': genotype.sequence_id, 'gene_sequence': seq.sequence_details.sequence, 'nt_sequence': genotype.nt_sequence, 'genotype_id': genotype.id, 'gene_description_id': seq.id})
+                        'allele_name': genotype.sequence_id, 'gene_sequence': genotype.nt_sequence, 'nt_sequence': target_sequence, 'genotype_id': genotype.id, 'gene_description_id': seq.id})
 
     table = make_SupportingObservation_table(results)
     table.add_column('match', InferredSequenceTableMatchCol('Sequence Match', tooltip="Ticked if the sequence exactly matches this inference. Click for alignment."))
