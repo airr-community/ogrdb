@@ -1,0 +1,21 @@
+Table	Description
+Acknowledgements	List of individuals whose contribution to this work should be acknowledged
+AttachedFile	File attached to submission or other items
+DupeGeneNote	A note explaining why a duplicate sequence does not form useful additional evidence for an inferred sequence
+GeneDescription	Details of a gene sequence which is inferred from one or more observations
+GenomicSupport	PubMed Id and publication details
+Genotype	Details of the complete genotype from which inferred sequences were drawn
+GenotypeDescription	Summary details of the genotype
+GermlineSet	Details of a 'germline set' bringing together multiple GeneDescriptions from the same strain or species. All genes in a GermlineSet should be from a single locus.
+InferenceTool	Tool used to infer the submitted sequences
+InferredSequence	Details of inferred sequences submitted for IARC approval
+JournalEntry	Message-style item used for history and notes
+NotesEntry	Notes and file attachment
+NovelVdjbase	Novel alleles collected from VDJbase for review
+Primer	PCR Primer
+PrimerSet	PCR Primer Set
+PubId	PubMed Id and publication details
+RecordSet	Record sets pertaining to a particular inference
+Repertoire	Details of the repertoire dataset from which inferences were made
+SampleName	Samples from which a genotype was derived
+Submission	Overall details of the submission

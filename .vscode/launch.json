@@ -38,5 +38,13 @@
             "program": "${file}",
             "justMyCode": true
         }
+        {
+            "name": "schema_to_tabfile",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/schema/schema_to_tabfile.py",
+            "cwd": "${workspaceFolder}/schema",
+            "justMyCode": true
+        }
     ]
 }

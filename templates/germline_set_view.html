@@ -19,7 +19,27 @@
             <div role="tabpanel" class="tab-pane active" id="download">
                 <div class="row">
                     {% if extended %}
-                    <h3 class="col-sm-offset-1 col-sm-11">Download Source Set</h3>
+                    <h3 class="col-sm-offset-1 col-sm-11">Download Reference Set (Recommended for AIRR-seq analysis)</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-sm-offset-1 col-sm-3">
+                                <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr_ex') }}" id="dl-airr" class="btn btn-primary">AIRR Format (JSON)</a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-3">
+                                <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped_ex') }}" id="dl-ungapped" class="btn btn-primary">Ungapped Sequences (FASTA)</a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-3">
+                                <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped_ex') }}" id="dl-gapped" class="btn btn-primary">Gapped Sequences (FASTA)</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                        {% if extended %}
+                    <h3 class="col-sm-offset-1 col-sm-11">Download Source Set (Not recommended for AIRR-seq analysis)</h3>
                     {% else %}
                     <h3 class="col-sm-offset-1 col-sm-11">Download</h3>
                     {% endif %}
@@ -39,26 +59,6 @@
                         </div>
                     </div>
                 </div>
-                {% if extended %}
-                <h3 class="col-sm-offset-1 col-sm-11">Download Reference Set</h3>
-                <div class="row">
-                    <div class="form-group">
-                        <div class="col-sm-offset-1 col-sm-3">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr_ex') }}" id="dl-airr" class="btn btn-primary">AIRR Format (JSON)</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-3">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped_ex') }}" id="dl-ungapped" class="btn btn-primary">Ungapped Sequences (FASTA)</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-3">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped_ex') }}" id="dl-gapped" class="btn btn-primary">Gapped Sequences (FASTA)</a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
                 {% if notes %}
                     <div class="row">
                         <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>

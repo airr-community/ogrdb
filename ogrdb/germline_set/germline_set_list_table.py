@@ -109,7 +109,6 @@ def setup_published_germline_set_list_info(results, current_user, extended):
     affirmed = make_GermlineSet_table(results)
     del affirmed._cols['species']
     if extended:
-        affirmed.add_column('download', GermlineSetListDownloadCol('Download Source Set'))
         affirmed.add_column('download_ext', GermlineSetListExtendedDownloadCol('Download AIRR-Seq Reference Set'))
     else:
         affirmed.add_column('download', GermlineSetListDownloadCol('Download'))

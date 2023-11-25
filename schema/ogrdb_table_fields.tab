@@ -1,0 +1,253 @@
+Table	Fieldname	Field_type	Description
+Acknowledgements	ack_ORCID_id	ORCID ID	Individual's ORCID Id, if available
+Acknowledgements	ack_institution_name	string	Individual's department and institution name
+Acknowledgements	ack_name	string	Name of individual to be acknowledged as contributing to this work
+Acknowledgements	description_id	integer	
+Acknowledgements	germline_set_id	integer	
+Acknowledgements	submission_id	integer	
+AttachedFile	filename	string	Filename as provided by user
+AttachedFile	gene_description_id	integer	
+AttachedFile	notes_id	integer	
+AttachedFile	novel_vdjbase_id	integer	
+DupeGeneNote	author	email_address	email address of author
+DupeGeneNote	body	text	body text of entry
+DupeGeneNote	date	date	Date submission received
+DupeGeneNote	gene_description_id	integer	
+DupeGeneNote	genotype_id	integer	
+GeneDescription	affirmation_level	[0, 1, 2, 3]	Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)
+GeneDescription	allele_designation	string_50	Allele designation, if identified
+GeneDescription	alt_names	string	Alternative names for this sequence
+GeneDescription	chromosome	integer	chromosome on which the gene is located
+GeneDescription	coding_seq_imgt	IUPAC GAPPED	nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
+GeneDescription	curational_tags	['none', 'likely_truncated', 'likely_full-length']	Controlled-vocabulary tags applied to this description
+GeneDescription	d_rs_3_prime_end	integer	End co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
+GeneDescription	d_rs_3_prime_start	integer	Start co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
+GeneDescription	d_rs_5_prime_end	integer	End co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
+GeneDescription	d_rs_5_prime_start	integer	Start co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
+GeneDescription	description_id	string_50	Unique identifier of this gene sequence
+GeneDescription	duplicate_sequences	list of inferred sequences	
+GeneDescription	end_3prime_ext	integer	End co-ordinate of 3\' extension (if any) in IMGT numbering
+GeneDescription	end_5prime_ext	integer	End co-ordinate of 5\' extension (if any) in IMGT numbering
+GeneDescription	ext_3prime	IUPAC_GAPPED	Extending sequence at 3\' end (IMGT gapped)
+GeneDescription	ext_5prime	IUPAC_GAPPED	Extending sequence at 5\' end (IMGT gapped)
+GeneDescription	functionality	['F', 'ORF', 'P']	Functionality
+GeneDescription	gene_end	integer	Co-ordinate (in the sequence field) of the last gene-coding nucleotide in the coding_sequence field
+GeneDescription	gene_start	integer	Co-ordinate (in the sequence field) of the first nucleotide in the coding_sequence field
+GeneDescription	gene_subgroup	string_50	Gene subgroup (family), as (and if) identified for this species and gene
+GeneDescription	imgt_name	string_50	The name of this sequence as assigned by IUIS
+GeneDescription	inference_type	['Genomic Only', 'Rearranged Only', 'Genomic and rearranged']	Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)
+GeneDescription	inferred_extension	boolean	Checked if there is an inferred extension to the canonical sequence
+GeneDescription	inferred_sequences	list of inferred sequences	
+GeneDescription	j_cdr3_end	integer	In the case of a J-gene, the co-ordinate in the Coding Sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)
+GeneDescription	j_codon_frame	[1, 2, 3]	Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)
+GeneDescription	j_rs_end	integer	End co-ordinate in the Full Sequence of J recombination site (J-genes only)
+GeneDescription	j_rs_start	integer	Start co-ordinate in the Full Sequence of J recombination site (J-genes only)
+GeneDescription	lab_address	string	Institution and full address of corresponding author
+GeneDescription	leader_1_end	integer	End co-ordinate in the Full Sequence of L-PART1 (V-genes only)
+GeneDescription	leader_1_start	integer	Start co-ordinate in the Full Sequence of L-PART1 (V-genes only)
+GeneDescription	leader_2_end	integer	End co-ordinate in the Full Sequence of L-PART2 (V-genes only)
+GeneDescription	leader_2_start	integer	Start co-ordinate in the Full Sequence of L-PART2 (V-genes only)
+GeneDescription	locus	['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD']	Gene locus
+GeneDescription	maintainer	string_50	Maintainer of this sequence record
+GeneDescription	mapped	boolean	Whether the gene has been mapped to a specific location in the chromosome
+GeneDescription	notes	text	Notes
+GeneDescription	notes_attachment	multifile	File attachments from submitter accompanying submission
+GeneDescription	paralog_rep	boolean	If true, use the name of this allele in sequence-distinct datasets. If no representative is specified, the paralog with the lowest gene number is used.
+GeneDescription	paralogs	string	Canonical names of 0 or more paralogs
+GeneDescription	release_date	date	Date of this release
+GeneDescription	release_description	text	Brief descriptive notes of the reason for this release and the changes embodied
+GeneDescription	release_version	integer	Version number of this record, updated whenever a revised version is published or released
+GeneDescription	sequence	IUPAC DOTTED	nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences
+GeneDescription	sequence_name	string_50	The canonical name of this sequence as assigned by IARC
+GeneDescription	sequence_type	['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader']	Sequence type (V, D, J, CH1 ... CH4, Leader)
+GeneDescription	species	string	Binomial designation of subject's species
+GeneDescription	species_subgroup	string_50	Race, strain or other species subgroup to which this subject belongs
+GeneDescription	species_subgroup_type	['none', 'breed', 'strain', 'inbred', 'outbred', 'locational']	Category of subgroup
+GeneDescription	start_3prime_ext	integer	Start co-ordinate of 3\' extension (if any) in IMGT numbering
+GeneDescription	start_5prime_ext	integer	Start co-ordinate of 5\' extension (if any) in IMGT numbering
+GeneDescription	status	['published', 'draft', 'retired', 'withdrawn']	Status of record
+GeneDescription	subgroup_designation	string_50	Gene designation within this subgroup, if identified
+GeneDescription	supporting_observations	list of inferred sequences	
+GeneDescription	utr_5_prime_end	integer	End co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)
+GeneDescription	utr_5_prime_start	integer	Start co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)
+GeneDescription	v_rs_end	integer	End co-ordinate in the Full Sequence of V recombination site (V-genes only)
+GeneDescription	v_rs_start	integer	Start co-ordinate in the Full Sequence of V recombination site (V-genes only)
+GenomicSupport	accession	string	Accession number of the assembly or sequence within the repository
+GenomicSupport	d_rs_3_prime_end	integer	End co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)
+GenomicSupport	d_rs_3_prime_start	integer	Start co-ordinate in the assembly or sequence of 3 prime D recombination site (D-genes only)
+GenomicSupport	d_rs_5_prime_end	integer	End co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)
+GenomicSupport	d_rs_5_prime_start	integer	Start co-ordinate in the assembly or sequence of 5 prime D recombination site (D-genes only)
+GenomicSupport	gene_end	integer	Co-ordinate in the assembly or sequence of the last gene-coding nucleotide in the coding_sequence field
+GenomicSupport	gene_start	integer	Co-ordinate in the assembly or sequence of the first nucleotide in the coding_sequence field
+GenomicSupport	gff_seqid	string	name of the chromosome or scaffold (for assemblies only)
+GenomicSupport	j_cdr3_end	integer	In the case of a J-gene, the co-ordinate in the assembly or sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)
+GenomicSupport	j_codon_frame	[1, 2, 3]	Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)
+GenomicSupport	j_rs_end	integer	End co-ordinate in the assembly or sequence of J recombination site (J-genes only)
+GenomicSupport	j_rs_start	integer	Start co-ordinate in the assembly or sequence of J recombination site (J-genes only)
+GenomicSupport	leader_1_end	integer	End co-ordinate in the assembly or sequence of L-PART1 (V-genes only)
+GenomicSupport	leader_1_start	integer	Start co-ordinate in the assembly or sequence of L-PART1 (V-genes only)
+GenomicSupport	leader_2_end	integer	End co-ordinate in the assembly or sequence of L-PART2 (V-genes only)
+GenomicSupport	leader_2_start	integer	Start co-ordinate in the assembly or sequence of L-PART2 (V-genes only)
+GenomicSupport	notes	text	Notes
+GenomicSupport	patch_no	string	Patch number of the assembly or sequence within the repository
+GenomicSupport	repository	string	Name of the repository in which the assembly or sequence is deposited
+GenomicSupport	sense	['forward', 'reverse']	+ (forward) or - (reverse)
+GenomicSupport	sequence	text	Sequence of interest described in this record (typically this will include gene and promoter region)
+GenomicSupport	sequence_end	integer	end co-ordinate of the sequence of this gene in the assembly or sequence
+GenomicSupport	sequence_id	integer	
+GenomicSupport	sequence_start	integer	start co-ordinate of the sequence of this gene in the assembly or sequence
+GenomicSupport	sequence_type	['Locational', 'Nonlocational', 'Inferred']	Locational should be used where the unrearranged sequence includes multiple genes, enabling the location of this gene to be determined relative to others
+GenomicSupport	url	string	Link to record
+GenomicSupport	utr_5_prime_end	integer	End co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)
+GenomicSupport	utr_5_prime_start	integer	Start co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)
+GenomicSupport	v_rs_end	integer	End co-ordinate in the assembly or sequence of V recombination site (V-genes only)
+GenomicSupport	v_rs_start	integer	Start co-ordinate in the assembly or sequence of V recombination site (V-genes only)
+Genotype	aa_diff	integer	For inferred alleles, the number of amino acids that differ between this sequence and the closest reference gene and allele
+Genotype	aa_substitutions	string	For inferred alleles, the list of amino acid substitutions (e.g. A96N) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
+Genotype	allelic_percentage	number	The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of this specific gene, *100
+Genotype	assigned_unmutated_frequency	number	The number of sequences exactly matching this allele divided by the number of sequences assigned to this allele, *100
+Genotype	closest_host	string	For inferred alleles, the closest reference gene and allele that is in the subject's inferred genotype
+Genotype	closest_reference	string	For inferred alleles, the closest reference gene and allele, as inferred by the tool
+Genotype	description_id	integer	
+Genotype	haplotyping_gene	string	The gene (or genes) from which haplotyping was inferred (e.g. IGHJ6)
+Genotype	haplotyping_ratio	string	The ratio (expressed as two percentages) with which the two inferred haplotypes were found (e.g. 60:40)
+Genotype	nt_diff	integer	For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele
+Genotype	nt_diff_host	integer	For inferred alleles, the number of nucleotides that differ between this sequence and the closest reference gene and allele that is in the subject's inferred genotype
+Genotype	nt_sequence	IUPAC nucleotide notation	The consensus sequence provided by the inference tool
+Genotype	nt_sequence_gapped	IUPAC nucleotide notation	IMGT-gapped sequence (V-gene only)
+Genotype	nt_substitutions	string	For inferred alleles, Comma-separated list of nucleotide substitutions (e.g. G112A) between this sequence and the closest reference gene and allele. Please use IMGT numbering for V-genes, and number from start of coding sequence for D- or J- genes.
+Genotype	sequence_id	string	Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)
+Genotype	sequences	integer	Overall number of sequences assigned to this allele
+Genotype	unique_cdr3s	integer	The number of unique CDR3s associated with this allele
+Genotype	unique_cdr3s_unmutated	integer	The number of unique CDR3s associated with unmutated sequences of this allele
+Genotype	unique_ds	integer	The number of D allele calls (i.e., unique allelic sequences) associated with this allele
+Genotype	unique_ds_unmutated	integer	The number of D allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+Genotype	unique_js	integer	The number of J allele calls (i.e., unique allelic sequences) associated with this allele
+Genotype	unique_js_unmutated	integer	The number of J allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+Genotype	unique_vs	integer	The number of V allele calls (i.e., unique allelic sequences) associated with this allele
+Genotype	unique_vs_unmutated	integer	The number of V allele calls (i.e., unique allelic sequences) associated with unmutated sequences of this allele
+Genotype	unmutated_frequency	number	The number of sequences exactly matching the sequence of this allele divided by the number of sequences exactly matching any allele of any gene, *100
+Genotype	unmutated_sequences	integer	The number of sequences exactly matching this unmutated sequence
+Genotype	unmutated_umis	integer	The number of molecules (identified by Unique Molecular Identifiers) exactly matching this unmutated sequence (if UMIs were used)
+GenotypeDescription	gen_ncbi_hash	hidden	md5 sum of details passed to ncbi
+GenotypeDescription	genotype_biosample_ids	list	Comma-separated list of accession number(s) of the sample(s) from which the genotype was derived, e.g. SAMN05924304 (NCBI), SAMEA5178755 (ENA)
+GenotypeDescription	genotype_file	file	CSV file containing genotype information
+GenotypeDescription	genotype_filename	string	Name of the uploaded file from which the genotype was read
+GenotypeDescription	genotype_name	string	Descriptive name for this genotype
+GenotypeDescription	genotype_run_ids	string	Comma-separated list of accession number(s) of the sequence sets from which this genotype was derived, e.g. SRR7154792 (NCBI), ERX3006608 (NCBI)
+GenotypeDescription	genotype_subject_id	string	Identifier of the subject from which this genotype was inferred
+GenotypeDescription	inference_tool_id	integer	
+GenotypeDescription	locus	['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG']	Gene locus
+GenotypeDescription	sequence_type	['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader']	Sequence type (V, D, J, CH1 ... CH4, Leader)
+GenotypeDescription	submission_id	integer	
+GermlineSet	author	string	Corresponding author
+GermlineSet	doi	string	DOI of germline set deposition at Zenodo
+GermlineSet	gene_descriptions	list of gene descriptions	
+GermlineSet	germline_set_id	string	Unique identifier of the GermlineSet within this file
+GermlineSet	germline_set_name	string	descriptive name of this germline set
+GermlineSet	germline_set_ref	string	
+GermlineSet	lab_address	string	Institutional address of corresponding author
+GermlineSet	lab_name	string	Department of corresponding author
+GermlineSet	locus	['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD']	Gene locus
+GermlineSet	release_date	string	Date of this release
+GermlineSet	release_description	string	
+GermlineSet	release_version	integer	Version number of this record, allocated automatically
+GermlineSet	species	string	Binomial designation of subject's species
+GermlineSet	species_subgroup	string	Race, strain or other species subgroup to which this subject belongs
+GermlineSet	species_subgroup_type	['none', 'breed', 'strain', 'inbred', 'outbred', 'locational']	Category of subgroup
+GermlineSet	status	['published', 'draft', 'retired', 'withdrawn']	Status of record
+GermlineSet	zenodo_base_deposition	string	Base deposition id at zenodo
+GermlineSet	zenodo_current_deposition	string	Base deposition id at zenodo
+InferenceTool	submission_id	integer	
+InferenceTool	tool_name	string	Name of the inference tool
+InferenceTool	tool_settings	text	Settings/configuration of the tool when used to provide the inferences
+InferenceTool	tool_settings_name	string	Descriptive name for this combination of tool and settings
+InferenceTool	tool_starting_database	text	Starting germline database used by the tool (please specify where and when it was obtained, name, and version id, if any)
+InferenceTool	tool_version	string	Version of the inference tool
+InferredSequence	deposited_version	string	Version number of the sequence within the repository (e.g. 1)
+InferredSequence	end_3prime_ext	integer	End co-ordinate of 3\' extension (if any) in IMGT numbering
+InferredSequence	end_5prime_ext	integer	End co-ordinate of 5\' extension (if any) in IMGT numbering
+InferredSequence	ext_3prime	IUPAC_GAPPED	Extending sequence at 3\' end (IMGT gapped)
+InferredSequence	ext_5prime	IUPAC_GAPPED	Extending sequence at 5\' end (IMGT gapped)
+InferredSequence	genotype_id	integer	Identifier of the genotype from which these sequences were inferred
+InferredSequence	inferred_extension	boolean	Checked if the inference reports an extension to a known sequence
+InferredSequence	ncbi_hash	hidden	md5 sum of details passed to ncbi
+InferredSequence	run_ids	string	Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference, e.g. SRR7154792 (NCBI), ERX3006608 (ENA)
+InferredSequence	seq_accession_no	string	Accession number of the inferred allele within the repository, e.g. BK010573 (NCBI), MK308864 (ENA)
+InferredSequence	seq_record_title	string	Title of sequence record in the repository
+InferredSequence	sequence_id	integer	Identifier of the sequence within the genotype
+InferredSequence	start_3prime_ext	integer	Start co-ordinate of 3\' extension (if any) in IMGT numbering
+InferredSequence	start_5prime_ext	integer	Start co-ordinate of 5\' extension (if any) in IMGT numbering
+InferredSequence	submission_id	integer	Identifier of the submission in which these sequences are listed
+JournalEntry	author	email_address	email address of author
+JournalEntry	body	text	body text of entry
+JournalEntry	date	date	Date submission received
+JournalEntry	gene_description_id	integer	
+JournalEntry	germline_set_id	integer	
+JournalEntry	parent_id	integer	
+JournalEntry	submission_id	integer	
+JournalEntry	title	string	title of entry
+JournalEntry	type	['history', 'note']	Type of entry
+NotesEntry	germline_set_id	integer	
+NotesEntry	notes_attachment	multifile	File attachments from submitter accompanying submission
+NotesEntry	notes_attachment_filename	string	File attachment name
+NotesEntry	notes_text	text	Notes from submitter accompanying submission
+NotesEntry	novel_vdjbase_id	integer	
+NotesEntry	submission_id	integer	
+NovelVdjbase	d_haplotypes	integer	Number of samples in which this allele is D-haplotyped
+NovelVdjbase	example	string_50	Example sample in VDJbase displaying this allele
+NovelVdjbase	first_seen	date	Date VDJbase record was first seen
+NovelVdjbase	hetero_alleleic_j_haplotypes	integer	Number of samples in which this allele and at least one other allele of this gene are haplotyped
+NovelVdjbase	j_haplotypes	integer	Number of samples in which this allele is J-haplotyped
+NovelVdjbase	last_seen	date	Date VDJbase record was last seen
+NovelVdjbase	last_updated	date	Date the comments or status were last updated
+NovelVdjbase	locus	['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD']	Gene locus
+NovelVdjbase	sequence	string	Sequence in VDJbase
+NovelVdjbase	species	string_50	Species
+NovelVdjbase	status	['not reviewed', 'in review', 'rejected', 'holding', 'submitted', 'not current', 'modified']	Review status
+NovelVdjbase	subject_count	integer	Number of subjects in which this allele is found
+NovelVdjbase	updated_by	string_50	Name of last updater
+NovelVdjbase	vdjbase_name	string	Allele name (as recorded in VDJbase)
+Primer	primer_name	string	Primer name or quick description
+Primer	primer_seq	ambiguous nucleotide sequence	primer sequence (may contain ambiguous characters)
+Primer	primer_set_id	integer	
+PrimerSet	primer_set_name	string	Primer Set name or quick description
+PrimerSet	primer_set_notes	text	Notes on Primer Set purpose/usage
+PrimerSet	repertoire_id	integer	
+PubId	germline_set_id	integer	
+PubId	pub_authors	text	Author list
+PubId	pub_title	text	Publication Title
+PubId	pubmed_id	string	PubMed ID (e.g. 26543)
+PubId	repertoire_id	integer	
+PubId	sequence_id	integer	
+RecordSet	genotype_description_id	integer	
+RecordSet	inferred_sequence_id	integer	
+RecordSet	rec_accession_no	string	Accession number of the record set within the repository (eg SRR7663069)
+RecordSet	rec_record_title	string	Title of sequence record in the repository
+RecordSet	rec_url	string	URL to record in NCBI
+Repertoire	dataset_url	url	URL of the study or project within the repository
+Repertoire	miairr_compliant	[True, False]	Yes if the annotated reads and associated metadata is available in MiAIRR format
+Repertoire	miairr_link	url	Link to MiAIRR metadata, if available
+Repertoire	primer_sets	list primer_sets	PCR primer sets used for sequence amplification
+Repertoire	primers_overlapping	[True, False]	Do primers overlap with the stated sequence of any inferred allele?
+Repertoire	pub_ids	list of PubMed ids	Comma-separated list of PubMed IDs of peer-reviewed publications describing this dataset
+Repertoire	read_length	string	Read length in bases for each direction
+Repertoire	rep_accession_no	string	Accession number or serial number within the repository. please provide the BioProject (e.g. PRJNA349143) for NCBI or Study for ENA (e.g. PRJEB30386)
+Repertoire	rep_title	string	Title as listed in the repository
+Repertoire	repository_name	string	Name of the repository holding the sequence dataset.
+Repertoire	sequencing_platform	string	Designation of sequencing instrument used
+Repertoire	submission_id	integer	
+SampleName	genotype_description_id	integer	
+SampleName	sam_accession_no	string	Accession number of the record set within the repository (eg SAMN06821283)
+SampleName	sam_record_title	string	Title of sequence record in the repository
+SampleName	sam_url	string	URL to record in NCBI
+Submission	owner_id	integer	
+Submission	population_ethnicity	string	Information on the ethnicity/population/race of the sample from which the submitted allele was inferred (if not known, use UN)
+Submission	public	boolean	True if one or more inferences have been affirmed
+Submission	species	[]	Binomial designation of subject's species
+Submission	submission_date	date	Date submission received
+Submission	submission_id	string	Unique ID assigned by IARC on recipt of submission
+Submission	submission_status	['draft', 'reviewing', 'published', 'complete']	Status of submission
+Submission	submitter_address	string	Institution and full address of submitter
+Submission	submitter_email	email_address	Preferred email address of submitter
+Submission	submitter_name	string	Full contact information of the submitter, i.e. the person depositing the data
