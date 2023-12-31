@@ -285,20 +285,6 @@ def check_submission_complete(sub, validation_result):
         incomplete.append('Submission must contain at least one inferred sequence')
         validation_result.tag = 'inferred_sequence'
 
-    # Inferred sequences have accession number, select set
-
-    for inf in sub.inferred_sequences:
-        if not inf.seq_accession_no:
-            incomplete.append('Each inferred sequence must provide an accession number')
-            validation_result.tag = 'inferred_sequence'
-            break
-
-    for inf in sub.inferred_sequences:
-        if not inf.run_ids:
-            incomplete.append('Each inferred sequence must provide select sets')
-            validation_result.tag = 'inferred_sequence'
-            break
-
     # Genotype records contain sample_ids and sequence sets
     if not sub.genotype_descriptions:
         incomplete.append('Submission must contain at least one inferred genotype')

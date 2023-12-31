@@ -441,7 +441,7 @@ InferredSequence:
             type: string
             description: Accession number of the inferred allele within the repository, e.g. BK010573 (NCBI), MK308864 (ENA)
             label: Accession Number
-            nonblank: true
+            nonblank: false
         seq_record_title:
             type: string
             description: Title of sequence record in the repository
@@ -458,7 +458,7 @@ InferredSequence:
             type: string
             description: Comma-separated list of accession number(s) of the selected records from the sequencing runs that directly support this inference, e.g. SRR7154792 (NCBI), ERX3006608 (ENA)
             label: Select sets
-            nonblank: true
+            nonblank: false
         inferred_extension:
             type: boolean
             label: Extension?

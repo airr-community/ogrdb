@@ -40,11 +40,14 @@ def update_inf_rep_details(seq, form, repo):
         return
 
     try:
-        if repo == 'NCBI SRA':
-            resp = get_nih_nuc_details(form.seq_accession_no.data)
-        elif repo == 'ENA':
-            resp = get_ena_nuc_details(form.seq_accession_no.data)
-        form.seq_record_title.data = resp['title']
+        if form.seq_accession_no.data:
+            if repo == 'NCBI SRA':
+                resp = get_nih_nuc_details(form.seq_accession_no.data)
+            elif repo == 'ENA':
+                resp = get_ena_nuc_details(form.seq_accession_no.data)
+            form.seq_record_title.data = resp['title']
+        else:
+            form.seq_record_title.data = ''
     except ValueError as e:
         form.seq_accession_no.errors = [e.args[0]]
         raise ValidationError()
