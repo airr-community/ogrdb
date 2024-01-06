@@ -168,7 +168,9 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
         else:
             metadata['version'] = new_version
 
-        del metadata['doi']
+        if 'doi' in metadata:
+            del metadata['doi']
+            
         data = {
             'metadata': metadata
         }
