@@ -157,7 +157,10 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
         logging.warning('Creating deposition data')
         if new_version == '0':
             try:
-                metadata['version'] = str(int(metadata['version']) + 1)
+                if 'version' in metadata:
+                    metadata['version'] = str(int(metadata['version']) + 1)
+                else:
+                    metadata['version'] = '1'
             except:
                 error_message = f"Current version {metadata['version']} is not a number. Can't increment."
                 logging.error(error_message)
