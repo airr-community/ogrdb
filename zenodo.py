@@ -112,20 +112,26 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
 
         params = {'access_token': access_token}
         headers = {"Content-Type": "application/json"}
-        r = requests.get(f"{zenodo_url}/api/deposit/depositions/{deposit_id}", params=params)
-        resp = check_response(r, 'return deposition information')
+
+        # fetch the record to find the latest version
+
+        r = requests.get(f"{zenodo_url}/api/records/{deposit_id}", params=params)
+        resp = check_response(r, 'return records')
+
+        latest_id = resp['links']['latest'].split('/')[-3]
+
+        r = requests.get(f"{zenodo_url}/api/records/{latest_id}", params=params)
+        resp = check_response(r, 'return records')
+
         if 'latest_draft' not in resp['links']:
-            latest_id = resp['links']['latest'].split('/')[-1]
-
             logging.warning('Requesting new draft deposition')
-
-
             r = requests.post(f"{zenodo_url}/api/deposit/depositions/{latest_id}/actions/newversion", params=params, json={}, headers=headers)
             resp = check_response(r, 'return valid deposition metadata')
+            # a failure here probably means that the draft was created before but isn't showing
+            # only way to fix seems to be to create a draft in the UI, then discard it
 
         logging.warning('Finding upload link')
         deposition_url = resp['links']['latest_draft']
-        deposition_id = deposition_url.split('/')[-1]
         metadata = resp['metadata']
 
         r = requests.get(deposition_url, params=params)

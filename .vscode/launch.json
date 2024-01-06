@@ -37,7 +37,7 @@
             "request": "launch",
             "program": "${file}",
             "justMyCode": true
-        }
+        },
         {
             "name": "schema_to_tabfile",
             "type": "python",
@@ -45,6 +45,19 @@
             "program": "${workspaceFolder}/schema/schema_to_tabfile.py",
             "cwd": "${workspaceFolder}/schema",
             "justMyCode": true
+        },
+        {
+            "name": "zenodo upload",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/zenodo.py",
+            "args": [
+                "7115762",
+                "zenodo.py",
+                "0"
+            ],
+           "cwd": "${workspaceFolder}",
+            "justMyCode": false
         }
     ]
 }
