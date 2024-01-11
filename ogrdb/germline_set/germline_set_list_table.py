@@ -22,6 +22,9 @@ def make_germline_action_string(item):
         fmt_string.append(
             '<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>' % (
                 url_for('edit_germline_set', id=item.id)))
+        fmt_string.append(
+            '<button onclick="set_delete(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span></button>' % (
+                item.id))
     if item.draftable:
         fmt_string.append(
             '<button onclick="set_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-duplicate" data-toggle="tooltip" title="Create Draft"></span></button>' % (
