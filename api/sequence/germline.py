@@ -6,6 +6,7 @@ from flask import Response
 from flask_restx import Resource
 from sqlalchemy import or_
 from api.restplus import api
+import json
 
 from db.germline_set_db import GermlineSet
 from head import db
@@ -159,6 +160,7 @@ def download_germline_set_by_id(germline_set_id, format):
 
     if 'airr' in format:
         dl = germline_set_to_airr(germline_set, extend)
+        dl = json.dumps(dl, indent=4)
         filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
