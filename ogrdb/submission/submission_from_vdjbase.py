@@ -43,7 +43,7 @@ def get_accession_number(acc):
 def setup_form(novel_rec, sample_details):
     form = VdjbaseSubmissionForm()
     form.sample_name.data = novel_rec.example
-    acc = get_accession_number(sample_details['study_acc_id'])
+    acc = get_accession_number(sample_details['study_id']) if 'study_id' in sample_details else ''
 
     form.submission_id.data = ''
     if acc:
@@ -98,7 +98,7 @@ def submission_from_vdjbase(id):
                 if sub.submission_status != 'draft':
                     form.submission_id.errors = ['Submission must be in draft!']
                     return render_template('submission_from_vdjbase.html', form=form, sequence_name=novel_rec.vdjbase_name, id=id)
-                if sub.repertoire[0].rep_accession_no != get_accession_number(sample_details['study_acc_id']):
+                if sub.repertoire[0].rep_accession_no != get_accession_number(sample_details['study_id']):
                     form.submission_id.errors = ['The submission accession number does not match this sequence']
                     return render_template('submission_from_vdjbase.html', form=form, sequence_name=novel_rec.vdjbase_name, id=id)
                 if novel_rec.vdjbase_name.upper() in [inf.sequence_details.sequence_id.upper() for inf in sub.inferred_sequences]:
@@ -136,18 +136,18 @@ def create_submission(sample_details, species):
     sub.submission_id = "S%05d" % sub.id
 
     rep = Repertoire()
-    rep.rep_accession_no = get_accession_number(sample_details['study_acc_id'])
+    rep.rep_accession_no = get_accession_number(sample_details['study_id'])
     rep.rep_title = ''
     rep.repository_name = ''
-    rep.dataset_url = sample_details['study_acc_ref']
+    rep.dataset_url = ''
     if 'ncbi' in rep.dataset_url:
         rep.repository_name = 'NCBI SRA'
     elif 'ena' in rep.dataset_url:
         rep.repository_name = 'ENA'
     rep.miairr_compliant = 'N'
     rep.miairr_link = ''
-    rep.sequencing_platform = sample_details['seq_platform']
-    rep.read_length = sample_details['sequencing_length']
+    rep.sequencing_platform = sample_details['sequencing_platform']
+    rep.read_length = sample_details['read_length']
     rep.primers_overlapping = ''
     rep.submission = sub
     db.session.commit()
@@ -209,14 +209,14 @@ def add_inference_tool(sub, sample_details):
     if sub.inference_tools:
         return sub.inference_tools[0]
     tool = InferenceTool()
-    tool.tool_settings_name = sample_details['sequencing_protocol']
+    tool.tool_settings_name = sample_details['geno_tool']
     tool.tool_name = sample_details['geno_tool']
     tool.tool_version = sample_details['geno_ver']
-    tool.tool_starting_database = sample_details['aligner_reference']
+    tool.tool_starting_database = sample_details['aligner_reference_v']
     tool.tool_settings = []
 
-    for field in ['pipeline_name', 'prepro_tool', 'aligner_tool', 'aligner_ver',
-                  'aligner_reference', 'geno_tool', 'geno_ver', 'haplotype_tool', 'haplotype_ver', 'single_assignment', 'detection']:
+    for field in ['prepro_tool', 'aligner_tool', 'aligner_ver',
+                  'haplotype_tool', 'haplotype_ver', 'single_assignment']:
         tool.tool_settings.append(f'{field}: {sample_details[field]}')
 
     tool.tool_settings = '\r'.join(tool.tool_settings)
@@ -227,7 +227,7 @@ def add_inference_tool(sub, sample_details):
 
 def add_genotype_description(sub, sample_details, tool, species, locus):
     vdjbase_species = species.replace('_TCR', '')
-    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{sample_details['chain']}/{sample_details['genotype_stats'].replace('samples/', '')}"
+    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{locus}/{sample_details['genotype_stats'].replace('samples/', '')}"
     try:
         contents = requests.get(gen_path)
     except Exception as e:
@@ -243,7 +243,7 @@ def add_genotype_description(sub, sample_details, tool, species, locus):
     desc = GenotypeDescription()
     desc.genotype_name = genotype_name
     desc.genotype_filename = genotype_filename
-    desc.genotype_subject_id = sample_details['name_in_paper']
+    desc.genotype_subject_id = sample_details['subject_id']
     desc.locus = locus
     desc.sequence_type = 'V'
     sub.genotype_descriptions.append(desc)
@@ -267,7 +267,7 @@ def add_genotype_description(sub, sample_details, tool, species, locus):
 
     # now download ogrdbstats report as a multi-attachment
 
-    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{sample_details['chain']}/{sample_details['genotype_report'].replace('samples/', '')}"
+    gen_path = f"{app.config['VDJBASE_DOWNLOAD_PATH']}/{vdjbase_species}/{locus}/{sample_details['genotype_report'].replace('samples/', '')}"
     try:
         contents = requests.get(gen_path)
     except Exception as e:
