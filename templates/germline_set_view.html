@@ -87,6 +87,7 @@
 
                 <div class="row">
                     <h3 class="col-sm-offset-1 col-sm-11">Included Sequences</h3>
+                    <p class="col-sm-offset-1 col-sm-11">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
                     <div class="col-sm-10 col-sm-offset-1">
                         <div class="form-group">
                             {{ tables['genes'] }}
@@ -142,6 +143,10 @@
         init_datatable();
     } );
 
+    function range(size, startAt = 0) {
+        return [...Array(size).keys()].map(i => i + startAt);
+    }
+
     function init_datatable() {
         if(!$.fn.DataTable.isDataTable($("#{{ tables['genes'].table_id }}"))) {
             console.log("initialising table");
@@ -154,8 +159,8 @@
                 "lengthMenu": [ 25, 100, 500, 5000 ],
                 "colReorder": true,
                 "columnDefs": [
-                    {"visible": false, "targets": [-1,-2]},
-                    {"width": "0px", "targets": [-1,-2]},
+                    {"visible": false, "targets": range(16, -16)},
+                    {"width": "0px", "targets": range(16, -16)},
                 ],
                 "buttons": [
                     "excel", "csv"

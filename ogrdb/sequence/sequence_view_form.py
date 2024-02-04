@@ -10,6 +10,7 @@ from ogrdb.submission.submission_edit_form import *
 from forms.attached_file_form import *
 from sequence_format import *
 from textile_filter import safe_textile
+from ogrdb.germline_set.germline_set_table import annotate_flanking_regions
 
 
 class GeneDescriptionNotes_table(StyledTable):
@@ -48,10 +49,17 @@ def pretty_item(fn, value, seq, trailer_text, gv_items):
     return value
 
 
+def add_RSS_view_definitions(view, seq_vals):
+    for field in ['l_part1', 'l_part2', 'v_nonamer', 'v_heptamer', 'j_heptamer', 'j_nonamer', 'd_3_heptamer', 'd_3_nonamer', 'd_5_heptamer', 'd_5_nonamer']:
+        view[field] = {"item": field.upper(), "value": seq_vals[field], "tooltip": "", "field": field}
+
+
 def setup_sequence_view_tables(db, seq, private):
     sections = {}
     sections['details'] = ["species", "species_subgroup", "species_subgroup_type", "sequence_name", "imgt_name", "alt_names", "affirmation_level", "sequence", "coding_seq_imgt", "functionality", "inference_type", "mapped", "paralogs", "paralog_rep"]
-    sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "leader_2_start", "leader_2_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "j_rs_start", "j_rs_end"]
+    sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "l_part1", "leader_2_start", "leader_2_end", "l_part2", "v_rs_start", "v_rs_end", "v_heptamer", "v_nonamer", 
+                              "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer", 
+                              "j_rs_start", "j_rs_end", "j_heptamer", "j_nonamer"]
     sections['extension'] = ["inferred_extension", "ext_3prime", "start_3prime_ext", "end_3prime_ext", "ext_5prime", "start_5prime_ext", "end_5prime_ext"]
     sections['meta'] = ["description_id", "maintainer", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "j_codon_frame", "j_cdr3_end"]
 
@@ -59,6 +67,9 @@ def setup_sequence_view_tables(db, seq, private):
     gv_items = {}
     for item in gv.items:
         gv_items[item['field']] = item
+
+    rss_seqs = annotate_flanking_regions(seq)
+    add_RSS_view_definitions(gv_items, rss_seqs)
 
     wanted = []
 
@@ -71,19 +82,19 @@ def setup_sequence_view_tables(db, seq, private):
     if seq.inference_type != 'Rearranged Only':
         wanted = []
         if seq.sequence_type == 'V':
-            wanted = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end']
-            wanted.extend(['v_rs_start', 'v_rs_end', 'utr_5_prime_start', 'utr_5_prime_end', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_3prime', 'start_5prime_ext', 'end_5prime_ext'])
+            wanted = ['leader_1_start', 'leader_1_end', 'l_part1', 'leader_2_start', 'leader_2_end', 'l_part2']
+            wanted.extend(['v_rs_start', 'v_rs_end', 'v_heptamer', 'v_nonamer', 'utr_5_prime_start', 'utr_5_prime_end', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_3prime', 'start_5prime_ext', 'end_5prime_ext'])
         elif seq.sequence_type == 'D':
-            wanted.extend(['d_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end'])
+            wanted.extend(['d_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end', "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer"])
         elif seq.sequence_type == 'J':
-            wanted.extend(['j_rs_start', 'j_rs_end'])
+            wanted.extend(['j_rs_start', 'j_rs_end', "j_heptamer", "j_nonamer"])
 
     if seq.sequence_type == 'J':
         wanted.extend(['j_cdr3_end', 'j_codon_frame'])
 
-    optional_fields = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
-                  'v_rs_start', 'v_rs_end', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end',
-                  'j_rs_start', 'j_rs_end', 'j_cdr3_end', 'j_codon_frame']
+    optional_fields = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end', 'l_part1', 'l_part2', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
+                  'v_rs_start', 'v_rs_end', 'v_heptamer', 'v_nonamer', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end', "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer",
+                  'j_rs_start', 'j_rs_end', "j_heptamer", "j_nonamer", 'j_cdr3_end', 'j_codon_frame']
 
     for field in list(gv_items.keys()):
         if field in optional_fields and field not in wanted:

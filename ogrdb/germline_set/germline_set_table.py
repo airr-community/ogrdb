@@ -37,6 +37,20 @@ class GeneDescriptionTable(StyledTable):
     functionality = StyledCol('Functionality')
     subgroup = StyledCol("Subgrp")
     status = StyledCol("Status")
+    genomic_accessions = HiddenCol("Genomic Accessions")
+    inference_type = HiddenCol("Inference")
+    l_part1 = HiddenCol('l_part1')
+    l_part2 = HiddenCol('l_part2')
+    v_heptamer = HiddenCol('v_heptamer')
+    v_nonamer = HiddenCol('v_nonamer')
+    j_heptamer = HiddenCol('j_heptamer')
+    j_nonamer = HiddenCol('j_nonamer')
+    d_3_heptamer = HiddenCol('d_3_heptamer')
+    d_3_nonamer = HiddenCol('d_3_nonamer')
+    d_5_heptamer = HiddenCol('d_5_heptamer')
+    d_5_nonamer = HiddenCol('d_5_nonamer')
+    three_ext = HiddenCol("3' Ext")
+    five_ext = HiddenCol("5' Ext")
     sequence = HiddenCol("Sequence")
     sequence_gapped = HiddenCol("Gapped Sequence")
 
@@ -47,24 +61,102 @@ def make_GeneDescription_table(results, private=False, classes=()):
     return ret
 
 
+rss_spacing = {
+    # RSS spacing for V, J, D5, D3
+    # used to check if v_rs is long enough to contain heptamer and nonamer
+    'IGH': (23, 23, 12, 12),
+    'IGK': (12, 23, 0, 0),
+    'IGL': (23, 12, 0, 0),
+    'TRA': (23, 12, 0, 0),
+    'TRB': (23, 12, 12, 23),
+    'TRD': (23, 12, 12, 23),
+    'TRG': (23, 12, 0, 0),
+}
+
+
+def annotate_flanking_regions(gd):
+    v_spc, j_spc, d5_spc, d3_spc = rss_spacing[gd.locus]
+    rec = {
+        'l_part1': '',
+        'l_part2': '',
+        'v_heptamer': '',
+        'v_nonamer': '',
+        'j_heptamer': '',
+        'j_nonamer': '',
+        'd_3_heptamer': '',
+        'd_3_nonamer': '',
+        'd_5_heptamer': '',
+        'd_5_nonamer': '',
+    }
+
+    if gd.sequence_type == 'V':
+        if gd.leader_1_start and gd.leader_1_end:
+            rec['l_part1'] = gd.sequence[gd.leader_1_start-1:gd.leader_1_end] 
+        if gd.leader_2_start and gd.leader_2_end:
+            rec['l_part2'] = gd.sequence[gd.leader_2_start-1:gd.leader_2_end]
+        if gd.v_rs_start is not None and gd.v_rs_end is not None and gd.v_rs_end <= len(gd.sequence) and gd.v_rs_start < gd.v_rs_end:
+            if gd.v_rs_end - gd.v_rs_start >= 6:
+                rec['v_heptamer'] = gd.sequence[gd.v_rs_start-1:gd.v_rs_start+6]
+            if gd.v_rs_end - gd.v_rs_start >= 7 + 9 + v_spc - 1:
+                rec['v_nonamer'] = gd.sequence[gd.v_rs_end-9:gd.v_rs_end]
+                
+    elif gd.sequence_type == 'J':
+        if gd.j_rs_start is not None and gd.j_rs_end is not None and gd.j_rs_end <= len(gd.sequence) and gd.j_rs_start < gd.j_rs_end:
+            if gd.j_rs_end - gd.j_rs_start >= 7 + 9 + j_spc - 1:
+                rec['j_heptamer'] = gd.sequence[gd.j_rs_end-7:gd.j_rs_end]
+            if gd.j_rs_end - gd.j_rs_start >= 8:
+                rec['j_nonamer'] = gd.sequence[gd.j_rs_start-1:gd.j_rs_start+8]
+
+    elif gd.sequence_type == 'D':
+        if gd.d_rs_3_prime_start is not None and gd.d_rs_3_prime_end is not None and gd.d_rs_3_prime_end <= len(gd.sequence) and gd.d_rs_3_prime_start < gd.d_rs_3_prime_end:
+            if gd.d_rs_3_prime_end - gd.d_rs_3_prime_start >= 6:
+                rec['d_3_heptamer'] = gd.sequence[gd.d_rs_3_prime_start-1:gd.d_rs_3_prime_start+6]
+            if gd.d_rs_3_prime_end - gd.d_rs_3_prime_start >= 7 + 9 + d3_spc - 1:
+                rec['d_3_nonamer'] = gd.sequence[gd.d_rs_3_prime_end-9:gd.d_rs_3_prime_end]
+        if gd.d_rs_5_prime_start is not None and gd.d_rs_5_prime_end is not None and gd.d_rs_5_prime_end <= len(gd.sequence) and gd.d_rs_5_prime_start < gd.d_rs_5_prime_end:
+            if gd.d_rs_5_prime_end - gd.d_rs_5_prime_start >= 7 + 9 + d5_spc - 1:
+                rec['d_5_heptamer'] = gd.sequence[gd.d_rs_5_prime_end-7:gd.d_rs_5_prime_end]
+            if gd.d_rs_5_prime_end - gd.d_rs_5_prime_start >= 8:
+                rec['d_5_nonamer'] = gd.sequence[gd.d_rs_5_prime_start-1:gd.d_rs_5_prime_start+8]
+
+    for k, v in rec.items():
+        if 'heptamer' in k and len(v) > 0 and len(v) != 7:
+            print('heptamer length error', k, v, len(v), gd.sequence_name, gd.locus, gd.sequence_type, gd.id)
+        if 'nonamer' in k and len(v) > 0 and len(v) != 9:
+            print('nonamer length error', k, v, len(v), gd.sequence_name, gd.locus, gd.sequence_type, gd.id)
+
+    return rec
+
+
 def setup_gene_description_table(germline_set, action=True):
     results = []
-    for gene_description in germline_set.gene_descriptions:
-        desc = Markup('<a href="%s">%s</a>' % (url_for('sequence', id=gene_description.id), gene_description.sequence_name))
-        results.append({
+    for gd in germline_set.gene_descriptions:
+        desc = Markup('<a href="%s">%s</a>' % (url_for('sequence', id=gd.id), gd.sequence_name))
+
+        genomic_accessions = ', '.join([s.accession for s in gd.genomic_accessions if s.accession])
+
+        rec = {
             'name': desc,
-            'raw_name': gene_description.sequence_name,
-            'imgt_name': gene_description.imgt_name,
-            'alt_names': gene_description.alt_names,
-            'functionality': gene_description.functionality,
-            'version': gene_description.release_version,
-            'date': gene_description.release_date,
-            'status': gene_description.status,
-            'subgroup': gene_description.species_subgroup,
-            'sequence': gene_description.sequence,
-            'sequence_gapped': gene_description.coding_seq_imgt,
-            'gene_id': gene_description.id,
-            'set_id': germline_set.id})
+            'raw_name': gd.sequence_name,
+            'imgt_name': gd.imgt_name,
+            'alt_names': gd.alt_names,
+            'functionality': gd.functionality,
+            'version': gd.release_version,
+            'date': gd.release_date,
+            'status': gd.status,
+            'subgroup': gd.species_subgroup,
+            'genomic_accessions': genomic_accessions,
+            'inference_type': gd.inference_type,
+            'three_ext': gd.ext_3prime,
+            'five_ext': gd.ext_5prime,
+            'sequence': gd.sequence,
+            'sequence_gapped': gd.coding_seq_imgt,
+            'gene_id': gd.id,
+            'set_id': germline_set.id,
+        }
+
+        rec.update(annotate_flanking_regions(gd))    
+        results.append(rec)
 
     results.sort(key=lambda res: res['raw_name'].upper())
     table = make_GeneDescription_table(results)
