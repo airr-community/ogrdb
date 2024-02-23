@@ -1153,7 +1153,7 @@ def publish_sequence(seq, notes, email):
     if email:
         send_mail('Sequence %s version %d published by the IARC %s Committee' % (
 
-    seq.description_id, seq.release_version, seq.species), [seq.species], 'iarc_sequence_released',
+    seq.sequence_name, seq.release_version, seq.species), [seq.species], 'iarc_sequence_released',
               reviewer=current_user, user_name=seq.maintainer, sequence=seq, comment=notes)
     seq.release_description = notes
     seq.status = 'published'
