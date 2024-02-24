@@ -97,7 +97,7 @@ def annotate_flanking_regions(gd):
         if gd.v_rs_start is not None and gd.v_rs_end is not None and gd.v_rs_end <= len(gd.sequence) and gd.v_rs_start < gd.v_rs_end:
             if gd.v_rs_end - gd.v_rs_start >= 6:
                 rec['v_heptamer'] = gd.sequence[gd.v_rs_start-1:gd.v_rs_start+6]
-            if gd.v_rs_end - gd.v_rs_start >= 7 + 9 + v_spc - 1:
+            if gd.v_rs_end - gd.v_rs_start >= 7 + 9 + v_spc - 2:
                 rec['v_nonamer'] = gd.sequence[gd.v_rs_end-9:gd.v_rs_end]
                 
     elif gd.sequence_type == 'J':
