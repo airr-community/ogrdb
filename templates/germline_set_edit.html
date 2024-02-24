@@ -251,6 +251,10 @@
 
     // Note that the table MUST have a style of width: 100% or DataTables will not resize it properly
 
+    function range(size, startAt = 0) {
+        return [...Array(size).keys()].map(i => i + startAt);
+    }
+
     function init_datatable() {
         if(!$.fn.DataTable.isDataTable($("#{{ tables['genes'].table_id }}"))) {
             console.log("initialising table");
@@ -263,8 +267,8 @@
                 "lengthMenu": [ 25, 100, 500, 5000 ],
                 "colReorder": true,
                 "columnDefs": [
-                    {"visible": false, "targets": [-1,-2]},
-                    {"width": "0px", "targets": [-1,-2]},
+                    {"visible": false, "targets": range(17, -17)},
+                    {"width": "0px", "targets": range(17, -17)},
                 ],
                 "buttons": [
                     "excel", "csv"

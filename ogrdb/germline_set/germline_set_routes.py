@@ -686,6 +686,7 @@ def germline_set(id):
 
     notes = safe_textile(germline_set.notes_entries[0].notes_text)
     extended = 'Human' in germline_set.species
+    changes = list_germline_set_changes(germline_set)
 
     if germline_set.status == 'published' or germline_set.status == 'superceded':
         version = 'published' if germline_set.status == 'published' else str(germline_set.release_version)
@@ -697,7 +698,7 @@ def germline_set(id):
     else:
         dl_args = str(germline_set.id)
 
-    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes, dl_args=dl_args, extended=extended)
+    return render_template('germline_set_view.html', form=form, tables=tables, name=germline_set.germline_set_name, supplementary_files=supplementary_files, notes=notes, dl_args=dl_args, extended=extended, changes=changes)
 
 
 @app.route('/download_germline_set/<path:varargs>')
