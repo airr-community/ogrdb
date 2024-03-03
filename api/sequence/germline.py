@@ -73,7 +73,10 @@ class versionsApi(Resource):
 @api.response(404, 'Not found')
 class versionsApi(Resource):
     def get(self, germline_set_id, release_version, format):
-        """ Returns a version of a germline set. Use 'published' for the current published version """
+        """ Returns a version of a germline set. Use 'published' for the current published version 
+        format can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended 
+        set, which should normally be used for AIRR-seq analysis). 
+        """
 
         q = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set_id)
 
@@ -96,7 +99,11 @@ class versionsApi(Resource):
 @api.response(404, 'Not found')
 class versionsApi(Resource):
     def get(self, species, set_name, release_version, format):
-        """ Returns a version of a germline set, specifying the species and set name. Use 'published' for the current published version. Replace any / in the parameters with %252F  """
+        """ Returns a version of a germline set, specifying the species, species subgroup and set name. 
+        Use 'published' for the current published version. Replace any / in the species name or subgroup with %252F.
+        format can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended 
+        set, which should normally be used for AIRR-seq analysis). 
+        """
         return download_set_by_name(species, None, set_name, release_version, format)
 
 
@@ -104,7 +111,11 @@ class versionsApi(Resource):
 @api.response(404, 'Not found')
 class versionsApi(Resource):
     def get(self, species, species_subgroup, set_name, release_version, format):
-        """ Returns a version of a germline set, specifying the species, species subgroup and set name. Use 'published' for the current published version. Replace any / in the parameters with %252F """
+        """ Returns a version of a germline set, specifying the species, species subgroup and set name. 
+        Use 'published' for the current published version. Replace any / in the species name or subgroup with %252F.
+        format can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended 
+        set, which should normally be used for AIRR-seq analysis). 
+        """
         return download_set_by_name(species, species_subgroup, set_name, release_version, format)
 
 
@@ -112,16 +123,34 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
     subspecies = parse.unquote(parse.unquote(subspecies)) if subspecies else None
     germline_set_name = parse.unquote(parse.unquote(germline_set_name))
 
+
     q = db.session.query(
             GermlineSet.id,
         )\
         .filter(GermlineSet.species == species)\
-        .filter(GermlineSet.germline_set_name == germline_set_name)\
         .distinct()
     
+    result = q.all()
+
+    if not result:
+        return {'error': 'Species not found'}, 404
+
     if subspecies:
         q = q.filter(GermlineSet.species_subgroup == subspecies)
+
+
+    if not result:
+        return {'error': 'Subspecies not found'}, 404
+
+    result = q.all()
+
+    q = q.filter(GermlineSet.germline_set_name == germline_set_name)\
     
+    result = q.all()
+
+    if not result:
+        return {'error': 'Germline set name not found'}, 404
+
     if version == 'published' or version == 'latest':
         q = q.filter(GermlineSet.status == 'published')
     else:
@@ -136,12 +165,11 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
     if result:
         return download_germline_set_by_id(result[0], format)
     else:
-        return {'error': 'Set not found'}, 404
-
+        return {'error': 'Germline set version not found'}, 404
 
 def download_germline_set_by_id(germline_set_id, format):
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
-        return {'error': 'invalid format'}, 404
+        return {'error': 'invalid format specified'}, 404
 
     q = db.session.query(GermlineSet).filter(GermlineSet.id == germline_set_id)
     germline_set = q.one_or_none()
