@@ -2,6 +2,7 @@ from flask import flash, redirect
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
+
 from db.gene_description_db import GeneDescription
 from db.submission_db import Submission
 from head import app, db
@@ -50,28 +51,37 @@ def rebuild_duplicates():
 
     return('Gene description links rebuilt')
 
-# Remove 'No longer seen' entries from vdjbase notes as they were all added by a bug
+# add cdr coordinates to all v-sequence records
 
-from db.novel_vdjbase_db import NovelVdjbase
+from ogrdb.germline_set.to_airr import delineate_v_gene
 
-@app.route('/clean_notes', methods=['GET'])
+@app.route('/add_cdr_coords', methods=['GET'])
 @login_required
-def clean_notes():
+def add_cdr_coords():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    vdjbase_entries = db.session.query(NovelVdjbase).all()
+    seqs = db.session.query(GeneDescription).all()
 
-    for entry in vdjbase_entries:
-        note_rows = entry.notes_entries[0].notes_text.split('\r')
-        new_rows = []
-        for row in note_rows:
-            if 'No longer seen in VDJbase' not in row:
-                new_rows.append(row)
-        entry.notes_entries[0].notes_text = '\r'.join(new_rows)
-        if entry.status == 'not current':
-            entry.status = 'not reviewed'
+    for seq in seqs:
+        if seq.sequence_type == 'V' and seq.coding_seq_imgt and not seq.cdr1_start:
+            coding_ungapped = seq.coding_seq_imgt.replace('.', '')
+            coding_start = 0
 
+            if seq.sequence:
+                coding_start = seq.sequence.find(coding_ungapped)
+
+                if coding_start < 0:
+                    print(f'Coding sequence is not contained in the gene sequence for {seq.id} {seq.sequence_name}')
+                    continue
+
+            uc = delineate_v_gene(seq.coding_seq_imgt)
+            seq.cdr1_start = uc['cdr1_start'] + coding_start if uc['cdr1_start'] else None
+            seq.cdr1_end = uc['cdr1_end'] + coding_start if uc['cdr1_end'] else None
+            seq.cdr2_start = uc['cdr2_start'] + coding_start if uc['cdr2_start'] else None
+            seq.cdr2_end = uc['cdr2_end'] + coding_start if uc['cdr2_end'] else None
+            seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
+    
     db.session.commit()
     return 'Success'
 

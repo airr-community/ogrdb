@@ -65,6 +65,11 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     leader_1_end = db.Column(db.Integer)
     leader_2_start = db.Column(db.Integer)
     leader_2_end = db.Column(db.Integer)
+    cdr1_start = db.Column(db.Integer)
+    cdr1_end = db.Column(db.Integer)
+    cdr2_start = db.Column(db.Integer)
+    cdr2_end = db.Column(db.Integer)
+    cdr3_start = db.Column(db.Integer)
     v_rs_start = db.Column(db.Integer)
     v_rs_end = db.Column(db.Integer)
     d_rs_3_prime_start = db.Column(db.Integer)
@@ -122,6 +127,11 @@ def save_GeneDescription(db, object, form, new=False):
     object.leader_1_end = form.leader_1_end.data
     object.leader_2_start = form.leader_2_start.data
     object.leader_2_end = form.leader_2_end.data
+    object.cdr1_start = form.cdr1_start.data
+    object.cdr1_end = form.cdr1_end.data
+    object.cdr2_start = form.cdr2_start.data
+    object.cdr2_end = form.cdr2_end.data
+    object.cdr3_start = form.cdr3_start.data
     object.v_rs_start = form.v_rs_start.data
     object.v_rs_end = form.v_rs_end.data
     object.d_rs_3_prime_start = form.d_rs_3_prime_start.data
@@ -178,6 +188,11 @@ def populate_GeneDescription(db, object, form):
     form.leader_1_end.data = object.leader_1_end
     form.leader_2_start.data = object.leader_2_start
     form.leader_2_end.data = object.leader_2_end
+    form.cdr1_start.data = object.cdr1_start
+    form.cdr1_end.data = object.cdr1_end
+    form.cdr2_start.data = object.cdr2_start
+    form.cdr2_end.data = object.cdr2_end
+    form.cdr3_start.data = object.cdr3_start
     form.v_rs_start.data = object.v_rs_start
     form.v_rs_end.data = object.v_rs_end
     form.d_rs_3_prime_start.data = object.d_rs_3_prime_start
@@ -235,6 +250,11 @@ def copy_GeneDescription(c_from, c_to):
     c_to.leader_1_end = c_from.leader_1_end
     c_to.leader_2_start = c_from.leader_2_start
     c_to.leader_2_end = c_from.leader_2_end
+    c_to.cdr1_start = c_from.cdr1_start
+    c_to.cdr1_end = c_from.cdr1_end
+    c_to.cdr2_start = c_from.cdr2_start
+    c_to.cdr2_end = c_from.cdr2_end
+    c_to.cdr3_start = c_from.cdr3_start
     c_to.v_rs_start = c_from.v_rs_start
     c_to.v_rs_end = c_from.v_rs_end
     c_to.d_rs_3_prime_start = c_from.d_rs_3_prime_start
@@ -319,6 +339,11 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "L-PART1 End", "value": sub.leader_1_end, "tooltip": "End co-ordinate in the Full Sequence of L-PART1 (V-genes only)", "field": "leader_1_end"})
     ret.items.append({"item": "L-PART2 Start", "value": sub.leader_2_start, "tooltip": "Start co-ordinate in the Full Sequence of L-PART2 (V-genes only)", "field": "leader_2_start"})
     ret.items.append({"item": "L-PART2 End", "value": sub.leader_2_end, "tooltip": "End co-ordinate in the Full Sequence of L-PART2 (V-genes only)", "field": "leader_2_end"})
+    ret.items.append({"item": "CDR1 Start", "value": sub.cdr1_start, "tooltip": "CDR1 start co-ordinate in the Full Sequence (V-genes only)", "field": "cdr1_start"})
+    ret.items.append({"item": "CDR1 End", "value": sub.cdr1_end, "tooltip": "CDR1 end co-ordinate in the Full Sequence (V-genes only)", "field": "cdr1_end"})
+    ret.items.append({"item": "CDR2 Start", "value": sub.cdr2_start, "tooltip": "CDR2 start co-ordinate in the Full Sequence (V-genes only)", "field": "cdr2_start"})
+    ret.items.append({"item": "CDR2 End", "value": sub.cdr2_end, "tooltip": "CDR2 end co-ordinate in the Full Sequence (V-genes only)", "field": "cdr2_end"})
+    ret.items.append({"item": "CDR3 Start", "value": sub.cdr3_start, "tooltip": "CDR3 start co-ordinate in the Full Sequence (V-genes only)", "field": "cdr3_start"})
     ret.items.append({"item": "v_rs_start", "value": sub.v_rs_start, "tooltip": "Start co-ordinate in the Full Sequence of V recombination site (V-genes only)", "field": "v_rs_start"})
     ret.items.append({"item": "v_rs_end", "value": sub.v_rs_end, "tooltip": "End co-ordinate in the Full Sequence of V recombination site (V-genes only)", "field": "v_rs_end"})
     ret.items.append({"item": "d_rs_3_prime_start", "value": sub.d_rs_3_prime_start, "tooltip": "Start co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)", "field": "d_rs_3_prime_start"})

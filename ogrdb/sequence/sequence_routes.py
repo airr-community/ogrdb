@@ -51,9 +51,12 @@ from ogrdb.submission.submission_edit_form import process_table_updates
 from ogrdb.submission.submission_routes import check_sub_view
 from ogrdb.submission.submission_view_form import HiddenReturnForm
 
+from ogrdb.germline_set.to_airr import delineate_v_gene
+
 from ogrdb.sequence.sequence_view_form import setup_sequence_view_tables
 from ogrdb.sequence.inferred_sequence_table import setup_sequence_edit_tables
 from ogrdb.sequence.sequence_list_table import setup_sequence_list_table, setup_sequence_version_table
+
 
 from textile_filter import safe_textile
 from journal import add_history, add_note
@@ -374,7 +377,12 @@ def parse_name_to_gene_description(gene_description):
         sn = gene_description.sequence_name
         if sn[:2] == 'IG' or sn[:2] == 'TR':
             gene_description.locus = sn[:3]
-            gene_description.sequence_type = sn[3]
+            # handle names of the form TRB1J1
+            if sn[3] in ['V', 'D', 'J', 'C']:
+                gene_description.sequence_type = sn[3]
+            elif sn[4] in ['V', 'D', 'J', 'C']:
+                gene_description.sequence_type = sn[4]
+
             if '-' in sn:
                 if '*' in sn:
                     snq = sn.split('*')
@@ -526,17 +534,16 @@ def upload_sequences(form, species):
         gene_description.functionality = row['functionality']
         gene_description.inference_type = row['inference_type']
         gene_description.affirmation_level = int(row['affirmation'])
-        gene_description.locus = row['type'][0:3]
         gene_description.chromosome = row['chromosome']
-        gene_description.sequence_type = row['type'][3:]
         gene_description.mapped = get_opt_text(row, 'mapped') == 'Y'
         gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'
         gene_description.curational_tags = get_opt_text(row, 'curational_tags')        
         gene_description.gene_start = get_opt_int(row, 'gene_start')
         gene_description.gene_end = get_opt_int(row, 'gene_end')
 
-
         parse_name_to_gene_description(gene_description)
+        gene_description.locus = row['type'][0:3]
+        gene_description.sequence_type = row['type'][3:]
 
         if gene_description.sequence_type == 'V':
             gene_description.utr_5_prime_start = get_opt_int(row, 'utr_5_prime_start') 
@@ -1082,6 +1089,25 @@ def edit_sequence(id):
                     seq.inference_type = 'Genomic Only'
 
                 save_GeneDescription(db, seq, form)
+
+                # if we have a V-gapped sequence but no cdr coordinates, assume IMTG standard numbering
+                    
+                if seq.sequence_type == 'V' and seq.sequence and seq.coding_seq_imgt and not seq.cdr1_start:
+                    coding_ungapped = seq.coding_seq_imgt.replace('.', '')
+                    coding_start = seq.sequence.find(coding_ungapped)
+
+                    if coding_start < 0:
+                        flash('Coding sequence not found in sequence')
+                        raise ValidationError()
+
+                    uc = delineate_v_gene(seq.coding_seq_imgt)
+                    seq.cdr1_start = uc['cdr1_start'] + coding_start if uc['cdr1_start'] else None
+                    seq.cdr1_end = uc['cdr1_end'] + coding_start if uc['cdr1_end'] else None
+                    seq.cdr2_start = uc['cdr2_start'] + coding_start if uc['cdr2_start'] else None
+                    seq.cdr2_end = uc['cdr2_end'] + coding_start if uc['cdr2_end'] else None
+                    seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
+                    db.session.commit()
+                    flash('IMGT standard numbering assumed for CDR delineation')
 
                 if 'add_inference_btn' in request.form:
                     return redirect(url_for('seq_add_inference', id=id))

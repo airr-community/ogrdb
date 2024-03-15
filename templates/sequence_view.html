@@ -100,6 +100,12 @@
                 {% endif %}
 
                 <div class="row">
+                    {% if tables['description']['cdr'].items|length > 0 %}
+                        <h3 class="col-sm-offset-1 col-sm-11">CDR delineation</h3>
+                        <div class="form-group col-sm-offset-1">
+                            {{ tables['description']['cdr'] }}
+                        </div>
+                    {% endif %}
                     {% if tables['description']['non-coding'].items|length > 0 %}
                         <h3 class="col-sm-offset-1 col-sm-11">Non-Core Regions</h3>
                         <div class="form-group col-sm-offset-1">

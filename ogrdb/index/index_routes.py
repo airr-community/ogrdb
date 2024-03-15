@@ -123,3 +123,5 @@ def profile():
                 flash('Profile updated.')
 
     return render_template('profile.html', form=form, current_user=current_user, url='profile')
+
+

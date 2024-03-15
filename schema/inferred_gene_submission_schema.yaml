@@ -997,6 +997,36 @@ GeneDescription:
             label: L-PART2 End
             nonblank: false
             width: narrow
+        cdr1_start:
+            type: integer
+            description: CDR1 start co-ordinate in the Full Sequence (V-genes only)
+            label: CDR1 Start
+            nonblank: false
+            width: narrow
+        cdr1_end:
+            type: integer
+            description: CDR1 end co-ordinate in the Full Sequence (V-genes only)
+            label: CDR1 End
+            nonblank: false
+            width: narrow
+        cdr2_start:
+            type: integer
+            description: CDR2 start co-ordinate in the Full Sequence (V-genes only)
+            label: CDR2 Start
+            nonblank: false
+            width: narrow
+        cdr2_end:
+            type: integer
+            description: CDR2 end co-ordinate in the Full Sequence (V-genes only)
+            label: CDR2 End
+            nonblank: false
+            width: narrow
+        cdr3_start:
+            type: integer
+            description: CDR3 start co-ordinate in the Full Sequence (V-genes only)
+            label: CDR3 Start
+            nonblank: false
+            width: narrow
         v_rs_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of V recombination site (V-genes only)
