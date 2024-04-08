@@ -10,7 +10,7 @@ import re
 # Create AIRR representation of items defined in the schema
 
 
-def germline_set_to_airr(germline_set, extend):
+def germline_set_to_airr(germline_set, extend, fake_allele=False):
     gds = []
     if extend:
         sequences = {}
@@ -35,7 +35,7 @@ def germline_set_to_airr(germline_set, extend):
 
     ad = []
     for desc in gds:
-        ad.append(vars(AIRRAlleleDescription(desc, extend)))
+        ad.append(vars(AIRRAlleleDescription(desc, extend, fake_allele)))
 
     gs = {'GermlineSet': [vars(AIRRGermlineSet(germline_set, ad))]}
 
@@ -43,59 +43,6 @@ def germline_set_to_airr(germline_set, extend):
         gs['GermlineSet'][0]['germline_set_name'] += '_extended'
 
     return gs
-
-
-# Python-based ranges of IMGT elements
-# <---------------------------------- FR1-IMGT -------------------------------->______________ CDR1-IMGT ___________<-------------------- FR2-IMGT ------------------->___________ CDR2-IMGT ________<----------------------------------------------------- FR3-IMGT ----------------------------------------------------> CDR3-IMGT
-imgt_fr1 = (0, 78)
-imgt_cdr1 = (78, 114)
-imgt_fr2 = (114, 165)
-imgt_cdr2 = (165, 195)
-imgt_fr3 = (195, 312)
-
-
-# Determine co-ordinates of IMGT-numbered elements in an ungapped sequence, given the gapped sequence
-def delineate_v_gene(seq):
-    coords = {}
-
-    if seq[0] == '.':
-        coords['fwr1_start'] = None     # FWR start
-        coords['fwr1_end'] = None     # FWR1 stop
-        coords['cdr1_start'] = None      # CDR1 start
-        coords['cdr1_end'] = None      # CDR1 end
-        coords['fwr2_start'] = None     # FWR2 start
-        coords['fwr2_end'] = None     # FWR2 end
-        coords['cdr2_start'] = None    # CDR2 start
-        coords['cdr2_end'] = None     # CDR2 end
-        coords['fwr3_start'] = None     # FWR3 start
-        coords['fwr3_end'] = None     # FWR3 end
-        return coords       # not going to guess about 5' incomplete sequences
-                            # can revisit if this ever becomes an issue
-                                
-    pos = 1
-    coords['fwr1_start'] = pos     # FWR start
-    pos += len(seq[slice(*imgt_fr1)].replace('.', '')) - 1
-    coords['fwr1_end'] = pos     # FWR1 stop
-    pos += 1
-    coords['cdr1_start'] = pos      # CDR1 start
-    pos += len(seq[slice(*imgt_cdr1)].replace('.', '')) - 1
-    coords['cdr1_end'] = pos      # CDR1 end
-    pos += 1
-    coords['fwr2_start'] = pos     # FWR2 start
-    pos += len(seq[slice(*imgt_fr2)].replace('.', '')) - 1
-    coords['fwr2_end'] = pos      # FWR2 end
-    pos += 1
-    coords['cdr2_start'] = pos     # CDR2 start
-    pos += len(seq[slice(*imgt_cdr2)].replace('.', '')) - 1
-    coords['cdr2_end'] = pos     # CDR2 end
-    pos += 1
-    coords['fwr3_start'] = pos     # FWR3 start
-    pos += len(seq[slice(*imgt_fr3)].replace('.', '')) - 1
-    coords['fwr3_end'] = pos     # FWR3 end
-    pos += 1
-    coords['cdr3_start'] = pos     # CDR3 start
-
-    return coords
 
 
 # Enforce schema constraints on capitalisation, and use None explicitly rather than empty string
@@ -119,7 +66,7 @@ def fnone(val):
         return val
 
 class AIRRAlleleDescription:
-    def __init__(self, gd, extend):
+    def __init__(self, gd, extend, fake_allele):
         self.allele_description_id = 'OGRDB:' + gd.description_id
         
         if not gd.species_subgroup:
@@ -142,6 +89,13 @@ class AIRRAlleleDescription:
         self.release_date = gd.release_date.strftime('%d-%b-%Y')
         self.release_description = fnone(gd.release_description)
         self.label = gd.sequence_name
+
+        if fake_allele:
+            if '*' not in self.label:
+                self.label += '*00'
+            if self.label[4] == '-':
+                self.label = self.label.replace('-', '0-')
+
         self.sequence = gd.sequence
         self.coding_sequence = gd.coding_seq_imgt.replace('.', '')
         if extend and gd.ext_3prime:
@@ -194,23 +148,22 @@ class AIRRAlleleDescription:
             if extend and gd.ext_3prime:
                 cs += gd.ext_3prime
 
-            coords = delineate_v_gene(cs)
             self.v_gene_delineations = [{
                 'sequence_delineation_id': "1",
                 'delineation_scheme': 'IMGT',
                 'unaligned_sequence': cs.replace('.', ''),
                 'aligned_sequence': cs,
-                'fwr1_start': coords['fwr1_start'],
-                'fwr1_end': coords['fwr1_end'],
-                'cdr1_start': coords['cdr1_start'],
-                'cdr1_end': coords['cdr1_end'],
-                'fwr2_start': coords['fwr2_start'],
-                'fwr2_end': coords['fwr2_end'],
-                'cdr2_start': coords['cdr2_start'],
-                'cdr2_end': coords['cdr2_end'],
-                'fwr3_start': coords['fwr3_start'],
-                'fwr3_end': coords['fwr3_end'],
-                'cdr3_start': coords['cdr3_start'],
+                'fwr1_start': 1,
+                'fwr1_end': gd.cdr1_start - 1 - gd.gene_start + 1 if gd.cdr1_start else None,
+                'cdr1_start': gd.cdr1_start - gd.gene_start + 1 if gd.cdr1_start else None,
+                'cdr1_end': gd.cdr1_end - gd.gene_start + 1 if gd.cdr1_end else None,
+                'fwr2_start': gd.cdr1_end + 1 - gd.gene_start + 1 if gd.cdr1_end else None,
+                'fwr2_end': gd.cdr2_start - 1 - gd.gene_start + 1 if gd.cdr2_start else None,
+                'cdr2_start': gd.cdr2_start - gd.gene_start + 1 if gd.cdr2_start else None,
+                'cdr2_end': gd.cdr2_end - gd.gene_start + 1 if gd.cdr2_end else None,
+                'fwr3_start': gd.cdr2_end + 1 - gd.gene_start + 1 if gd.cdr2_end else None,
+                'fwr3_end': gd.cdr3_start - 1 - gd.gene_start + 1 if gd.cdr3_start else None,
+                'cdr3_start': gd.cdr3_start - gd.gene_start + 1 if gd.cdr3_start else None,
                 'alignment_labels': [],
             }]
             for i in range(1, 105):

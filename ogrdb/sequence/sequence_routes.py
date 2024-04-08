@@ -51,8 +51,6 @@ from ogrdb.submission.submission_edit_form import process_table_updates
 from ogrdb.submission.submission_routes import check_sub_view
 from ogrdb.submission.submission_view_form import HiddenReturnForm
 
-from ogrdb.germline_set.to_airr import delineate_v_gene
-
 from ogrdb.sequence.sequence_view_form import setup_sequence_view_tables
 from ogrdb.sequence.inferred_sequence_table import setup_sequence_edit_tables
 from ogrdb.sequence.sequence_list_table import setup_sequence_list_table, setup_sequence_version_table
@@ -306,11 +304,11 @@ def new_sequence(species):
                     form.sequence_name.errors = ['Please select a sequence.']
                     raise ValidationError()
 
-                sub = db.session.query(Submission).filter_by(submission_id = form.submission_id.data).one_or_none()
+                sub = db.session.query(Submission).filter_by(submission_id=form.submission_id.data).one_or_none()
                 if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
                     return redirect(url_for('sequences', sp=species))
 
-                seq = db.session.query(InferredSequence).filter_by(id = int(form.sequence_name.data)).one_or_none()
+                seq = db.session.query(InferredSequence).filter_by(id=int(form.sequence_name.data)).one_or_none()
 
                 if seq is None or seq not in sub.inferred_sequences:
                     return redirect(url_for('sequences', sp=species))
@@ -367,6 +365,13 @@ def new_sequence(species):
         except ValidationError as e:
             return render_template('sequence_new.html', form=form, species=species)
 
+    # default 1-based CDR coords
+
+    form.gapped_cdr1_start.data = default_imgt_cdr1[0] + 1
+    form.gapped_cdr1_end.data = default_imgt_cdr1[1]
+    form.gapped_cdr2_start.data = default_imgt_cdr2[0] + 1
+    form.gapped_cdr2_end.data = default_imgt_cdr2[1]
+    form.gapped_cdr3_start.data = default_imgt_fr3[1] + 1
 
     return render_template('sequence_new.html', form=form, species=species)
 
@@ -423,8 +428,24 @@ def get_opt_bool(row, key):  # get an optional bool value from a row
 
 
 def upload_sequences(form, species):
-    # check file
     errors = []
+
+    last_coord = 0
+    for coord in (form.gapped_cdr1_start.data, form.gapped_cdr1_end.data, form.gapped_cdr2_start.data, form.gapped_cdr2_end.data, form.gapped_cdr3_start.data):
+        if coord is None:
+            errors.append('All gapped CDR coordinates must be specified.')
+            break
+        if coord < last_coord:
+            errors.append('Gapped CDR coordinates must be in ascending order')
+            break
+        last_coord = coord
+
+    if len(errors) > 0:
+        errors.append('Sequences not uploaded: please fix errors and try again')
+        form.upload_file.errors = errors
+        return render_template('sequence_new.html', form=form, species=species)
+
+    # check file
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
     required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end']
@@ -447,8 +468,13 @@ def upload_sequences(form, species):
             errors.append('row %d: sequence_type in type must be one of %s' % (row_count, ','.join(['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader'])))
         if not row['sequence']:
             errors.append('row %d: no sequence' % row_count)
-        if row['type'][3:] == 'H' and not row['sequence_gapped']:
-            errors.append('row %d: no sequence_gapped' % row_count)
+        if row['type'][3:] == 'V':
+            if not row['sequence_gapped']:
+                errors.append('row %d: no sequence_gapped' % row_count)
+#            else:
+#                v_seq = row['sequence_gapped'].replace('.', '').upper()
+#                if v_seq not in row['sequence'].upper():
+#                    errors.append('row %d: gapped sequence not found in full sequence' % row_count)
         if row['type'][3:] == 'J' and not row['j_codon_frame']:
             errors.append('row %d: no j_codon_frame' % row_count)
         if row['type'][3:] == 'J' and not row['j_cdr3_end']:
@@ -471,6 +497,15 @@ def upload_sequences(form, species):
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.upload_file.errors = errors
         return render_template('sequence_new.html', form=form, species=species)
+    
+    # construct zero-based feature ranges from CDR coordinates
+
+    imgt_fr1 = (0, form.gapped_cdr1_start.data - 1)
+    imgt_cdr1 = (form.gapped_cdr1_start.data - 1, form.gapped_cdr1_end.data)
+    imgt_fr2 = (form.gapped_cdr1_end.data, form.gapped_cdr2_start.data - 1)
+    imgt_cdr2 = (form.gapped_cdr2_start.data - 1, form.gapped_cdr2_end.data)
+    imgt_fr3 = (form.gapped_cdr2_end.data, form.gapped_cdr3_start.data - 1)
+    imgt_features = [imgt_fr1, imgt_cdr1, imgt_fr2, imgt_cdr2, imgt_fr3]
 
     fi.seek(0)
     reader = csv.DictReader(fi)
@@ -480,7 +515,10 @@ def upload_sequences(form, species):
 
     for row in reader:
         row['sequence'] = row['sequence'].upper()
-        row['sequence_gapped'] = row['sequence_gapped'].upper()
+        if not row['sequence_gapped']:
+            row['sequence_gapped'] = row['sequence']
+        else:
+            row['sequence_gapped'] = row['sequence_gapped'].upper()
         gene_description = GeneDescription()
 
         existing_entry = db.session.query(GeneDescription).filter(
@@ -537,7 +575,7 @@ def upload_sequences(form, species):
         gene_description.chromosome = row['chromosome']
         gene_description.mapped = get_opt_text(row, 'mapped') == 'Y'
         gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'
-        gene_description.curational_tags = get_opt_text(row, 'curational_tags')        
+        gene_description.curational_tags = get_opt_text(row, 'curational_tags')     
         gene_description.gene_start = get_opt_int(row, 'gene_start')
         gene_description.gene_end = get_opt_int(row, 'gene_end')
 
@@ -546,22 +584,28 @@ def upload_sequences(form, species):
         gene_description.sequence_type = row['type'][3:]
 
         if gene_description.sequence_type == 'V':
-            gene_description.utr_5_prime_start = get_opt_int(row, 'utr_5_prime_start') 
-            gene_description.utr_5_prime_end = get_opt_int(row, 'utr_5_prime_end') 
-            gene_description.leader_1_start = get_opt_int(row, 'leader_1_start') 
-            gene_description.leader_1_end = get_opt_int(row, 'leader_1_end') 
-            gene_description.leader_2_start = get_opt_int(row, 'leader_2_start') 
-            gene_description.leader_2_end = get_opt_int(row, 'leader_2_end') 
-            gene_description.v_rs_start = get_opt_int(row, 'v_rs_start') 
-            gene_description.v_rs_end = get_opt_int(row, 'v_rs_end') 
+            gene_description.utr_5_prime_start = get_opt_int(row, 'utr_5_prime_start')
+            gene_description.utr_5_prime_end = get_opt_int(row, 'utr_5_prime_end')
+            gene_description.leader_1_start = get_opt_int(row, 'leader_1_start')
+            gene_description.leader_1_end = get_opt_int(row, 'leader_1_end')
+            gene_description.leader_2_start = get_opt_int(row, 'leader_2_start')
+            gene_description.leader_2_end = get_opt_int(row, 'leader_2_end')
+            gene_description.v_rs_start = get_opt_int(row, 'v_rs_start')
+            gene_description.v_rs_end = get_opt_int(row, 'v_rs_end')
+            feats = delineate_v_gene(gene_description.coding_seq_imgt, imgt_features)
+            gene_description.cdr1_start = feats['cdr1_start'] + gene_description.gene_start - 1 if feats['cdr1_start'] else None
+            gene_description.cdr1_end = feats['cdr1_end'] + gene_description.gene_start - 1 if feats['cdr1_end'] else None
+            gene_description.cdr2_start = feats['cdr2_start'] + gene_description.gene_start - 1 if feats['cdr2_start'] else None
+            gene_description.cdr2_end = feats['cdr2_end'] + gene_description.gene_start - 1 if feats['cdr2_end'] else None
+            gene_description.cdr3_start = feats['cdr3_start'] + gene_description.gene_start - 1 if feats['cdr3_start'] else None
         elif gene_description.sequence_type == 'D':
-            gene_description.d_rs_3_prime_start = get_opt_int(row, 'd_rs_3_prime_start')  
-            gene_description.d_rs_3_prime_end = get_opt_int(row, 'd_rs_3_prime_end')  
-            gene_description.d_rs_5_prime_start = get_opt_int(row, 'd_rs_5_prime_start')  
-            gene_description.d_rs_5_prime_end = get_opt_int(row, 'd_rs_5_prime_end')  
+            gene_description.d_rs_3_prime_start = get_opt_int(row, 'd_rs_3_prime_start')
+            gene_description.d_rs_3_prime_end = get_opt_int(row, 'd_rs_3_prime_end')
+            gene_description.d_rs_5_prime_start = get_opt_int(row, 'd_rs_5_prime_start')
+            gene_description.d_rs_5_prime_end = get_opt_int(row, 'd_rs_5_prime_end')
         elif gene_description.sequence_type == 'J':
-            gene_description.j_rs_start = get_opt_int(row, 'j_rs_start')  
-            gene_description.j_rs_end = get_opt_int(row, 'j_rs_end')  
+            gene_description.j_rs_start = get_opt_int(row, 'j_rs_start')
+            gene_description.j_rs_end = get_opt_int(row, 'j_rs_end')
             gene_description.j_codon_frame = row['j_codon_frame']
             gene_description.j_cdr3_end = row['j_cdr3_end']
 
@@ -992,6 +1036,66 @@ def sequence(id):
     return render_template('sequence_view.html', form=form, tables=tables, sequence_name=seq.sequence_name, vdjbase_link=vdjbase_link)
 
 
+# Python-based ranges of default IMGT elements and consequent ranges
+# <---------------------------------- FR1-IMGT -------------------------------->______________ CDR1-IMGT ___________<-------------------- FR2-IMGT ------------------->___________ CDR2-IMGT ________<----------------------------------------------------- FR3-IMGT ----------------------------------------------------> CDR3-IMGT
+default_imgt_fr1 = (0, 78)
+default_imgt_cdr1 = (78, 114)
+default_imgt_fr2 = (114, 165)
+default_imgt_cdr2 = (165, 195)
+default_imgt_fr3 = (195, 312)
+
+
+def delineate_v_gene(seq, feature_ranges=[default_imgt_fr1, default_imgt_cdr1, default_imgt_fr2, default_imgt_cdr2, default_imgt_fr3]):
+    coords = {}
+    imgt_fr1, imgt_cdr1, imgt_fr2, imgt_cdr2, imgt_fr3 = feature_ranges
+
+    #if seq[0] == '.':
+    #    coords['fwr1_start'] = None     # FWR start
+    #    coords['fwr1_end'] = None     # FWR1 stop
+    #    coords['cdr1_start'] = None      # CDR1 start
+    #    coords['cdr1_end'] = None      # CDR1 end
+    #    coords['fwr2_start'] = None     # FWR2 start
+    #    coords['fwr2_end'] = None     # FWR2 end
+    #    coords['cdr2_start'] = None    # CDR2 start
+    #    coords['cdr2_end'] = None     # CDR2 end
+    #    coords['fwr3_start'] = None     # FWR3 start
+    #    coords['fwr3_end'] = None     # FWR3 end
+    #    coords['cdr3_start'] = None     # CDR3 start
+    #    return coords       # not going to guess about 5' incomplete sequences
+                            # can revisit if this ever becomes an issue
+                                
+    pos = 1
+    coords['fwr1_start'] = pos     # FWR start
+    pos += len(seq[slice(*imgt_fr1)].replace('.', '')) - 1
+    coords['fwr1_end'] = pos     # FWR1 stop
+    pos += 1
+    coords['cdr1_start'] = pos      # CDR1 start
+    pos += len(seq[slice(*imgt_cdr1)].replace('.', '')) - 1
+    coords['cdr1_end'] = pos      # CDR1 end
+    pos += 1
+    coords['fwr2_start'] = pos     # FWR2 start
+    pos += len(seq[slice(*imgt_fr2)].replace('.', '')) - 1
+    coords['fwr2_end'] = pos      # FWR2 end
+    pos += 1
+    coords['cdr2_start'] = pos     # CDR2 start
+    pos += len(seq[slice(*imgt_cdr2)].replace('.', '')) - 1
+    coords['cdr2_end'] = pos     # CDR2 end
+    pos += 1
+    coords['fwr3_start'] = pos     # FWR3 start
+    pos += len(seq[slice(*imgt_fr3)].replace('.', '')) - 1
+    coords['fwr3_end'] = pos     # FWR3 end
+    pos += 1
+    coords['cdr3_start'] = pos     # CDR3 start
+
+    # fix up for any coords that are incomplete at the 5' end
+
+    for feat in 'fwr1_start', 'fwr1_end', 'cdr1_start', 'cdr1_end', 'fwr2_start', 'fwr2_end', 'cdr2_start', 'cdr2_end', 'fwr3_start', 'fwr3_end', 'cdr3_start':
+        if coords[feat] < 1:
+            coords[feat] = None
+
+    return coords
+
+
 # Copy submitter and acknowledgements from sequence submission to gene_description
 
 
@@ -1090,9 +1194,34 @@ def edit_sequence(id):
 
                 save_GeneDescription(db, seq, form)
 
+                # Check that the coding sequence is contained in the full sequence and calculate the gene start and gene end
+
+                if not seq.sequence:
+                    form.sequence.errors.append('Sequence is required')
+                    raise ValidationError()
+                
+                if not seq.coding_seq_imgt:
+                    form.coding_seq_imgt.errors.append('Coding sequence is required')
+                    raise ValidationError()
+                
+                seq.sequence = seq.sequence.upper()
+                seq.coding_seq_imgt = seq.coding_seq_imgt.upper()
+            
+                pos = seq.sequence.find(seq.coding_seq_imgt.replace('.', ''))
+
+                if pos < 0:
+                    form.coding_seq_imgt.errors.append('Coding sequence not found in sequence')
+                    raise ValidationError()
+                else:
+                    seq.gene_start = pos + 1
+                    seq.gene_end = pos + len(seq.coding_seq_imgt.replace('.', '')) - 1
+                    db.session.commit()
+
                 # if we have a V-gapped sequence but no cdr coordinates, assume IMTG standard numbering
                     
-                if seq.sequence_type == 'V' and seq.sequence and seq.coding_seq_imgt and not seq.cdr1_start:
+                no_cdr_coords = not form.cdr1_start.data and not form.cdr1_end.data and not form.cdr2_start.data and not form.cdr2_end.data and not form.cdr3_start.data 
+                
+                if seq.sequence_type == 'V' and seq.sequence and seq.coding_seq_imgt and no_cdr_coords:
                     coding_ungapped = seq.coding_seq_imgt.replace('.', '')
                     coding_start = seq.sequence.find(coding_ungapped)
 
@@ -1105,9 +1234,72 @@ def edit_sequence(id):
                     seq.cdr1_end = uc['cdr1_end'] + coding_start if uc['cdr1_end'] else None
                     seq.cdr2_start = uc['cdr2_start'] + coding_start if uc['cdr2_start'] else None
                     seq.cdr2_end = uc['cdr2_end'] + coding_start if uc['cdr2_end'] else None
-                    seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
+                    seq.cdr3_start = uc['fwr3_end'] + coding_start if uc['fwr3_end'] else None
                     db.session.commit()
                     flash('IMGT standard numbering assumed for CDR delineation')
+                else:
+                    cdr_coord_errors = False
+                    if not form.cdr1_end.data:
+                        form.cdr1_end.errors.append('Please specify the end coordinate')
+                        cdr_coord_errors = True
+                    elif not form.cdr1_start.data:
+                        form.cdr1_start.errors.append('Please specify the start coordinate')
+                        cdr_coord_errors = True
+                    else:
+                        if form.cdr1_start.data >= form.cdr1_end.data:
+                            form.cdr1_end.errors.append('End coordinate must be greater than start coordinate')
+                            cdr_coord_errors = True
+                        if (form.cdr1_start.data - seq.gene_start) % 3 != 0:
+                            form.cdr1_start.errors.append('CDR must start on a codon boundary')
+                            cdr_coord_errors = True
+                        if (form.cdr1_end.data - seq.gene_start) % 3 != 2:
+                            form.cdr1_end.errors.append('CDR must end on a codon boundary')
+                            cdr_coord_errors = True
+                        if form.cdr1_start.data < seq.gene_start or form.cdr1_start.data > seq.gene_end:
+                            form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
+                            cdr_coord_errors = True
+                        if form.cdr1_end.data < seq.gene_start or form.cdr1_end.data > seq.gene_end:
+                            form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
+                            cdr_coord_errors = True
+
+                    if not form.cdr2_end.data:
+                        form.cdr2_end.errors.append('Please specify the end coordinate')
+                        cdr_coord_errors = True
+                    elif not form.cdr2_start.data:
+                        form.cdr2_start.errors.append('Please specify the start coordinate')
+                        cdr_coord_errors = True
+                    else:
+                        if form.cdr2_start.data >= form.cdr2_end.data:
+                            form.cdr2_end.errors.append('End coordinate must be greater than start coordinate')
+                            cdr_coord_errors = True
+                        if (form.cdr2_start.data - seq.gene_start) % 3 != 0:
+                            form.cdr2_start.errors.append('CDR must start on a codon boundary')
+                            cdr_coord_errors = True
+                        if (form.cdr2_end.data - seq.gene_start) % 3 != 2:
+                            form.cdr2_end.errors.append('CDR must end on a codon boundary')
+                            cdr_coord_errors = True
+                        if form.cdr2_start.data < seq.gene_start or form.cdr2_start.data > seq.gene_end:
+                            form.cdr2_start.errors.append('CDR must lie between gene start and gene end')
+                            cdr_coord_errors = True
+                        if form.cdr1_end.data < seq.gene_start or form.cdr1_end.data > seq.gene_end:
+                            form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
+                            cdr_coord_errors = True
+
+                    if not form.cdr3_start.data:
+                        form.cdr3_start.errors.append('Please specify the start coordinate')
+                        cdr_coord_errors = True
+                    else:
+                        if (form.cdr3_start.data - seq.gene_start) % 3 != 0:
+                            form.cdr3_start.errors.append('CDR must start on a codon boundary')
+                            cdr_coord_errors = True
+                        if form.cdr3_start.data < seq.gene_start or form.cdr2_start.data > seq.gene_end:
+                            form.cdr3_start.errors.append('CDR must lie between gene start and gene end')
+                            cdr_coord_errors = True
+
+                    if cdr_coord_errors:
+                        raise ValidationError()
+                    
+
 
                 if 'add_inference_btn' in request.form:
                     return redirect(url_for('seq_add_inference', id=id))
@@ -1124,6 +1316,7 @@ def edit_sequence(id):
                     return redirect(url_for('sequences', sp=seq.species))
 
             except ValidationError:
+                flash('Please correct the errors below.')
                 return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump=validation_result.tag, version=seq.release_version, attachment=len(seq.attached_files) > 0)
 
             if validation_result.tag:
