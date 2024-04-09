@@ -40,8 +40,10 @@
                             <ul>
                                 <li><a href="{{ url_for('germline_sets', species='Mouse') }}" class="m-item">Mouse</a></li>
                                 <li><a href="{{ url_for('germline_sets', species='Human') }}" class="m-item">Human</a></li>
-                                <li><a href="{{ url_for('germline_sets', species='Salmon') }}" class="m-item">Salmon</a></li>
-                            </ul>
+                                {% if current_user.has_role('Salmon') %}
+                                    <li><a href="{{ url_for('germline_sets', species='Salmon') }}" class="m-item">Salmon</a></li>
+                                {% endif %}
+                                </ul>
                         </span>
                     </span> |
                     <span class="dropdown">
@@ -55,7 +57,9 @@
                                 <li><a href="{{ url_for('sequences', sp='Human_TCR') }}" class="m-item">Human TCR</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Mouse') }}" class="m-item">Mouse</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Macaque') }}" class="m-item">Macaque</a></li>
-                                <li><a href="{{ url_for('sequences', sp='Salmon') }}" class="m-item">Salmon</a></li>
+                                {% if current_user.has_role('Salmon') %}
+                                    <li><a href="{{ url_for('sequences', sp='Salmon') }}" class="m-item">Salmon</a></li>
+                                {% endif %}
                                 {% if current_user.has_role('Admin') %}
                                     <li><a href="{{ url_for('sequences', sp='Test') }}" class="m-item">Test</a></li>
                                 {% endif %}
