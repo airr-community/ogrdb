@@ -19,7 +19,7 @@ jobs:
           python-version: '3.10'
       - name: Install dependencies
         run: |
-          pip install openapi_pydantic
+          pip install openapi_pydantic pyyaml
       - name: Schema consistency tests
         run: |
           python tests/check-schema.py
