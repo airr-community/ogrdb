@@ -1,0 +1,25 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master, openapi3]
+  pull_request:
+    branches: [main, master, openapi3]
+
+name: Schema
+
+jobs:
+  schema-consistency-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install openapi_pydantic
+      - name: Schema consistency tests
+        run: |
+          python tests/check-schema.py
