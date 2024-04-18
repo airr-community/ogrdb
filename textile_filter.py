@@ -7,7 +7,8 @@
 from head import app
 import textile
 
-from jinja2 import pass_eval_context, Markup
+from jinja2 import pass_eval_context
+from markupsafe import Markup
 
 @app.template_filter()
 @pass_eval_context

@@ -8,7 +8,8 @@
 
 from flask_security import RegisterForm
 from wtforms import StringField, BooleanField, PasswordField
-from wtforms.fields.html5 import EmailField
+#from wtforms.fields.html5 import EmailField
+from wtforms import EmailField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 

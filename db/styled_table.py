@@ -5,10 +5,9 @@
 #
 
 # subclasses for flask_table that impose styles we want and allow columnm header text to be rotated and to have tooltips
-
+from markupsafe import Markup
 from flask_table import Table, Col, LinkCol, DateCol
 from flask_table.html import element
-from flask import Markup
 from sequence_format import *
 
 
