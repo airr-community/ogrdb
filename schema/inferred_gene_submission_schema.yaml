@@ -954,6 +954,7 @@ GeneDescription:
             label: Gene start
             nonblank: false
             width: narrow
+            tableview: true
         gene_end:
             type: integer
             nullable: true
@@ -961,117 +962,138 @@ GeneDescription:
             label: Gene end
             nonblank: false
             width: narrow
+            tableview: true
         utr_5_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)
             label: UTR 5\' Start
             nonblank: false
             width: narrow
+            tableview: true
         utr_5_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)
             label: UTR 5\' End
             nonblank: false
             width: narrow
+            tableview: true
         leader_1_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of L-PART1 (V-genes only)
             label: L-PART1 Start
             nonblank: false
             width: narrow
+            tableview: true
         leader_1_end:
             type: integer
             description: End co-ordinate in the Full Sequence of L-PART1 (V-genes only)
             label: L-PART1 End
             nonblank: false
             width: narrow
+            tableview: true
         leader_2_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of L-PART2 (V-genes only)
             label: L-PART2 Start
             nonblank: false
             width: narrow
+            tableview: true
         leader_2_end:
             type: integer
             description: End co-ordinate in the Full Sequence of L-PART2 (V-genes only)
             label: L-PART2 End
             nonblank: false
             width: narrow
+            tableview: true
         cdr1_start:
             type: integer
             description: CDR1 start co-ordinate in the Full Sequence (V-genes only)
             label: CDR1 Start
             nonblank: false
             width: narrow
+            tableview: true
         cdr1_end:
             type: integer
             description: CDR1 end co-ordinate in the Full Sequence (V-genes only)
             label: CDR1 End
             nonblank: false
             width: narrow
+            tableview: true
         cdr2_start:
             type: integer
             description: CDR2 start co-ordinate in the Full Sequence (V-genes only)
             label: CDR2 Start
             nonblank: false
             width: narrow
+            tableview: true
         cdr2_end:
             type: integer
             description: CDR2 end co-ordinate in the Full Sequence (V-genes only)
             label: CDR2 End
             nonblank: false
             width: narrow
+            tableview: true
         cdr3_start:
             type: integer
             description: CDR3 start co-ordinate in the Full Sequence (V-genes only)
             label: CDR3 Start
             nonblank: false
             width: narrow
+            tableview: true
         v_rs_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of V recombination site (V-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         v_rs_end:
             type: integer
             description: End co-ordinate in the Full Sequence of V recombination site (V-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         d_rs_3_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         d_rs_3_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 3 prime D recombination site (D-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         d_rs_5_prime_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         d_rs_5_prime_end:
             type: integer
             description: End co-ordinate in the Full Sequence of 5 prime D recombination site (D-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         j_rs_start:
             type: integer
             description: Start co-ordinate in the Full Sequence of J recombination site (J-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         j_rs_end:
             type: integer
             description: End co-ordinate in the Full Sequence of J recombination site (J-genes only)
             nonblank: false
             width: narrow
+            tableview: true
         j_codon_frame:
             type: [1,2,3]
             description: Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)
             label: Codon Frame
             width: narrow
+            tableview: true
         j_cdr3_end:
             type: integer
             description: In the case of a J-gene, the co-ordinate in the Coding Sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)
