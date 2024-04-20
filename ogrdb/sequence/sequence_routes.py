@@ -219,12 +219,12 @@ def sequences(sp):
             results = q.all()
 
             tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
-            tables['species'][sp]['draft'].table_id = sp + '_draft'
+            tables['species'][sp]['draft'].table_id = sp.replace(' ', '_') + '_draft'
 
             q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level == '0')
             results = q.all()
             tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
-            tables['species'][sp]['level_0'].table_id = sp + '_level_0'
+            tables['species'][sp]['level_0'].table_id = sp.replace(' ', '_') + '_level_0'
 
     q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level != '0')
     results = q.all()
@@ -448,7 +448,7 @@ def upload_sequences(form, species):
     # check file
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end']
+    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end', 'gene_start', 'gene_end']
     headers = None
     row_count = 2
     for row in reader:
@@ -572,7 +572,7 @@ def upload_sequences(form, species):
         gene_description.functionality = row['functionality']
         gene_description.inference_type = row['inference_type']
         gene_description.affirmation_level = int(row['affirmation'])
-        gene_description.chromosome = row['chromosome']
+        gene_description.chromosome = get_opt_int(row, 'chromosome')
         gene_description.mapped = get_opt_text(row, 'mapped') == 'Y'
         gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'
         gene_description.curational_tags = get_opt_text(row, 'curational_tags')     
@@ -783,6 +783,12 @@ def upload_evidence(form, species):
         if missing_fields:
             errors.append('row %s: missing fields: %s' % (row_count, ','.join(missing_fields)))
 
+        try:
+            row['start'] = int(row['start'])
+            row['end'] = int(row['end'])
+        except ValueError:
+            errors.append('row %s: start and end must be integers' % row_count)
+
         if row['gene_label'] not in gene_descriptions_to_update:
             gene_description = db.session.query(GeneDescription).filter(
                     and_(
@@ -871,8 +877,8 @@ def upload_evidence(form, species):
                 elif gene_description.sequence_type == 'J':
                     genomic_support.j_rs_start = get_opt_int(row, 'j_rs_start')  
                     genomic_support.j_rs_end = get_opt_int(row, 'j_rs_end')  
-                    genomic_support.j_codon_frame = row['j_codon_frame']
-                    genomic_support.j_cdr3_end = row['j_cdr3_end']
+                    genomic_support.j_codon_frame = get_opt_int(row, 'j_codon_frame')
+                    genomic_support.j_cdr3_end = get_opt_int(row, 'j_cdr3_end')
 
                 gene_description.genomic_accessions.append(genomic_support)
                 existing_accessions.append(row['accession'])
