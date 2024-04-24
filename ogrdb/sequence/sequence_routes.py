@@ -1240,7 +1240,7 @@ def edit_sequence(id):
                     seq.cdr1_end = uc['cdr1_end'] + coding_start if uc['cdr1_end'] else None
                     seq.cdr2_start = uc['cdr2_start'] + coding_start if uc['cdr2_start'] else None
                     seq.cdr2_end = uc['cdr2_end'] + coding_start if uc['cdr2_end'] else None
-                    seq.cdr3_start = uc['fwr3_end'] + coding_start if uc['fwr3_end'] else None
+                    seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
                     db.session.commit()
                     flash('IMGT standard numbering assumed for CDR delineation')
                 else:
