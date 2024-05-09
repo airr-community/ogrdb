@@ -53,7 +53,7 @@ def rebuild_duplicates():
 
 # add cdr coordinates to all v-sequence records
 
-from ogrdb.germline_set.to_airr import delineate_v_gene
+from ogrdb.sequence.sequence_routes import delineate_v_gene
 
 @app.route('/add_cdr_coords', methods=['GET'])
 @login_required
@@ -64,16 +64,30 @@ def add_cdr_coords():
     seqs = db.session.query(GeneDescription).all()
 
     for seq in seqs:
-        if seq.sequence_type == 'V' and seq.coding_seq_imgt and not seq.cdr1_start:
+        if not seq.coding_seq_imgt:
+            print(f'No coding sequence for {seq.id} {seq.sequence_name}')
+            continue
+
+        if not seq.sequence:
+            print(f'No sequence for {seq.id} {seq.sequence_name}')
+            continue
+
+        coding_ungapped = seq.coding_seq_imgt.replace('.', '')
+        coding_start = seq.sequence.find(coding_ungapped)
+
+        if coding_start < 0:
+            seq.coding_seq_imgt = seq.coding_seq_imgt.upper()
+            seq.sequence = seq.sequence.upper()
             coding_ungapped = seq.coding_seq_imgt.replace('.', '')
-            coding_start = 0
+            coding_start = seq.sequence.find(coding_ungapped)
+            if coding_start:
+                print(f'Coding sequence is not contained in the gene sequence for {seq.id} {seq.sequence_name}')
+            continue
+        else:
+            seq.gene_start = coding_start + 1
+            seq.gene_end = coding_start + len(coding_ungapped)
 
-            if seq.sequence:
-                coding_start = seq.sequence.find(coding_ungapped)
-
-                if coding_start < 0:
-                    print(f'Coding sequence is not contained in the gene sequence for {seq.id} {seq.sequence_name}')
-                    continue
+        if seq.sequence_type == 'V' and not seq.cdr1_start:
 
             uc = delineate_v_gene(seq.coding_seq_imgt)
             seq.cdr1_start = uc['cdr1_start'] + coding_start if uc['cdr1_start'] else None

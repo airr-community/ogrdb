@@ -7,7 +7,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from custom_validators import *
-from wtforms import SelectField, SubmitField, StringField, validators
+from wtforms import SelectField, SubmitField, StringField, IntegerField, validators
 
 
 class NewSequenceForm(FlaskForm):
@@ -16,6 +16,11 @@ class NewSequenceForm(FlaskForm):
     submission_id = SelectField('Submission ID', description="Inference study on which this new sequence is based")
     sequence_name = SelectField('Sequence', description="Inferred sequence on which this new sequence is based")
     upload_file = FileField('Sequence File', description="CSV file containing sequence metadata")
+    gapped_cdr1_start = IntegerField('Gapped CDR1 Start', description="CDR1 start co-ordinate in the gapped alignment (V-genes only)")
+    gapped_cdr1_end = IntegerField('Gapped CDR1 End', description="CDR1 end co-ordinate in the gapped alignment (V-genes only)")
+    gapped_cdr2_start = IntegerField('Gapped CDR2 Start', description="CDR2 start co-ordinate in the gapped alignment (V-genes only)")
+    gapped_cdr2_end = IntegerField('Gapped CDR2 End', description="CDR2 end co-ordinate in the gapped alignment (V-genes only)")
+    gapped_cdr3_start = IntegerField('Gapped CDR3 Start', description="CDR3 start co-ordinate in the gapped alignment (V-genes only)")
     evidence_file = FileField('Evidence File', description="CSV file containing sequence metadata")
     create = SubmitField('Create')
     cancel = SubmitField('Cancel')

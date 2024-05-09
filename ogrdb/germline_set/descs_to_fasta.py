@@ -24,6 +24,15 @@ def descs_to_fasta(descs, format, fake_allele=False, extend=False):
                     lowest_subgroup = int(re.sub(r"[^0-9]", "", gd.gene_subgroup))
                     rep = gd
             gds.append(rep)
+            if len(gd_group) > 1:
+                rep = None
+                for gd in gd_group:
+                    if gd.paralog_rep:
+                        rep = gd
+                        break
+                if not rep:
+                    print(f"No rep found for {', '.join([gd.sequence_name for gd in gd_group])}")
+
     else:
         gds = descs
 
@@ -39,6 +48,9 @@ def descs_to_fasta(descs, format, fake_allele=False, extend=False):
                 name = name.replace('-', '0-')
 
         coding_seq = desc.coding_seq_imgt
+        if len(coding_seq) == 0:
+            print(f'No coding sequence for {desc.sequence_name}')
+            continue
 
         if 'ungapped' not in format:
             # remove trailing gaps

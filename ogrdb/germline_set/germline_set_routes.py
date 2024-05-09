@@ -775,7 +775,7 @@ def download_germline_set_by_id(set_id, format):
         extend = True
 
     if 'airr' in format:
-        dl = json.dumps(germline_set_to_airr(germline_set, extend), default=str, indent=4)
+        dl = json.dumps(germline_set_to_airr(germline_set, extend, fake_allele=True), default=str, indent=4)
         filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
