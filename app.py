@@ -60,6 +60,11 @@ api.add_namespace(sequence)
 api.add_namespace(germline)
 app.register_blueprint(blueprint)
 
+#Initialise New API
+from api_v1.api import api_bp
+app.register_blueprint(api_bp, url_prefix='/api_v1')
+
+
 # Database classes are declared here to resolve dependence issues
 
 from db.submission_db import *
