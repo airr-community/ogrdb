@@ -37,6 +37,8 @@ class User(db.Model, UserMixin):
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
     delegated_submissions = db.relationship('Submission', secondary=roles_submissions, backref=db.backref('delegates', lazy='dynamic'))
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=lambda: db.uuid.uuid4().hex)  # Added field
+
 
 
     def __repr__(self):

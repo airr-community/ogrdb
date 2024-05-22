@@ -23,8 +23,8 @@ servers:
 
 components:
   schemas:
-    # Service info object. This is the object returned by the /info request,
-    # and provides information about the OGRDB API service and its attributes and capabilities
+    #Service info object. This is the object returned by the /info request,
+    #and provides information about the OGRDB API service and its attributes and capabilities
     service_info_object:
       description: Provides information about the OGRDB API service and it attributes and capabilities.
       allOf:
@@ -35,6 +35,7 @@ components:
               $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
             schema:
               $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
+
 
     # The response object for species lists
     species_response:
@@ -68,7 +69,8 @@ components:
     germline_set_list:
       type: array
       items:
-        $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/GermlineSet'
+        #$ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/GermlineSet'
+        $ref: './GermlineSet.yaml#/GermlineSet'
 
     # The response object for germline sets
     germline_set_response:
