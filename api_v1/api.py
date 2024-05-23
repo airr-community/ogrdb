@@ -194,7 +194,7 @@ def convert_to_GermlineSetResponse_obj(dl):
                 #acknowledgements = , dont know
                 release_version = temp['release_version'],
                 release_description = temp['release_description'],
-                release_date = temp['release_date'],
+                release_date = datetime.strptime(temp['release_date'], '%Y-%m-%d'),
                 germline_set_name = temp['germline_set_name'],
                 germline_set_ref = temp['germline_set_ref'],
                 pub_ids = temp['pub_ids'],
@@ -224,7 +224,7 @@ def create_allele_description_list(allele_descriptions):
             #acknowledgements dont know which one
             lab_address = allele_descriptions[i]['lab_address'],
             release_version = allele_descriptions[i]['release_version'],
-            release_date = allele_descriptions[i]['release_date'],
+            release_date = datetime.strptime(allele_descriptions[i]['release_date'], '%d-%b-%Y'),
             release_description = allele_descriptions[i]['release_description'],
             label = allele_descriptions[i]['label'],
             sequence = allele_descriptions[i]['sequence'],
@@ -244,14 +244,14 @@ def create_allele_description_list(allele_descriptions):
             #j_codon_frame dont know which one
             gene_start = allele_descriptions[i]['gene_start'],
             gene_end = allele_descriptions[i]['gene_end'],
-            utr_5_prime_start = allele_descriptions[i]['utr_5_prime_start'],
-            utr_5_prime_end = allele_descriptions[i]['utr_5_prime_end'],
-            leader_1_start = allele_descriptions[i]['leader_1_start'],
-            leader_1_end = allele_descriptions[i]['leader_1_end'],
-            leader_2_start = allele_descriptions[i]['leader_2_start'],
-            leader_2_end = allele_descriptions[i]['leader_2_end'],
-            v_rs_start = allele_descriptions[i]['v_rs_start'],
-            v_rs_end = allele_descriptions[i]['v_rs_end'],
+            utr_5_prime_start = allele_descriptions[i].get('utr_5_prime_start', None),
+            utr_5_prime_end = allele_descriptions[i].get('utr_5_prime_end', None),
+            leader_1_start = allele_descriptions[i].get('leader_1_start', None),
+            leader_1_end = allele_descriptions[i].get('leader_1_end',None),
+            leader_2_start = allele_descriptions[i].get('leader_2_start',None),
+            leader_2_end = allele_descriptions[i].get('leader_2_end',None),
+            v_rs_start = allele_descriptions[i].get('v_rs_start',None),
+            v_rs_end = allele_descriptions[i].get('v_rs_end',None),
             #d_rs_3_prime_start cant find
             #d_rs_3_prime_end cant find
             #d_rs_5_prime_start cant find
@@ -260,7 +260,7 @@ def create_allele_description_list(allele_descriptions):
             #j_rs_start cant find
             #j_rs_end cant find
             #j_donor_splice cant find
-            v_gene_delineations = create_sequence_delineationV_list(allele_descriptions[i]['v_gene_delineations']),
+            v_gene_delineations = create_sequence_delineationV_list(allele_descriptions[i].get('v_gene_delineations',None)),
             unrearranged_support = create_unrearranged_support_list(allele_descriptions[i]['unrearranged_support'], allele_descriptions[i]['curation']),
             rearranged_support = create_rearranged_support_list(allele_descriptions[i]['rearranged_support'], allele_descriptions[i]['curation']),
             paralogs = allele_descriptions[i]['paralogs'],
@@ -294,6 +294,9 @@ def create_sequence_delineationV_list(v_gene_delineations):
             )
             sequence_delineationV_list.append(sequence_delineationV_obj)
 
+    else:
+        return None
+
     return sequence_delineationV_list
 
 
@@ -309,7 +312,7 @@ def create_unrearranged_support_list(unrearranged_support, curation):
                 repository_name = unrearranged_support[i]['repository_name'],
                 repository_ref = unrearranged_support[i]['repository_ref'],
                 patch_no = unrearranged_support[i]['patch_no'],
-                gff_seqid = unrearranged_support[i]['gff_seqid'],
+                gff_seqid = unrearranged_support[i]['gff_seqid'] if unrearranged_support[i]['gff_seqid'] is not None else "",
                 gff_start = unrearranged_support[i]['gff_start'],
                 gff_end = unrearranged_support[i]['gff_end'],
                 strand = Strand(unrearranged_support[i]['strand']) if unrearranged_support[i]['strand'] is not None else '+'
