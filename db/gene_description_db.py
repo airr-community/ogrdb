@@ -38,7 +38,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     release_date = db.Column(db.DateTime)
     release_description = db.Column(db.Text())
 
-    imgt_name = db.Column(db.String(50))
+    imgt_name = db.Column(db.String(1000))
     sequence_name = db.Column(db.String(50))
     alt_names = db.Column(db.String(1000))
     chromosome = db.Column(db.Integer)

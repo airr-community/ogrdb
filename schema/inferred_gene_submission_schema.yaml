@@ -842,7 +842,7 @@ GeneDescription:
             hide: true
             nocopy: 10
         imgt_name:
-            type: string_50
+            type: string
             description: The name of this sequence as assigned by IUIS
             label: IUIS Name
             inview: true
