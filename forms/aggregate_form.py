@@ -19,6 +19,8 @@ class AggregateForm(FlaskForm):
             self._fields.update(form._fields)
 
     def __getattr__(self, attr):
+        if attr == 'subforms':
+            raise(AttributeError())
         for form in self.subforms:
             a = getattr(form, attr, None)
             if a is not None: return a

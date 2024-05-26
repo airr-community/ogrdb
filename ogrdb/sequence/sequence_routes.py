@@ -1031,8 +1031,6 @@ def sequence(id):
         .filter(GeneDescription.status.in_(['published', 'superceded']))\
         .all()
     tables['versions'] = setup_sequence_version_table(versions, None)
-    del tables['versions']._cols['sequence']
-    del tables['versions']._cols['coding_seq_imgt']
 
     vdjbase_link = Markup('<a href=%sgenerep/%s/%s/%s>here</a>' % (app.config['VDJBASE_URL'],
                                                            seq.species.replace('Human_TCR', 'Human'),
@@ -1243,7 +1241,7 @@ def edit_sequence(id):
                     seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
                     db.session.commit()
                     flash('IMGT standard numbering assumed for CDR delineation')
-                else:
+                elif seq.sequence_type == 'V':
                     cdr_coord_errors = False
                     if not form.cdr1_end.data:
                         form.cdr1_end.errors.append('Please specify the end coordinate')
