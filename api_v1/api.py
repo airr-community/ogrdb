@@ -19,6 +19,12 @@ api_bp = Blueprint('api_v1', __name__)
 
 @api_bp.route('/', methods=['GET'])
 def get_service_status():
+    """
+    Check the service status.
+    
+    Returns:
+        JSON response indicating the service status.
+    """
     try:
         response = {"result": "Service is up."}
         return jsonify(response), 200
@@ -28,6 +34,12 @@ def get_service_status():
     
 @api_bp.route('/info', methods=['GET'])
 def get_server_info():
+    """
+    Get the server information.
+    
+    Returns:
+        JSON response containing server information.
+    """
     try:
         # Populate the ServiceInfoObject with actual data
         service_info_obj = create_info_object()
@@ -38,6 +50,12 @@ def get_server_info():
         return jsonify(error_response), 500
     
 def create_info_object():
+    """
+    Create the service info object.
+    
+    Returns:
+        ServiceInfoObject containing detailed service information.
+    """
     service_info_obj = ServiceInfoObject(
             title="OGRDB API",
             version="1.0.0",
@@ -89,6 +107,15 @@ def get_germline_species():
     
 @api_bp.route('/germline/sets/<species_id>', methods=['GET'])
 def get_germline_sets_by_id(species_id):
+    """
+    Get the available sets for a species by ID.
+    
+    Args:
+        species_id: The ID of the species.
+    
+    Returns:
+        JSON response containing the list of germline sets for the species.
+    """
     try:
         """ Returns the available sets for a species """
         q = db.session.query(
@@ -126,11 +153,17 @@ def get_germline_sets_by_id(species_id):
 
 @api_bp.route('/germline/set/<germline_set_id>/<release_version>', methods=['GET'])
 def get_germline_sets_by_id_and_version(germline_set_id, release_version):
+    """
+    Get a version of a germline set by ID and release version.
+    
+    Args:
+        germline_set_id: The ID of the germline set.
+        release_version: The release version of the germline set.
+    
+    Returns:
+        Response containing the germline set in the specified format.
+    """
     try:
-        """ Returns a version of a germline set. Use 'published' for the current published version 
-        format can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended 
-        set, which should normally be used for AIRR-seq analysis). 
-        """
         q = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set_id)
 
         if release_version == 'published' or release_version == 'latest':
@@ -156,6 +189,16 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version):
         
 
 def download_germline_set_by_id(germline_set_id, format):
+    """
+    Download a germline set by ID and format.
+    
+    Args:
+        germline_set_id: The ID of the germline set.
+        format: The format of the germline set (e.g., gapped, ungapped, airr).
+    
+    Returns:
+        Response containing the germline set data.
+    """
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
         return {'error': 'invalid format specified'}, 400
 
@@ -184,6 +227,15 @@ def download_germline_set_by_id(germline_set_id, format):
     return Response(germline_set_response_json, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
   
 def convert_to_GermlineSetResponse_obj(dl):
+    """
+    Convert the downloaded germline set data to a GermlineSetResponse object.
+    
+    Args:
+        dl: The downloaded germline set data.
+    
+    Returns:
+        GermlineSetResponse object.
+    """
     service_info_obj = create_info_object()
     germline_set_list = []
     try:
@@ -222,6 +274,15 @@ def convert_to_GermlineSetResponse_obj(dl):
     return germline_set_response
 
 def create_acknowledgements_list(acknowledgements):
+    """
+    Create a list of acknowledgements from the given data.
+    
+    Args:
+        acknowledgements: The list of acknowledgements data.
+    
+    Returns:
+        List of Acknowledgement objects.
+    """
     acknowledgements_list = []
 
     if acknowledgements is not None:
@@ -239,6 +300,15 @@ def create_acknowledgements_list(acknowledgements):
 
 
 def create_allele_description_list(allele_descriptions):
+    """
+    Create a list of allele descriptions from the given data.
+    
+    Args:
+        allele_descriptions: The list of allele descriptions data.
+    
+    Returns:
+        List of AlleleDescription objects.
+    """
     allele_description_list = []
 
     for i in range(len(allele_descriptions)):
@@ -298,6 +368,15 @@ def create_allele_description_list(allele_descriptions):
     return allele_description_list
 
 def create_sequence_delineationV_list(v_gene_delineations):
+    """
+    Create a list of sequence delineations from the given data.
+    
+    Args:
+        v_gene_delineations: The list of sequence delineations data.
+    
+    Returns:
+        List of SequenceDelineationV objects.
+    """
     sequence_delineationV_list = []
 
     if v_gene_delineations is not None:
@@ -328,6 +407,16 @@ def create_sequence_delineationV_list(v_gene_delineations):
 
 
 def create_unrearranged_support_list(unrearranged_support, curation):
+    """
+    Create a list of unrearranged support sequences from the given data.
+    
+    Args:
+        unrearranged_support: The list of unrearranged support sequences data.
+        curation: The curation data.
+    
+    Returns:
+        List of UnrearrangedSequence objects.
+    """
     unrearranged_support_list = []
 
     if unrearranged_support != None:
@@ -351,6 +440,16 @@ def create_unrearranged_support_list(unrearranged_support, curation):
 
 
 def create_rearranged_support_list(rearranged_support, curation):
+    """
+    Create a list of rearranged support sequences from the given data.
+    
+    Args:
+        rearranged_support: The list of rearranged support sequences data.
+        curation: The curation data.
+    
+    Returns:
+        List of RearrangedSequence objects.
+    """
     rearranged_support_list = []
 
     if rearranged_support is not None:
@@ -374,6 +473,15 @@ def create_rearranged_support_list(rearranged_support, curation):
     return rearranged_support_list
 
 def create_curational_tags_list(curational_tags):
+    """
+    Create a list of curational tags from the given data.
+    
+    Args:
+        curational_tags: The list of curational tags data.
+    
+    Returns:
+        List of CurationalTag objects.
+    """
     curational_tags_list = []
 
     if curational_tags is not None:
@@ -385,6 +493,15 @@ def create_curational_tags_list(curational_tags):
 
 
 def get_default_value(field_type: Any) -> Any:
+    """
+    Get the default value for a given field type.
+    
+    Args:
+        field_type: The type of the field.
+    
+    Returns:
+        The default value for the field type.
+    """
     if get_origin(field_type) is Union:
         args = get_args(field_type)
         field_type = args[0] if args[1] is type(None) else args[1]
@@ -411,6 +528,16 @@ def get_default_value(field_type: Any) -> Any:
     return None
 
 def fill_missing_required_fields(model_cls: BaseModel, data: dict) -> dict:
+    """
+    Fill missing required fields in the given data with default values.
+    
+    Args:
+        model_cls: The Pydantic model class.
+        data: The data dictionary.
+    
+    Returns:
+        The data dictionary with missing required fields filled.
+    """
     filled_data = data.copy()
 
     for field_name, field_info in model_cls.__fields__.items():
@@ -424,6 +551,15 @@ def fill_missing_required_fields(model_cls: BaseModel, data: dict) -> dict:
     return filled_data
 
 def is_required(field_info: FieldInfo) -> bool:
+    """
+    Check if a field is required.
+    
+    Args:
+        field_info: The field information.
+    
+    Returns:
+        Boolean indicating if the field is required.
+    """
     if 'required=True' in str(field_info):
         return True
     
