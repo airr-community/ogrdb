@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, Response, send_from_directory
 from pydantic import BaseModel, ValidationError
 from api_v1.models import *
 from api_v1.models import GermlineSet as GS
@@ -9,6 +9,11 @@ from ogrdb.germline_set.to_airr import germline_set_to_airr
 from ogrdb.germline_set.descs_to_fasta import descs_to_fasta
 from sqlalchemy import or_
 from datetime import datetime
+from pydantic.fields import FieldInfo
+from app import app
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec import APISpec
+from typing import Any, Optional, Union, get_args, get_origin, List, get_type_hints
 
 api_bp = Blueprint('api_v1', __name__)
 
@@ -119,7 +124,7 @@ def get_germline_sets_by_id(species_id):
         return jsonify(error_response), 500
 
 
-@api_bp.route('/germline/sets/<germline_set_id>/<release_version>', methods=['GET'])
+@api_bp.route('/germline/set/<germline_set_id>/<release_version>', methods=['GET'])
 def get_germline_sets_by_id_and_version(germline_set_id, release_version):
     try:
         """ Returns a version of a germline set. Use 'published' for the current published version 
@@ -171,101 +176,122 @@ def download_germline_set_by_id(germline_set_id, format):
 
     if 'airr' in format:
         dl = germline_set_to_airr(germline_set, extend)
-        res = convert_to_GermlineSetResponse_obj(dl)
-        dl = json.dumps(dl, indent=4)
+        germline_set_response = convert_to_GermlineSetResponse_obj(dl)
+        germline_set_response_json = germline_set_response.json()  # Convert the object to a dictionary
         filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
-    else:
-        dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
-        filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
+
     
-    return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+    return Response(germline_set_response_json, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
   
 def convert_to_GermlineSetResponse_obj(dl):
     service_info_obj = create_info_object()
     germline_set_list = []
     try:
         for i in range(len(dl["GermlineSet"])):
-            temp = dl["GermlineSet"][i]
+
+            temp_dl = fill_missing_required_fields(GS,  dl["GermlineSet"][i])  # Fill missing fields
+
             germiline_set = GS(
-                germline_set_id = temp['germline_set_id'],
-                author = temp['author'],
-                lab_name = temp['lab_name'],
-                lab_address = temp['lab_address'],
-                #acknowledgements = , dont know
-                release_version = temp['release_version'],
-                release_description = temp['release_description'],
-                release_date = datetime.strptime(temp['release_date'], '%Y-%m-%d'),
-                germline_set_name = temp['germline_set_name'],
-                germline_set_ref = temp['germline_set_ref'],
-                pub_ids = temp['pub_ids'],
-                species = Ontology(id = temp['species']['id'], label = temp['species']['label']),
-                species_subgroup = temp ['species_subgroup'],
-                species_subgroup_type = SpeciesSubgroupType(temp['species_subgroup_type']) if temp['species_subgroup_type'] is not None else None,
-                locus = Locus(temp['locus']),
-                allele_descriptions = create_allele_description_list(temp['allele_descriptions']),
-                #curation = temp['curation'], there is more than one 
+                germline_set_id = temp_dl['germline_set_id'],
+                author = temp_dl['author'],
+                lab_name = temp_dl['lab_name'],
+                lab_address = temp_dl['lab_address'],
+                acknowledgements = create_acknowledgements_list(temp_dl['acknowledgements']),
+                release_version = temp_dl['release_version'],
+                release_description = temp_dl['release_description'],
+                release_date = datetime.strptime(temp_dl['release_date'], '%Y-%m-%d'),
+                germline_set_name = temp_dl['germline_set_name'],
+                germline_set_ref = temp_dl['germline_set_ref'],
+                pub_ids = temp_dl['pub_ids'],
+                species = Ontology(id = temp_dl['species']['id'], label = temp_dl['species']['label']),
+                species_subgroup = temp_dl ['species_subgroup'],
+                species_subgroup_type = SpeciesSubgroupType(temp_dl['species_subgroup_type']) if temp_dl['species_subgroup_type'] is not None else None,
+                locus = Locus(temp_dl['locus']),
+                allele_descriptions = create_allele_description_list(temp_dl['allele_descriptions']),
+                curation = temp_dl.get('curation',None)
 
             )
             germline_set_list.append(germiline_set)
 
     except Exception as e:
-        pass
+        error_response = {'message': str(e)}  
+        return jsonify(error_response), 500
 
-    germline_set_response = GermlineSetResponse(Info = service_info_obj, GermlineSet = germline_set_list)
+    germline_set_response = GermlineSetResponse(Info = service_info_obj, GermlineSet = GermlineSetList(items = germline_set_list))
+    
+    return germline_set_response
+
+def create_acknowledgements_list(acknowledgements):
+    acknowledgements_list = []
+
+    if acknowledgements is not None:
+        for i in range (len(acknowledgements)):
+            temp_acknowledgement = fill_missing_required_fields(Acknowledgement, acknowledgements[i])
+            acknowledgement_obj = Acknowledgement(
+                acknowledgement_id= temp_acknowledgement['acknowledgement_id'],
+                name = temp_acknowledgement['name'],
+                institution_name= temp_acknowledgement['institution_name'],
+                orcid_id= temp_acknowledgement['ORCID_id']
+            )
+            acknowledgements_list.append(acknowledgement_obj)
+
+    return acknowledgements_list if len(acknowledgements_list) > 0 else None
+
 
 def create_allele_description_list(allele_descriptions):
     allele_description_list = []
 
     for i in range(len(allele_descriptions)):
+        temp_allele_descriptions = fill_missing_required_fields(AlleleDescription, allele_descriptions[i])
         allele_description_obj = AlleleDescription(
-            allele_description_id = allele_descriptions[i]['allele_description_id'],
-            allele_description_ref = allele_descriptions[i]['allele_description_ref'],
-            maintainer = allele_descriptions[i]['maintainer'],
-            #acknowledgements dont know which one
-            lab_address = allele_descriptions[i]['lab_address'],
-            release_version = allele_descriptions[i]['release_version'],
-            release_date = datetime.strptime(allele_descriptions[i]['release_date'], '%d-%b-%Y'),
-            release_description = allele_descriptions[i]['release_description'],
-            label = allele_descriptions[i]['label'],
-            sequence = allele_descriptions[i]['sequence'],
-            coding_sequence = allele_descriptions[i]['coding_sequence'],
-            aliases = allele_descriptions[i]['aliases'],
-            locus = Locus(allele_descriptions[i]['locus']),
-            chromosome = allele_descriptions[i]['chromosome'],
-            sequence_type = SequenceType(allele_descriptions[i]['sequence_type']),
-            functional = allele_descriptions[i]['functional'],
-            inference_type = InferenceType(allele_descriptions[i]['inference_type']),
-            species = Ontology(id = allele_descriptions[i]['species']['id'], label = allele_descriptions[i]['species']['label']),
-            species_subgroup = allele_descriptions[i]['species_subgroup'],
-            species_subgroup_type = SpeciesSubgroupType(allele_descriptions[i]['species_subgroup_type']) if allele_descriptions[i]['species_subgroup_type'] is not None else None,
-            subgroup_designation = allele_descriptions[i]['subgroup_designation'],
-            gene_designation = allele_descriptions[i]['gene_designation'],
-            allele_designation = allele_descriptions[i]['allele_designation'],
-            #j_codon_frame dont know which one
-            gene_start = allele_descriptions[i]['gene_start'],
-            gene_end = allele_descriptions[i]['gene_end'],
-            utr_5_prime_start = allele_descriptions[i].get('utr_5_prime_start', None),
-            utr_5_prime_end = allele_descriptions[i].get('utr_5_prime_end', None),
-            leader_1_start = allele_descriptions[i].get('leader_1_start', None),
-            leader_1_end = allele_descriptions[i].get('leader_1_end',None),
-            leader_2_start = allele_descriptions[i].get('leader_2_start',None),
-            leader_2_end = allele_descriptions[i].get('leader_2_end',None),
-            v_rs_start = allele_descriptions[i].get('v_rs_start',None),
-            v_rs_end = allele_descriptions[i].get('v_rs_end',None),
-            #d_rs_3_prime_start cant find
-            #d_rs_3_prime_end cant find
-            #d_rs_5_prime_start cant find
-            #d_rs_5_prime_end cant find
-            #j_cdr3_end cant find
-            #j_rs_start cant find
-            #j_rs_end cant find
-            #j_donor_splice cant find
-            v_gene_delineations = create_sequence_delineationV_list(allele_descriptions[i].get('v_gene_delineations',None)),
-            unrearranged_support = create_unrearranged_support_list(allele_descriptions[i]['unrearranged_support'], allele_descriptions[i]['curation']),
-            rearranged_support = create_rearranged_support_list(allele_descriptions[i]['rearranged_support'], allele_descriptions[i]['curation']),
-            paralogs = allele_descriptions[i]['paralogs'],
-            curation = allele_descriptions[i]['curation'],
-            curational_tags = create_curational_tags_list(allele_descriptions[i]['curational_tags'])
+            allele_description_id = temp_allele_descriptions['allele_description_id'],
+            allele_description_ref = temp_allele_descriptions['allele_description_ref'],
+            maintainer = temp_allele_descriptions['maintainer'],
+            acknowledgements = create_acknowledgements_list(temp_allele_descriptions['acknowledgements']),
+            lab_address = temp_allele_descriptions['lab_address'],
+            release_version = temp_allele_descriptions['release_version'],
+            release_date = datetime.strptime(temp_allele_descriptions['release_date'], '%d-%b-%Y'),
+            release_description = temp_allele_descriptions['release_description'],
+            label = temp_allele_descriptions['label'],
+            sequence = temp_allele_descriptions['sequence'],
+            coding_sequence = temp_allele_descriptions['coding_sequence'],
+            aliases = temp_allele_descriptions['aliases'],
+            locus = Locus(temp_allele_descriptions['locus']),
+            chromosome = temp_allele_descriptions['chromosome'],
+            sequence_type = SequenceType(temp_allele_descriptions['sequence_type']),
+            functional = temp_allele_descriptions['functional'],
+            inference_type = InferenceType(temp_allele_descriptions['inference_type'] if temp_allele_descriptions['inference_type'] is not None else InferenceType(0)),
+            species = Ontology(id = temp_allele_descriptions['species']['id'], label = temp_allele_descriptions['species']['label']),
+            species_subgroup = temp_allele_descriptions['species_subgroup'],
+            species_subgroup_type = SpeciesSubgroupType(temp_allele_descriptions['species_subgroup_type']) if temp_allele_descriptions['species_subgroup_type'] is not None else None,
+            subgroup_designation = temp_allele_descriptions['subgroup_designation'],
+            gene_designation = temp_allele_descriptions['gene_designation'],
+            allele_designation = temp_allele_descriptions['allele_designation'],
+            j_codon_frame = temp_allele_descriptions.get('j_codon_frame', None),
+            gene_start = temp_allele_descriptions['gene_start'],
+            gene_end = temp_allele_descriptions['gene_end'],
+            utr_5_prime_start = temp_allele_descriptions.get('utr_5_prime_start', None),
+            utr_5_prime_end = temp_allele_descriptions.get('utr_5_prime_end', None),
+            leader_1_start = temp_allele_descriptions.get('leader_1_start', None),
+            leader_1_end = temp_allele_descriptions.get('leader_1_end',None),
+            leader_2_start = temp_allele_descriptions.get('leader_2_start',None),
+            leader_2_end = temp_allele_descriptions.get('leader_2_end',None),
+            v_rs_start = temp_allele_descriptions.get('v_rs_start',None),
+            v_rs_end = temp_allele_descriptions.get('v_rs_end',None),
+            d_rs_3_prime_start = temp_allele_descriptions.get('d_rs_3_prime_start',None),
+            d_rs_3_prime_end = temp_allele_descriptions.get('d_rs_3_prime_end',None),
+            d_rs_5_prime_start = temp_allele_descriptions.get('d_rs_5_prime_start',None),
+            d_rs_5_prime_end = temp_allele_descriptions.get('d_rs_5_prime_end',None),
+            j_cdr3_end = temp_allele_descriptions.get('j_cdr3_end',None),
+            j_rs_start = temp_allele_descriptions.get('j_rs_start',None),
+            j_rs_end = temp_allele_descriptions.get('j_rs_end',None),
+            j_donor_splice = temp_allele_descriptions.get('j_donor_splice',None),
+            v_gene_delineations = create_sequence_delineationV_list(temp_allele_descriptions.get('v_gene_delineations',None)),
+            unrearranged_support = create_unrearranged_support_list(temp_allele_descriptions['unrearranged_support'], temp_allele_descriptions['curation']),
+            rearranged_support = create_rearranged_support_list(temp_allele_descriptions['rearranged_support'], temp_allele_descriptions['curation']),
+            paralogs = temp_allele_descriptions['paralogs'],
+            curation = temp_allele_descriptions['curation'],
+            curational_tags = create_curational_tags_list(temp_allele_descriptions['curational_tags'])
         )
         allele_description_list.append(allele_description_obj)
 
@@ -276,21 +302,22 @@ def create_sequence_delineationV_list(v_gene_delineations):
 
     if v_gene_delineations is not None:
         for i in range(len(v_gene_delineations)):
+            temp_v_gene_delineations = fill_missing_required_fields(SequenceDelineationV, v_gene_delineations[i])
             sequence_delineationV_obj = SequenceDelineationV(
-                sequence_delineation_id = v_gene_delineations[i]['sequence_delineation_id'],
-                delineation_scheme = v_gene_delineations[i]['delineation_scheme'],
-                fwr1_start = v_gene_delineations[i]['fwr1_start'] if v_gene_delineations[i]['fwr1_start'] is not None else 0,
-                fwr1_end = v_gene_delineations[i]['fwr1_end'] if v_gene_delineations[i]['fwr1_end'] is not None else 0,
-                cdr1_start = v_gene_delineations[i]['cdr1_start'] if v_gene_delineations[i]['cdr1_start'] is not None else 0,
-                cdr1_end = v_gene_delineations[i]['cdr1_end'] if v_gene_delineations[i]['cdr1_end'] is not None else 0,
-                fwr2_start = v_gene_delineations[i]['fwr2_start'] if v_gene_delineations[i]['fwr2_start'] is not None else 0,
-                fwr2_end = v_gene_delineations[i]['fwr2_end'] if v_gene_delineations[i]['fwr2_end'] is not None else 0,
-                cdr2_start = v_gene_delineations[i]['cdr2_start'] if v_gene_delineations[i]['cdr2_start'] is not None else 0,
-                cdr2_end = v_gene_delineations[i]['cdr2_end'] if v_gene_delineations[i]['cdr2_end'] is not None else 0,
-                fwr3_start = v_gene_delineations[i]['fwr3_start'] if v_gene_delineations[i]['fwr3_start'] is not None else 0,
-                fwr3_end = v_gene_delineations[i]['fwr3_end'] if v_gene_delineations[i]['fwr3_end'] is not None else 0,
-                cdr3_start = v_gene_delineations[i]['cdr3_start'] if v_gene_delineations[i]['cdr3_start'] is not None else 0,
-                alignment = v_gene_delineations[i]['alignment_labels']
+                sequence_delineation_id = temp_v_gene_delineations['sequence_delineation_id'],
+                delineation_scheme = temp_v_gene_delineations['delineation_scheme'],
+                fwr1_start = temp_v_gene_delineations['fwr1_start'] if temp_v_gene_delineations['fwr1_start'] is not None else 0,
+                fwr1_end = temp_v_gene_delineations['fwr1_end'] if temp_v_gene_delineations['fwr1_end'] is not None else 0,
+                cdr1_start = temp_v_gene_delineations['cdr1_start'] if temp_v_gene_delineations['cdr1_start'] is not None else 0,
+                cdr1_end = temp_v_gene_delineations['cdr1_end'] if temp_v_gene_delineations['cdr1_end'] is not None else 0,
+                fwr2_start = temp_v_gene_delineations['fwr2_start'] if temp_v_gene_delineations['fwr2_start'] is not None else 0,
+                fwr2_end = temp_v_gene_delineations['fwr2_end'] if temp_v_gene_delineations['fwr2_end'] is not None else 0,
+                cdr2_start = temp_v_gene_delineations['cdr2_start'] if temp_v_gene_delineations['cdr2_start'] is not None else 0,
+                cdr2_end = temp_v_gene_delineations['cdr2_end'] if temp_v_gene_delineations['cdr2_end'] is not None else 0,
+                fwr3_start = temp_v_gene_delineations['fwr3_start'] if temp_v_gene_delineations['fwr3_start'] is not None else 0,
+                fwr3_end = temp_v_gene_delineations['fwr3_end'] if temp_v_gene_delineations['fwr3_end'] is not None else 0,
+                cdr3_start = temp_v_gene_delineations['cdr3_start'] if temp_v_gene_delineations['cdr3_start'] is not None else 0,
+                alignment = temp_v_gene_delineations['alignment_labels']
             )
             sequence_delineationV_list.append(sequence_delineationV_obj)
 
@@ -305,17 +332,18 @@ def create_unrearranged_support_list(unrearranged_support, curation):
 
     if unrearranged_support != None:
         for i in range(len(unrearranged_support)):
+            temp_unrearranged_support = fill_missing_required_fields(UnrearrangedSequence, unrearranged_support[i])
             unrearranged_sequence_obj = UnrearrangedSequence(
-                sequence_id = unrearranged_support[i]['sequence_id'],
-                sequence = unrearranged_support[i]['sequence'],
+                sequence_id = temp_unrearranged_support['sequence_id'],
+                sequence = temp_unrearranged_support['sequence'],
                 curation = curation,
-                repository_name = unrearranged_support[i]['repository_name'],
-                repository_ref = unrearranged_support[i]['repository_ref'],
-                patch_no = unrearranged_support[i]['patch_no'],
-                gff_seqid = unrearranged_support[i]['gff_seqid'] if unrearranged_support[i]['gff_seqid'] is not None else "",
-                gff_start = unrearranged_support[i]['gff_start'],
-                gff_end = unrearranged_support[i]['gff_end'],
-                strand = Strand(unrearranged_support[i]['strand']) if unrearranged_support[i]['strand'] is not None else '+'
+                repository_name = temp_unrearranged_support['repository_name'],
+                repository_ref = temp_unrearranged_support['repository_ref'],
+                patch_no = temp_unrearranged_support['patch_no'],
+                gff_seqid = temp_unrearranged_support['gff_seqid'] if temp_unrearranged_support['gff_seqid'] is not None else "",
+                gff_start = temp_unrearranged_support['gff_start'],
+                gff_end = temp_unrearranged_support['gff_end'],
+                strand = Strand(temp_unrearranged_support['strand']) if temp_unrearranged_support['strand'] is not None else '+'
             )
             unrearranged_support_list.append(unrearranged_sequence_obj)
 
@@ -327,17 +355,18 @@ def create_rearranged_support_list(rearranged_support, curation):
 
     if rearranged_support is not None:
         for i in range(len(rearranged_support)):
+            temp_rearranged_support = fill_missing_required_fields(RearrangedSequence, rearranged_support[i])
             rearranged_sequence_obj = RearrangedSequence(
-                sequence_id = rearranged_support[i]['sequence_id'],
-                sequence = rearranged_support[i]['sequence'],
-                derivation = Derivation(rearranged_support[i]['derivation']) if rearranged_support[i]['derivation'] is not None else None,
-                observation_type = ObservationType(rearranged_support[i]['observation_type']) if rearranged_support[i]['observation_type'] is not None else None,
+                sequence_id = temp_rearranged_support['sequence_id'],
+                sequence = temp_rearranged_support['sequence'],
+                derivation = Derivation(temp_rearranged_support['derivation']) if temp_rearranged_support['derivation'] is not None else None,
+                observation_type = ObservationType(temp_rearranged_support['observation_type']) if temp_rearranged_support['observation_type'] is not None else None,
                 curation = curation,
-                repository_name = rearranged_support[i]['repository_name'],
-                repository_ref = rearranged_support[i]['repository_ref'],
-                deposited_version = rearranged_support[i]['deposited_version'],
-                sequence_start = rearranged_support[i]['sequence_start'],
-                sequence_end = rearranged_support[i]['sequence_end'],
+                repository_name = temp_rearranged_support['repository_name'],
+                repository_ref = temp_rearranged_support['repository_ref'],
+                deposited_version = temp_rearranged_support['deposited_version'],
+                sequence_start = temp_rearranged_support['sequence_start'],
+                sequence_end = temp_rearranged_support['sequence_end'],
                 )
             
             rearranged_support_list.append(rearranged_sequence_obj)
@@ -353,3 +382,49 @@ def create_curational_tags_list(curational_tags):
             curational_tags_list.append(curational_tag_obj)
 
     return curational_tags_list
+
+
+def get_default_value(field_type: Any) -> Any:
+    if get_origin(field_type) is Union:
+        args = get_args(field_type)
+        field_type = args[0] if args[1] is type(None) else args[1]
+
+    if field_type == 'int':
+        return 0
+    elif field_type == 'float':
+        return 0.0
+    elif field_type == 'str':
+        return ""
+    elif field_type == 'bool':
+        return False
+    elif field_type == 'list':
+        return []
+    elif field_type == 'dict':
+        return {}
+    elif field_type == 'datetime':
+        return datetime.now()
+    else:
+        if issubclass(globals()[field_type] , Enum):
+            # Get the first value of the Enum
+            return next(iter(globals()[field_type])).value
+
+    return None
+
+def fill_missing_required_fields(model_cls: BaseModel, data: dict) -> dict:
+    filled_data = data.copy()
+
+    for field_name, field_info in model_cls.__fields__.items():
+        if field_name in data and data[field_name] is None:
+            if is_required(field_info):
+                field_type = model_cls.__annotations__[field_name]
+                default_value = get_default_value(field_type)
+                if default_value is not None:
+                    filled_data[field_name] = default_value
+
+    return filled_data
+
+def is_required(field_info: FieldInfo) -> bool:
+    if 'required=True' in str(field_info):
+        return True
+    
+    return False
