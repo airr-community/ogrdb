@@ -15,7 +15,7 @@ info:
     url: https://perma.cc/DK5U-NDVE
 
 servers:
-  - url: http://127.0.0.1:5000/api_v1
+  - url: https://ogrdb.airr-community.org/api_v1
     description: OGRDB API
     variables:
       basePath:
