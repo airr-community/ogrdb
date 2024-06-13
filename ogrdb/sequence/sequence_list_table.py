@@ -89,9 +89,11 @@ def setup_sequence_list_table(results, current_user, edit=True):
 
 def setup_sequence_version_table(results, current_user):
     table = setup_sequence_list_table(results, current_user)
-    del table._cols['locus']
-    del table._cols['sequence_type']
-    del table._cols['species']
+
+    for k in list(table._cols.keys()):
+        if k not in ['sequence_name', 'imgt_name']:
+            del table._cols[k]
+
     table.add_column('release_version', StyledCol("Version", tooltip="Release version"))
     table._cols.move_to_end('release_version')
     table.add_column('release_date', StyledDateCol("Date", tooltip="Release date"))

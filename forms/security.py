@@ -12,12 +12,13 @@ from wtforms import StringField, BooleanField, PasswordField
 from wtforms import EmailField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
+from markupsafe import Markup
 
 
 class ExtendedRegisterForm(RegisterForm):
     name = StringField('Full Name', [DataRequired()])
     address = StringField('Institution and Postal Address', [DataRequired()])
-    accepted_terms = BooleanField('I accept the <a href="/render_page/privacy_statement.html" target="_blank">Privacy</a> and <a href="/render_page/licensing_statement.html" target="_blank">Licensing</a> statements')
+    accepted_terms = BooleanField(Markup('I accept the <a href="/render_page/privacy_statement.html" target="_blank">Privacy</a> and <a href="/render_page/licensing_statement.html" target="_blank">Licensing</a> statements'))
 
 
 class ProfileForm(FlaskForm):
