@@ -1,4 +1,4 @@
-openapi: '3.1.0'
+openapi: '3.0.2'
 
 info:
   title: OGRDB API
@@ -15,11 +15,11 @@ info:
     url: https://perma.cc/DK5U-NDVE
 
 servers:
-  - url: https://ogrdb.airr-community.org/airr/ogrdb/v2
+  - url: http://127.0.0.1:5000/api_v1
     description: OGRDB API
     variables:
       basePath:
-        default: /airr/ogrdb/v2
+        default: api_v1
 
 components:
   schemas:

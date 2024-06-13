@@ -66,7 +66,7 @@ from api_v1.api import api_bp
 app.register_blueprint(api_bp, url_prefix='/api_v1')
 
 SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.yaml'
+API_URL = '/schema/ogrdb-api-openapi3.yaml'
 swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
@@ -81,9 +81,9 @@ with open('schema/ogrdb-api-openapi3.yaml', 'r') as f:
     openapi_schema = yaml.safe_load(f)
 
 # Serve static files (Swagger YAML)
-@app.route('/static/<path:path>', methods=['GET'])
+@app.route('/schema/<path:path>', methods=['GET'])
 def serve_static(path):
-    return send_from_directory('static', path)
+    return send_from_directory('schema', path)
 
 
 # Database classes are declared here to resolve dependence issues

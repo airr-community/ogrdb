@@ -150,9 +150,9 @@ def get_germline_sets_by_id(species_id):
         error_response = {'message': str(e)}  
         return jsonify(error_response), 500
 
-
-@api_bp.route('/germline/set/<germline_set_id>/<release_version>', methods=['GET'])
-def get_germline_sets_by_id_and_version(germline_set_id, release_version):
+@api_bp.route('/germline/set/<germline_set_id>/<release_version>/<format>')
+@api_bp.route('/germline/set/<germline_set_id>/<release_version>', defaults={'format': None}, methods=['GET'])
+def get_germline_sets_by_id_and_version(germline_set_id, release_version, format):
     """
     Get a version of a germline set by ID and release version.
     
@@ -172,12 +172,12 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version):
             q = q.filter(GermlineSet.release_version == release_version)
 
         germline_set = q.one_or_none()
-        
-        format = 'airr_ex' if 'Human' in germline_set.species else 'airr'
+        if not format:
+            format = 'airr_ex' if 'Human' in germline_set.species else 'airr'
 
         if germline_set:
             res = download_germline_set_by_id(germline_set.id, format)
-            return res
+            return res, 200
 
         else:
             error_response = {'message': str(e)}  
@@ -186,7 +186,24 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version):
     except Exception as e:
         error_response = {'message': str(e)}  
         return jsonify(error_response), 500
-        
+
+@api_bp.route('/germline/set/<germline_set_id>/versions', methods=['GET'])
+def list_all_versions_of_germline_set(germline_set_id: int):
+    try:
+        # Base query to filter by germline_set_id
+        versions_list = []
+        q = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set_id)
+        q = q.all()
+
+        for germline_set in q:
+            versions_list.append(germline_set.release_version)
+
+        # Print or return the list of germline sets with their versions and IDs
+        return jsonify(versions_list), 200
+    
+    except Exception as e:
+        error_response = {'message': str(e)}  
+        return jsonify(error_response), 500
 
 def download_germline_set_by_id(germline_set_id, format):
     """
@@ -220,11 +237,15 @@ def download_germline_set_by_id(germline_set_id, format):
     if 'airr' in format:
         dl = germline_set_to_airr(germline_set, extend)
         germline_set_response = convert_to_GermlineSetResponse_obj(dl)
-        germline_set_response_json = germline_set_response.json()  # Convert the object to a dictionary
+        germline_set_response = germline_set_response.json()  # Convert the object to a dictionary
         filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
-
     
-    return Response(germline_set_response_json, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
+    else:
+        dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
+        filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
+        germline_set_response = dl
+    
+    return Response(germline_set_response, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
   
 def convert_to_GermlineSetResponse_obj(dl):
     """
