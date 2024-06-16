@@ -270,6 +270,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: format
+          in: path
+          description: format of germline set to return
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: |

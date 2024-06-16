@@ -199,7 +199,7 @@ def list_all_versions_of_germline_set(germline_set_id: int):
             versions_list.append(germline_set.release_version)
 
         response = VersionsResponse(versions=versions_list)
-        return jsonify(response), 200
+        return jsonify(response.model_dump()), 200
     
     except Exception as e:
         error_response = {'message': str(e)}  
