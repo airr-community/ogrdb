@@ -198,8 +198,8 @@ def list_all_versions_of_germline_set(germline_set_id: int):
         for germline_set in q:
             versions_list.append(germline_set.release_version)
 
-        # Print or return the list of germline sets with their versions and IDs
-        return jsonify(versions_list), 200
+        response = VersionsResponse(versions=versions_list)
+        return jsonify(response), 200
     
     except Exception as e:
         error_response = {'message': str(e)}  
