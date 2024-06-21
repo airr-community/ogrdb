@@ -1,4 +1,5 @@
 openapi: '3.1.0'
+swagger: '2.0'
 
 info:
   title: OGRDB API
@@ -15,11 +16,11 @@ info:
     url: https://perma.cc/DK5U-NDVE
 
 servers:
-  - url: https://ogrdb.airr-community.org/airr/ogrdb/v2
+  - url: http://127.0.0.1:5000/api_v1
     description: OGRDB API
     variables:
       basePath:
-        default: /airr/ogrdb/v2
+        default: api_v1
 
 components:
   schemas:
@@ -28,13 +29,13 @@ components:
     service_info_object:
       description: Provides information about the OGRDB API service and it attributes and capabilities.
       allOf:
-        - $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
+        - $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/InfoObject'
         - type: object
           properties:
             api:
-              $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
+              $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/InfoObject'
             schema:
-              $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
+              $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/InfoObject'
 
 
     # The response object for species lists
@@ -44,42 +45,64 @@ components:
         species:
           type: array
           items:
-            $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/Ontology'
+            $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/Ontology'
 
     # The response object for germline set reference info
+    GermlineSpeciesResponseItem:
+      type: object
+      properties:
+        germline_set_id:
+          type: string
+        germline_set_name:
+          type: string
+        species:
+          $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/Ontology'
+        species_subgroup:
+          type: string
+        species_subgroup_type:
+          type: string
+        locus:
+          type: string
+
+    # Schema for germline_species_response
     germline_species_response:
-      type: array
-      items:
-        type: object
-        properties:
-          germline_set_id:
-            type: string
-          germline_set_name:
-            type: string
-          species:
-            $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/Ontology'
-          species_subgroup:
-            type: string
-          species_subgroup_type:
-            type: string
-          locus:
-            type: string
+      type: object
+      required:
+        - germline_species
+      properties:
+        germline_species:
+          type: array
+          items:
+            $ref: '#/components/schemas/GermlineSpeciesResponseItem'
 
     # list of germline sets
     germline_set_list:
-      type: array
-      items:
-        #$ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/GermlineSet'
-        $ref: './GermlineSet.yaml#/GermlineSet'
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: './GermlineSet.yaml#/GermlineSet'
 
     # The response object for germline sets
     germline_set_response:
       type: object
       properties:
         Info:
-          $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/v1.4.1/specs/airr-schema-openapi3.yaml#/InfoObject'
+          $ref: 'https://raw.githubusercontent.com/airr-community/airr-standards/release-1.5/specs/airr-schema-openapi3.yaml#/InfoObject'
         GermlineSet:
           $ref: '#/components/schemas/germline_set_list'
+    
+    # New schema for list of versions
+    versions_response:
+      type: object
+      properties:
+        versions:
+          type: array
+          items:
+            type: number
 
     # error response
     error_response:
@@ -214,6 +237,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/germline_set_response'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+
+  /germline/set/{germline_set_id}/{release_version}/{format}:
+    get:
+      description: >
+        Returns a germline set based upon its identifier and version.
+      operationId: get_versions_api
+      tags:
+        - germline
+      parameters:
+        - name: germline_set_id
+          in: path
+          description: ID of germline set to return
+          required: true
+          schema:
+            type: string
+        - name: release_version
+          in: path
+          description: Version of germline set to return
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: path
+          description: format of germline set to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            A successful call returns the germline set data in FASTA format.
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+
+
+  /germline/set/{germline_set_id}/versions:
+    get:
+      description: >
+        Returns a list of all versions of a germline set based on its identifier.
+      operationId: list_all_versions_of_germline_set
+      tags:
+        - germline
+      parameters:
+        - name: germline_set_id
+          in: path
+          description: ID of germline set to return versions for
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            A successful call returns the list of versions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/versions_response'
         '400':
           description: Invalid request
           content:
