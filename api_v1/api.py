@@ -15,7 +15,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec import APISpec
 from typing import Any, Optional, Union, get_args, get_origin, List, get_type_hints
 
-api_bp = Blueprint('api_v1', __name__)
+api_bp = Blueprint('api_v2', __name__)
 
 @api_bp.route('/', methods=['GET'])
 def get_service_status():

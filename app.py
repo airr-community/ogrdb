@@ -63,9 +63,9 @@ app.register_blueprint(blueprint)
 
 #Initialise New API
 from api_v1.api import api_bp
-app.register_blueprint(api_bp, url_prefix='/api_v1')
+app.register_blueprint(api_bp, url_prefix='/api_v2')
 
-SWAGGER_URL = '/api_v1/swagger'
+SWAGGER_URL = '/api_v2/swagger'
 API_URL = '/schema/ogrdb-api-openapi3.yaml'
 swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
