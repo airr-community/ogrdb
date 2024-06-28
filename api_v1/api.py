@@ -58,8 +58,8 @@ def create_info_object():
     """
     service_info_obj = ServiceInfoObject(
             title="OGRDB API",
-            version="1.0.0",
-            description="Major Version 1 of the Open Germline Receptor Database (OGRDB) web service application programming interface (API).",
+            version="2.0.0",
+            description="Major Version 2 of the Open Germline Receptor Database (OGRDB) web service application programming interface (API).",
             contact=Contact(
                 name="AIRR Community",
                 url="http://ogrdb.airr-community.org/",
@@ -71,7 +71,7 @@ def create_info_object():
             ),
             api=InfoObject(
                 title="OGRDB API Detailed",
-                version="1.0.0"
+                version="2.0.0"
             ),
             schema=InfoObject(
                 title="OGRDB API Schema",
