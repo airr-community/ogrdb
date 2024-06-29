@@ -15,7 +15,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec import APISpec
 from typing import Any, Optional, Union, get_args, get_origin, List, get_type_hints
 
-api_bp = Blueprint('api_v1', __name__)
+api_bp = Blueprint('api_v2', __name__)
 
 @api_bp.route('/', methods=['GET'])
 def get_service_status():
@@ -58,8 +58,8 @@ def create_info_object():
     """
     service_info_obj = ServiceInfoObject(
             title="OGRDB API",
-            version="1.0.0",
-            description="Major Version 1 of the Open Germline Receptor Database (OGRDB) web service application programming interface (API).",
+            version="2.0.0",
+            description="Major Version 2 of the Open Germline Receptor Database (OGRDB) web service application programming interface (API).",
             contact=Contact(
                 name="AIRR Community",
                 url="http://ogrdb.airr-community.org/",
@@ -71,7 +71,7 @@ def create_info_object():
             ),
             api=InfoObject(
                 title="OGRDB API Detailed",
-                version="1.0.0"
+                version="2.0.0"
             ),
             schema=InfoObject(
                 title="OGRDB API Schema",
