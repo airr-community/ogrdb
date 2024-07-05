@@ -16,7 +16,7 @@ info:
     url: https://perma.cc/DK5U-NDVE
 
 servers:
-  - url: https://ogrdb.air-community.org/api_v2
+  - url: /api_v2
     description: OGRDB API
     variables:
       basePath:

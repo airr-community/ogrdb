@@ -6,7 +6,6 @@ from flask_migrate import Migrate
 from flask_security import SQLAlchemyUserDatastore, Security
 from flask_sqlalchemy import SQLAlchemy
 
-
 app = None
 attach_path = None
 ncbi_api_key = None

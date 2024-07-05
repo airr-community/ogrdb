@@ -31,6 +31,10 @@ if not isdir(attach_path):
     mkdir(attach_path)
 
 
+from flask_babel import Babel
+babel = Babel(app)
+
+
 from forms.useradmin import *
 from forms.security import *
 from genotype_stats import *
@@ -106,6 +110,7 @@ from db.attached_file_db import *
 from db.dupe_gene_note_db import *
 from db.novel_vdjbase_db import *
 from db.vdjbase import *
+from db.species_lookup import *
 
 # All routes are imported here. No routes are imported in subsidiary files
 # in order to avoid circularity between imports

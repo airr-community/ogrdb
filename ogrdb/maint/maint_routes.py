@@ -1,6 +1,7 @@
 from flask import flash, redirect
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
+from db.userdb import User
 
 
 from db.gene_description_db import GeneDescription
@@ -49,52 +50,46 @@ def rebuild_duplicates():
 
     db.session.commit()
 
-    return('Gene description links rebuilt')
+    return 'Gene description links rebuilt'
 
-# add cdr coordinates to all v-sequence records
+import uuid
 
-from ogrdb.sequence.sequence_routes import delineate_v_gene
 
-@app.route('/add_cdr_coords', methods=['GET'])
+'''
+@app.route('/add_uuid', methods=['GET'])
+def add_uuid():
+    #if not current_user.has_role('Admin'):
+    #    return redirect('/')
+
+    recs = db.session.query(User).all()
+    for rec in recs:
+        rec.fs_uniquifier = uuid.uuid4().hex
+    db.session.commit()
+    return 'Success'
+'''
+
+
+sp_to_binomial = {
+    "human": "Homo sapiens",
+    "human_TCR": "Homo sapiens",
+    "mouse": "Mus musculus",
+    "atlantic salmon": "Salmo salar",
+    "rainbow trout": "Oncorhynchus mykiss",
+}
+
+
+@app.route('/use_binomial', methods=['GET'])
 @login_required
-def add_cdr_coords():
+def add_use_binomial():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    seqs = db.session.query(GeneDescription).all()
-
-    for seq in seqs:
-        if not seq.coding_seq_imgt:
-            print(f'No coding sequence for {seq.id} {seq.sequence_name}')
-            continue
-
-        if not seq.sequence:
-            print(f'No sequence for {seq.id} {seq.sequence_name}')
-            continue
-
-        coding_ungapped = seq.coding_seq_imgt.replace('.', '')
-        coding_start = seq.sequence.find(coding_ungapped)
-
-        if coding_start < 0:
-            seq.coding_seq_imgt = seq.coding_seq_imgt.upper()
-            seq.sequence = seq.sequence.upper()
-            coding_ungapped = seq.coding_seq_imgt.replace('.', '')
-            coding_start = seq.sequence.find(coding_ungapped)
-            if coding_start:
-                print(f'Coding sequence is not contained in the gene sequence for {seq.id} {seq.sequence_name}')
-            continue
-        else:
-            seq.gene_start = coding_start + 1
-            seq.gene_end = coding_start + len(coding_ungapped)
-
-        if seq.sequence_type == 'V' and not seq.cdr1_start:
-
-            uc = delineate_v_gene(seq.coding_seq_imgt)
-            seq.cdr1_start = uc['cdr1_start'] + coding_start if uc['cdr1_start'] else None
-            seq.cdr1_end = uc['cdr1_end'] + coding_start if uc['cdr1_end'] else None
-            seq.cdr2_start = uc['cdr2_start'] + coding_start if uc['cdr2_start'] else None
-            seq.cdr2_end = uc['cdr2_end'] + coding_start if uc['cdr2_end'] else None
-            seq.cdr3_start = uc['fwr3_end'] + 1 + coding_start if uc['fwr3_end'] else None
+    recs = db.session.query(GeneDescription).all()
+    for rec in recs:
+        if rec.species.lower() in sp_to_binomial:
+            rec.species = sp_to_binomial[rec.species.lower()]
+        elif rec.species not in sp_to_binomial.values():
+            print(f"unexpected species: {rec.species}")
     
     db.session.commit()
     return 'Success'
