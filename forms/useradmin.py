@@ -27,6 +27,7 @@ from db.primer_db import Primer
 from db.primer_set_db import PrimerSet
 from db.record_set_db import RecordSet
 from db.sample_name_db import SampleName
+from db.species_lookup_db import SpeciesLookup
 
 
 
@@ -56,3 +57,5 @@ admin_obj.add_view(AdminView(JournalEntry, db.session))
 admin_obj.add_view(AdminView(RecordSet, db.session))
 admin_obj.add_view(AdminView(SampleName, db.session))
 admin_obj.add_view(AdminView(InferredSequence, db.session))
+admin_obj.add_view(AdminView(NovelVdjbase, db.session))
+admin_obj.add_view(AdminView(SpeciesLookup, db.session))

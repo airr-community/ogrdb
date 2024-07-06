@@ -14,6 +14,7 @@ from db.notes_entry_db import NotesEntry
 from db.novel_vdjbase_db import NovelVdjbase, make_NovelVdjbase_table
 from db.styled_table import StyledCol
 from sequence_format import popup_seq_button
+from db.species_lookup_db import SpeciesLookup
 
 
 class DetailsCol(StyledCol):
@@ -50,8 +51,8 @@ class VdjbaseAlleleCol(StyledCol):
     def td_contents(self, item, attr_list):
         value = ''
         if item.vdjbase_name:
-            value = '<a href=%sgenerep/%s/%s/%s>%s</a>' % (app.config['VDJBASE_URL'],
-                                                           item.species.replace('Human_TCR', 'Human'),
+            value = '<a href="%sgenerep/%s/%s/%s">%s</a>' % (app.config['VDJBASE_URL'],
+                                                           item.species,
                                                            item.locus,
                                                            item.vdjbase_name,
                                                            item.vdjbase_name)
@@ -75,18 +76,27 @@ def call_vdjbase(payload):
 
 
 def get_vdjbase_sample_details(species, dataset, sample_name):
-    # fudge for Human_TCR 'species'
-    species = species.replace('_TCR', '')
-    return call_vdjbase(f'/repseq/sample_info/{species}/{dataset}/{sample_name}')
+    binomial_to_common = {}
+    for sp in db.session.query(SpeciesLookup.common, SpeciesLookup.binomial).all():
+        binomial_to_common[sp[1]] = sp[0]
+
+    return call_vdjbase(f'/repseq/sample_info/{binomial_to_common[species]}/{dataset}/{sample_name}')
 
 
 last_run = None
 
+
 def update_from_vdjbase():
     global last_run
 
+    common_to_binomial = {}
+    binomial_to_common = {}
+    for sp in db.session.query(SpeciesLookup.common, SpeciesLookup.binomial).all():
+        common_to_binomial[sp[0].lower()] = sp[1]
+        binomial_to_common[sp[1]] = sp[0]
+        
     if last_run and datetime.now() - last_run < timedelta(hours=21):
-        return('Update_from_VDJbase: frequency limit exceeded: restart to over-ride')
+        return 'Update_from_VDJbase: frequency limit exceeded: restart to over-ride'
 
     last_run = datetime.now()
 
@@ -100,7 +110,7 @@ def update_from_vdjbase():
     for s in species:
         if s[1]:
             # fudge species/committee names
-            sp = s[0] if s[0] != 'Human_TCR' else 'Human'
+            sp = s[0]
             if sp == 'Test':
                 continue
 
@@ -112,9 +122,13 @@ def update_from_vdjbase():
         vdjbase_sets = {}
         vdjbase_species = call_vdjbase('repseq/species')
 
-        for v_s in vdjbase_species:
+        for vdjbase_species in vdjbase_species:
+            if vdjbase_species.lower() in common_to_binomial:
+                v_s = common_to_binomial[vdjbase_species.lower()]
+            else:
+                v_s = vdjbase_species
             if v_s in ogrdb_sets:
-                vdjbase_datasets = call_vdjbase('repseq/ref_seqs/%s' % v_s)
+                vdjbase_datasets = call_vdjbase('repseq/ref_seqs/%s' % vdjbase_species)
                 for ds in vdjbase_datasets:
                     if ds['dataset'] in ogrdb_sets[v_s]:
                         if v_s not in vdjbase_sets:
@@ -129,17 +143,14 @@ def update_from_vdjbase():
 
     for species, datasets in vdjbase_sets.items():
         for dataset in datasets:
-            # fudge for dual Human committees
             ogrdb_species = species
-            if species == "Human" and dataset in ['TRA', 'TRB', 'TRD', 'TRG']:
-                ogrdb_species = "Human_TCR"
-
+            vdjbase_species = binomial_to_common[species]
             expected_alleles = db.session.query(NovelVdjbase.vdjbase_name) \
                 .filter(and_(NovelVdjbase.species == ogrdb_species, NovelVdjbase.locus == dataset)).all()
             expected_alleles = [r[0] for r in expected_alleles]
 
             try:
-                results = call_vdjbase('repseq/novels/%s/%s' % (species, dataset))
+                results = call_vdjbase('repseq/novels/%s/%s' % (vdjbase_species, dataset))
 
                 if not results or len(results) == 0:
                     continue
@@ -206,11 +217,18 @@ def update_from_vdjbase():
 
     return 'Import complete'
 
+
 def setup_vdjbase_review_tables(results, editor):
     table = make_NovelVdjbase_table(results)
 
+    binomial_to_common = {}
+    for sp in db.session.query(SpeciesLookup.common, SpeciesLookup.binomial).all():
+        binomial_to_common[sp[1]] = sp[0]
+
     for item in table.items:
         item.editable = editor
+        if item.species in binomial_to_common:
+            item.species = binomial_to_common[item.species]
 
     table._cols['id'].show = True
     table._cols['vdjbase_name'] = VdjbaseAlleleCol('VDJbase Name')
@@ -223,8 +241,10 @@ def setup_vdjbase_review_tables(results, editor):
 # Functions for managing ALL VDJbase inferences (not just full-length) used to annotate genotypes and submissions
 # These are kept in an in-memory structure for fast access
 
+
 vdjbase_genes = {}
 vdjbase_gene_update_stamp = 0
+species_converted = False
 
 
 def update_vdjbase_ref():
@@ -242,7 +262,7 @@ def update_vdjbase_ref():
 
 
 def init_vdjbase_ref():
-    global vdjbase_genes, vdjbase_gene_update_stamp
+    global vdjbase_genes, vdjbase_gene_update_stamp, species_converted
 
     try:
         if not os.path.isfile(app.config['VDJBASE_NOVEL_FILE']):
@@ -259,10 +279,24 @@ def init_vdjbase_ref():
     except:
         app.logger.error('Error reading VDJbase novels file from disk')
 
+    species_converted = False
+
 
 def get_vdjbase_ref():
+    global species_converted
+
     if os.path.isfile(app.config['VDJBASE_NOVEL_FILE']) and os.path.getmtime(app.config['VDJBASE_NOVEL_FILE']) > vdjbase_gene_update_stamp:
         init_vdjbase_ref()
+
+    if not species_converted:
+        common_to_binomial = {}
+        for sp in db.session.query(SpeciesLookup.common, SpeciesLookup.binomial).all():
+            common_to_binomial[sp[0].lower()] = sp[1]
+
+        for species, dataset in list(vdjbase_genes.items()):
+            if species.lower() in common_to_binomial:
+                vdjbase_genes[common_to_binomial[species.lower()]] = dataset
+                del vdjbase_genes[species]
 
     return vdjbase_genes
 

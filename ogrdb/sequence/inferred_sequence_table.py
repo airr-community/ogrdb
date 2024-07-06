@@ -157,7 +157,7 @@ def setup_vdjbase_matches_table(seq):
     results = []
 
     vdjbase_ref = get_vdjbase_ref()
-    vdjbase_species = seq.species.replace('Human_TCR', 'Human')
+    vdjbase_species = seq.species
     if seq.coding_seq_imgt is not None and len(seq.coding_seq_imgt) > 0 \
             and vdjbase_species in vdjbase_ref and seq.locus in vdjbase_ref[vdjbase_species]:
         vdjbase_genes = vdjbase_ref[vdjbase_species][seq.locus]

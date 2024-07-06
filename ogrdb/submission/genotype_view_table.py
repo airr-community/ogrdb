@@ -43,25 +43,25 @@ class SeqCol(StyledCol):
 
         bt_igpdb = ''
 
-        if item.genotype_description.submission.species == 'Human':
+        if item.genotype_description.submission.species == 'Homo sapiens':
             igpdb_genes = get_igpdb_ref()
-            for k,v in igpdb_genes.items():
+            for k, v in igpdb_genes.items():
                 if item.nt_sequence.lower() in v or v in item.nt_sequence.lower():
                     bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IGPDB gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
                     break
 
         bt_vdjbase = ''
 
-        if item.genotype_description.submission.species == 'Human' and item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
+        if item.genotype_description.submission.species == 'Homo sapiens' and item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             vdjbase_ref = get_vdjbase_ref()
-            vdjbase_species = item.genotype_description.submission.species.replace('Human_TCR', 'Human')
+            vdjbase_species = item.genotype_description.submission.species
             locus = item.genotype_description.locus
             if vdjbase_species in vdjbase_ref and locus in vdjbase_ref[vdjbase_species]:
                 vdjbase_genes = vdjbase_ref[vdjbase_species][locus]
                 for vdjbase_name, (vdjbase_seq, vdjbase_count) in vdjbase_genes.items():
                     if item.nt_sequence.lower() in vdjbase_seq or vdjbase_seq in item.nt_sequence.lower():
                         bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
-                                     (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], vdjbase_species, locus, vdjbase_name)), vdjbase_name, vdjbase_count)
+                                     (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], 'Human', locus, vdjbase_name)), vdjbase_name, vdjbase_count)
                         break
 
         bt_indels = ''

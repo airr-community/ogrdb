@@ -39,7 +39,5 @@ class User(db.Model, UserMixin):
     delegated_submissions = db.relationship('Submission', secondary=roles_submissions, backref=db.backref('delegates', lazy='dynamic'))
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=lambda: db.uuid.uuid4().hex)  # Added field
 
-
-
     def __repr__(self):
         return('%s' % (self.email))

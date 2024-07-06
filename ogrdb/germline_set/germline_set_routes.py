@@ -24,6 +24,7 @@ from db.germline_set_db import GermlineSet, save_GermlineSet, copy_GermlineSet
 from db.journal_entry_db import JournalEntry, copy_JournalEntry
 from db.misc_db import Committee
 from db.notes_entry_db import NotesEntry
+from db.species_lookup_db import SpeciesLookup
 
 from forms.aggregate_form import AggregateForm
 from forms.germline_set_form import GermlineSetForm
@@ -77,7 +78,7 @@ def germline_sets(species):
 
     results = q.all()
 
-    affirmed = setup_published_germline_set_list_info(results, current_user, 'Human' in species)
+    affirmed = setup_published_germline_set_list_info(results, current_user, 'Homo sapiens' in species)
 
     foo =  render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
     return foo
@@ -685,7 +686,7 @@ def germline_set(id):
     supplementary_files = len(tables['attachments'].table.items) > 0
 
     notes = safe_textile(germline_set.notes_entries[0].notes_text)
-    extended = 'Human' in germline_set.species
+    extended = 'Homo sapiens' in germline_set.species
     changes = list_germline_set_changes(germline_set)
 
     if germline_set.status == 'published' or germline_set.status == 'superceded':
@@ -724,6 +725,14 @@ def download_germline_set_by_name(species, subspecies, germline_set_name, versio
     subspecies = parse.unquote(parse.unquote(subspecies)) if subspecies else None
     germline_set_name = parse.unquote(parse.unquote(germline_set_name))
 
+    # check for common species name
+
+    requested_species = species
+
+    q = db.session.query(SpeciesLookup).filter(SpeciesLookup.common == species).one_or_none()
+    if q:
+        species = q.binomial
+
     q = db.session.query(
             GermlineSet.id,
         )\
@@ -747,16 +756,13 @@ def download_germline_set_by_name(species, subspecies, germline_set_name, versio
     result = q.one_or_none()
 
     if result:
-        return download_germline_set_by_id(result[0], format)
+        return download_germline_set_by_id(result[0], format, requested_species)
     else:
         flash('Invalid version')
         return redirect('/')
 
 
-        
-
-
-def download_germline_set_by_id(set_id, format):
+def download_germline_set_by_id(set_id, format, use_species_name=None):
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
         flash('Invalid format')
         return redirect('/')
@@ -774,15 +780,20 @@ def download_germline_set_by_id(set_id, format):
     if '_ex' in format:
         extend = True
 
+    species_for_file = use_species_name if use_species_name else germline_set.species
+    species_for_file = species_for_file.replace(' ', '_')
+
     if 'airr' in format:
-        dl = json.dumps(germline_set_to_airr(germline_set, extend, fake_allele=True), default=str, indent=4)
-        filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
+        taxonomy = db.session.query(SpeciesLookup.ncbi_taxon_id).filter(SpeciesLookup.binomial == germline_set.species).one_or_none()
+        taxonomy = taxonomy[0] if taxonomy else 0
+
+        dl = json.dumps(germline_set_to_airr(germline_set, extend, taxonomy, fake_allele=True), default=str, indent=4)
+        filename = '%s_%s_rev_%d%s.json' % (species_for_file, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
-        filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
+        filename = '%s_%s_rev_%d_%s.fasta' % (species_for_file, germline_set.germline_set_name, germline_set.release_version, format)
 
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
-
 
 
 zenodo_metadata_template = {
@@ -810,31 +821,33 @@ def make_files_for_zenodo(germline_set):
         filedesc_pairs.append((fp, af.filename))
         info = sys.exc_info()
 
-    fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, False), default=str, indent=4))
-    filename = '%s_%s_rev_%d.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+    taxonomy = db.session.query(SpeciesLookup.ncbi_taxon_id).filter(SpeciesLookup.binomial == germline_set.species).one_or_none()
+    taxonomy = taxonomy[0] if taxonomy else 0
+
+    fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, False, taxonomy), default=str, indent=4))
+    filename = '%s_%s_rev_%d.json' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version)
     filedesc_pairs.append((fp, filename))
 
     fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'gapped'))
-    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'gapped')
+    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version, 'gapped')
     filedesc_pairs.append((fp, filename))
 
     fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'ungapped'))
-    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'ungapped')
+    filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version, 'ungapped')
     filedesc_pairs.append((fp, filename))
 
-    if 'Human' in germline_set.species:
-        fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, True), default=str, indent=4))
-        filename = '%s_%s_rev_%d_extended.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version)
+    if 'Homo sapiens' in germline_set.species:
+        fp = io.StringIO(json.dumps(germline_set_to_airr(germline_set, True, taxonomy), default=str, indent=4))
+        filename = '%s_%s_rev_%d_extended.json' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version)
         filedesc_pairs.append((fp, filename))
 
         fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'gapped'))
-        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'gapped')
+        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version, 'gapped')
         filedesc_pairs.append((fp, filename))
 
         fp = io.StringIO(descs_to_fasta(germline_set.gene_descriptions, 'ungapped'))
-        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, 'ungapped')
+        filename = '%s_%s_rev_%d_%s_extended.fasta' % (germline_set.species.replace(' ', '_'), germline_set.germline_set_name, germline_set.release_version, 'ungapped')
         filedesc_pairs.append((fp, filename))
-
 
     return filenames, filedesc_pairs
 

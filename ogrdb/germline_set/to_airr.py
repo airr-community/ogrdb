@@ -10,7 +10,7 @@ import re
 # Create AIRR representation of items defined in the schema
 
 
-def germline_set_to_airr(germline_set, extend, fake_allele=False):
+def germline_set_to_airr(germline_set, extend, taxonomy, fake_allele=False):
     gds = []
     if extend:
         sequences = {}
@@ -35,9 +35,9 @@ def germline_set_to_airr(germline_set, extend, fake_allele=False):
 
     ad = []
     for desc in gds:
-        ad.append(vars(AIRRAlleleDescription(desc, extend, fake_allele)))
+        ad.append(vars(AIRRAlleleDescription(desc, extend, fake_allele, taxonomy=taxonomy)))
 
-    gs = {'GermlineSet': [vars(AIRRGermlineSet(germline_set, ad))]}
+    gs = {'GermlineSet': [vars(AIRRGermlineSet(germline_set, ad, taxonomy=taxonomy))]}
 
     if extend:
         gs['GermlineSet'][0]['germline_set_name'] += '_extended'
@@ -66,7 +66,7 @@ def fnone(val):
         return val
 
 class AIRRAlleleDescription:
-    def __init__(self, gd, extend, fake_allele):
+    def __init__(self, gd, extend, fake_allele, taxonomy=0):
         self.allele_description_id = 'OGRDB:' + gd.description_id
         
         if not gd.species_subgroup:
@@ -110,15 +110,7 @@ class AIRRAlleleDescription:
         self.sequence_type = enum_choice(gd.sequence_type, ['V', 'D', 'J', 'C'])
         self.functional = 'F' in gd.functionality
         self.inference_type = enum_choice(gd.inference_type, ['Genomic and rearranged', 'Genomic only', 'Rearranged only'])
-
-        # TODO - move these properly into database fields
-        if gd.species == 'Human':
-            self.species = {'id': 'NCBITAXON:9606', 'label': 'Homo sapiens'}
-        elif gd.species == 'Mouse':
-            self.species = {'id': 'NCBITAXON:10090', 'label': 'Mus musculus'}
-        else:
-            self.species = {'id': 'NCBITAXON:??', 'label': gd.species}
-
+        self.species = {'id': f'NCBITAXON:{taxonomy}', 'label': gd.species}
         self.species_subgroup = fnone(gd.species_subgroup)
         self.species_subgroup_type = enum_choice(gd.species_subgroup_type, ['breed', 'strain', 'inbred', 'outbred', 'locational'])
         self.status = enum_choice(gd.status, ['active', 'draft', 'retired', 'withdrawn'])
@@ -220,7 +212,7 @@ class AIRRAlleleDescription:
 
 
 class AIRRGermlineSet:
-    def __init__(self, gs, gds):
+    def __init__(self, gs, gds, taxonomy=0):
         self.germline_set_id = 'OGRDB:' + gs.germline_set_id
         self.author = fnone(gs.author)
         self.lab_name = fnone(gs.lab_name)
@@ -243,15 +235,7 @@ class AIRRGermlineSet:
         for pub_id in gs.pub_ids:
             self.pub_ids.append('PMID:' + pub_id.pubmed_id)
         self.pub_ids = fnone(','.join(self.pub_ids))
-
-        # TODO - move these properly into database fields
-        if gs.species == 'Human':
-            self.species = {'id': 'NCBITAXON:9606', 'label': 'Homo sapiens'}
-        elif gs.species == 'Mouse':
-            self.species = {'id': 'NCBITAXON:10090', 'label': 'Mus musculus'}
-        else:
-            self.species = {'id': 'NCBITAXON:??', 'label': gs.species}
-
+        self.species = {'id': f'NCBITAXON:{taxonomy}', 'label': gs.species}
         self.species_subgroup = fnone(gs.species_subgroup)
         self.species_subgroup_type = enum_choice(gs.species_subgroup_type, ['breed', 'strain', 'inbred', 'outbred', 'locational'])
         self.locus = enum_choice(gs.locus, ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG'])

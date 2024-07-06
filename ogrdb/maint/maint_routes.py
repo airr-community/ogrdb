@@ -2,10 +2,13 @@ from flask import flash, redirect
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 from db.userdb import User
+from db.submission_db import Submission
 
 
 from db.gene_description_db import GeneDescription
+from db.germline_set_db import GermlineSet
 from db.submission_db import Submission
+from db.novel_vdjbase_db import NovelVdjbase
 from head import app, db
 
 # Unpublished route that will remove all sequences and submissions published by the selenium test account
@@ -41,7 +44,7 @@ def rebuild_duplicates():
 
     # gene description
 
-    descs = db.session.query(GeneDescription).all()
+    descs = db.session.query(Submission).all()
 
     for desc in descs:
         desc.duplicate_sequences = list()
@@ -71,9 +74,10 @@ def add_uuid():
 
 sp_to_binomial = {
     "human": "Homo sapiens",
-    "human_TCR": "Homo sapiens",
+    "human_tcr": "Homo sapiens",
     "mouse": "Mus musculus",
     "atlantic salmon": "Salmo salar",
+    "salmon": "Salmo salar",
     "rainbow trout": "Oncorhynchus mykiss",
 }
 
@@ -84,7 +88,7 @@ def add_use_binomial():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    recs = db.session.query(GeneDescription).all()
+    recs = db.session.query(NovelVdjbase).all()
     for rec in recs:
         if rec.species.lower() in sp_to_binomial:
             rec.species = sp_to_binomial[rec.species.lower()]

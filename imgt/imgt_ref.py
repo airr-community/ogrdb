@@ -48,7 +48,7 @@ def init_imgt_ref():
     if imgt_reference_genes is None:
         try:
             imgt_reference_genes = read_reference(imgt_config['ogre_ref_file'], species)
-            imgt_reference_genes['Test'] = imgt_reference_genes['Human']
+            imgt_reference_genes['Test'] = imgt_reference_genes['Homo sapiens']
             pickle.dump(imgt_reference_genes, open(imgt_config['imgt_ref_pickle'], "wb"))
         except:
             app.logger.error("Error parsing IMGT reference file: %s" % sys.exc_info()[0])
@@ -64,7 +64,7 @@ def init_imgt_ref():
     if imgt_gapped_reference_genes is None:
         try:
             imgt_gapped_reference_genes = read_reference(imgt_config['gapped_ogre_ref_file'], species)
-            imgt_gapped_reference_genes['Test'] = imgt_gapped_reference_genes['Human']
+            imgt_gapped_reference_genes['Test'] = imgt_gapped_reference_genes['Homo sapiens']
             pickle.dump(imgt_gapped_reference_genes, open(imgt_config['imgt_gapped_ref_pickle'], "wb"))
         except:
             app.logger.error("Error parsing IMGT gapped file: %s" % sys.exc_info()[0])

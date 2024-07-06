@@ -35,6 +35,7 @@ from db.misc_db import Committee
 from db.repertoire_db import Acknowledgements
 from db.submission_db import Submission
 from db.novel_vdjbase_db import NovelVdjbase
+from db.species_lookup_db import SpeciesLookup
 
 from forms.aggregate_form import AggregateForm
 from forms.gene_description_form import GeneDescriptionForm
@@ -1032,8 +1033,17 @@ def sequence(id):
         .all()
     tables['versions'] = setup_sequence_version_table(versions, None)
 
-    vdjbase_link = Markup('<a href=%sgenerep/%s/%s/%s>here</a>' % (app.config['VDJBASE_URL'],
-                                                           seq.species.replace('Human_TCR', 'Human'),
+    binomial_to_common = {}
+    for sp in db.session.query(SpeciesLookup.common, SpeciesLookup.binomial).all():
+        binomial_to_common[sp[1]] = sp[0]
+
+    vdjbase_species = seq.species
+
+    if vdjbase_species in binomial_to_common:
+        vdjbase_species = binomial_to_common[vdjbase_species]
+
+    vdjbase_link = Markup('<a href="%sgenerep/%s/%s/%s">here</a>' % (app.config['VDJBASE_URL'],
+                                                           vdjbase_species,
                                                            seq.locus,
                                                            seq.sequence_name))
 
@@ -1700,8 +1710,11 @@ def download_sequences(species, format, exc):
 
     if format == 'airr':
         ad = []
+        taxonomy = db.session.query(SpeciesLookup.ncbi_taxon_id).filter(SpeciesLookup.binomial == species).one_or_none()
+        taxonomy = taxonomy[0] if taxonomy else 0
+
         for desc in results:
-            ad.append(vars(AIRRAlleleDescription(desc, extend=False)))
+            ad.append(vars(AIRRAlleleDescription(desc, extend=False, fake_allele=False, taxonomy=taxonomy)))
 
         dl = json.dumps(ad, default=str, indent=4)
         ext = 'json'

@@ -12,6 +12,7 @@ from db.germline_set_db import GermlineSet
 from head import db
 from ogrdb.germline_set.to_airr import germline_set_to_airr
 from ogrdb.germline_set.descs_to_fasta import descs_to_fasta
+from db.species_lookup_db import SpeciesLookup
 
 
 ns = api.namespace('germline', description='Germline sets available from OGRDB')
@@ -87,7 +88,7 @@ class versionsApi(Resource):
 
         germline_set = q.one_or_none()
         if not format:
-            format = 'airr_ex' if 'Human' in germline_set.species else 'airr'
+            format = 'airr_ex' if 'Homo sapiens' in germline_set.species else 'airr'
 
         if germline_set:
             return download_germline_set_by_id(germline_set.id, format)
@@ -123,6 +124,13 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
     subspecies = parse.unquote(parse.unquote(subspecies)) if subspecies else None
     germline_set_name = parse.unquote(parse.unquote(germline_set_name))
 
+    # check for common species name
+
+    requested_species = species
+
+    q = db.session.query(SpeciesLookup).filter(SpeciesLookup.common == species).one_or_none()
+    if q:
+        species = q.binomial
 
     q = db.session.query(
             GermlineSet.id,
@@ -144,7 +152,7 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
 
     result = q.all()
 
-    q = q.filter(GermlineSet.germline_set_name == germline_set_name)\
+    q = q.filter(GermlineSet.germline_set_name == germline_set_name)
     
     result = q.all()
 
@@ -163,11 +171,11 @@ def download_set_by_name(species, subspecies, germline_set_name, version, format
     result = q.one_or_none()
 
     if result:
-        return download_germline_set_by_id(result[0], format)
+        return download_germline_set_by_id(result[0], format, requested_species)
     else:
         return {'error': 'Germline set version not found'}, 404
 
-def download_germline_set_by_id(germline_set_id, format):
+def download_germline_set_by_id(germline_set_id, format, use_species_name=None):
     if format not in ['gapped', 'ungapped', 'airr', 'gapped_ex', 'ungapped_ex', 'airr_ex']:
         return {'error': 'invalid format specified'}, 404
 
@@ -182,17 +190,22 @@ def download_germline_set_by_id(germline_set_id, format):
     
     extend = False
     if '_ex' in format:
-        if 'Human' not in germline_set.species:
+        if 'Homo sapiens' not in germline_set.species:
             return {'error': 'Set not found'}, 404
         extend = True
 
+    species_for_file = use_species_name if use_species_name else germline_set.species
+    species_for_file = species_for_file.replace(' ', '_')
+
     if 'airr' in format:
-        dl = germline_set_to_airr(germline_set, extend)
+        taxonomy = db.session.query(SpeciesLookup.ncbi_taxon_id).filter(SpeciesLookup.binomial == germline_set.species).one_or_none()
+        taxonomy = taxonomy[0] if taxonomy else 0
+        dl = germline_set_to_airr(germline_set, extend, taxonomy)
         dl = json.dumps(dl, indent=4)
-        filename = '%s_%s_rev_%d%s.json' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
+        filename = '%s_%s_rev_%d%s.json' % (species_for_file, germline_set.germline_set_name, germline_set.release_version, '_ex' if 'ex' in format else '')
     else:
         dl = descs_to_fasta(germline_set.gene_descriptions, format, fake_allele=True, extend=extend)
-        filename = '%s_%s_rev_%d_%s.fasta' % (germline_set.species, germline_set.germline_set_name, germline_set.release_version, format)
+        filename = '%s_%s_rev_%d_%s.fasta' % (species_for_file, germline_set.germline_set_name, germline_set.release_version, format)
     
     return Response(dl, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 

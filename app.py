@@ -66,7 +66,7 @@ api.add_namespace(germline)
 app.register_blueprint(blueprint)
 
 #Initialise New API
-from api_v1.api import api_bp
+from api_v2.api import api_bp
 app.register_blueprint(api_bp, url_prefix='/api_v2')
 
 SWAGGER_URL = '/api_v2/swagger'
@@ -75,7 +75,7 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
     config={
-        'app_name': "OGRDB API v1"
+        'app_name': "OGRDB API v2"
     }
 )
 
@@ -110,7 +110,7 @@ from db.attached_file_db import *
 from db.dupe_gene_note_db import *
 from db.novel_vdjbase_db import *
 from db.vdjbase import *
-from db.species_lookup import *
+from db.species_lookup_db import *
 
 # All routes are imported here. No routes are imported in subsidiary files
 # in order to avoid circularity between imports
