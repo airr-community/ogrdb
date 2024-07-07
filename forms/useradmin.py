@@ -8,7 +8,7 @@
 
 from flask_security import current_user
 from flask_admin.contrib.sqla import ModelView
-from head import admin_obj
+from head import admin_obj, app
 from db.userdb import User, Role
 from db.submission_db import Submission
 from db.gene_description_db import GeneDescription
@@ -30,14 +30,15 @@ from db.sample_name_db import SampleName
 from db.species_lookup_db import SpeciesLookup
 
 
-
-
 class AdminView(ModelView):
     def is_accessible(self):
         return current_user.has_role('Admin')
 
+
 class UserView(AdminView):
-    column_exclude_list = ('password')
+    can_edit = True
+    column_exclude_list = ('password', 'fs_uniquifier')
+    form_columns = ('email', 'name', 'address', 'accepted_terms', 'reduce_emails', 'active', 'confirmed_at', 'roles')
 
 
 admin_obj.add_view(UserView(User, db.session))
