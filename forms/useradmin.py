@@ -8,16 +8,16 @@
 
 from flask_security import current_user
 from flask_admin.contrib.sqla import ModelView
-from head import admin_obj, app
+from head import admin_obj
 from db.userdb import User, Role
 from db.submission_db import Submission
 from db.gene_description_db import GeneDescription
-from db.misc_db import *
+from db.misc_db import db, Committee
 from db.repertoire_db import Repertoire
 from db.attached_file_db import AttachedFile
-from db.genotype_db import Genotype
 from db.germline_set_db import GermlineSet
 from db.novel_vdjbase_db import NovelVdjbase
+from db.genotype_db import Genotype
 from db.genotype_description_db import GenotypeDescription
 from db.inference_tool_db import InferenceTool
 from db.inferred_sequence_db import InferredSequence

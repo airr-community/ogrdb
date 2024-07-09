@@ -92,8 +92,9 @@ def get_germline_species():
         species = [r[0] for r in results] if results else []
         species_list = []
         for species_name in species:
-            # Assuming that you might have other fields to include, add them as necessary
-            ontology_obj = Ontology(label=species_name)
+            id = db.session.query(SpeciesLookup.ncbi_taxon_id).filter(SpeciesLookup.binomial == species_name).one_or_none()
+            id = str(id[0]) if id else ""
+            ontology_obj = Ontology(label=species_name, id=id)
             species_list.append(ontology_obj)
 
         species_response_obj = SpeciesResponse(species=species_list)
@@ -105,8 +106,6 @@ def get_germline_species():
         return jsonify(error_response), 500
 
 
-    
-    
 @api_bp.route('/germline/sets/<species_id>', methods=['GET'])
 def get_germline_sets_by_id(species_id):
     """
@@ -120,25 +119,39 @@ def get_germline_sets_by_id(species_id):
     """
     try:
         """ Returns the available sets for a species """
+
+        species = db.session.query(SpeciesLookup.binomial).filter(SpeciesLookup.ncbi_taxon_id == species_id).one_or_none()
+
+        if not species:
+            error_response = {'message': "Invalid species ID"}  
+            return jsonify(error_response), 400
+        else:
+            species = species[0]
+
         q = db.session.query(
-                GermlineSet.germline_set_id,
                 GermlineSet.germline_set_name,
                 GermlineSet.species,
                 GermlineSet.species_subgroup,
                 GermlineSet.species_subgroup_type,
                 GermlineSet.locus
             )\
-            .filter(GermlineSet.species == species_id)\
+            .filter(GermlineSet.species == species)\
             .filter(or_(GermlineSet.status == 'published', GermlineSet.status == 'superceded'))\
             .distinct()
         results = q.all()
 
+        included_sets = []
         germline_sets_list = []
         for r in results:
-            ontology_obj = Ontology(label=r.species)
+            ontology_obj = Ontology(label=r.species, id=str(species_id))
+            germline_set_id = f"{species_id}.{r.germline_set_name}" if r.species_subgroup_type == 'none' else f"{species_id}.{r.germline_set_name}.{r.species_subgroup}"
+
+            if germline_set_id in included_sets:
+                continue        # this works around the fact that species_subgroup can be either '' or None when there is no subgroup
+
             germline_sets_list.append(
                 GermlineSpeciesResponseItem(
-                    germline_set_id=r.germline_set_id, 
+                    germline_set_id=germline_set_id,
                     germline_set_name=r.germline_set_name,
                     species=ontology_obj,
                     species_subgroup=r.species_subgroup, 
@@ -146,6 +159,7 @@ def get_germline_sets_by_id(species_id):
                     locus=r.locus
                 )
             )
+            included_sets.append(germline_set_id)
 
         if germline_sets_list:
             species_response_obj = GermlineSpeciesResponse(germline_species=germline_sets_list)
@@ -175,7 +189,29 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version, format
         Response containing the germline set in the specified format.
     """
     try:
-        q = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set_id)
+        ids = germline_set_id.split('.')
+
+        if len(ids) < 2 or len(ids) > 3:
+            error_response = {'message': "Invalid germline set ID"}
+            return jsonify(error_response), 400
+        if len(ids) == 2:
+            species_id = ids[0]
+            germline_set_name = ids[1]
+            species_subgroup = None
+            
+        elif len(ids) == 3:
+            species_id = ids[0]
+            germline_set_name = ids[1]
+            species_subgroup = ids[2]
+
+        species = db.session.query(SpeciesLookup.binomial).filter(SpeciesLookup.ncbi_taxon_id == species_id).one_or_none()[0]
+
+        q = db.session.query(GermlineSet) \
+            .filter(GermlineSet.species == species) \
+            .filter(GermlineSet.germline_set_name == germline_set_name)
+        
+        if species_subgroup:
+            q = q.filter(GermlineSet.species_subgroup == species_subgroup)
 
         if release_version == 'published' or release_version == 'latest':
             q = q.filter(GermlineSet.status == 'published')
@@ -200,12 +236,36 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version, format
 
 
 @api_bp.route('/germline/set/<germline_set_id>/versions', methods=['GET'])
-def list_all_versions_of_germline_set(germline_set_id: int):
+def list_all_versions_of_germline_set(germline_set_id):
     try:
+        ids = germline_set_id.split('.')
+
+        if len(ids) < 2 or len(ids) > 3:
+            error_response = {'message': "Invalid germline set ID"}
+            return jsonify(error_response), 400
+        if len(ids) == 2:
+            species_id = ids[0]
+            germline_set_name = ids[1]
+            species_subgroup = None
+            
+        elif len(ids) == 3:
+            species_id = ids[0]
+            germline_set_name = ids[1]
+            species_subgroup = ids[2]
+
+        species = db.session.query(SpeciesLookup.binomial).filter(SpeciesLookup.ncbi_taxon_id == species_id).one_or_none()[0]
+
+        q = db.session.query(GermlineSet) \
+            .filter(GermlineSet.species == species) \
+            .filter(GermlineSet.germline_set_name == germline_set_name)
+        
+        if species_subgroup:
+            q = q.filter(GermlineSet.species_subgroup == species_subgroup)
+
+        q = q.all()
+
         # Base query to filter by germline_set_id
         versions_list = []
-        q = db.session.query(GermlineSet).filter(GermlineSet.germline_set_id == germline_set_id)
-        q = q.all()
 
         for germline_set in q:
             versions_list.append(germline_set.release_version)
