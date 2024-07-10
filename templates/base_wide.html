@@ -40,7 +40,7 @@
                             <ul>
                                 <li><a href="{{ url_for('germline_sets', species='Homo sapiens') }}" class="m-item">Human (Homo sapiens)</a></li>
                                 <li><a href="{{ url_for('germline_sets', species='Mus musculus') }}" class="m-item">Mouse (Mus musculus)</a></li>
-                                {% if current_user.has_role('Salmon') %}
+                                {% if current_user.has_role('Salmo salar') %}
                                 <li><a href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}" class="m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
                                 <li><a href="{{ url_for('germline_sets', species='Salmo salar') }}" class="m-item">Atlantic Salmon (Salmo salar)</a></li>
                                 {% endif %}
@@ -57,7 +57,7 @@
                                 <li><a href="{{ url_for('sequences', sp='Homo sapiens') }}" class="m-item">Human (Homo sapiens)</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Mus musculus') }}" class="m-item">Mouse (Mus musculus)</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Macaca mulatta') }}" class="m-item">Macaque (Macaca mulatta)</a></li>
-                                {% if current_user.has_role('Salmon') %}
+                                {% if current_user.has_role('Salmo salar') %}
                                 <li><a href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}" class="m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
                                 <li><a href="{{ url_for('sequences', sp='Salmo salar') }}" class="m-item">Salmon (Salmo salar)</a></li>
                                 {% endif %}
