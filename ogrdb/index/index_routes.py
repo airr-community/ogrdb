@@ -83,7 +83,10 @@ def index():
 @app.route('/render_page/<page>')
 def render_page(page):
     try:
-        return render_template('static/%s.html' % page)
+        if page.endswith('.html'):
+            return render_template('static/%s' % page)
+        else:
+            return render_template('static/%s.html' % page)
     except TemplateNotFound:
         return "Page not found", 404
 
