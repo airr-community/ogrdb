@@ -212,7 +212,7 @@ def setup_gv_table(desc):
     if lh_seqs > 0:
         lh_prop = round(100 * lh_seqs / totals.sequences)
         totals.haplotyping_ratio = "%d:%d" % (lh_prop, (100-lh_prop))
-    totals.assigned_unmutated_frequency = round(100 * totals.unmutated_sequences / totals.sequences, 2)
+    totals.assigned_unmutated_frequency = round(100 * totals.unmutated_sequences / totals.sequences, 2) if totals.sequences > 0 else 0
     table.items.append(totals)
 
     inferred_seqs = []
