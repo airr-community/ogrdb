@@ -1730,7 +1730,7 @@ def download_sequences(species, format, exc):
 def genomic_support(id):
     genomic_support = db.session.query(GenomicSupport).filter(GenomicSupport.id == id).one_or_none()
 
-    if genomic_support is None or not genomic_support.gene_description.can_see(current_user):
+    if genomic_support is None or genomic_support.gene_description is None or not genomic_support.gene_description.can_see(current_user):
         return redirect('/')
 
     table = make_GenomicSupport_view(genomic_support, genomic_support.gene_description.can_edit(current_user))

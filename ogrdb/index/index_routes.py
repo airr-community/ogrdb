@@ -6,6 +6,7 @@ import json
 
 import requests
 from flask import url_for, render_template, request, flash
+from jinja2 import TemplateNotFound
 from flask_login import current_user, login_required, logout_user
 from flask_security import SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
@@ -76,13 +77,15 @@ def index():
     except:
         pass
 
-
     return render_template('index.html', current_user=current_user, news_items=news_items)
 
 
 @app.route('/render_page/<page>')
 def render_page(page):
-    return render_template('static/%s' % page)
+    try:
+        return render_template('static/%s.html' % page)
+    except TemplateNotFound:
+        return "Page not found", 404
 
 
 @app.route('/create_user', methods=['GET', 'POST'])
