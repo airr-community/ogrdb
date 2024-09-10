@@ -1,5 +1,4 @@
 openapi: '3.1.0'
-swagger: '2.0'
 
 info:
   title: OGRDB API
@@ -254,7 +253,7 @@ paths:
     get:
       description: >
         Returns a germline set based upon its identifier and version.
-      operationId: get_versions_api
+      operationId: get_set_version_format_api
       tags:
         - germline
       parameters:
