@@ -62,7 +62,7 @@ def setup_sequence_view_tables(db, seq, private):
                               "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer", 
                               "j_rs_start", "j_rs_end", "j_heptamer", "j_nonamer"]
     sections['extension'] = ["inferred_extension", "ext_3prime", "start_3prime_ext", "end_3prime_ext", "ext_5prime", "start_5prime_ext", "end_5prime_ext"]
-    sections['meta'] = ["description_id", "maintainer", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "j_codon_frame", "j_cdr3_end"]
+    sections['meta'] = ["description_id", "maintainer", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "gene_start", "gene_end", "j_codon_frame", "j_cdr3_end"]
 
     gv = make_GeneDescription_view(seq)
     gv_items = {}

@@ -27,7 +27,7 @@ from head import db, app, attach_path
 from db.attached_file_db import AttachedFile
 from db.dupe_gene_note_db import DupeGeneNote
 from db.gene_description_db import GeneDescription, GenomicSupport, save_GenomicSupport, populate_GenomicSupport, save_GeneDescription, copy_GeneDescription, \
-    make_GenomicSupport_view
+    make_GenomicSupport_view, copy_GenomicSupport
 from db.genotype_db import Genotype
 from db.inferred_sequence_db import InferredSequence
 from db.journal_entry_db import JournalEntry, copy_JournalEntry
@@ -364,7 +364,7 @@ def new_sequence(species):
             return redirect(url_for('sequences', sp=species))
 
         except ValidationError as e:
-            return render_template('sequence_new.html', form=form, species=species)
+            return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
 
     # default 1-based CDR coords
 
@@ -374,7 +374,7 @@ def new_sequence(species):
     form.gapped_cdr2_end.data = default_imgt_cdr2[1]
     form.gapped_cdr3_start.data = default_imgt_fr3[1] + 1
 
-    return render_template('sequence_new.html', form=form, species=species)
+    return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
 
 
 # Parse the name, if it's tractable
@@ -409,22 +409,22 @@ def parse_name_to_gene_description(gene_description):
         pass
 
 
-def get_opt_int(row, key):  # get an optional integer value from a row
+def get_opt_int(row, key, default=None):  # get an optional integer value from a row
     if key not in row or not row[key]:
-        return None
+        return default
     try:
         return int(row[key])
     except ValueError:
-        return None
+        return default
 
-def get_opt_text(row, key):  # get an optional text value from a row
+def get_opt_text(row, key, default=None):  # get an optional text value from a row
     if key not in row or not row[key]:
-        return ''
+        return default
     return row[key]
 
-def get_opt_bool(row, key):  # get an optional bool value from a row
+def get_opt_bool(row, key, default=None):  # get an optional bool value from a row
     if key not in row or not row[key]:
-        return None
+        return default
     return bool(row[key])
 
 
@@ -444,12 +444,21 @@ def upload_sequences(form, species):
     if len(errors) > 0:
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.upload_file.errors = errors
-        return render_template('sequence_new.html', form=form, species=species)
+        return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
 
     # check file
     fi = io.StringIO(form.upload_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end', 'gene_start', 'gene_end']
+
+    if form.merge_data.data and current_user.has_role('AdminEdit'):
+        errors = custom_merge(reader, species, form)
+        if errors:
+            form.upload_file.errors = errors
+            return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
+        return redirect(url_for('sequences', sp=species))
+
+    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 
+                        'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end', 'gene_start', 'gene_end']
     headers = None
     row_count = 2
     for row in reader:
@@ -497,7 +506,7 @@ def upload_sequences(form, species):
     if len(errors) > 0:
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.upload_file.errors = errors
-        return render_template('sequence_new.html', form=form, species=species)
+        return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
     
     # construct zero-based feature ranges from CDR coordinates
 
@@ -611,7 +620,8 @@ def upload_sequences(form, species):
             gene_description.j_cdr3_end = row['j_cdr3_end']
 
         notes = []
-        notes.extend([x.strip() for x in row['notes'].split(',')])
+        if 'notes' in row:
+            notes.extend([x.strip() for x in row['notes'].split(',')])
 
         if len(notes):
             withnotes = ' with the following notes:'
@@ -636,7 +646,7 @@ def upload_sequences(form, species):
         db.session.rollback()
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.upload_file.errors = errors
-        return render_template('sequence_new.html', form=form, species=species)
+        return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
     else:
         for gene_description in gene_descriptions_to_add:
             db.session.add(gene_description)
@@ -723,7 +733,9 @@ def merge_sequence_upload(existing_entry, row, gene_description):
 
     # Capture any existing paralogs
 
-    new_paralogs = [x.strip() for x in row['paralogs'].split(',') if x.strip()]
+    new_paralogs = []
+    if 'paralogs' in row:
+        new_paralogs = [x.strip() for x in row['paralogs'].split(',') if x.strip()]
 
     if existing_entry.paralogs:
         for x in existing_entry.paralogs.split(','):
@@ -753,6 +765,79 @@ def merge_sequence_upload(existing_entry, row, gene_description):
         gene_description.journal_entries.append(new_entry)
 
     return errors
+
+
+# A custom merge where we can write code for whatever merge is needed
+
+def custom_merge(reader, species, form):
+    mandatory_headers = ['gene_label', 'species', 'species_subgroup']
+
+    errors = []
+
+    for h in mandatory_headers:
+        if h not in reader.fieldnames:
+            errors.append(f'Column {h} not found')
+            return errors
+
+    for row in reader:
+        if row['species'] != species:
+            errors.append(f'Species {row["species"]} does not match {species}: sequence not merged')
+            continue
+
+        existing_entries = db.session.query(GeneDescription).filter(
+                and_(
+                    GeneDescription.species == species,
+                     or_(
+                        GeneDescription.sequence_name == row['gene_label'],
+                        ),
+                     or_(   
+                        GeneDescription.species_subgroup == row['species_subgroup'],
+                        GeneDescription.species_subgroup == None,
+                        GeneDescription.species_subgroup == 'none',
+                        ),
+                     ~GeneDescription.status.in_(['withdrawn', 'superceded'])
+                     )
+                ).all()
+
+        if existing_entries:
+            error = False
+            for entry in existing_entries:
+                if entry.status == 'draft':
+                    errors.append(f'Draft already exists for {row["gene_label"]}: sequence not merged')
+                    error = True
+                    break
+
+            if not error and len(existing_entries) > 1:
+                errors.append(f'Multiple sequences found for {row["gene_label"]}: sequence not merged')
+                error = True
+
+            if not error and len(existing_entries) == 0 or existing_entries[0].status != 'published':
+                errors.append(f'Published sequence not found for {row["gene_label"]}: sequence not merged')
+                error = True
+
+            if not error:
+                entry = existing_entries[0]
+                seq = clone_seq(entry)
+
+                # Make the required changes here
+
+                # Fixes for J gene metadata
+
+                if 'J' not in row['gene_label']:
+                    errors.append(f'{row["gene_label"]}: is not a J: data not merged')
+                else:
+                    seq.j_cdr3_end = int(row['J CDR3 End'])
+                    seq.j_codon_frame = row['Codon Frame']
+                    notes = "J gene metadata updated to conform to MiAIRR standards"
+                    print(f'{row["gene_label"]}: J gene metadata updated to conform to MiAIRR standards')
+
+                    # publish the sequence
+                    publish_sequence(seq, notes, False)
+        else:
+            errors.append(f'No existing sequence found for {row["gene_label"]}: sequence not merged')
+
+    return errors
+        
 
 
 def upload_evidence(form, species):
@@ -826,7 +911,7 @@ def upload_evidence(form, species):
     if errors:
         errors.append('Sequences not uploaded: please fix errors and try again')
         form.evidence_file.errors = errors
-        return render_template('sequence_new.html', form=form, species=species)
+        return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
     
     # remove existing evidence matching the uploaded evidence
 
@@ -1228,7 +1313,7 @@ def edit_sequence(id):
                     raise ValidationError()
                 else:
                     seq.gene_start = pos + 1
-                    seq.gene_end = pos + len(seq.coding_seq_imgt.replace('.', '')) - 1
+                    seq.gene_end = pos + len(seq.coding_seq_imgt.replace('.', ''))  # i.e. start + len - 1
                     db.session.commit()
 
                 # if we have a V-gapped sequence but no cdr coordinates, assume IMTG standard numbering
@@ -1537,30 +1622,40 @@ def delete_genomic_support():
 def draft_sequence(id):
     seq = check_seq_draft(id)
     if seq is not None:
-        new_seq = GeneDescription()
-        db.session.add(new_seq)
-        db.session.commit()
-
-        copy_GeneDescription(seq, new_seq)
-        new_seq.description_id = seq.description_id
-        new_seq.status = 'draft'
-
-        for inferred_sequence in seq.inferred_sequences:
-            new_seq.inferred_sequences.append(inferred_sequence)
-
-        for gen in seq.supporting_observations:
-            new_seq.supporting_observations.append(gen)
-
-        for acc in seq.genomic_accessions:
-            new_seq.genomic_accessions.append(acc)
-
-        for journal_entry in seq.journal_entries:
-            new_entry = JournalEntry()
-            copy_JournalEntry(journal_entry, new_entry)
-            new_seq.journal_entries.append(new_entry)
-
-        db.session.commit()
+        clone_seq(seq)
     return ''
+
+
+def clone_seq(seq):
+    new_seq = GeneDescription()
+    db.session.add(new_seq)
+    db.session.commit()
+
+    copy_GeneDescription(seq, new_seq)
+    new_seq.description_id = seq.description_id
+    new_seq.status = 'draft'
+
+    for inferred_sequence in seq.inferred_sequences:
+        new_seq.inferred_sequences.append(inferred_sequence)
+
+    for gen in seq.supporting_observations:
+        new_seq.supporting_observations.append(gen)
+
+    for dupe in seq.duplicate_sequences:
+        new_seq.duplicate_sequences.append(dupe)
+
+    for acc in seq.genomic_accessions:
+        new_acc = GenomicSupport()
+        copy_GenomicSupport(acc, new_acc)
+        new_seq.genomic_accessions.append(new_acc)
+
+    for journal_entry in seq.journal_entries:
+        new_entry = JournalEntry()
+        copy_JournalEntry(journal_entry, new_entry)
+        new_seq.journal_entries.append(new_entry)
+
+    db.session.commit()
+    return new_seq
 
 @app.route('/sequence_imgt_name', methods=['POST'])
 @login_required

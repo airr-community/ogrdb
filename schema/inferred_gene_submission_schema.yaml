@@ -886,6 +886,7 @@ GeneDescription:
             description: Functionality
             width: narrow
             label: Functionality
+            tableview: true
         inference_type:
             type: [Genomic Only, Rearranged Only, Genomic and rearranged]
             label: Inference Type
@@ -1100,6 +1101,7 @@ GeneDescription:
             label: J CDR3 End
             nonblank: false
             width: narrow
+            tableview: true
         paralogs:
             type: string
             label: Paralogs

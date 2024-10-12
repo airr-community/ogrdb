@@ -10,19 +10,19 @@ from db.view_table import ViewCol
 from sqlalchemy.orm import backref
 
                         
-inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descriptions',
+inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descriptions', db.Model.metadata,
     db.Column('inferred_sequences_id', db.Integer(), db.ForeignKey('inferred_sequence.id')),
     db.Column('gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
                         
-supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions',
+supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions', db.Model.metadata,
     db.Column('supporting_observations_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('supporting_gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
                         
-duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates',
+duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates', db.Model.metadata,
     db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('published_duplicates_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
@@ -286,6 +286,7 @@ class GeneDescription_table(StyledTable):
     alt_names = StyledCol("Alternative names", tooltip="Alternative names for this sequence")
     locus = StyledCol("Locus", tooltip="Gene locus")
     sequence_type = StyledCol("Sequence Type", tooltip="Sequence type (V, D, J, CH1 ... CH4, Leader)")
+    functionality = StyledCol("Functionality", tooltip="Functionality")
     inference_type = StyledCol("Inference Type", tooltip="Type of inference(s) from which this gene sequence was inferred (Unrearranged and Rearranged, Unrearranged Only, Rearranged Only)")
     affirmation_level = StyledCol("Affirmation Level", tooltip="Count of independent studies in which this allele as been affirmed by IARC (1,2,3 or more)")
     species = StyledCol("Species", tooltip="Binomial designation of subject's species")
@@ -315,6 +316,7 @@ class GeneDescription_table(StyledTable):
     j_rs_start = StyledCol("j_rs_start", tooltip="Start co-ordinate in the Full Sequence of J recombination site (J-genes only)")
     j_rs_end = StyledCol("j_rs_end", tooltip="End co-ordinate in the Full Sequence of J recombination site (J-genes only)")
     j_codon_frame = StyledCol("Codon Frame", tooltip="Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)")
+    j_cdr3_end = StyledCol("J CDR3 End", tooltip="In the case of a J-gene, the co-ordinate in the Coding Sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)")
 
 
 def make_GeneDescription_table(results, private = False, classes=()):

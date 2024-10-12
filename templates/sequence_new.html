@@ -55,6 +55,9 @@
                 </div>
                 <div class="row pad">
                     {{ render_field_with_errors(form.upload_file, class="form-control") }}
+                    {% if adminedit %}
+                        {{ render_narrow_field_with_errors(form.merge_data, class="form-control", style="height: 20px;width: 20px;") }}
+                    {% endif %}
                     <div class="col-sm-9 col-sm-offset-1">
                         <p>Gapped CDR fields indicate the coordinates of the CDRs in gapped nucleotide V-sequences. They are pre-filled with the IMGT default for alignments with no inserted codons.
                         If the alignment has inserted codons compared to the standard IMGT alignment, the coordinates should be adjusted accordingly. 

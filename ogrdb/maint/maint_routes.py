@@ -55,47 +55,47 @@ def rebuild_duplicates():
 
     return 'Gene description links rebuilt'
 
-import uuid
 
-
-'''
-@app.route('/add_uuid', methods=['GET'])
-def add_uuid():
-    #if not current_user.has_role('Admin'):
-    #    return redirect('/')
-
-    recs = db.session.query(User).all()
-    for rec in recs:
-        rec.fs_uniquifier = uuid.uuid4().hex
-    db.session.commit()
-    return 'Success'
-'''
-
-
-sp_to_binomial = {
-    "human": "Homo sapiens",
-    "human_tcr": "Homo sapiens",
-    "mouse": "Mus musculus",
-    "atlantic salmon": "Salmo salar",
-    "salmon": "Salmo salar",
-    "rainbow trout": "Oncorhynchus mykiss",
-}
-
-
-@app.route('/use_binomial', methods=['GET'])
+# Check that gene end coordinate is correct for all gene descriptions and fix where necessary
+@app.route('/fix_gene_coords', methods=['GET'])
 @login_required
-def add_use_binomial():
+def check_gene_end():
     if not current_user.has_role('Admin'):
         return redirect('/')
 
-    recs = db.session.query(NovelVdjbase).all()
-    for rec in recs:
-        if rec.species.lower() in sp_to_binomial:
-            rec.species = sp_to_binomial[rec.species.lower()]
-        elif rec.species not in sp_to_binomial.values():
-            print(f"unexpected species: {rec.species}")
-    
-    db.session.commit()
-    return 'Success'
+    # gene description
+
+    descs = db.session.query(GeneDescription).all()
+
+    for desc in descs:
+        if desc.status in ['published', 'draft']:
+            if desc.coding_seq_imgt is None or len(desc.coding_seq_imgt) == 0:
+                print(f'No coding sequence for {desc.species} {desc.sequence_name}')
+                continue
+            if desc.gene_start is None:
+                print(f'Gene start not set for {desc.species} {desc.sequence_name}')
+                desc.gene_start = 1
+            if desc.gene_end is None:
+                print(f'Gene end not set for {desc.species} {desc.sequence_name}')
+                desc.gene_start = 1
+            coding_seq = desc.coding_seq_imgt.replace('.', '')
+            pos = pos = desc.sequence.find(coding_seq)
+            if pos == -1:
+                print(f'Coding sequence not found for {desc.species} {desc.sequence_name}')
+                # fix for IGHV-KAOG
+                continue
+            start_coord = pos + 1
+            end_coord = pos + len(desc.coding_seq_imgt.replace('.', ''))
+            if start_coord != desc.gene_start:
+                print(f'Gene start incorrect for {desc.species} {desc.sequence_name} - {desc.gene_start} should be {start_coord}')
+                desc.gene_start = start_coord
+            if end_coord != desc.gene_end:
+                print(f'Gene end incorrect for {desc.species} {desc.sequence_name} - {desc.gene_end} should be {end_coord}')
+                desc.gene_end = end_coord
+
+    # db.session.commit()
+
+    return 'Check complete'
+
 
 

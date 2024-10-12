@@ -16,8 +16,8 @@
                 "--no-reload"
             ],
             "jinja": true,
-            "autoStartBrowser": false
-        },
+            "autoStartBrowser": false,
+            "justMyCode": false        },
         {
             "name": "Build From Schema",
             "type": "python",
