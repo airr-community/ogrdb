@@ -93,7 +93,7 @@ def check_gene_end():
                 print(f'Gene end incorrect for {desc.species} {desc.sequence_name} - {desc.gene_end} should be {end_coord}')
                 desc.gene_end = end_coord
 
-    # db.session.commit()
+    db.session.commit()
 
     return 'Check complete'
 
