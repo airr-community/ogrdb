@@ -32,21 +32,25 @@
         {% if any_published %}
            <div class="row">
                 <div style="margin-left: 15px;">
+                    <div class="col-md-8">
+                        For an easy way to download sets at the command line, see <a href="https://williamdlees.github.io/receptor_utils/_build/html/download_germline_set.html">download_germline_set</a> in the <a href="https://williamdlees.github.io/receptor_utils/_build/html/index.html">receptor_utils package</a>.
+                    </div>
+                    <div class="col-md-8">
+                        The <a href="https://williamdlees.github.io/receptor_utils/_build/html/index.html">receptor_utils documentation</a> also has walkthroughs showing how to use the germline sets with <a href="https://ncbi.github.io/igblast/">IgBLAST</a> and <a href="https://mixcr.com">MiXCR</a>.
+                    </div>
                     {%  if species == 'Mus musculus' %}
-                    <div class="col-md-8">
-                        <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
-                    </div>
-                    <div class="col-md-8">
-                        For information on the names and approach used in these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
-                    </div>
+                        <div class="col-md-8">
+                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
+                        </div>
+                        <div class="col-md-8">
+                            For information on the names and approach used in these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
+                        </div>
                     {% endif %}
                     {%  if species == 'Homo sapiens' %}
-                    <div class="col-md-8">
-                    </div>
+                        <div class="col-md-8">
+                            For information on these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
+                        </div>
                     {% endif %}
-                    <div class="col-md-8">
-                        For information on these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
-                    </div>
                     <div class="col-md-8">
                         Want more information in FASTA file headers or annotations? <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
                     </div>
@@ -65,18 +69,25 @@
 
             <div class="row">
                 <div style="margin-left: 15px;">
-                    {%  if species == 'Mus musculus' %}
                     <div class="col-md-8">
-                        <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
+                        For an easy way to download sets at the command line, see <a href="https://williamdlees.github.io/receptor_utils/_build/html/download_germline_set.html">download_germline_set</a> in the <a href="https://williamdlees.github.io/receptor_utils/_build/html/index.html">receptor_utils package</a>.
                     </div>
+                    <div class="col-md-8">
+                        The <a href="https://williamdlees.github.io/receptor_utils/_build/html/index.html">receptor_utils documentation</a> also has walkthroughs showing how to use the germline sets with <a href="https://ncbi.github.io/igblast/">IgBLAST</a> and <a href="https://mixcr.com">MiXCR</a>.
+                    </div>
+                    {%  if species == 'Mus musculus' %}
+                        <div class="col-md-8">
+                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/">Using the mouse germline sets on OGRDB</a>
+                        </div>
+                        <div class="col-md-8">
+                            For information on the names and approach used in these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
+                        </div>
                     {% endif %}
                     {%  if species == 'Homo sapiens' %}
-                    <div class="col-md-8">
-                    </div>
+                        <div class="col-md-8">
+                            For information on these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
+                        </div>
                     {% endif %}
-                    <div class="col-md-8">
-                        For information on the names and approach used in these sets, please see <a href="https://doi.org/10.1016/j.immuno.2023.100025">our paper.</a>
-                    </div>
                     <div class="col-md-8">
                         Want more information in FASTA file headers or annotations? <a href="https://github.com/airr-community/receptor-germline-tools">receptor-germline-tools.</a>
                     </div>
