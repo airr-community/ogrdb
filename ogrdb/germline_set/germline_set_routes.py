@@ -71,6 +71,10 @@ def germline_sets(species):
             tables['species'][species]['draft'] = setup_germline_set_list_table(results, current_user)
             tables['species'][species]['draft'].table_id = species + '_draft'
 
+    q = db.session.query(SpeciesLookup).filter(SpeciesLookup.common == species).one_or_none()
+    if q:
+        species = q.binomial
+
     q = db.session.query(GermlineSet)\
         .filter(GermlineSet.species == species)\
         .filter(GermlineSet.status == 'published')\
@@ -80,7 +84,10 @@ def germline_sets(species):
 
     affirmed = setup_published_germline_set_list_info(results, current_user, 'Homo sapiens' in species)
 
-    foo =  render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
+    if len(affirmed.items) == 0 and not current_user.has_role(species):
+        return redirect('/')
+
+    foo = render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
     return foo
 
 
