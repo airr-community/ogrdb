@@ -98,27 +98,70 @@ def format_fasta_sequence(name, seq, width):
 
     return ret
 
-imgt_leg = '                                                                                                       _____________________CDR1_______________________                                                                     _________________CDR2___________________                                                                                                                                                             _CDR3_______'
-imgt_num = ' 1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107 108 '
+annot_num = ' 1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107 108 '
 
-def format_imgt_v(seq, width, ra=None):
-    ind = 1
-    ret = 1
+def format_annot_v(seq, width, ra=None):
+    try:
+        sequence = seq.coding_seq_imgt
+    except:
+        sequence = seq              # if we are not called with an AlleleDescription, assume we've been called with a plain gapped sequence
+        seq = None
+
+    annot_num = ''
+    codon_num = 0
+    annot_leg = ''
+    fmt_aa = ''
+    fmt_seq = ''
+    ungapped_ind = 0
+
+    def in_cdr(pos, seq):
+        if seq is None:
+            return '    '
+
+        try:
+            if pos + seq.gene_start >= seq.cdr1_start and pos + seq.gene_start <= seq.cdr1_end:
+                return '1111'
+            if pos + seq.gene_start >= seq.cdr2_start and pos + seq.gene_start <= seq.cdr2_end:
+                return '2222'
+            if pos + seq.gene_start >= seq.cdr3_start:
+                return '3333'
+            return '    '
+        except:
+            return '    '
 
     fmt_seq = ''
     fmt_aa = ''
-    for cd in chunks(seq, 3):
+    for cd in chunks(sequence, 3):
+        codon_num += 1
+        annot_num += str(codon_num).rjust(3) + ' '
+        annot_leg += in_cdr(ungapped_ind, seq)
+
         fmt_seq += cd + ' '
         if '.' in cd or '-' in cd or len(cd) < 3:
             fmt_aa += '    '
         else:
+            ungapped_ind += 3
             try:
                 fmt_aa += ' ' + str(Seq(cd).translate()) + '  '
             except:
-                fmt_aa += ' X '
+                fmt_aa += ' X  '
+
+    # replace the blocks of 1s, 2s, and 3s with CDR1, CDR2, CDR3 centred in the block, with underlines on each side
+    # find the position of each block in the string
+
+    for c in '1', '2', '3':
+        start = annot_leg.find(c)
+        end = annot_leg.rfind(c)
+        # replace the block with the CDR name, centred in the block and surrounded by underlines
+        lblock_len = int((end - start - 3)/2)
+        rblock_len = (end - start + 1) - lblock_len - 4
+        annot_leg = annot_leg[:start] + '_'*lblock_len + 'CDR' + c + '_'*rblock_len + annot_leg[end+1:]
+    
+
+
 
     # this will deliberately truncate at the end of the shortest line - which will never be imgt_leg or imgt_num unless the sequence is longer than it should be...
-    res = splitlines(imgt_leg + '\n' + imgt_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0).split('\n')
+    res = splitlines(annot_leg + '\n' + annot_num + '\n' + fmt_aa + '\n' + fmt_seq + '\n', width, 0).split('\n')
 
     i = 3  # first line containing nuc sequences
     pos = 0
@@ -218,7 +261,7 @@ def check_duplicate(genotype_seq, desc_seq, sequence_type):
 
 # Style a button for the sequence_popup script
 
-def popup_seq_button(sequence_id, sequence, gapped, annots=[]):
+def popup_seq_button(sequence_id, sequence, gapped, seq, annots=[]):
     # Re-form annotations into a single string for each position
     ra = {}
 
@@ -246,7 +289,7 @@ def popup_seq_button(sequence_id, sequence, gapped, annots=[]):
          sequence_id,
          format_fasta_sequence(sequence_id, sequence, 50),
          format_fasta_sequence(sequence_id, gapped, 50),
-         format_imgt_v(gapped, 52, ra=ra) if gapped else '',
+         format_annot_v(seq, 52, ra=ra) if gapped else '',
          format_translated_fasta(sequence_id, gapped, 50) if gapped else ''
          )
     )

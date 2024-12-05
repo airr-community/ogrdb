@@ -23,10 +23,10 @@ class DetailsCol(StyledCol):
         if item.sequence:
             if 'V' in item.vdjbase_name:
                 value = popup_seq_button(item.vdjbase_name, item.sequence.replace('.', ''),
-                                         item.sequence).replace(
+                                         item.sequence, item.sequence).replace(
                         'btn_view_seq', 'seq_coding_view')
             else:
-                value = popup_seq_button(item.vdjbase_name, item.sequence, '').replace('btn_view_seq', 'seq_coding_view')
+                value = popup_seq_button(item.vdjbase_name, item.sequence, '', item.sequence).replace('btn_view_seq', 'seq_coding_view')
 
         value += '''<a href=%s id="btn_view_notes" class="btn btn-xs text-info icon_back">
                      <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Notes">

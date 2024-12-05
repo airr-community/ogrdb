@@ -164,7 +164,7 @@ class SeqCol(StyledCol):
                     if len(q_hotspots) > 0:
                         bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
 
-        bt_view = popup_seq_button(item.sequence_id, item.nt_sequence, item.nt_sequence_gapped, annots=annots)
+        bt_view = popup_seq_button(item.sequence_id, item.nt_sequence, '', item, annots=annots)
 
         return bt_view + bt_check + bt_imgt + bt_igpdb + bt_vdjbase + bt_indels + bt_codon_usage + bt_runs + bt_hotspots + bt_ref_found
 

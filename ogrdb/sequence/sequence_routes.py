@@ -20,6 +20,7 @@ from flask_wtf import FlaskForm
 from markupsafe import Markup
 from sqlalchemy import and_, or_
 from wtforms import ValidationError
+from receptor_utils import simple_bio_seq as simple
 
 from head import db, app, attach_path
 
@@ -204,7 +205,7 @@ def sequences(sp):
 
     if sp not in species:
         return redirect('/')
-
+    
     if current_user.is_authenticated:
         if current_user.has_role(sp):
             if 'species' not in tables:
@@ -238,7 +239,7 @@ def sequences(sp):
     else:
         form = None
 
-    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn, form=form)
+    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn, form=form, sp=sp)
 
 
 def copy_acknowledgements(seq, gene_description):
@@ -259,6 +260,44 @@ def copy_acknowledgements(seq, gene_description):
 
     for ack in seq.submission.acknowledgements:
         add_acknowledgement_to_gd(ack.ack_name, ack.ack_institution_name, ack.ack_ORCID_id, gene_description)
+
+
+@app.route('/sequences_aa_alignment/<sp>/<category>', methods=['GET', 'POST'])
+def sequences_aa_alignment(sp, category):
+    species = [s[0] for s in db.session.query(Committee.species).all()]
+    if sp not in species:
+        flash(f'Species {sp} not found')
+        return redirect('/')
+    
+    if category != "affirmed":
+        if not current_user.is_authenticated or not current_user.has_role(sp):
+            return redirect('/')
+        
+    if category == "affirmed":
+        q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level != '0')
+    elif category == "draft":
+        if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
+            q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
+        else:
+            q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft']))
+    elif category == "level_0":
+        q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level == '0')
+    else:
+        flash(f'Invalid category {category}')
+        return redirect('/')
+
+    results = q.all()
+
+    ret = ""
+    for seq in sorted(results, key=lambda x: x.sequence_name):
+        if 'V' in seq.sequence_type:
+            ret += f'{seq.sequence_name.ljust(20)} {simple.translate(seq.coding_seq_imgt)}\r\n'
+
+    if len(ret) == 0:
+        return redirect(url_for('sequences', sp=sp))
+    
+    filename = f'{sp}_{category}_aa_alignment.txt'
+    return Response(ret, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
 
 
 @app.route('/new_sequence/<species>', methods=['GET', 'POST'])
@@ -1143,7 +1182,7 @@ default_imgt_fr2 = (114, 165)
 default_imgt_cdr2 = (165, 195)
 default_imgt_fr3 = (195, 312)
 
-
+# determine coordinates in the ungapped sequence, given gapped coordinates and the gapped sequence
 def delineate_v_gene(seq, feature_ranges=[default_imgt_fr1, default_imgt_cdr1, default_imgt_fr2, default_imgt_cdr2, default_imgt_fr3]):
     coords = {}
     imgt_fr1, imgt_cdr1, imgt_fr2, imgt_cdr2, imgt_fr3 = feature_ranges

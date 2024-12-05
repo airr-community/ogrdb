@@ -143,7 +143,7 @@ class SeqNameCol(StyledCol):
     def td_contents(self, item, attr_list):
         ret = ''
         if item.sequence_details:
-            ret += popup_seq_button(item.sequence_details.sequence_id, item.sequence_details.nt_sequence, item.sequence_details.nt_sequence_gapped)
+            ret += popup_seq_button(item.sequence_details.sequence_id, item.sequence_details.nt_sequence, item.sequence_details.nt_sequence_gapped, item.sequence_details.nt_sequence_gapped)
             ret += item.sequence_details.sequence_id
 
         return ret

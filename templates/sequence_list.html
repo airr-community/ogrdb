@@ -1,6 +1,7 @@
 {% extends "base_wide.html" %}
 {% block pagetitle %} Sequences {% endblock %}
 
+
 {% block c_body %}
     {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
@@ -20,6 +21,7 @@
             <row class="col-md-12">
                 <div class=".table col-md-12">
                     {{ t['draft'] }}
+                    <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='draft') }}", id="alignment_draft" class="btn btn-primary">AA Alignment</a>
                 </div>
             </row>
             <row class="col-md-12">
@@ -28,6 +30,7 @@
             <row class="col-md-12">
                 <div class=".table col-md-12">
                     {{ t['level_0'] }}
+                    <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='level_0') }}", id="alignment_draft" class="btn btn-primary">AA Alignment</a>
                 </div>
             </row>
         {% endfor %}
@@ -39,6 +42,7 @@
     <row class="col-md-12">
         <div class=".table col-md-12">
             {{ tables['affirmed'] }}
+            <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='affirmed') }}", id="affirmed" class="btn btn-primary">AA Alignment</a>
         </div>
     </row>
 
@@ -121,8 +125,8 @@
         </div>
     </div>
 
-
 {% endblock %}
+
 
 {% block scripts %}
     {{ super() }}

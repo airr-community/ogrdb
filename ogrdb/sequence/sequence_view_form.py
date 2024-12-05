@@ -34,9 +34,9 @@ def pretty_item(fn, value, seq, trailer_text, gv_items):
     elif fn == 'coding_seq_imgt':
         if value is not None and len(value) > 0:
             if seq.sequence_type == 'V':
-                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt).replace('btn_view_seq', 'seq_coding_view'))
+                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt, seq).replace('btn_view_seq', 'seq_coding_view'))
             else:
-                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '').replace('btn_view_seq', 'seq_coding_view'))
+                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '', seq).replace('btn_view_seq', 'seq_coding_view'))
         else:
             value = 'None'
     elif fn == 'release_description':
