@@ -291,7 +291,7 @@ def sequences_aa_alignment(sp, category):
     ret = ""
     for seq in sorted(results, key=lambda x: x.sequence_name):
         if 'V' in seq.sequence_type:
-            ret += f'{seq.sequence_name.ljust(20)} {simple.translate(seq.coding_seq_imgt)}\r\n'
+            ret += f'{seq.sequence_name.ljust(20)}  {simple.translate(seq.coding_seq_imgt)}  {simple.translate(seq.sequence[seq.cdr1_start-1:seq.cdr1_end])}  {simple.translate(seq.sequence[seq.cdr2_start-1:seq.cdr2_end])}  {simple.translate(seq.sequence[seq.cdr3_start-1:])}\r\n'
 
     if len(ret) == 0:
         return redirect(url_for('sequences', sp=sp))
