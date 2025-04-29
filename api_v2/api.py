@@ -328,7 +328,7 @@ def download_germline_set_by_id(germline_set_id, format):
 
         try:
             germline_set_response = convert_to_GermlineSetResponse_obj(dl)
-            germline_set_response = germline_set_response.model_dump_json()  # Convert the object to a dictionary
+            germline_set_response = germline_set_response.model_dump_json(by_alias=True)  # Convert the object to a dictionary
         except Exception as e:
             return {'message': f'Error constructing response: {e}'}, 500
         
@@ -380,7 +380,7 @@ def convert_to_GermlineSetResponse_obj(dl):
         )
         germline_set_list.append(germline_set)
 
-    germline_set_response = GermlineSetResponse(Info=service_info_obj, GermlineSet=GermlineSetList(items=germline_set_list))
+    germline_set_response = GermlineSetResponse(Info=service_info_obj, GermlineSet=germline_set_list)
 
     return germline_set_response
 

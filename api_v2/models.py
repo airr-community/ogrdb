@@ -2,6 +2,12 @@
 #   filename:  ogrdb-api-openapi3.yaml
 #   timestamp: 2024-06-16T09:37:21+00:00
 
+# once datamodel-codegen has run, modify GermlineSetResponse as follows:
+# class GermlineSetResponse(BaseModel):
+#    Info: Optional[InfoObject] = None
+#    germline_set_class: List[GermlineSet] = Field(None, alias='GermlineSet')
+
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -507,9 +513,9 @@ class GermlineSet(BaseModel):
 
 
 class GermlineSetList(BaseModel):
-    items: List[GermlineSet]
+    germline_set_class_list: List[GermlineSet] = Field(None)
 
-
+ 
 class GermlineSetResponse(BaseModel):
     Info: Optional[InfoObject] = None
-    GermlineSet: Optional[GermlineSetList] = None
+    germline_set_class: List[GermlineSet] = Field(None, alias='GermlineSet')
