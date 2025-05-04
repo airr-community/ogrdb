@@ -15,7 +15,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 commonmark==0.9.1
-datamodel-code-generator==0.30.1
+datamodel-code-generator
 Deprecated==1.2.14
 dnspython==2.6.1
 docutils==0.21.2
@@ -103,7 +103,7 @@ sphinxcontrib-serializinghtml==1.1.10
 sphinxcontrib-websupport==1.2.7
 SQLAlchemy==2.0.30
 textile==4.0.2
-tomli==2.0.1
+tomli
 trio==0.25.1
 trio-websocket==0.11.1
 typing_extensions==4.11.0
