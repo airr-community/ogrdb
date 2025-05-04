@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, Response
 from pydantic import BaseModel
 from api_v2.models import ErrorResponse, ServiceInfoObject, Contact, License, InfoObject, Ontology, GermlineSpeciesResponseItem, \
-    GermlineSpeciesResponse, VersionsResponse, GermlineSetResponse, GermlineSetList, Acknowledgement, SpeciesSubgroupType, Locus, \
+    GermlineSpeciesResponse, VersionsResponse, GermlineSetResponse, SpeciesSubgroupType, Locus, \
     AlleleDescription, SequenceType, InferenceType, SequenceDelineationV, Strand, UnrearrangedSequence, RearrangedSequence, \
-    Derivation, ObservationType, CurationalTag, SpeciesResponse
+    Derivation, ObservationType, CurationalTag, SpeciesResponse, Acknowledgement
 from api_v2.models import GermlineSet as GS
 from db.germline_set_db import GermlineSet
 from db.species_lookup_db import SpeciesLookup
@@ -385,6 +385,33 @@ def convert_to_GermlineSetResponse_obj(dl):
     return germline_set_response
 
 
+'''
+keep this one for MiAIRR v2.x
+def create_acknowledgements_list(acknowledgements):
+    """
+    Create a list of Contributors from OGRDB's acknowledgements data.
+
+    """
+    acknowledgements_list = []
+
+    if acknowledgements is not None:
+        for acknowledgement in acknowledgements:
+            acknowledgement['contributor_id'] = acknowledgement['acknowledgement_id']
+            acknowledgement['orcid_id'] = acknowledgement['ORCID_id'] if 'ORCID_id' in acknowledgement else None
+            temp_contributor = fill_missing_required_fields(Contributor, acknowledgement)
+            # can't see we can do much with institution names, so just ignore it for now
+
+            contributor_obj = Contributor(
+                acknowledgement_id=temp_contributor['acknowledgement_id'],
+                name=temp_contributor['name'],
+                orcid_id=temp_contributor['orcid_id']
+            )
+            acknowledgements_list.append(contributor_obj)
+
+    return acknowledgements_list if len(acknowledgements_list) > 0 else None
+'''
+
+
 def create_acknowledgements_list(acknowledgements):
     """
     Create a list of acknowledgements from the given data.
@@ -411,6 +438,15 @@ def create_acknowledgements_list(acknowledgements):
     return acknowledgements_list if len(acknowledgements_list) > 0 else None
 
 
+# Convert enum to snake case
+def enum_to_snake_case(name):
+    if name is not None:
+        if name == 'None':
+            return None
+        return name.replace(' ', '_').lower()
+    return None
+
+
 def create_allele_description_list(allele_descriptions):
     """
     Create a list of allele descriptions from the given data.
@@ -425,6 +461,7 @@ def create_allele_description_list(allele_descriptions):
 
     for i in range(len(allele_descriptions)):
         temp_allele_descriptions = fill_missing_required_fields(AlleleDescription, allele_descriptions[i])
+        temp_allele_descriptions['inference_type'] = enum_to_snake_case(temp_allele_descriptions['inference_type'])
         allele_description_obj = AlleleDescription(
             allele_description_id=temp_allele_descriptions['allele_description_id'],
             allele_description_ref=temp_allele_descriptions['allele_description_ref'],
@@ -442,7 +479,7 @@ def create_allele_description_list(allele_descriptions):
             chromosome=temp_allele_descriptions['chromosome'],
             sequence_type=SequenceType(temp_allele_descriptions['sequence_type']),
             functional=temp_allele_descriptions['functional'],
-            inference_type=InferenceType(temp_allele_descriptions['inference_type'] if temp_allele_descriptions['inference_type'] is not None else InferenceType(0)),
+            inference_type=InferenceType(temp_allele_descriptions['inference_type']),
             species=Ontology(id=temp_allele_descriptions['species']['id'], label=temp_allele_descriptions['species']['label']),
             species_subgroup=temp_allele_descriptions['species_subgroup'],
             species_subgroup_type=SpeciesSubgroupType(temp_allele_descriptions['species_subgroup_type']) if temp_allele_descriptions['species_subgroup_type'] is not None else None,
@@ -572,7 +609,7 @@ def create_rearranged_support_list(rearranged_support, curation):
                 sequence_id=temp_rearranged_support['sequence_id'],
                 sequence=temp_rearranged_support['sequence'],
                 derivation=Derivation(temp_rearranged_support['derivation']) if temp_rearranged_support['derivation'] is not None else None,
-                observation_type=ObservationType(temp_rearranged_support['observation_type']) if temp_rearranged_support['observation_type'] is not None else None,
+                observation_type=ObservationType(enum_to_snake_case(temp_rearranged_support['observation_type'])) if temp_rearranged_support['observation_type'] is not None else None,
                 curation=curation,
                 repository_name=temp_rearranged_support['repository_name'],
                 repository_ref=temp_rearranged_support['repository_ref'],
@@ -645,7 +682,7 @@ def get_default_value(field_type: Any) -> Any:
     return None
 
 
-def fill_missing_required_fields(model_cls: BaseModel, data: dict) -> dict:
+def fill_missing_required_fields(model_cls: type[BaseModel], data: dict) -> dict:
     """
     Fill missing required fields in the given data with default values.
     
@@ -658,10 +695,12 @@ def fill_missing_required_fields(model_cls: BaseModel, data: dict) -> dict:
     """
     filled_data = data.copy()
 
-    for field_name, field_info in model_cls.__fields__.items():
+    for field_name, field_info in model_cls.model_fields.items():
         if field_name in data and data[field_name] is None:
             if is_required(field_info):
                 field_type = model_cls.__annotations__[field_name]
+                if field_type.startswith('Optional'):
+                    continue
                 default_value = get_default_value(field_type)
                 if default_value is not None:
                     filled_data[field_name] = default_value

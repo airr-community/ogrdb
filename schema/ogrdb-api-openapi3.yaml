@@ -1,3 +1,12 @@
+# to generate pydantic model: 
+# datamodel-codegen  --input ogrdb-api-openapi3.yaml --input-file-type openapi --output ../api_v2/models.py --output-model-type pydantic_v2.BaseModel --strict-nullable
+# note:  --use-subclass-enum does not seem to play nicely with enums that contain a null value
+
+# once datamodel-codegen has run, modify GermlineSetResponse as follows:
+# class GermlineSetResponse(BaseModel):
+#    Info: Optional[InfoObject] = None
+#    germline_set_class: List[GermlineSet] = Field(None, alias='GermlineSet')
+
 openapi: 3.1.0
 swagger: "2.0"
 
