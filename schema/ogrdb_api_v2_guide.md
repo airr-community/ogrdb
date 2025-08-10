@@ -280,8 +280,8 @@ The v2.0.0 API includes several enhancements over the previous version:
 5. **Rich Metadata**: More detailed information about each germline set
 6. **AIRR Community Alignment**: Follows AIRR Community standards
 
-## Conclusion
+## Further Examples
 
-The OGRDB API v2.0.0 provides comprehensive access to germline sequence data with improved organization and standardization. Whether you're building tools for immunogenetics research or integrating germline data into your applications, this API offers a reliable and structured way to access the latest germline sequence information.
+The Python implementation of [download_germline_set](https://github.com/williamdlees/receptor_utils/blob/main/src/scripts/download_germline_set.py) in the [receptor_utils toolkit](https://github.com/williamdlees/receptor_utils) is an example of how to use the API to enumerate available germline sets and download in various formats.
 
 For further assistance or to report issues, please contact William Lees at william@lees.org.uk.
