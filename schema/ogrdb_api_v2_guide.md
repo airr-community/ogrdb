@@ -80,11 +80,11 @@ Response:
 {
   "species": [
     {
-      "id": "NCBITAXON:9606",
+      "id": "9606",
       "label": "Homo sapiens"
     },
     {
-      "id": "NCBITAXON:10090",
+      "id": "10090",
       "label": "Mus musculus"
     }
   ]
@@ -102,7 +102,7 @@ GET /germline/sets/{species_id}
 Example:
 
 ```bash
-curl https://ogrdb.airr-community.org/api_v2/germline/sets/NCBITAXON:9606
+curl https://ogrdb.airr-community.org/api_v2/germline/sets/9606
 ```
 
 Response:
@@ -111,26 +111,37 @@ Response:
 {
   "germline_species": [
     {
-      "germline_set_id": "1",
-      "germline_set_name": "Human_IGH",
+      "germline_set_id": "9606.IGH_VDJ",
+      "germline_set_name": "IGH_VDJ",
+      "locus": "IGH",
       "species": {
-        "id": "NCBITAXON:9606",
+        "id": "9606",
         "label": "Homo sapiens"
       },
       "species_subgroup": null,
-      "species_subgroup_type": null,
-      "locus": "IGH"
+      "species_subgroup_type": "none"
     },
     {
-      "germline_set_id": "2",
-      "germline_set_name": "Human_IGK",
+      "germline_set_id": "9606.IGKappa_VJ",
+      "germline_set_name": "IGKappa_VJ",
+      "locus": "IGK",
       "species": {
-        "id": "NCBITAXON:9606",
+        "id": "9606",
         "label": "Homo sapiens"
       },
-      "species_subgroup": null,
-      "species_subgroup_type": null,
-      "locus": "IGK"
+      "species_subgroup": "",
+      "species_subgroup_type": "none"
+    },
+    {
+      "germline_set_id": "9606.IGLambda_VJ",
+      "germline_set_name": "IGLambda_VJ",
+      "locus": "IGL",
+      "species": {
+        "id": "9606",
+        "label": "Homo sapiens"
+      },
+      "species_subgroup": "",
+      "species_subgroup_type": "none"
     }
   ]
 }
@@ -144,10 +155,12 @@ Retrieve a specific germline set by ID and version:
 GET /germline/set/{germline_set_id}/{release_version}
 ```
 
+'latest' can be used to retrieve the latest version.
+
 Example:
 
 ```bash
-curl https://ogrdb.airr-community.org/api_v2/germline/set/1/2.0
+curl https://ogrdb.airr-community.org/api_v2/germline/set/9606.IGLambda_VJ/latest
 ```
 
 Response:
@@ -155,7 +168,7 @@ Response:
 ```json
 {
   "Info": {
-    "title": "Human IGH Germline Set",
+    "title": "Human IGLambda Germline Set",
     "version": "2.0"
   },
   "GermlineSet": [
@@ -167,13 +180,13 @@ Response:
       "release_version": 2.0,
       "release_description": "Updated germline set",
       "release_date": "2025-01-15",
-      "germline_set_name": "Human_IGH",
-      "germline_set_ref": "OGRDB:Human_IGH:2.0",
+      "germline_set_name": "Human_IGLambda",
+      "germline_set_ref": "OGRDB:Human_IGLambda:2.0",
       "species": {
-        "id": "NCBITAXON:9606",
+        "id": "9606",
         "label": "Homo sapiens"
       },
-      "locus": "IGH",
+      "locus": "IGL",
       "allele_descriptions": [
         // Array of allele descriptions
       ]
@@ -193,7 +206,7 @@ GET /germline/set/{germline_set_id}/{release_version}/{format}
 Example:
 
 ```bash
-curl https://ogrdb.airr-community.org/api_v2/germline/set/1/2.0/fasta
+curl https://ogrdb.airr-community.org/api_v2/germline/set/9606.IGLambda_VJ/2.0/gapped
 ```
 
 Response: A text file containing the sequences in FASTA format.
@@ -209,14 +222,18 @@ GET /germline/set/{germline_set_id}/versions
 Example:
 
 ```bash
-curl https://ogrdb.airr-community.org/api_v2/germline/set/1/versions
+curl https://ogrdb.airr-community.org/api_v2/germline/set/9606.IGLambda_VJ/versions
 ```
 
 Response:
 
 ```json
 {
-  "versions": [1.0, 1.5, 2.0]
+  "versions": [
+    1.0,
+    2.0,
+    3.0
+  ]
 }
 ```
 
@@ -224,8 +241,7 @@ Response:
 
 When requesting a germline set in a specific format, the following options are available:
 
-- `fasta`: Standard FASTA format
-- gapped: FASTA format with IMGT-gapped sequences
+- `gapped`: FASTA format with IMGT-gapped sequences
 - `ungapped`: FASTA format with ungapped sequences
 - `airr`: AIRR-compliant format
 
@@ -268,4 +284,4 @@ The v2.0.0 API includes several enhancements over the previous version:
 
 The OGRDB API v2.0.0 provides comprehensive access to germline sequence data with improved organization and standardization. Whether you're building tools for immunogenetics research or integrating germline data into your applications, this API offers a reliable and structured way to access the latest germline sequence information.
 
-For further assistance or to report issues, please contact the AIRR Community at join@airr-community.org.
+For further assistance or to report issues, please contact William Lees at william@lees.org.uk.
