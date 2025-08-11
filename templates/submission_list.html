@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-md-8"><h2>My Submissions</h2></div>
             <div class="col-md-offset-10">
-                <a href="{{ url_for('new_submission') }}" class="btn btn-default heading-btn">New Submission</a>
+                <a href="{{ url_for('new_submission') }}" class="btn btn-secondary heading-btn">New Submission</a>
             </div>
             <div class=".table col-md-12">
                 {{ tables['mine'] }}
@@ -21,9 +21,9 @@
                 {% if loop.previtem is not defined %}
                     <div class="col-md-offset-10">
                     {% if show_completed %}
-                        <a href="{{ url_for(request.endpoint) }}?completed=no" class="btn btn-default heading-btn">Hide Completed</a>
+                        <a href="{{ url_for(request.endpoint) }}?completed=no" class="btn btn-secondary heading-btn">Hide Completed</a>
                     {% else %}
-                        <a href="{{ url_for(request.endpoint) }}?completed=yes" class="btn btn-default heading-btn">Show Completed</a>
+                        <a href="{{ url_for(request.endpoint) }}?completed=yes" class="btn btn-secondary heading-btn">Show Completed</a>
                     {% endif %}
                     </div>
                 {% endif %}

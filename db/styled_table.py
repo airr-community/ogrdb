@@ -58,7 +58,7 @@ class StyledTable(Table):
 class StyledCol(Col):
     def __init__(self, *args, **kwargs):
         if 'tooltip' in kwargs:
-            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
+            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-bs-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
             del(kwargs['tooltip'])
         else:
             kwargs['th_html_attrs'] = {'class': 'th_back'}
@@ -69,7 +69,7 @@ class StyledCol(Col):
 class StyledDateCol(DateCol):
     def __init__(self, *args, **kwargs):
         if 'tooltip' in kwargs:
-            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
+            kwargs['th_html_attrs'] = {'class': 'th_back', 'data-bs-toggle':"tooltip", 'data-placement': 'top', 'data-container': 'body', 'title': kwargs['tooltip']}
             del(kwargs['tooltip'])
         else:
             kwargs['th_html_attrs'] = {'class': 'th_back'}

@@ -1,6 +1,6 @@
 # Copyright William Lees
 #
-# This source code, and any executable file compiled or derived from it, is governed by the European Union Public License v. 1.2,
+# This source code, and any execu                        bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-bs-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' \                       bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-bs-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' \able file compiled or derived from it, is governed by the European Union Public License v. 1.2,
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
@@ -23,20 +23,20 @@ class SeqCol(StyledCol):
 
         if item.sequence_id in imgt_ref[item.genotype_description.submission.species]:
             if item.nt_sequence.lower() == imgt_ref[item.genotype_description.submission.species][item.sequence_id]:
-                icon = 'glyphicon-ok'
+                icon = 'bi-check-circle-fill'
                 colour = 'text-info'
                 aln_text = ' data-toggle="tooltip" title="Agrees with Reference"'
             else:
-                icon = 'glyphicon-remove'
+                icon = 'bi-x-circle-fill'
                 colour = 'text-danger'
                 alignments = pairwise2.align.globalms(item.nt_sequence.lower(), imgt_ref[item.genotype_description.submission.species][item.sequence_id], 2, -1, -2, -1, one_alignment_only=True)
                 alignment = format_aln(format_alignment(*alignments[0]), item.sequence_id, 'Reference', 50)
                 fasta_seqs = format_fasta_sequence(item.sequence_id, item.nt_sequence.lower(), 50) + format_fasta_sequence('Reference', imgt_ref[item.genotype_description.submission.species][item.sequence_id], 50)
-                aln_text =  Markup(' id="btn_view_check" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="modal" title="Differs from Reference (click to view)"' %
+                aln_text =  Markup(' id="btn_view_check" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-bs-toggle="modal" title="Differs from Reference (click to view)"' %
                     (alignment, item.sequence_id, fasta_seqs))
 
 
-            bt_check = '<button type="button" class="btn btn-xs %s icon_back" %s><span class="glyphicon %s"></span>&nbsp;</button>' \
+            bt_check = '<button type="button" class="btn btn-xs %s icon_back" %s><i class="bi %s"></i>&nbsp;</button>' \
                         % (colour, aln_text, icon)
         else:
             bt_check = ''
@@ -47,7 +47,7 @@ class SeqCol(StyledCol):
             igpdb_genes = get_igpdb_ref()
             for k, v in igpdb_genes.items():
                 if item.nt_sequence.lower() in v or v in item.nt_sequence.lower():
-                    bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IGPDB gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
+                    bt_igpdb = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Sequence matches IGPDB gene %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % k
                     break
 
         bt_vdjbase = ''
@@ -60,7 +60,7 @@ class SeqCol(StyledCol):
                 vdjbase_genes = vdjbase_ref[vdjbase_species][locus]
                 for vdjbase_name, (vdjbase_seq, vdjbase_count) in vdjbase_genes.items():
                     if item.nt_sequence.lower() in vdjbase_seq or vdjbase_seq in item.nt_sequence.lower():
-                        bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % \
+                        bt_vdjbase = '<button type="button" name="vdjbasebtn" id="vdjbasebtn" class="btn btn-xs text-info icon_back"  onclick="window.open(%s)" data-bs-toggle="tooltip" title="Sequence matches VDJbase gene %s (found in %s subjects). Click to view in VDJbase."><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % \
                                      (Markup("'%sgenerep/%s/%s/%s'" % (app.config['VDJBASE_URL'], 'Human', locus, vdjbase_name)), vdjbase_name, vdjbase_count)
                         break
 
@@ -74,11 +74,11 @@ class SeqCol(StyledCol):
 
         if item.sequence_id not in imgt_ref[item.genotype_description.submission.species]:
             if item.closest_reference not in imgt_ref[item.genotype_description.submission.species]:
-                bt_ref_found = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Nearest reference not found in IMGT reference set"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
+                bt_ref_found = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Nearest reference not found in IMGT reference set"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>'
             else:
                 for k,v in imgt_ref[item.genotype_description.submission.species].items():
                     if item.nt_sequence.lower() == v:
-                        bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence matches IMGT gene %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % k
+                        bt_imgt = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Sequence matches IMGT gene %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % k
                         break
 
                 # QA Checks
@@ -97,7 +97,7 @@ class SeqCol(StyledCol):
 
                 if mismatch > 20:
                     aligned = False
-                    bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>'
+                    bt_indels = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Sequence has indels/low match when compared to reference sequence"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>'
 
                 if aligned:
                     # Check for unusual AAs at each position
@@ -119,10 +119,10 @@ class SeqCol(StyledCol):
                                         annots.append((3*j, 3, '%s%d previously unreported in this family' % (seq_aa_gapped[i], i+1)))
 
                             if len(q_codons) > 0:
-                                bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_codons)
+                                bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Amino Acid(s) previously unreported in this family: %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % ", ".join(q_codons)
 
                         except:
-                            bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Error translating sequence: %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % sys.exc_info()[0]
+                            bt_codon_usage = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Error translating sequence: %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % sys.exc_info()[0]
 
                     # Check for lengthened strings of the same base
 
@@ -141,7 +141,7 @@ class SeqCol(StyledCol):
                             i += 1
 
                     if len(q_runs) > 0:
-                        bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="Possible repeated read errors at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_runs)
+                        bt_runs = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="Possible repeated read errors at IMGT position(s) %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % ", ".join(q_runs)
 
                     # Check for RGYW/WRCY hotspot change
 
@@ -162,7 +162,7 @@ class SeqCol(StyledCol):
                             annots.append((p+2, 1, 'C/G SNP in WRCY hotspot'))
 
                     if len(q_hotspots) > 0:
-                        bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at IMGT position(s) %s"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;</button>' % ", ".join(q_hotspots)
+                        bt_hotspots = '<button type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="tooltip" title="G/C SNP in RGYW/WRCY hotspot at IMGT position(s) %s"><i class="bi bi-info-circle-fill"></i>&nbsp;</button>' % ", ".join(q_hotspots)
 
         bt_view = popup_seq_button(item.sequence_id, item.nt_sequence, '', item, annots=annots)
 

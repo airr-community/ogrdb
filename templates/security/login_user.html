@@ -29,9 +29,9 @@
 
             <div class="row">
                 <div class="col-sm-12">
-                      <a href="{{ url_for_security('register') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Register</a>
-                      <a href="{{ url_for_security('forgot_password') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Recover password</a>
-                      <a href="{{ url_for_security('send_confirmation') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Resend confirmation</a>
+                      <a href="{{ url_for_security('register') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="bi bi-person-plus-fill"></i> Register</a>
+                      <a href="{{ url_for_security('forgot_password') }}" class="btn btn-link"><i class="bi bi-key-fill"></i> Recover password</a>
+                      <a href="{{ url_for_security('send_confirmation') }}" class="btn btn-link"><i class="bi bi-envelope-fill"></i> Resend confirmation</a>
                 </div>
             </div>
         </form>

@@ -25,12 +25,16 @@
         </div>
 
         <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" name="submit_btn" id="submit_btn">
+                <div class="row">
+                    <div class="offset-sm-3">
+                        <input type="submit" value="Save" class="btn btn-primary" name="submit_btn" id="submit_btn">
+                    </div>
+                </div>
         </div>
 
         <div class="row">
             <div class="col-sm-12">
-                  <a href="{{ url_for('index') }}" class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Cancel</a>
+                  <a href="{{ url_for('index') }}" class="btn btn-link"><i class="bi bi-x-circle-fill"></i> Cancel</a>
             </div>
         </div>
     </form>

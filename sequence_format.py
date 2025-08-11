@@ -274,7 +274,7 @@ def popup_seq_button(sequence_id, sequence, gapped, seq, annots=[]):
                ra[ind] = text
 
     return (
-        ('<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-toggle="tooltip" title="View Sequence"' 
+        ('<button type="button" id="btn_view_seq" class="btn btn-xs text-info icon_back" data-bs-toggle="modal" data-bs-target="#seqModal" data-bs-toggle="tooltip" title="View Sequence"' 
          ' data-sequence="%s"' 
          ' data-gapped-sequence="%s"' 
          ' data-name="%s"' 
@@ -282,7 +282,7 @@ def popup_seq_button(sequence_id, sequence, gapped, seq, annots=[]):
          ' data-gapped-fa="%s"' 
          ' data-trans="%s"'
          ' data-trans-fa="%s"'
-         '><span class="glyphicon glyphicon-search"></span>&nbsp;</button>'
+         '><i class="bi bi-search"></i>&nbsp;</button>'
         ) %
         (format_nuc_sequence(sequence, 50, ra=ra, gapped=False),
          format_nuc_sequence(gapped, 50, ra=ra, gapped=True),

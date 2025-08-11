@@ -24,13 +24,13 @@ class SequenceListActionCol(StyledCol):
             fmt_string.append(item.sequence_name)
 
         if item.editable:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
-            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span>&nbsp;</button>' % (item.id))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
+            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>' % (item.id))
 
         if item.draftable:
-            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-duplicate" data-toggle="tooltip" title="Create Draft"></span></button>' % (item.id))
-            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-tag" data-toggle="tooltip" title="IMGT Name"></span></button>' % (item.id))
-            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Delete"></span></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-tag-fill" data-bs-toggle="tooltip" title="IMGT Name"></i></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (item.id))
 
         if (item.editable or item.draftable) and int(item.affirmation_level) < 3:
             inf_genotypes = [x.sequence_details for x in item.inferred_sequences]
@@ -48,7 +48,7 @@ class SequenceListActionCol(StyledCol):
                     dupe_notes.append(note)
 
             if len(set(item.duplicate_sequences) - set(inf_genotypes) - set(item.supporting_observations)) > len(dupe_notes):
-                fmt_string.append('<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="There are unreferenced matches to this sequence"></span>&nbsp;')
+                fmt_string.append('<i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="There are unreferenced matches to this sequence"></i>&nbsp;')
 
         return ''.join(fmt_string)
 

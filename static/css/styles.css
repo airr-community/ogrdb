@@ -1,3 +1,8 @@
+/* Global font size adjustment for Bootstrap 5 */
+html {
+    font-size: 14px; /* Bootstrap 3 equivalent - reduces from 16px to 14px */
+}
+
 body {
     /*background-color: rgba(44, 62, 80, .9);*/
     background-color: #09197D;
@@ -62,6 +67,7 @@ section#wrapper {
 div.logo {
     color: #2c3e50;
 }
+
 div.logo > div {
     font-size: 30px;
     font-weight: bolder;
@@ -70,29 +76,34 @@ div.logo > div {
     padding-bottom: 5px;
     border-bottom: 1px solid rgba(51, 122, 183, .2);
     margin-bottom: 10px;
-    /*background: rgba(51, 122, 183, .9);*/
     background-color: #188DFB;
     color: white !important;
     box-shadow: 3px 5px 5px #09197D;
     border-radius: 10px;
     text-align: center;
-}
-div.logo > div > a {
-    color: white !important;
+    line-height: 65px; /* Set line height for vertical centering */
+    min-height: 65px;
 }
 
 .logo-left {
-    position: absolute;
-    left: 30px;
-    top: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 30px;
+    margin-right: auto;
+    float: left;
     height: 45px;
 }
 
 .logo-right {
-    position: absolute;
-    right: 30px;
-    top: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 30px;
+    margin-left: auto;
+    float: right;
     height: 40px;
+}
+div.logo > div > a {
+    color: white !important;
 }
 
 span.tagline {

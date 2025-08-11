@@ -27,7 +27,7 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
 def pretty_item(fn, value, seq, trailer_text, gv_items):
     if fn == 'sequence':
         if value is not None and len(value) > 0:
-            value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-search"></span>&nbsp;</button>' \
+            value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-info icon_back" data-bs-toggle="modal" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-bs-toggle="tooltip" title="View"><i class="bi bi-search"></i>&nbsp;</button>' \
                            % (format_unrearranged_sequence(value, 50, gv_items) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
         else:
             value = 'None'

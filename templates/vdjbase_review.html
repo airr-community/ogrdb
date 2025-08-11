@@ -13,7 +13,7 @@
     {{ form.hidden_tag() }}
     <div class="row">
         <div class="form-inline">
-                <div class="col-sm-offset-1 col-sm-3">
+                <div class="col-sm-3 offset-sm-1">
                     {{ form.species.label(class="") }}
                     {{ form.species(class="form-control")|safe }}
                 </div>
@@ -31,8 +31,8 @@
 
     {% if table %}
         <div class="row">
-            <h4 class="col-sm-offset-1 col-sm-11 edit">Sequences observed in full-length repertoires</h4>
-            <div class="col-sm-10 col-sm-offset-1">
+            <h4 class="col-sm-11 offset-sm-1 edit">Sequences observed in full-length repertoires</h4>
+            <div class="col-sm-10 offset-sm-1">
                 <div class="form-group">
                    {{ table }}
                 </div>

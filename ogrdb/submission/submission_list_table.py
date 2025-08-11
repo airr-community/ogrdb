@@ -23,16 +23,16 @@ class SubmissionListActionCol(StyledCol):
             fmt_string.append('''
             <a href="%s" 
             class="btn btn-xs text-warning icon_back">
-            <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;
+            <i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;
             </a>
             ''' % (url_for('edit_submission', id=item.submission_id)))
             fmt_string.append('''
             <button onclick="sub_delete(this.id)" 
             class="btn btn-xs text-danger icon_back" id="%s">
-            <span class="glyphicon glyphicon-trash" 
-            data-toggle="tooltip" 
+            <i class="bi bi-trash-fill" 
+            data-bs-toggle="tooltip" 
             title="Delete">
-            </span>&nbsp;</button>
+            </i>&nbsp;</button>
             ''' % (item.submission_id))
 
         return ''.join(fmt_string)

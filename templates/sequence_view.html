@@ -11,11 +11,21 @@
 
     <div>
         <ul class="nav nav-tabs" role="tablist" id="myTab">
-            <li role="presentation" class="active"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
-            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-            <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
-            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
-            <li role="presentation"><a href="#versions" aria-controls="versions" role="tab" data-toggle="tab" id="tab-versions">Versions</a></li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-det" data-bs-toggle="tab" data-bs-target="#det" type="button" role="tab" aria-controls="det" aria-selected="true">Details</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-history" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-versions" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab" aria-controls="versions" aria-selected="false">Versions</button>
+            </li>
         </ul>
 
         {{ form.hidden_tag() }}
@@ -23,20 +33,20 @@
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="det">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
-                    <div  class="col-sm-offset-1 col-sm-11">
+                    <h3 class="col-sm-11 offset-sm-1">Details</h3>
+                    <div  class="col-sm-11 offset-sm-1">
                         {{ tables['description']['details'] }}
                     </div>
                 </div>
 
                 {% if  tables['inferred_sequences'].items %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Evidence</h3>
-                        <p class="col-sm-offset-1 col-sm-10">The table below lists submissions to IARC , and the inferences within them, on which this IARC-affirmed sequence is based.</p>
-                        <p class="col-sm-offset-1 col-sm-10">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
+                        <h3 class="col-sm-11 offset-sm-1">Evidence</h3>
+                        <p class="col-sm-10 offset-sm-1">The table below lists submissions to IARC , and the inferences within them, on which this IARC-affirmed sequence is based.</p>
+                        <p class="col-sm-10 offset-sm-1">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
                         tick or cross will provide an alignment. Mismatches may be caused, for example, by the inclusion of leader sequences, or nucleotides in the inference
                         which do not in IARC's opinion have sufficient evidence for inclusion in the sequence.</p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <div class="col-sm-10 offset-sm-1">
                             <div class="form-group">
                                 {{ tables['inferred_sequences'] }}
                             </div>
@@ -46,9 +56,9 @@
 
                 {% if  tables['supporting_observations'].items %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Supporting Observations</h3>
-                        <p class="col-sm-offset-1 col-sm-11">Sequences in other submitted genotypes that have been submitted to IARC and support the inference: </p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Supporting Observations</h3>
+                        <p class="col-sm-11 offset-sm-1">Sequences in other submitted genotypes that have been submitted to IARC and support the inference: </p>
+                        <div class="col-sm-10 offset-sm-1">
                             <div class="form-group">
                                 {{ tables['supporting_observations'] }}
                             </div>
@@ -58,9 +68,9 @@
 
                 {% if  tables['matches'] %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Unreferenced Matches in Submissions</h3>
-                        <p class="col-sm-offset-1 col-sm-10">Matching or near-matching inferred sequences in submissions not currently referenced here (this section is only visible to IARC members).</p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Unreferenced Matches in Submissions</h3>
+                        <p class="col-sm-10 offset-sm-1">Matching or near-matching inferred sequences in submissions not currently referenced here (this section is only visible to IARC members).</p>
+                        <div class="col-sm-10 offset-sm-1">
                             <div class="form-group">
                                 {{ tables['matches'] }}
                             </div>
@@ -70,9 +80,9 @@
 
                 {% if  tables['vdjbase_matches'].items %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Observations in VDJbase</h3>
-                        <p class="col-sm-offset-1 col-sm-11">Inferred sequences in VDJbase that match this sequence: </p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Observations in VDJbase</h3>
+                        <p class="col-sm-11 offset-sm-1">Inferred sequences in VDJbase that match this sequence: </p>
+                        <div class="col-sm-10 offset-sm-1">
                             <div class="form-group">
                                 {{ tables['vdjbase_matches'] }}
                             </div>
@@ -81,9 +91,9 @@
                 {% endif %}
 
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Un-rearranged Observations</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Un-rearranged sequence observations that support this sequence: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Un-rearranged Observations</h3>
+                    <p class="col-sm-11 offset-sm-1">Un-rearranged sequence observations that support this sequence: </p>
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['genomic_observations'] }}
                         </div>
@@ -92,34 +102,34 @@
 
                 {% if not tables['vdjbase_matches'].items %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Observations in AIRR-seq Repertoires</h3>
-                        <p class="col-sm-offset-1 col-sm-11">Click {{ vdjbase_link }} to review supporting data in VDJbase. </p>
-                        <p class="col-sm-offset-1 col-sm-11"> Clicking the link will take you to VDJbase. Open in a new tab if you want to keep this page open.
+                        <h3 class="col-sm-11 offset-sm-1">Observations in AIRR-seq Repertoires</h3>
+                        <p class="col-sm-11 offset-sm-1">Click {{ vdjbase_link }} to review supporting data in VDJbase. </p>
+                        <p class="col-sm-11 offset-sm-1"> Clicking the link will take you to VDJbase. Open in a new tab if you want to keep this page open.
                         In VDJbase, click on the count in the Apperances column to see a list of samples in which the sequence was found. </p>
                     </div>
                 {% endif %}
 
                 <div class="row">
                     {% if tables['description']['cdr'].items|length > 0 %}
-                        <h3 class="col-sm-offset-1 col-sm-11">CDR delineation</h3>
-                        <div class="form-group col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">CDR delineation</h3>
+                        <div class="form-group offset-sm-1">
                             {{ tables['description']['cdr'] }}
                         </div>
                     {% endif %}
                     {% if tables['description']['non-coding'].items|length > 0 %}
-                        <h3 class="col-sm-offset-1 col-sm-11">Non-Core Regions</h3>
-                        <div class="form-group col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Non-Core Regions</h3>
+                        <div class="form-group offset-sm-1">
                             {{ tables['description']['non-coding'] }}
                         </div>
                     {% endif %}
                     {% if tables['description']['extension'].items|length > 0 %}
-                        <h3 class="col-sm-offset-1 col-sm-11">Extension</h3>
-                        <div class="form-group col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Extension</h3>
+                        <div class="form-group offset-sm-1">
                             {{ tables['description']['extension'] }}
                         </div>
                     {% endif %}
-                    <h3 class="col-sm-offset-1">Additional Information</h3>
-                    <div class="form-group col-sm-offset-1">
+                    <h3 class="offset-sm-1">Additional Information</h3>
+                    <div class="form-group offset-sm-1">
                         {{ tables['description']['meta'] }}
                     </div>
                 </div>
@@ -128,10 +138,10 @@
 
             <div role="tabpanel" class="tab-pane" id="ack">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Individuals acknowledged as contributing to this sequence:</p>
+                    <h3 class="col-sm-11 offset-sm-1">Acknowledgements</h3>
+                    <p class="col-sm-11 offset-sm-1">Individuals acknowledged as contributing to this sequence:</p>
                         <a name="ack"> </a>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <div class="col-sm-10 offset-sm-1">
                             {{ tables['acknowledgements'] }}
                         </div>
                 </div>
@@ -139,13 +149,13 @@
 
             <div role="tabpanel" class="tab-pane" id="notes">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>
-                    <p class="col-sm-offset-1 col-sm-10">Notes are added by IARC reviewers.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Notes</h3>
+                    <p class="col-sm-10 offset-sm-1">Notes are added by IARC reviewers.</p>
+                    <div class="col-sm-10 offset-sm-1">
                         {{ tables['notes'] }}
                     </div>
-                    <h3 class="col-sm-offset-1 col-sm-11">Attachments</h3>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Attachments</h3>
+                    <div class="col-sm-10 offset-sm-1">
                         {{ tables['attachments'] }}
                     </div>
                 </div>
@@ -153,9 +163,9 @@
 
             <div role="tabpanel" class="tab-pane" id="history">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
-                    <p class="col-sm-offset-1 col-sm-10">History logs the times and reasons for the publication of each version of this sequence.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">History</h3>
+                    <p class="col-sm-10 offset-sm-1">History logs the times and reasons for the publication of each version of this sequence.</p>
+                    <div class="col-sm-10 offset-sm-1">
                         {% for t in tables['history'] %}
                             {{ t }}
                         {% endfor %}
@@ -163,8 +173,8 @@
                 </div>
                 {% if tables['diffs'] %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Changes from previous version</h3>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Changes from previous version</h3>
+                        <div class="col-sm-10 offset-sm-1">
                             {{ tables['diffs'] }}
                         </div>
                     </div>
@@ -173,9 +183,9 @@
 
             <div role="tabpanel" class="tab-pane" id="versions">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Versions</h3>
-                    <p class="col-sm-offset-1 col-sm-10">All published versions of this sequence.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Versions</h3>
+                    <p class="col-sm-10 offset-sm-1">All published versions of this sequence.</p>
+                    <div class="col-sm-10 offset-sm-1">
                         {{ tables['versions'] }}
                     </div>
                 </div>

@@ -10,12 +10,18 @@
 
             {{ form.hidden_tag() }}
 
-            <p class="col-sm-offset-1">Please select the genes to add. Use Ctrl-click to select multiple genes.</p>
+            <div class="row">
+                <p class="offset-sm-1">Please select the genes to add. Use Ctrl-click to select multiple genes.</p>
+            </div>
             {{ gene_table }}
 
             <div class="form-group row col-sm-10">
                 {{  form.results() }}
-                {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
+                <div class="row">
+                    <div class="offset-sm-1">
+                        {{ form.cancel(class="btn btn-default") }}
+                    </div>
+                </div>
                 {{ form.create(class="btn btn-primary") }}
             </div>
         </form>

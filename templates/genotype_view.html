@@ -25,7 +25,8 @@
 
 
     <form action="{{ url_for(this_link, id=id) }}" method="POST" name="form" class="form-horizontal">
-        <div class="row col-sm-offset-1">
+        <div class="row">
+            <div class="col-sm-11 offset-sm-1">
 
             <div class="col-sm-6">
                 <div class="table">
@@ -49,7 +50,8 @@
             </div>
         </div>
 
-        <div class="row col-sm-offset-1">
+        <div class="row">
+            <div class="col-sm-11 offset-sm-1">
 
             <div class="col-sm-6">
                 <div class="btn-toolbar">
@@ -60,39 +62,49 @@
             </div>
             <div class="col-sm-6">
                     <div class="form-group">
-                        {{ form.update(class="btn btn-success col-sm-offset-2") }}
+                        <div class="offset-sm-2">
+                            {{ form.update(class="btn btn-success") }}
+                        </div>
                     </div>
             </div>
         </div>
     </form>
 
     {% if ncbi %}
-    <div class="row col-sm-offset-1">
+    <div class="row">
+        <div class="col-sm-11 offset-sm-1">
         <div class="col-sm-5">
             {{ sam_table }}
         </div>
         <div class="col-sm-5">
             {{ srr_table }}
         </div>
+        </div>
     </div>
     {% endif %}
 
-    <div class="row col-sm-offset-1">
+    <div class="row">
+        <div class="col-sm-11 offset-sm-1">
         <p>Allele names in <em>italic</em> are not listed in the reference set. Allele names in <strong>bold</strong> are put forward in the submission for consideration as inferred sequences.</p>
         <p>A cross in the Sequence column indicates that the sequence listed in the genotype does not match the sequence of the corresponding allele in the reference set.</p>
         <p>An information icon in the Sequence column alerts you to other information on this sequence - hover over for details.</p>
+        </div>
     </div>
 
-    <div class="row col-sm-offset-1">
+    <div class="row">
+        <div class="col-sm-11 offset-sm-1">
         <h3> Novel Alleles </h3>
+        </div>
     </div>
 
     <div class="table pad">
         {{ tables['inferred'] | safe}}
     </div>
 
-    <div class="row col-sm-offset-1">
+    <div class="row">
+        <div class="col-sm-11 offset-sm-1">
         <h3> Genotype </h3>
+        </div>
     </div>
 
     <div class="table pad">

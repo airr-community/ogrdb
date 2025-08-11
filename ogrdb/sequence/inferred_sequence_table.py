@@ -29,9 +29,9 @@ class InferredSequenceTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         contents = '''
         <button type="button" class="del_inf_button btn btn-xs text-danger icon_back" 
-        data-id="%s" data-inf="%s" id="del_inf_%s_%s" data-toggle="tooltip" 
+        data-id="%s" data-inf="%s" id="del_inf_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
-        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        <i class="bi bi-trash-fill"></i>&nbsp;
         </button>
         ''' % (item['id'], item['sequence_id'], item['id'], item['sequence_id'])
         return(contents)
@@ -39,19 +39,19 @@ class InferredSequenceTableActionCol(StyledCol):
 class InferredSequenceTableMatchCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item['gene_sequence'] == item['nt_sequence']:
-            icon = 'glyphicon-ok'
+            icon = 'bi-check-circle-fill'
             colour = 'text-info'
         else:
-            icon = 'glyphicon-remove'
+            icon = 'bi-x-circle-fill'
             colour = 'text-danger'
 
         alignment = report_dupe(item['gene_sequence'], 'Sequence', item['nt_sequence'], item['sequence_name'])
         content = Markup('''
         <button id="aln_view" name="aln_view" type="button" 
-        class="btn btn-xs %s icon_back" data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
-        data-toggle="tooltip" 
+        class="btn btn-xs %s icon_back" data-bs-toggle="modal" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
+        data-bs-toggle="tooltip" 
         title="View">
-        <span class="glyphicon %s"></span>&nbsp;
+        <i class="bi %s"></i>&nbsp;
         </button>
         ''' % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
         return(content)
@@ -108,9 +108,9 @@ class SupportingObservationTableActionCol(StyledCol):
         contents = '''
         <button type="button" 
         class="del_obs_button btn btn-xs text-danger icon_back" 
-        data-id="%s" data-gid="%s" id="del_obs_%s_%s" data-toggle="tooltip" 
+        data-id="%s" data-gid="%s" id="del_obs_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
-        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        <i class="bi bi-trash-fill"></i>&nbsp;
         </button>
         ''' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
         return(contents)
@@ -180,10 +180,10 @@ def setup_vdjbase_matches_table(seq):
 class MatchingSubmissionsTableMatchCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item['gene_sequence'] == item['nt_sequence']:
-            icon = 'glyphicon-ok'
+            icon = 'bi-check-circle-fill'
             colour = 'text-info'
         else:
-            icon = 'glyphicon-remove'
+            icon = 'bi-x-circle-fill'
             colour = 'text-danger'
 
         # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
@@ -191,9 +191,9 @@ class MatchingSubmissionsTableMatchCol(StyledCol):
         content = Markup('''
         <button id="aln_view" name="aln_view" type="button" 
         class="btn btn-xs %s icon_back" 
-        data-toggle="modal" data-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
-        data-toggle="tooltip" title="View">
-        <span class="glyphicon %s"></span>&nbsp;
+        data-bs-toggle="modal" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" 
+        data-bs-toggle="tooltip" title="View">
+        <i class="bi %s"></i>&nbsp;
         </button>
         ''' % (colour, alignment, item['sequence_name'], format_fasta_sequence(item['allele_name'], item['gene_sequence'], 50) + format_fasta_sequence(item['sequence_name'], item['nt_sequence'], 50), icon))
         return(content)
@@ -208,8 +208,8 @@ class MatchingSubmissionsTableActionCol(StyledCol):
                 <button type="button" 
                 class="add_obs_button btn btn-xs text-default icon_back" 
                 data-id="%s" data-gid="%s" id="add_obs_%s_%s" 
-                data-toggle="tooltip" title="Add">
-                <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                data-bs-toggle="tooltip" title="Add">
+                <i class="bi bi-plus-circle-fill"></i>&nbsp;
                 </button>
                 ''' % (item['gene_description_id'], item['genotype_id'], item['gene_description_id'], item['genotype_id'])
             else:
@@ -217,19 +217,19 @@ class MatchingSubmissionsTableActionCol(StyledCol):
                 <button type="button" 
                 class="add_inf_button btn btn-xs text-default icon_back" 
                 data-id="%s" data-inf="%s" id="add_inf_%s_%s" 
-                data-toggle="tooltip" title="Add">
-                <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                data-bs-toggle="tooltip" title="Add">
+                <i class="bi bi-plus-circle-fill"></i>&nbsp;
                 </button>
                 ''' % (item['gene_description_id'], item['inferred_id'], item['gene_description_id'], item['inferred_id'])
 
-        notes_icon = 'glyphicon-list-alt' if item['notes_present'] else 'glyphicon-unchecked'
+        notes_icon = 'bi-card-text' if item['notes_present'] else 'bi-square'
         notes_tooltip = 'View/modify note' if item['notes_present'] else 'Add note'
         contents += '''
         <button type="button" 
         class="dupe_notes_button btn btn-xs text-default icon_back" 
         data-genotype_id="%s" data-sequence_id="%s" id="add_inf_%s_%s" 
         title="%s">
-        <span class="glyphicon %s"></span>&nbsp;
+        <i class="bi %s"></i>&nbsp;
         </button>
         ''' % (item['genotype_id'], item['gene_description_id'], item['genotype_id'], item['inferred_id'], notes_tooltip, notes_icon)
 
@@ -313,15 +313,15 @@ class GenomicSupportTableActionCol(StyledCol):
         contents = '''
         <button type="button" 
         class="del_genomic_button btn btn-xs text-danger icon_back" 
-        data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-toggle="tooltip" 
+        data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
-        <span class="glyphicon glyphicon-trash"></span>&nbsp;
+        <i class="bi bi-trash-fill"></i>&nbsp;
         </button>
         ''' % (item.sequence_id, item.id, item.sequence_id, item.id)
         contents += ('''
         <a href="%s" 
         class="btn btn-xs text-warning icon_back">
-        <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit"></span>&nbsp;
+        <i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;
         </a>
         ''' % (url_for('seq_edit_genomic', seq_id=item.sequence_id, support_id=item.id)))
         return(contents)

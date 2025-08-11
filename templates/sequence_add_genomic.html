@@ -12,11 +12,17 @@
 
             <input id="support_id" name="support_id" type="hidden" value="{{ support_id }}">
 
-            <p class="col-sm-offset-1">Please enter the repository and accession number of the supporting record.</p>
+            <div class="row">
+                <p class="offset-sm-1">Please enter the repository and accession number of the supporting record.</p>
+            </div>
             {% include 'genomic_support_form.html' %}
 
             <div class="form-group row col-sm-10">
-                <input type="submit" value="Cancel" class="btn btn-default col-sm-offset-1" id="cancel" name="cancel">
+                <div class="row">
+                    <div class="offset-sm-1">
+                        <input type="submit" value="Cancel" class="btn btn-default" id="cancel" name="cancel">
+                    </div>
+                </div>
                 <input type="submit" value={{ action }} class="btn btn-primary" id="create" name="create">
             </div>
         </form>

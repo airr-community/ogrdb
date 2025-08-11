@@ -1,10 +1,11 @@
-{% extends "bootstrap/base.html" %}
+{% extends "bootstrap5_base.html" %}
 {% from "_macros.html" import render_field_with_errors, render_narrow_field_with_errors, render_wide_field_with_errors, render_field, render_static_field %}
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
     <title>OGRDB</title>
 {% endblock %}
@@ -13,7 +14,7 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-lg-12 col-lg-offset-0">
+            <div class="col-lg-12">
 
                     <div class="logo">
                         <div>
@@ -31,44 +32,40 @@
             <div class="row">
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
-                    <span class="dropdown">
-                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-toggle="dropdown">
+                    <div class="dropdown d-inline">
+                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-bs-toggle="dropdown">
                             Germline Sets
                             <span class="caret"></span>
                         </a>
-                        <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                            <ul>
-                                <li><a href="{{ url_for('germline_sets', species='Homo sapiens') }}" class="m-item">Human (Homo sapiens)</a></li>
-                                <li><a href="{{ url_for('germline_sets', species='Mus musculus') }}" class="m-item">Mouse (Mus musculus)</a></li>
-                                {% if current_user.has_role('Salmo salar') %}
-                                <li><a href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}" class="m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
-                                <li><a href="{{ url_for('germline_sets', species='Salmo salar') }}" class="m-item">Atlantic Salmon (Salmo salar)</a></li>
-                                {% endif %}
-                                </ul>
-                        </span>
-                    </span> |
-                    <span class="dropdown">
-                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-toggle="dropdown">
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <li><a href="{{ url_for('germline_sets', species='Homo sapiens') }}" class="dropdown-item m-item">Human (Homo sapiens)</a></li>
+                            <li><a href="{{ url_for('germline_sets', species='Mus musculus') }}" class="dropdown-item m-item">Mouse (Mus musculus)</a></li>
+                            {% if current_user.has_role('Salmo salar') %}
+                            <li><a href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}" class="dropdown-item m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
+                            <li><a href="{{ url_for('germline_sets', species='Salmo salar') }}" class="dropdown-item m-item">Atlantic Salmon (Salmo salar)</a></li>
+                            {% endif %}
+                        </ul>
+                    </div> |
+                    <div class="dropdown d-inline">
+                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu2" data-bs-toggle="dropdown">
                             Sequences
                             <span class="caret"></span>
                         </a>
-                        <span class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                            <ul>
-                                <li><a href="{{ url_for('sequences', sp='Homo sapiens') }}" class="m-item">Human (Homo sapiens)</a></li>
-                                <li><a href="{{ url_for('sequences', sp='Mus musculus') }}" class="m-item">Mouse (Mus musculus)</a></li>
-                                <li><a href="{{ url_for('sequences', sp='Macaca mulatta') }}" class="m-item">Macaque (Macaca mulatta)</a></li>
-                                {% if current_user.has_role('Salmo salar') %}
-                                <li><a href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}" class="m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
-                                <li><a href="{{ url_for('sequences', sp='Salmo salar') }}" class="m-item">Salmon (Salmo salar)</a></li>
-                                {% endif %}
-                                {% if current_user.has_role('Admin') %}
-                                    <li><a href="{{ url_for('sequences', sp='Test') }}" class="m-item">Test</a></li>
-                                {% endif %}
-                                <li role="separator" class="divider"></li></li>
-                                <li><a href="{{ url_for('vdjbase_review') }}" class="m-item">Review VDJbase</a></li>
-                            </ul>
-                        </span>
-                    </span> |
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                            <li><a href="{{ url_for('sequences', sp='Homo sapiens') }}" class="dropdown-item m-item">Human (Homo sapiens)</a></li>
+                            <li><a href="{{ url_for('sequences', sp='Mus musculus') }}" class="dropdown-item m-item">Mouse (Mus musculus)</a></li>
+                            <li><a href="{{ url_for('sequences', sp='Macaca mulatta') }}" class="dropdown-item m-item">Macaque (Macaca mulatta)</a></li>
+                            {% if current_user.has_role('Salmo salar') %}
+                            <li><a href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}" class="dropdown-item m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
+                            <li><a href="{{ url_for('sequences', sp='Salmo salar') }}" class="dropdown-item m-item">Salmon (Salmo salar)</a></li>
+                            {% endif %}
+                            {% if current_user.has_role('Admin') %}
+                                <li><a href="{{ url_for('sequences', sp='Test') }}" class="dropdown-item m-item">Test</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a href="{{ url_for('vdjbase_review') }}" class="dropdown-item m-item">Review VDJbase</a></li>
+                        </ul>
+                    </div> |
                     <a href="{{ url_for('genotype_statistics') }}" class="m-item">Statistics</a> |
                     <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
                     {% if current_user.active %}
@@ -99,16 +96,16 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+    {{ super() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.11.3/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.5/fh-3.2.0/sl-1.3.3/datatables.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jeditable.js/2.0.19/jquery.jeditable.min.js"></script>
     <script>
     $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
+        $('[data-bs-toggle="tooltip"]').tooltip()
     })
     </script>
 

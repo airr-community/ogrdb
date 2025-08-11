@@ -39,7 +39,7 @@
                 </div>
                 {{ register_user_form.accepted_terms.label(class="col-sm-11 control-label") }}
                 {% if register_user_form.accepted_terms.errors %}
-                    <div class="col-sm-9 col-sm-offset-3 red">
+                    <div class="col-sm-9 offset-sm-3 red">
                         <ul>
                             {% for error in register_user_form.accepted_terms.errors %}
                                 <li>{{ error }}</li>
@@ -57,7 +57,7 @@
 
     <div class="row">
         <div class="col-sm-12">
-              <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="glyphicon glyphicon-plus-sign"></i> Login</a>
+              <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="bi bi-box-arrow-in-right"></i> Login</a>
         </div>
     </div>
 

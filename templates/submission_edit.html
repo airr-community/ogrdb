@@ -13,14 +13,30 @@
 <div>
 
 <ul class="nav nav-tabs" role="tablist" id="myTab">
-    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
-    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
-    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-    <li role="presentation"><a href="#primer_sets" aria-controls="rep" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
-    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
-    <li role="presentation"><a href="#genotype_description" aria-controls="genotype_description" role="tab" data-toggle="tab" id="tab-gen">Genotypes</a></li>
-    <li role="presentation"><a href="#inferred_sequence" aria-controls="inferred_sequence" role="tab" data-toggle="tab" id="tab-seq">Inferred Seqs</a></li>
-    <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-sub" data-bs-toggle="tab" data-bs-target="#sub" type="button" role="tab" aria-controls="sub" aria-selected="true">Submission Details</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-rep" data-bs-toggle="tab" data-bs-target="#rep" type="button" role="tab" aria-controls="rep" aria-selected="false">Repertoire</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-pri" data-bs-toggle="tab" data-bs-target="#primer_sets" type="button" role="tab" aria-controls="rep" aria-selected="false">Primers</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inf" data-bs-toggle="tab" data-bs-target="#tools" type="button" role="tab" aria-controls="tools" aria-selected="false">Inference Tools</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-gen" data-bs-toggle="tab" data-bs-target="#genotype_description" type="button" role="tab" aria-controls="genotype_description" aria-selected="false">Genotypes</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-seq" data-bs-toggle="tab" data-bs-target="#inferred_sequence" type="button" role="tab" aria-controls="inferred_sequence" aria-selected="false">Inferred Seqs</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+    </li>
 </ul>
 
                     {{ form.hidden_tag() }}
@@ -85,14 +101,14 @@
         {% include 'notes_entry_form.html' %}
 
         <div class="form-group ">
-            <div class="col-sm-2 col-sm-offset-3">
+            <div class="col-sm-2 offset-sm-3">
                 <input type="submit" value="Upload" class="btn btn-default tablebutton" id="upload_btn" name="upload_btn">
             </div>
         </div>
 
         {% if attachment %}
              <div class="row">
-                 <div class="col-sm-8 col-sm-offset-2">
+                 <div class="col-sm-8 offset-sm-2">
                     {{ tables['attachments'] }}
                  </div>
              </div>
@@ -100,10 +116,15 @@
 
     </div>
 
-    <input type="submit" value="Save" class="btn btn-default  col-sm-offset-1" name="save_btn">
-    <input type="submit" value="Save & Close" class="btn btn-default" name="save_close_btn">
-    <button type="button" class="btn btn-warning" onclick="submit_warn()" name="submit_btn">Submit to IARC</button>
-    <input type="submit" value="Submit to IARC" class="hidden" name="submit_btn" id="submit_btn">
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-9">
+            <input type="submit" value="Save" class="btn btn-secondary me-2" name="save_btn">
+            <input type="submit" value="Save & Close" class="btn btn-secondary me-2" name="save_close_btn">
+            <button type="button" class="btn btn-warning" onclick="submit_warn()" name="submit_btn">Submit to IARC</button>
+            <input type="submit" value="Submit to IARC" class="hidden" name="submit_btn" id="submit_btn">
+        </div>
+    </div>
 </div>
 </div>
 </form>
@@ -231,7 +252,7 @@
 
     // track current tab in hidden field
 
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
       $("#current_tab").val(e.target) // newly activated tab
     })
 
@@ -241,7 +262,7 @@
        $("#form").data("changed",true);
     });
 
-    $('a[data-toggle="tab"]').on('hide.bs.tab', function (e) {
+    $('button[data-bs-toggle="tab"]').on('hide.bs.tab', function (e) {
         if ($("#form").data("changed")) {
             BootstrapDialog.show({
                 title: 'Save Input?',

@@ -10,7 +10,8 @@
 
             {{ form.hidden_tag() }}
 
-            <row class="col-sm-offset-1 col-sm-10">
+            <div class="row">
+                <div class="col-sm-10 offset-sm-1">
 
                 <h4>Purpose</h4>
 
@@ -44,12 +45,15 @@
                 {{ render_field_with_errors(form.very_rare_genes, class="form-control") }}
                 {{ render_narrow_field_with_errors(form.very_rare_threshold, class="form-control") }}
 
-                <div class="form-group row col-sm-10">
-                    {{ form.create(class="btn btn-primary col-sm-offset-2") }}
+                <div class="form-group row">
+                    <div class="col-sm-10 offset-sm-2">
+                        {{ form.create(class="btn btn-primary") }}
+                    </div>
                 </div>
 
                 {% if  tables %}
-                    <row class="col-sm-10 col-sm-offset-1">
+                    <div class="row">
+                        <div class="col-sm-10 offset-sm-1">
                     {% if logged_in %}
                         <p>You can <a id="download" href={{  url_for('download_userfile', filename='genotype_stats.csv')}}>Download</a>
                             a file listing unmutated frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
@@ -63,9 +67,11 @@
                         {% else %}
                             <p>No genotypes were found for that species and locus.</p>
                         {% endif %}
-                    </row>
+                        </div>
+                    </div>
                 {% endif %}
-            </row>
+                </div>
+            </div>
         </form>
     </div>
 

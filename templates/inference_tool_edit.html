@@ -11,7 +11,11 @@
 
             {% include 'inference_tool_form.html' %}
 
-            <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-1" id="save-btn">
+            <div class="row">
+                <div class="offset-sm-1">
+                    <input type="submit" value="Save" class="btn btn-primary" id="save-btn">
+                </div>
+            </div>
             {{ form.cancel(class="btn btn-cancel") }}
 </form>
 

@@ -1,0 +1,310 @@
+{
+    "swagger": "2.0",
+    "basePath": "/api",
+    "paths": {
+        "/germline/set/{germline_set_id}/{release_version}": {
+            "parameters": [
+                {
+                    "name": "germline_set_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "release_version",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns a version of a germline set",
+                "description": "Use 'published' for the current published version \nformat can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended \nset, which should normally be used for AIRR-seq analysis).",
+                "operationId": "get_versions_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/set/{germline_set_id}/{release_version}/{format}": {
+            "parameters": [
+                {
+                    "name": "germline_set_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "release_version",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "format",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns a version of a germline set",
+                "description": "Use 'published' for the current published version \nformat can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended \nset, which should normally be used for AIRR-seq analysis).",
+                "operationId": "get_versions_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/set/{species}/{set_name}/{release_version}/{format}": {
+            "parameters": [
+                {
+                    "name": "species",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "set_name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "release_version",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "format",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns a version of a germline set, specifying the species, species subgroup and set name",
+                "description": "Use 'published' for the current published version. Replace any / in the species name or subgroup with %252F.\nformat can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended \nset, which should normally be used for AIRR-seq analysis).",
+                "operationId": "get_versions_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/set/{species}/{species_subgroup}/{set_name}/{release_version}/{format}": {
+            "parameters": [
+                {
+                    "name": "species",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "species_subgroup",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "set_name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "release_version",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "format",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns a version of a germline set, specifying the species, species subgroup and set name",
+                "description": "Use 'published' for the current published version. Replace any / in the species name or subgroup with %252F.\nformat can be gapped, ungapped, airr, gapped_ex, ungapped_ex, airr_ex (the _ex suffix specifies the extended \nset, which should normally be used for AIRR-seq analysis).",
+                "operationId": "get_versions_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/sets/{species}": {
+            "parameters": [
+                {
+                    "name": "species",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the available sets for a species",
+                "operationId": "get_sets_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/species": {
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the species for which sequences are available",
+                "operationId": "get_species_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/germline/versions/{germline_set_id}": {
+            "parameters": [
+                {
+                    "name": "germline_set_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the available versions of a set",
+                "operationId": "get_versions_api",
+                "tags": [
+                    "germline"
+                ]
+            }
+        },
+        "/sequence/iarc/{species}": {
+            "parameters": [
+                {
+                    "name": "species",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the set of IARC-affirmed sequences for the species",
+                "operationId": "get_iarc_set_api",
+                "tags": [
+                    "sequence"
+                ]
+            }
+        },
+        "/sequence/imgt_name/{species}/{name}": {
+            "parameters": [
+                {
+                    "name": "species",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "name": "name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the sequence given the IMGT name",
+                "operationId": "get_imgt_name_api",
+                "tags": [
+                    "sequence"
+                ]
+            }
+        },
+        "/sequence/species": {
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "summary": "Returns the species for which sequences are available",
+                "operationId": "get_species_api",
+                "tags": [
+                    "sequence"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "OGRDB API",
+        "version": "1.0",
+        "description": "API for OGRDB gene data"
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "sequence",
+            "description": "Sequences corresponding to IMGT- or IARC- issued names"
+        },
+        {
+            "name": "germline",
+            "description": "Germline sets available from OGRDB"
+        }
+    ],
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
+        },
+        "NoResultFound": {}
+    }
+}

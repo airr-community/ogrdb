@@ -11,9 +11,14 @@
 
         {% include 'primer_set_form.html' %}
 
-        <div class="row col-sm-offset-3">
+        <div class="row">
+            <div class="offset-sm-3">
             <div class="btn-toolbar ">
-                <input type="submit" value="Save" class="btn btn-primary  col-sm-offset-3" name="submit_btn" id="submit_btn">
+                <div class="row">
+                    <div class="offset-sm-3">
+                        <input type="submit" value="Save" class="btn btn-primary" name="submit_btn" id="submit_btn">
+                    </div>
+                </div>
                 <input type="submit" value="Add/Edit Primers" class="btn btn-default" name="edit_btn" id="edit_btn">
                 <input type="submit" value="Close" class="btn btn-default" name="cancel_btn" id="cancel_btn">
             </div>

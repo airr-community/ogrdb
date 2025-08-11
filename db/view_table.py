@@ -13,7 +13,7 @@ class ViewCol(Col):
         if 'tooltip' in i:
             self.td_html_attrs['data-placement'] = 'top'
             self.td_html_attrs['data-container'] = 'body'
-            self.td_html_attrs['data-toggle'] = 'tooltip'
+            self.td_html_attrs['data-bs-toggle'] = 'tooltip'
             self.td_html_attrs['title'] = i['tooltip']
         else:
             self.td_html_attrs['title'] = ''

@@ -55,7 +55,7 @@
             {{ render_field_with_errors(form.species, class="form-control") }}
             {{ render_field_with_errors(form.exclude_imgt, class="checkbox") }}
             <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-2">
+                <div class="col-sm-2 offset-sm-2">
                     <a href="foo" id="dl-gapped" class="btn btn-primary">Gapped (FASTA)</a>
             </div>
             <div class="col-sm-2">
@@ -68,23 +68,19 @@
         </div>
     {% endif %}
 
-    <div class="modal bootstrap-dialog type-warning fade size-normal" role="dialog" aria-hidden="true" id="imgt_name_dlg" aria-labelledby="imgt_name_dlg_label">
+    <div class="modal fade type-warning" role="dialog" aria-hidden="true" id="imgt_name_dlg" aria-labelledby="imgt_name_dlg_label">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <div class="bootstrap-dialog-header">
-                            <div class="bootstrap-dialog-close-button">
-                                <button class="close"  data-dismiss="modal">×</button>
-                            </div>
-                            <div class="bootstrap-dialog-title" id="imgt_name_title">Change IMGT Name</div>
-                        </div>
+                        <h5 class="modal-title" id="imgt_name_title">Change IMGT Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="bootstrap-dialog-body">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label class="col-sm-3 col-sm-offset-1 control-label" data-placement="left" for="imgt_name_text" title="">IMGT Name</label>
-                                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3 row">
+                                    <label class="col-sm-3 col-form-label" for="imgt_name_text" title="">IMGT Name</label>
+                                    <div class="col-sm-9">
                                         <input class="form-control" id="imgt_name_text" name="imgt_name_text" type="text" value="">
                                     </div>
                                 </div>
@@ -92,10 +88,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <div class="bootstrap-dialog-footer">
-                            <div class="bootstrap-dialog-footer-buttons">
-                                <button class="btn btn-default" id="imgt_name_cancel"  data-dismiss="modal">Cancel</button>
-                                <button class="btn btn-warning" id="imgt_name_save">Save</button>
+                        <button type="button" class="btn btn-secondary" id="imgt_name_cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="imgt_name_save">Save</button>
                             </div>
                         </div>
                     </div>
@@ -103,12 +97,12 @@
             </div>
     </div>
 
-    <div class="modal bootstrap-dialog type-warning fade size-normal" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+    <div class="modal fade type-warning" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
         <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 class="modal-title" id="messageModallLabel">Publish selected sequences</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="modal-instructions">
@@ -118,8 +112,8 @@
                 <br>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-              <input type="submit" value="Save" class="btn" name="save_btn" id="publish-save-btn">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <input type="submit" value="Save" class="btn btn-primary" name="save_btn" id="publish-save-btn">
             </div>
           </div>
         </div>

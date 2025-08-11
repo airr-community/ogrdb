@@ -11,14 +11,28 @@
 <div>
 
 <ul class="nav nav-tabs" role="tablist" id="myTab">
-    <li role="presentation" class="active"><a href="#sub" aria-controls="sub" role="tab" data-toggle="tab" id="tab-sub">Submission Details</a></li>
-    <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-    <li role="presentation"><a href="#rep" aria-controls="rep" role="tab" data-toggle="tab" id="tab-rep">Repertoire</a></li>
-    <li role="presentation"><a href="#primer_sets" aria-controls="primer_sets" role="tab" data-toggle="tab" id="tab-pri">Primers</a></li>
-    <li role="presentation"><a href="#tools" aria-controls="tools" role="tab" data-toggle="tab" id="tab-inf">Inference Tools</a></li>
-    <li role="presentation"><a href="#notes" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-sub" data-bs-toggle="tab" data-bs-target="#sub" type="button" role="tab" aria-controls="sub" aria-selected="true">Submission Details</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-rep" data-bs-toggle="tab" data-bs-target="#rep" type="button" role="tab" aria-controls="rep" aria-selected="false">Repertoire</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-pri" data-bs-toggle="tab" data-bs-target="#primer_sets" type="button" role="tab" aria-controls="primer_sets" aria-selected="false">Primers</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inf" data-bs-toggle="tab" data-bs-target="#tools" type="button" role="tab" aria-controls="tools" aria-selected="false">Inference Tools</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+    </li>
     {% if reviewer %}
-    <li role="presentation"><a href="#review" aria-controls="review" role="tab" data-toggle="tab" id="tab-rev">Review</a></li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-rev" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="false">Review</button>
+    </li>
     {% endif %}
 </ul>
 
@@ -93,7 +107,7 @@
         {% endfor %}
         {% if attachment %}
              <div class="row">
-                 <div class="col-sm-8 col-sm-offset-2">
+                 <div class="col-sm-8 offset-sm-2">
                     {{ tables['attachments'] }}
                  </div>
              </div>
@@ -116,7 +130,7 @@
             {{ table }}
             <button type="button" class="btn btn-sm tablebutton pull-right" data-toggle="modal" data-target="#messageModal" data-type="note" data-action="{{ id }}"
                     data-header="New Thread" data-instr=""
-                    data-title="" id="note">Reply to Thread <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
+                    data-title="" id="note">Reply to Thread <i class="bi bi-arrow-up-circle-fill" aria-hidden="true"></i></button>
             </div>
         {% endfor %}
 
@@ -132,7 +146,7 @@
               <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <h4 class="modal-title" id="messageModallLabel">New message</h4>
                   </div>
                   <div class="modal-body">
@@ -145,7 +159,7 @@
                       {{ form.action(class="hidden") }}
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <input type="submit" value="Save" class="btn" name="save_btn" id="save_btn">
                   </div>
                 </div>
@@ -261,10 +275,10 @@
 
         diag_class = '';
         if(button.hasClass("btn-warning")) {
-            modal.addClass("bootstrap-dialog type-warning");
+            modal.addClass("type-warning");
             modal.find('#save_btn').addClass("btn-warning")
         } else if(button.hasClass("btn-danger")) {
-            modal.addClass("bootstrap-dialog type-danger");
+            modal.addClass("type-danger");
             modal.find('#save_btn').addClass("btn-danger")
         } else {
             modal.find('#save_btn').addClass("btn-primary")

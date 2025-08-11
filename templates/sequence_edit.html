@@ -11,11 +11,21 @@
 <form action="{{ url_for('edit_sequence', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
     <div>
         <ul class="nav nav-tabs" role="tablist" id="myTab">
-            <li role="presentation" class="active"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
-            <li role="presentation"><a href="#inf" aria-controls="inf" role="tab" data-toggle="tab" id="tab-inf">Evidence</a></li>
-            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-            <li role="presentation"><a href="#note" aria-controls="notes" role="tab" data-toggle="tab" id="tab-notes">Notes</a></li>
-            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-det" data-bs-toggle="tab" data-bs-target="#det" type="button" role="tab" aria-controls="det" aria-selected="true">Details</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-inf" data-bs-toggle="tab" data-bs-target="#inf" type="button" role="tab" aria-controls="inf" aria-selected="false">Evidence</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#note" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-history" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
+            </li>
         </ul>
 
 
@@ -24,21 +34,21 @@
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="det">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
+                    <h3 class="col-sm-11 offset-sm-1">Details</h3>
                     {% include 'gene_description_form.html' %}
                 </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="inf">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Inferences</h3>
-                    <p class="col-sm-offset-1 col-sm-11">The table below lists the submissions, and the inferences within them, on which this published sequence should be based.
+                    <h3 class="col-sm-11 offset-sm-1">Inferences</h3>
+                    <p class="col-sm-11 offset-sm-1">The table below lists the submissions, and the inferences within them, on which this published sequence should be based.
                     The list may be short when the sequence is first published, containing, for example, reference to just a single submission, but is expected to grow
                     over time as additional inferences are submitted. </p>
-                    <p class="col-sm-offset-1 col-sm-11">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
+                    <p class="col-sm-11 offset-sm-1">'Sequence Match' indicates whether the inference exactly matches the sequence, and clicking on the
                     tick or cross will provide an alignment. Mismatches may indicate errors, but may be caused, for example, by the inclusion of leader sequences, or nucleotides in the inference
                     which do not in IARC's opinion have sufficient evidence for inclusion in the sequence.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                            {{ tables['inferred_sequence'] }}
                             <input type="submit" value="Add Inference" class="btn btn-default" id="add_inference_btn" name="add_inference_btn" data-action="add_inference">
@@ -47,9 +57,9 @@
                 </div>
 
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Supporting Observations</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Sequences in other submitted genotypes which are affirmed by IARC to support the inference: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Supporting Observations</h3>
+                    <p class="col-sm-11 offset-sm-1">Sequences in other submitted genotypes which are affirmed by IARC to support the inference: </p>
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['supporting_observations'] }}
                         </div>
@@ -57,9 +67,9 @@
                 </div>
 
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Observations in VDJbase</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Inferred sequences in VDJbase that match this sequence: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Observations in VDJbase</h3>
+                    <p class="col-sm-11 offset-sm-1">Inferred sequences in VDJbase that match this sequence: </p>
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['vdjbase_matches'] }}
                         </div>
@@ -67,9 +77,9 @@
                 </div>
 
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Genomic Support</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Genomically-derived sequences that support the inference: </p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Genomic Support</h3>
+                    <p class="col-sm-11 offset-sm-1">Genomically-derived sequences that support the inference: </p>
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['genomic_support'] }}
                             <input type="submit" value="Add Genomic" class="btn btn-default" id="add_genomic_btn" name="add_genomic_btn" data-action="add_genomic">
@@ -79,9 +89,9 @@
 
                 {% if  tables['matches'] %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Published/Draft Sequences Matching Inferences in This Submission</h3>
-                        <p class="col-sm-offset-1 col-sm-11">Matching or near-matching inferred sequences in submissions not currently referenced here:</p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Published/Draft Sequences Matching Inferences in This Submission</h3>
+                        <p class="col-sm-11 offset-sm-1">Matching or near-matching inferred sequences in submissions not currently referenced here:</p>
+                        <div class="col-sm-10 offset-sm-1">
                             <div class="form-group">
                                 {{ tables['matches'] }}
                             </div>
@@ -92,10 +102,10 @@
 
             <div role="tabpanel" class="tab-pane" id="ack">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Please list those individuals who should be acknowledged as contributing to this sequence.</p>
+                    <h3 class="col-sm-11 offset-sm-1">Acknowledgements</h3>
+                    <p class="col-sm-11 offset-sm-1">Please list those individuals who should be acknowledged as contributing to this sequence.</p>
                         <a name="ack"> </a>
-                        <div class="col-sm-9 col-sm-offset-1">
+                        <div class="col-sm-9 offset-sm-1">
                             {% include 'acknowledgement_form.html' %}
                         </div>
                 </div>
@@ -109,8 +119,8 @@
 
             <div role="tabpanel" class="tab-pane" id="history">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">History</h3>
+                    <div class="col-sm-10 offset-sm-1">
                         {% for t in tables['history'] %}
                             {{ t }}
                         {% endfor %}
@@ -118,8 +128,8 @@
                 </div>
                 {% if tables['diffs'] %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Changes from previous version</h3>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Changes from previous version</h3>
+                        <div class="col-sm-10 offset-sm-1">
                             {{ tables['diffs'] }}
                         </div>
                     </div>
@@ -132,7 +142,7 @@
           <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <h4 class="modal-title" id="messageModallLabel">New message</h4>
               </div>
               <div class="modal-body">
@@ -145,14 +155,18 @@
                   {{ form.action(class="hidden") }}
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <input type="submit" value="Save" class="btn" name="history_btn" id="history_btn">
               </div>
             </div>
           </div>
         </div>
 
-        <input type="submit" value="Save Draft" class="btn btn-primary col-sm-offset-1" id="save_draft_btn" name="save_draft_btn">
+        <div class="row">
+            <div class="offset-sm-1">
+                <input type="submit" value="Save Draft" class="btn btn-primary" id="save_draft_btn" name="save_draft_btn">
+            </div>
+        </div>
         <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
                 data-header="Publish Affirmation" data-instr="Please provide brief notes on this version"
                 data-title="Sequence {{ sequence_name }} Version {{ version }} - Published" id="published">Publish</button>
@@ -440,10 +454,10 @@
 
         diag_class = '';
         if(button.hasClass("btn-warning")) {
-            modal.addClass("bootstrap-dialog type-warning");
+            modal.addClass("type-warning");
             modal.find('#save_btn').addClass("btn-warning")
         } else if(button.hasClass("btn-danger")) {
-            modal.addClass("bootstrap-dialog type-danger");
+            modal.addClass("type-danger");
             modal.find('#save_btn').addClass("btn-danger")
         } else {
             modal.find('#save_btn').addClass("btn-primary")

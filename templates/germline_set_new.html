@@ -15,7 +15,11 @@
             {{ render_field_with_errors(form.locus, class="form-control") }}
 
             <div class="form-group row col-sm-10">
-                {{ form.cancel(class="btn btn-default col-sm-offset-1") }}
+                <div class="row">
+                    <div class="offset-sm-1">
+                        {{ form.cancel(class="btn btn-default") }}
+                    </div>
+                </div>
                 {{ form.create(class="btn btn-primary") }}
             </div>
         </form>

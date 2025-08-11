@@ -15,18 +15,24 @@
 
             {% if ncbi %}
                 <div class="row">
-                    <div class="col-sm-8 col-sm-offset-2">
+                    <div class="col-sm-8 offset-sm-2">
                         {{ srr_table }}
                     </div>
                 </div>
 
-                <div class="row col-sm-offset-3">
+                <div class="row">
+                    <div class="offset-sm-3">
                     <p >(Details will be updated from NCBI when you save)</p>
                 </div>
             {% endif %}
 
-            <div class="row col-sm-offset-2">
-                <input type="submit" value="Save" class="btn btn-default  col-sm-offset-1" name="save_sequence" id="save_sequence">
+            <div class="row">
+                <div class="offset-sm-2">
+                <div class="row">
+                    <div class="offset-sm-1">
+                        <input type="submit" value="Save" class="btn btn-default" name="save_sequence" id="save_sequence">
+                    </div>
+                </div>
                 <input type="submit" value="Save & Close" class="btn btn-default" name="save_close_sequence" id="save_close_sequence">
                 {{ form.cancel(class="btn btn-cancel") }}
             </div>

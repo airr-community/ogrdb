@@ -1,10 +1,10 @@
 {% macro render_field(field) %}
     {% if field.type != 'HiddenField' %}
-        <div class="form-group">
+        <div class="mb-3 row">
     {% else %}
-        <div class="form-group" style="display: none">
+        <div class="mb-3 row" style="display: none">
     {% endif %}
-        {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+        {{ field.label(class="col-sm-2 offset-sm-1 col-form-label") }}
         <div class="col-sm-6">
             {{ field(**kwargs)|safe }}
         </div>
@@ -14,17 +14,17 @@
 
 {% macro render_static_field(field) %}
     {% if field.type != 'HiddenField' %}
-        <div class="form-group">
+        <div class="mb-3 row">
     {% else %}
-        <div class="form-group" style="display: none">
+        <div class="mb-3 row" style="display: none">
     {% endif %}
         {% if field.description %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label", data_bs_toggle="tooltip", data_bs_placement="left", title=field.description) }}
         {% else %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label") }}
         {% endif %}
         <div class="col-sm-6">
-                <p class="form-control-static">{{ field.data }}</p>
+                <p class="form-control-plaintext">{{ field.data }}</p>
         </div>
     </div>
 {% endmacro %}
@@ -32,20 +32,20 @@
 
 {% macro render_field_with_errors(field) %}
     {% if field.type != 'HiddenField' %}
-        <div class="form-group">
+        <div class="mb-3 row">
     {% else %}
-        <div class="form-group" style="display: none">
+        <div class="mb-3 row" style="display: none">
     {% endif %}
         {% if field.description %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label", data_bs_toggle="tooltip", data_bs_placement="left", title=field.description) }}
         {% else %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label") }}
         {% endif %}
             <div class="col-sm-6">
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-6 red">
+            <div class="col-sm-6 offset-sm-3 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>
@@ -58,20 +58,20 @@
 
 {% macro render_narrow_field_with_errors(field) %}
     {% if field.type != 'HiddenField' %}
-        <div class="form-group">
+        <div class="mb-3 row">
     {% else %}
-        <div class="form-group" style="display: none">
+        <div class="mb-3 row" style="display: none">
     {% endif %}
         {% if field.description %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label", data_bs_toggle="tooltip", data_bs_placement="left", title=field.description) }}
         {% else %}
-            {{ field.label(class="col-sm-2 col-sm-offset-1 control-label") }}
+            {{ field.label(class="col-sm-2 offset-sm-1 col-form-label") }}
         {% endif %}
             <div class="col-sm-2">
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-2 red">
+            <div class="col-sm-2 offset-sm-3 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>
@@ -84,20 +84,20 @@
 
 {% macro render_wide_field_with_errors(field) %}
     {% if field.type != 'HiddenField' %}
-        <div class="form-group">
+        <div class="mb-3 row">
     {% else %}
-        <div class="form-group" style="display: none">
+        <div class="mb-3 row" style="display: none">
     {% endif %}
         {% if field.description %}
-            {{ field.label(class="col-sm-2 control-label", data_toggle="tooltip", data_placement="left", title=field.description) }}
+            {{ field.label(class="col-sm-2 col-form-label", data_bs_toggle="tooltip", data_bs_placement="left", title=field.description) }}
         {% else %}
-            {{ field.label(class="col-sm-2 control-label") }}
+            {{ field.label(class="col-sm-2 col-form-label") }}
         {% endif %}
             <div class="col-sm-9">
                 {{ field(**kwargs)|safe }}
             </div>
             {% if field.errors %}
-            <div class="col-sm-9 red">
+            <div class="col-sm-9 offset-sm-2 red">
                 <ul>
                 {% for error in field.errors %}
                         <li>{{ error }}</li>

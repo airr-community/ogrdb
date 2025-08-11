@@ -6,11 +6,21 @@
 
     <div>
         <ul class="nav nav-tabs" role="tablist" id="myTab">
-            <li role="presentation" class="active"><a href="#download" aria-controls="download" role="tab" data-toggle="tab" id="tab-download">Download</a></li>
-            <li role="presentation"><a href="#det" aria-controls="det" role="tab" data-toggle="tab" id="tab-det">Details</a></li>
-            <li role="presentation"><a href="#ack" aria-controls="ack" role="tab" data-toggle="tab" id="tab-ack">Acknowledgements</a></li>
-            <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab" id="tab-history">History</a></li>
-            <li role="presentation"><a href="#versions" aria-controls="versions" role="tab" data-toggle="tab" id="tab-versions">Versions</a></li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-download" data-bs-toggle="tab" data-bs-target="#download" type="button" role="tab" aria-controls="download" aria-selected="true">Download</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-det" data-bs-toggle="tab" data-bs-target="#det" type="button" role="tab" aria-controls="det" aria-selected="false">Details</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-history" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-versions" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab" aria-controls="versions" aria-selected="false">Versions</button>
+            </li>
         </ul>
 
 
@@ -19,10 +29,10 @@
             <div role="tabpanel" class="tab-pane active" id="download">
                 <div class="row">
                     {% if extended %}
-                    <h3 class="col-sm-offset-1 col-sm-11">Download Reference Set (Recommended for AIRR-seq analysis)</h3>
+                    <h3 class="col-sm-11 offset-sm-1">Download Reference Set (Recommended for AIRR-seq analysis)</h3>
                     <div class="row">
                         <div class="form-group">
-                            <div class="col-sm-offset-1 col-sm-3">
+                            <div class="col-sm-3 offset-sm-1">
                                 <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr_ex') }}" id="dl-airr" class="btn btn-primary">AIRR Format (JSON)</a>
                             </div>
                         </div>
@@ -39,12 +49,12 @@
                     </div>
                     {% endif %}
                         {% if extended %}
-                    <h3 class="col-sm-offset-1 col-sm-11">Download Source Set (Not recommended for AIRR-seq analysis)</h3>
+                    <h3 class="col-sm-11 offset-sm-1">Download Source Set (Not recommended for AIRR-seq analysis)</h3>
                     {% else %}
-                    <h3 class="col-sm-offset-1 col-sm-11">Download</h3>
+                    <h3 class="col-sm-11 offset-sm-1">Download</h3>
                     {% endif %}
                     <div class="form-group">
-                        <div class="col-sm-offset-1 col-sm-3">
+                        <div class="col-sm-3 offset-sm-1">
                             <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr') }}" id="dl-airr" class="btn btn-primary">AIRR Format (JSON)</a>
                         </div>
                     </div>
@@ -61,16 +71,16 @@
                 </div>
                 {% if notes %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Notes</h3>
-                        <div class="col-sm-offset-1 col-sm-11">
+                        <h3 class="col-sm-11 offset-sm-1">Notes</h3>
+                        <div class="col-sm-11 offset-sm-1">
                             <p>{{ notes | textile_filter }}</p>
                         </div>
                     </div>
                 {% endif %}
                 {% if supplementary_files %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Supplementary Files</h3>
-                        <div class="col-sm-8 col-sm-offset-2">
+                        <h3 class="col-sm-11 offset-sm-1">Supplementary Files</h3>
+                        <div class="col-sm-8 offset-sm-2">
                             {{ tables['attachments'] }}
                         </div>
                     </div>
@@ -79,16 +89,16 @@
 
             <div role="tabpanel" class="tab-pane" id="det">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Details</h3>
-                    <div  class="col-sm-offset-1 col-sm-11">
+                    <h3 class="col-sm-11 offset-sm-1">Details</h3>
+                    <div  class="col-sm-11 offset-sm-1">
                         {{ tables['description'] }}
                     </div>
                 </div>
 
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Included Sequences</h3>
-                    <p class="col-sm-offset-1 col-sm-11">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Included Sequences</h3>
+                    <p class="col-sm-11 offset-sm-1">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
+                    <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['genes'] }}
                         </div>
@@ -98,9 +108,9 @@
 
             <div role="tabpanel" class="tab-pane" id="ack">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Acknowledgements</h3>
-                    <p class="col-sm-offset-1 col-sm-11">Individuals acknowledged as contributing to this sequence:</p>
-                        <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Acknowledgements</h3>
+                    <p class="col-sm-11 offset-sm-1">Individuals acknowledged as contributing to this sequence:</p>
+                        <div class="col-sm-10 offset-sm-1">
                             {{ tables['acknowledgements'] }}
                         </div>
                 </div>
@@ -108,10 +118,10 @@
 
             <div role="tabpanel" class="tab-pane" id="history">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">History</h3>
-                    <p class="col-sm-offset-1 col-sm-10">History logs the times and reasons for the publication of each version of this germline set. Key changes are noted.
+                    <h3 class="col-sm-11 offset-sm-1">History</h3>
+                    <p class="col-sm-10 offset-sm-1">History logs the times and reasons for the publication of each version of this germline set. Key changes are noted.
                     For detailed changes, click on the link to the sequence.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <div class="col-sm-10 offset-sm-1">
                         {% for t in tables['history'] %}
                             {{ t }}
                         {% endfor %}
@@ -119,8 +129,8 @@
                 </div>
                 {% if changes != '' %}
                     <div class="row">
-                        <h3 class="col-sm-offset-1 col-sm-11">Changes from published version</h3>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <h3 class="col-sm-11 offset-sm-1">Changes from published version</h3>
+                        <div class="col-sm-10 offset-sm-1">
                             {{  changes }}
                         </div>
                     </div>
@@ -129,9 +139,9 @@
 
             <div role="tabpanel" class="tab-pane" id="versions">
                 <div class="row">
-                    <h3 class="col-sm-offset-1 col-sm-11">Versions</h3>
-                    <p class="col-sm-offset-1 col-sm-10">All published versions of this germline set.</p>
-                    <div class="col-sm-10 col-sm-offset-1">
+                    <h3 class="col-sm-11 offset-sm-1">Versions</h3>
+                    <p class="col-sm-10 offset-sm-1">All published versions of this germline set.</p>
+                    <div class="col-sm-10 offset-sm-1">
                         {{ tables['versions'] }}
                     </div>
                 </div>
