@@ -10,16 +10,16 @@
 {% block c_body %}
 
     <ul class="nav nav-tabs">
-        <li><a href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
-        <li><a href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
+        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
         {% if reviewer %}
-        <li><a href="#review">Review</a></li>
+        <li class="nav-item"><a class="nav-link" href="#review">Review</a></li>
         {% endif %}
     </ul>
 
@@ -27,45 +27,49 @@
     <form action="{{ url_for(this_link, id=id) }}" method="POST" name="form" class="form-horizontal">
         <div class="row">
             <div class="col-sm-11 offset-sm-1">
-
-            <div class="col-sm-6">
-                <div class="table">
-                    {{ tables['desc'] }}
-                </div>
-            </div>
-
-            <div class="col-sm-6">
-                    <table>
-                        <thead>
-                            <tr><th class="col-sm-3 view-table-row"> </th></tr>
-                        </thead>
-                    </table>
-                    <div class="form-group">
-                    {{ form.hidden_tag() }}
-
-                    {{ render_narrow_field_with_errors(form.occ_threshold, class="form-control") }}
-                    {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
-                    {{ render_narrow_field_with_errors(form.sub_only, class="checkbox") }}
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div>
+                            {{ tables['desc'] }}
+                        </div>
                     </div>
+
+                    <div class="col-sm-6">
+                        <table>
+                            <thead>
+                                <tr><th class="col-sm-3 view-table-row"> </th></tr>
+                            </thead>
+                        </table>
+                        <div class="form-group">
+                        {{ form.hidden_tag() }}
+
+                        {{ render_narrow_field_with_errors(form.occ_threshold, class="form-control") }}
+                        {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
+                        {{ render_narrow_field_with_errors(form.sub_only, class="checkbox") }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-sm-11 offset-sm-1">
-
-            <div class="col-sm-6">
-                <div class="btn-toolbar">
-                    <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
-                    <button type="button" class="tablebutton btn btn-default" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
-                    <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-default" role="button" id="download_genotype">Download</a>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                    <div class="form-group">
-                        <div class="offset-sm-2">
-                            {{ form.update(class="btn btn-success") }}
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="btn-toolbar">
+                            <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
+                            <button type="button" class="tablebutton btn btn-secondary" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
+                            <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-secondary" role="button" id="download_genotype">Download</a>
                         </div>
                     </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <div class="offset-sm-2">
+                                {{ form.update(class="btn btn-success") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -73,12 +77,14 @@
     {% if ncbi %}
     <div class="row">
         <div class="col-sm-11 offset-sm-1">
-        <div class="col-sm-5">
-            {{ sam_table }}
-        </div>
-        <div class="col-sm-5">
-            {{ srr_table }}
-        </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    {{ sam_table }}
+                </div>
+                <div class="col-sm-6">
+                    {{ srr_table }}
+                </div>
+            </div>
         </div>
     </div>
     {% endif %}
