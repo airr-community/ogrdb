@@ -167,7 +167,7 @@
                 <input type="submit" value="Save Draft" class="btn btn-primary" id="save_draft_btn" name="save_draft_btn">
             </div>
         </div>
-        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="published"
+        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="published"
                 data-header="Publish Affirmation" data-instr="Please provide brief notes on this version"
                 data-title="Sequence {{ sequence_name }} Version {{ version }} - Published" id="published">Publish</button>
     </div>
@@ -412,7 +412,12 @@
     var jump = '';
 
     skip_to_anchor = function(anchor) {
-        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+        // Bootstrap 5 tab navigation
+        const tabElement = document.querySelector('.nav-tabs a[href="#' + anchor + '"]');
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
     };
 
     {% if jump %}

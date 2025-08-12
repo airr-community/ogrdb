@@ -5,65 +5,111 @@
 {% block c_body %}
     {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
-            <row class="col-md-12">
-                <div class="col-md-8"><h2>Draft Sequences for IARC {{ sp }} Committee</h2></div>
-                <div class="col-md-offset-10">
-                <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-default heading-btn">New Sequence</a>
-                {% if loop.previtem is not defined %}
-                   {% if show_withdrawn %}
-                        <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=no" class="btn btn-default heading-btn">Hide Withdrawn</a>
-                    {% else %}
-                        <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=yes" class="btn btn-default heading-btn">Show Withdrawn</a>
-                    {% endif %}
-                {% endif %}
+            <div class="data-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="h4 mb-0 text-warning">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Draft Sequences for IARC {{ sp }} Committee
+                    </h2>
+                    <div class="btn-group gap-2" role="group">
+                        <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle me-1"></i>New Sequence
+                        </a>
+                        {% if loop.previtem is not defined %}
+                           {% if show_withdrawn %}
+                                <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=no" class="btn btn-outline-secondary">
+                                    <i class="bi bi-eye-slash me-1"></i>Hide Withdrawn
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=yes" class="btn btn-outline-secondary">
+                                    <i class="bi bi-eye me-1"></i>Show Withdrawn
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
-            </row>
-            <row class="col-md-12">
-                <div class=".table col-md-12">
-                    {{ t['draft'] }}
-                    <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='draft') }}", id="alignment_draft" class="btn btn-primary">AA Alignment</a>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {{ t['draft'] }}
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='draft') }}" id="alignment_draft" class="btn btn-primary">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
+                        </a>
+                    </div>
                 </div>
-            </row>
-            <row class="col-md-12">
-                <div class="col-md-12"><h2>Level 0 Sequences for IARC {{ sp }} Committee</h2></div>
-            </row>
-            <row class="col-md-12">
-                <div class=".table col-md-12">
-                    {{ t['level_0'] }}
-                    <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='level_0') }}", id="alignment_draft" class="btn btn-primary">AA Alignment</a>
+            </div>
+            
+            <div class="data-card mb-4">
+                <div class="card-header">
+                    <h2 class="h4 mb-0 text-info">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Level 0 Sequences for IARC {{ sp }} Committee
+                    </h2>
                 </div>
-            </row>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {{ t['level_0'] }}
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='level_0') }}" id="alignment_level_0" class="btn btn-primary">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
+                        </a>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
     {% endif %}
 
-    <row class="col-md-12">
-        <div class="col-md-8"><h2>Affirmed Sequences</h2></div>
-    </row>
-    <row class="col-md-12">
-        <div class=".table col-md-12">
-            {{ tables['affirmed'] }}
-            <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='affirmed') }}", id="affirmed" class="btn btn-primary">AA Alignment</a>
+    <div class="data-card mb-4">
+        <div class="card-header">
+            <h2 class="h4 mb-0 text-success">
+                <i class="bi bi-check-circle me-2"></i>
+                Affirmed Sequences
+            </h2>
         </div>
-    </row>
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ tables['affirmed'] }}
+            </div>
+            <div class="mt-3">
+                <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='affirmed') }}" id="affirmed" class="btn btn-primary">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
+                </a>
+            </div>
+        </div>
+    </div>
 
     {% if form %}
-        <row class="col-md-12">
-            <div class="col-md-8"><h2>Download Affirmed Sequences</h2></div>
-        </row>
-
-        <div class="form-horizontal">
-            {{ render_field_with_errors(form.species, class="form-control") }}
-            {{ render_field_with_errors(form.exclude_imgt, class="checkbox") }}
-            <div class="form-group">
-                <div class="col-sm-2 offset-sm-2">
-                    <a href="foo" id="dl-gapped" class="btn btn-primary">Gapped (FASTA)</a>
+        <div class="data-card mb-4">
+            <div class="card-header">
+                <h2 class="h4 mb-0 text-primary">
+                    <i class="bi bi-download me-2"></i>
+                    Download Affirmed Sequences
+                </h2>
             </div>
-            <div class="col-sm-2">
-                <a href="foo" id="dl-ungapped" class="btn btn-primary">Ungapped (FASTA)</a>
-            </div>
-                <div class="col-sm-2">
-                    <a href="foo" id="dl-airr" class="btn btn-primary">AIRR (JSON)</a>
-                </div>
+            <div class="card-body">
+                <form class="row g-3">
+                    <div class="col-md-6">
+                        {{ render_field_with_errors(form.species, class="form-select") }}
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        {{ render_field_with_errors(form.exclude_imgt, class="form-check-input") }}
+                    </div>
+                    <div class="col-12">
+                        <div class="btn-group d-flex gap-2" role="group">
+                            <a href="foo" id="dl-gapped" class="btn btn-primary flex-fill">
+                                <i class="bi bi-file-earmark-text me-1"></i>Gapped (FASTA)
+                            </a>
+                            <a href="foo" id="dl-ungapped" class="btn btn-primary flex-fill">
+                                <i class="bi bi-file-earmark-code me-1"></i>Ungapped (FASTA)
+                            </a>
+                            <a href="foo" id="dl-airr" class="btn btn-primary flex-fill">
+                                <i class="bi bi-file-earmark-arrow-down me-1"></i>AIRR (JSON)
+                            </a>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     {% endif %}

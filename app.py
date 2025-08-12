@@ -128,6 +128,15 @@ from ogrdb.sequence.sequence_routes import *
 from ogrdb.germline_set.germline_set_routes import *
 from ogrdb.vdjbase.vdjbase_routes import *
 from ogrdb.maint.maint_routes import *
+
+
+# Design system demo route
+@app.route('/design-system-demo')
+def design_system_demo():
+    from flask import render_template
+    return render_template('design_system_demo.html')
+
+
 from ogrdb.genotype_stats.genotype_stats_routes import *
 
 

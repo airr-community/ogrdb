@@ -5,25 +5,25 @@ html {
 
 body {
     /*background-color: rgba(44, 62, 80, .9);*/
-    background-color: #09197D;
+    background-color: var(--ogrdb-bg-outer, #09197D);
 }
 @media (min-width: 1200px) {
     div.container {
         width: 1018px;
         border-radius: 20px;
-        background-color: #eee !important;
+        background-color: var(--ogrdb-bg-body, #eee) !important;
     }
     div.container_wide {
         width: 100%;
         border-radius: 20px;
-        background-color: #eee !important;
+        background-color: var(--ogrdb-bg-body, #eee) !important;
     }
     div.container_login {
         width: auto;
     }
 }
 div.container {
-    background-color: white;
+    background-color: var(--ogrdb-bg-body, white);
     margin-top: 30px;
     padding-top: 20px;
     margin-bottom: 30px;

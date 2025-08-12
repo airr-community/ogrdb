@@ -151,7 +151,12 @@
             anchor = "ack";
         }
 
-        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+        // Bootstrap 5 tab navigation
+        const tabElement = document.querySelector('.nav-tabs a[href="#' + anchor + '"]');
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
         $("#current_tab").val('#' + anchor)
     };
 

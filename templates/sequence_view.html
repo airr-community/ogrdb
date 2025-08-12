@@ -9,26 +9,37 @@
 
 {% block c_body %}
 
-    <div>
-        <ul class="nav nav-tabs" role="tablist" id="myTab">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-det" data-bs-toggle="tab" data-bs-target="#det" type="button" role="tab" aria-controls="det" aria-selected="true">Details</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-history" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-versions" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab" aria-controls="versions" aria-selected="false">Versions</button>
-            </li>
-        </ul>
+<div class="data-card">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" role="tablist" id="myTab">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-det" data-bs-toggle="tab" data-bs-target="#det" type="button" role="tab" aria-controls="det" aria-selected="true">
+                <i class="bi bi-info-circle me-1"></i>Details
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">
+                <i class="bi bi-people me-1"></i>Acknowledgements
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">
+                <i class="bi bi-chat-left-text me-1"></i>Notes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-history" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+                <i class="bi bi-clock-history me-1"></i>History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-versions" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab" aria-controls="versions" aria-selected="false">
+                <i class="bi bi-layers me-1"></i>Versions
+            </button>
+        </li>
+    </ul>
 
-        {{ form.hidden_tag() }}
+    {{ form.hidden_tag() }}
 
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="det">

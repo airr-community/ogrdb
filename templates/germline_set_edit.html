@@ -192,7 +192,12 @@
     var jump = '';
 
     skip_to_anchor = function(anchor) {
-        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+        // Bootstrap 5 tab navigation
+        const tabElement = document.querySelector('.nav-tabs a[href="#' + anchor + '"]');
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
 
       /*  if(anchor === "genes") {
             init_datatable();

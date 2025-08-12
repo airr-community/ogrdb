@@ -6,113 +6,229 @@
     {{ super() }}
 {% endblock %}
 
-
 {% block c_body %}
-<div>
-
-<ul class="nav nav-tabs" role="tablist" id="myTab">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tab-sub" data-bs-toggle="tab" data-bs-target="#sub" type="button" role="tab" aria-controls="sub" aria-selected="true">Submission Details</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">Acknowledgements</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-rep" data-bs-toggle="tab" data-bs-target="#rep" type="button" role="tab" aria-controls="rep" aria-selected="false">Repertoire</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-pri" data-bs-toggle="tab" data-bs-target="#primer_sets" type="button" role="tab" aria-controls="primer_sets" aria-selected="false">Primers</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-inf" data-bs-toggle="tab" data-bs-target="#tools" type="button" role="tab" aria-controls="tools" aria-selected="false">Inference Tools</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
-    </li>
-    {% if reviewer %}
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-rev" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="false">Review</button>
-    </li>
-    {% endif %}
-</ul>
-
-<div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="sub">
-        <h3>Submission Details</h3>
-        {{ tables['submission'] }}
-
-        <h3>Inferred Sequences</h3>
-        <p>The inferred novel alleles from each genotype that are submitted for review. This table lists all inferences put forward by the submitter. Where IARC has
-        affirmed a sequence based on an inference, the corresponding sequence record will be listed in the Published column. Inferences for which no published
-        sequence is shown have not been affirmed.</p>
+<div class="data-card">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" role="tablist" id="myTab">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-sub" data-bs-toggle="tab" data-bs-target="#sub" type="button" role="tab" aria-controls="sub" aria-selected="true">
+                <i class="bi bi-file-earmark-text me-1"></i>Submission Details
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ack" data-bs-toggle="tab" data-bs-target="#ack" type="button" role="tab" aria-controls="ack" aria-selected="false">
+                <i class="bi bi-people me-1"></i>Acknowledgements
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-rep" data-bs-toggle="tab" data-bs-target="#rep" type="button" role="tab" aria-controls="rep" aria-selected="false">
+                <i class="bi bi-collection me-1"></i>Repertoire
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-pri" data-bs-toggle="tab" data-bs-target="#primer_sets" type="button" role="tab" aria-controls="primer_sets" aria-selected="false">
+                <i class="bi bi-dna me-1"></i>Primers
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-inf" data-bs-toggle="tab" data-bs-target="#tools" type="button" role="tab" aria-controls="tools" aria-selected="false">
+                <i class="bi bi-tools me-1"></i>Inference Tools
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">
+                <i class="bi bi-chat-left-text me-1"></i>Notes
+            </button>
+        </li>
         {% if reviewer %}
-            {{ tables['iarc_inferred_sequence'] }}
-        {% else %}
-            {{ tables['inferred_sequence'] }}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-rev" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="false">
+                <i class="bi bi-clipboard-check me-1"></i>Review
+            </button>
+        </li>
         {% endif %}
+    </ul>
 
-        {% if reviewer and tables['matches'] %}
-            <h3>Unreferenced Matches to Published Sequences</h3>
-            <p>Matches in these genotypes not currently referenced in published sequences (this section is only visible to reviewers):</p>
-                    {{ tables['matches'] }}
-        {% endif %}
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="sub">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Submission Details
+                </h3>
+                <div class="table-responsive">
+                    {{ tables['submission'] }}
+                </div>
+            </div>
 
-        <h3>Genotypes</h3>
-        <p>Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.</p>
-        {{ tables['genotype_description'] }}
-    </div>
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Inferred Sequences
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    The inferred novel alleles from each genotype that are submitted for review. This table lists all inferences put forward by the submitter. Where IARC has affirmed a sequence based on an inference, the corresponding sequence record will be listed in the Published column. Inferences for which no published sequence is shown have not been affirmed.
+                </div>
+                <div class="table-responsive">
+                    {% if reviewer %}
+                        {{ tables['iarc_inferred_sequence'] }}
+                    {% else %}
+                        {{ tables['inferred_sequence'] }}
+                    {% endif %}
+                </div>
+            </div>
 
-    <div role="tabpanel" class="tab-pane" id="ack">
-        <h3>Acknowledgements</h3>
-        <p>Individuals who should be acknowledged as contributing to the inferences listed in this submission.</p>
-        {{ tables['ack'] }}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="rep">
-        <h3>Repertoire Details</h3>
-        <p>Details of the repertoire from which the inferences are based. This corresponds, for example, to an NIH Project or an ENA study.</p>
-        {{ tables['repertoire'] }}
-
-        <h4>Repertoire Publications</h4>
-        <p>Publications associated with this study.</p>
-        {{ tables['pub'] }}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="primer_sets">
-        <p>Sequences of the PCR primers used in the study.</p>
-        {% for (name, notes, table) in tables['primer_sets'] %}
-            <h3>{{ name }}</h3>
-            <p>{{ notes | textile_filter }}</p>
-            {{ table }}
-        {%  endfor %}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="tools">
-        <h3>Inference Tools and Settings</h3>
-        <p>Details of the inference tools and settings used to infer novel alleles.  Each combination
-        of tool and setting is listed here, and provided with a descriptive name.</p>
-        {{ tables['inference_tool'] }}
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="notes">
-        <h3>Notes</h3>
-        {% for item in tables['submission_notes'].items %}
-            {% if item['item'] == 'Notes' %}
-                {{  item['value'] | textile_filter }}
+            {% if reviewer and tables['matches'] %}
+                <div class="info-card mb-4">
+                    <h3 class="h4 mb-3">
+                        <i class="bi bi-search me-2"></i>
+                        Unreferenced Matches to Published Sequences
+                    </h3>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Matches in these genotypes not currently referenced in published sequences (this section is only visible to reviewers)
+                    </div>
+                    <div class="table-responsive">
+                        {{ tables['matches'] }}
+                    </div>
+                </div>
             {% endif %}
-            {% if item['item'] == 'Attachment File Name' %}
-                <br><br><br>
-                <p>Attached file: {{  item['value'] }}</p>
-            {% endif %}
-        {% endfor %}
-        {% if attachment %}
-             <div class="row">
-                 <div class="col-sm-8 offset-sm-2">
-                    {{ tables['attachments'] }}
-                 </div>
-             </div>
-        {% endif %}
-    </div>
+
+            <div class="info-card">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-collection me-2"></i>
+                    Genotypes
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Each genotype that has been inferred, along with the descriptive name of the inference tool and settings that were used.
+                </div>
+                <div class="table-responsive">
+                    {{ tables['genotype_description'] }}
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="ack">
+            <div class="info-card">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-people me-2"></i>
+                    Acknowledgements
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Individuals who should be acknowledged as contributing to the inferences listed in this submission.
+                </div>
+                <div class="table-responsive">
+                    {{ tables['ack'] }}
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="rep">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-collection me-2"></i>
+                    Repertoire Details
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Details of the repertoire from which the inferences are based. This corresponds, for example, to an NIH Project or an ENA study.
+                </div>
+                <div class="table-responsive">
+                    {{ tables['repertoire'] }}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3 class="h5 mb-3">
+                    <i class="bi bi-journal me-2"></i>
+                    Repertoire Publications
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Publications associated with this study.
+                </div>
+                <div class="table-responsive">
+                    {{ tables['pub'] }}
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="primer_sets">
+            <div class="info-card">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-dna me-2"></i>
+                    PCR Primers
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Sequences of the PCR primers used in the study.
+                </div>
+                {% for (name, notes, table) in tables['primer_sets'] %}
+                    <div class="border-start border-primary border-3 ps-3 mb-4">
+                        <h4 class="h5 mb-2">{{ name }}</h4>
+                        {% if notes %}
+                            <div class="text-muted mb-3">{{ notes | textile_filter }}</div>
+                        {% endif %}
+                        <div class="table-responsive">
+                            {{ table }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="tools">
+            <div class="info-card">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-tools me-2"></i>
+                    Inference Tools and Settings
+                </h3>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Details of the inference tools and settings used to infer novel alleles. Each combination of tool and setting is listed here, and provided with a descriptive name.
+                </div>
+                <div class="table-responsive">
+                    {{ tables['inference_tool'] }}
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="notes">
+            <div class="info-card">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-chat-left-text me-2"></i>
+                    Notes
+                </h3>
+                {% for item in tables['submission_notes'].items %}
+                    {% if item['item'] == 'Notes' %}
+                        <div class="border rounded p-3 bg-light mb-3">
+                            {{ item['value'] | textile_filter }}
+                        </div>
+                    {% endif %}
+                    {% if item['item'] == 'Attachment File Name' %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-paperclip me-2"></i>
+                            <strong>Attached file:</strong> {{ item['value'] }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if attachment %}
+                    <div class="mt-3">
+                        <h4 class="h6 mb-2">
+                            <i class="bi bi-files me-1"></i>
+                            Attachments
+                        </h4>
+                        <div class="table-responsive">
+                            {{ tables['attachments'] }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
     {% if reviewer %}
     <div role="tabpanel" class="tab-pane" id="review">
@@ -120,7 +236,7 @@
         {{ tables['history']}}
         <h3>Notes</h3>
         <div class="form-group">
-            <button type="button" class="btn tablebutton pull-right" data-toggle="modal" data-target="#messageModal" data-type="note" data-action="note"
+            <button type="button" class="btn tablebutton pull-right" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="note" data-action="note"
                 data-header="New Thread" data-instr=""
                 data-title="" id="note">New Thread</button>
         </div>
@@ -128,7 +244,7 @@
         {% for (id, table) in tables['notes'] %}
             <div class="form-group">
             {{ table }}
-            <button type="button" class="btn btn-sm tablebutton pull-right" data-toggle="modal" data-target="#messageModal" data-type="note" data-action="{{ id }}"
+            <button type="button" class="btn btn-sm tablebutton pull-right" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="note" data-action="{{ id }}"
                     data-header="New Thread" data-instr=""
                     data-title="" id="note">Reply to Thread <i class="bi bi-arrow-up-circle-fill" aria-hidden="true"></i></button>
             </div>
@@ -169,28 +285,28 @@
         </form>
         {% if status == 'reviewing' %}
             {% if not sub.public %}
-            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="withdraw"
+            <button type="button" class="btn btn-danger tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="withdraw"
                     data-header="Withdraw Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Withdraw Submission" id="withdraw">Withdraw Submission</button>
-            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="draft"
+            <button type="button" class="btn btn-warning tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="draft"
                     data-header="Return Submission to Submitter" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Submitter" id="draft">Return to Submitter</button>
             {% endif %}
 
-            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="complete"
+            <button type="button" class="btn btn-warning tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="complete"
                     data-header="Complete Review" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Completed" id="complete">Complete</button>
         {% elif (status == 'complete') %}
             {% if not sub.public %}
-            <button type="button" class="btn btn-danger tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="withdraw"
+            <button type="button" class="btn btn-danger tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="withdraw"
                     data-header="Withdraw Submission" data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Withdraw Submission" id="withdraw">Withdraw Submission</button>
             {% endif %}
-            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
+            <button type="button" class="btn btn-warning tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="review"
                     data-header="Un-Complete Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Review" id="ret_review">Un-Complete Submission</button>
         {% elif (status == 'withdrawn') %}
-            <button type="button" class="btn btn-warning tablebutton" data-toggle="modal" data-target="#messageModal" data-type="history" data-action="review"
+            <button type="button" class="btn btn-warning tablebutton" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="review"
                     data-header="Un-Withdraw Submission. The submission will be returned to Review." data-instr="Please provide a message for the submitter (it will also be copied to Notes)"
                     data-title="Submission {{ id }} - Returned to Review" id="ret_review">Un-Withdraw Submission</button>
         {% endif %}
@@ -227,7 +343,12 @@
             anchor = "review"
         }
 
-        $('.nav-tabs a[href="#' + anchor + '"]').tab('show');
+        // Bootstrap 5 tab navigation
+        const tabElement = document.querySelector('.nav-tabs a[href="#' + anchor + '"]');
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
     }
 
     $(document).ready(function ()

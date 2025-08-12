@@ -3,53 +3,118 @@
 {% block pagetitle %} OGRDB {% endblock %}
 
 {% block c_body %}
-    <div class="row">
+    <div class="row g-4">
+        <!-- Documentation Links -->
         {% include '/static/doclinks.html' %}
-    <div class="big col-sm-8">
-
-    <div class="row">
-
-        <a href="/germline_sets/Homo sapiens"><h3>Click here for Human Germline reference sets!</h3></a>
-        <a href="/germline_sets/Mus musculus"><h3>Click here for Mouse Germline reference sets!</h3></a>
         
-        <p> You do not need to create an account to use this site. If you want to download reference
-            sets, please click on the links above. If you would like to know more about our work, please read
-            the welcome text and news items below.
-        </p>
-        
-        <h3>Welcome to OGRDB - the curated Open Germline Receptor Database!</h3>
+        <!-- Main Content Area -->
+        <div class="col-lg-8">
+            <!-- Quick Access Links -->
+            <div class="info-card mb-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-star-fill text-warning me-2" style="font-size: 1.5rem;"></i>
+                    <h2 class="h3 mb-0">Quick Access</h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="/germline_sets/Homo sapiens" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-person-fill me-2"></i>
+                            Human Germline Sets
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/germline_sets/Mus musculus" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-collection me-2"></i>
+                            Mouse Germline Sets
+                        </a>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You do not need to create an account to use this site. Click the links above to download reference sets.
+                </div>
+            </div>
 
-        <p>The immune receptors of B and T cells are central to the body's response to pathogens, and implicated in autoimmune disease.
-        High-throughput sequencing of receptor repertoires - AIRR-Seq - is widely used to study receptor development, however a comprehensive
-        understanding of the genes from which development starts - the germline genes - is crucial for accurate interpretation.
-        Our knowledge of human receptor alleles is incomplete, and that of other species at an early stage. OGRDB
-        is an open database of newly discovered alleles, through which researchers can contribute newly discovered alleles for
-        analysis, and download those that have been reviewed and affirmed. <a href="https://wordpress.vdjbase.org/index.php/ogrdb/introduction-to-ogrdb/">Read more...</a></p>
+            <!-- Welcome Section -->
+            <div class="data-card mb-4">
+                <h2 class="h3 mb-3">
+                    <i class="bi bi-house-heart me-2"></i>
+                    Welcome to OGRDB
+                </h2>
+                <p class="lead mb-3">The curated Open Germline Receptor Database</p>
+                <p>The immune receptors of B and T cells are central to the body's response to pathogens, and implicated in autoimmune disease. High-throughput sequencing of receptor repertoires - AIRR-Seq - is widely used to study receptor development, however a comprehensive understanding of the genes from which development starts - the germline genes - is crucial for accurate interpretation.</p>
+                <p>Our knowledge of human receptor alleles is incomplete, and that of other species at an early stage. OGRDB is an open database of newly discovered alleles, through which researchers can contribute newly discovered alleles for analysis, and download those that have been reviewed and affirmed.</p>
+                <a href="https://wordpress.vdjbase.org/index.php/ogrdb/introduction-to-ogrdb/" class="btn btn-outline-primary">
+                    <i class="bi bi-book me-1"></i>Read more...
+                </a>
+            </div>
 
-        <h3>Latest News</h3>
-    </div>
-    {% for news in news_items %}
-         <div class="row">
-             <h3><a href="{{ news['link'] }}">{{ news['title']|safe }}</a></h3>
-             <p>{{ news['excerpt']|safe }}</p>
-             <p>Published {{ news['date']|safe }}</p>
-         </div>
-    {% endfor %}
+            <!-- Latest News -->
+            <div class="data-card mb-4">
+                <h2 class="h3 mb-3">
+                    <i class="bi bi-newspaper me-2"></i>
+                    Latest News
+                </h2>
+                {% for news in news_items %}
+                <div class="border-bottom pb-3 mb-3{% if not loop.last %} border-bottom{% endif %}">
+                    <h4 class="h5">
+                        <a href="{{ news['link'] }}" class="text-decoration-none">{{ news['title']|safe }}</a>
+                    </h4>
+                    <p class="text-muted small mb-2">Published {{ news['date']|safe }}</p>
+                    <p class="mb-0">{{ news['excerpt']|safe }}</p>
+                </div>
+                {% endfor %}
+            </div>
 
+            <!-- Citation -->
+            <div class="info-card mb-4">
+                <h2 class="h4 mb-3">
+                    <i class="bi bi-quote me-2"></i>
+                    Citation
+                </h2>
+                <p class="mb-3">If you use OGRDB in your research, please cite this paper:</p>
+                <div class="alert alert-primary">
+                    <strong>
+                        <a href="https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkz822/5576123?guestAccessKey=37bf9026-b574-4add-b00c-67308925a37d" class="text-decoration-none">
+                            <i class="bi bi-file-earmark-text me-1"></i>
+                            OGRDB: a reference database of inferred immune receptor genes
+                        </a>
+                    </strong>
+                    <br>
+                    <small class="text-muted">Lees et al., Nucleic Acids Research, September 2019.</small>
+                </div>
+                <p class="small text-muted mb-0">Acknowledgements and citations for individual sequences are provided under each sequence and submission.</p>
+            </div>
 
-    <div class="row">
-        <h3>Citation</h3>
-        <p>If you use OGRDB in your research, please cite this paper:<br>
-            <a href="https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkz822/5576123?guestAccessKey=37bf9026-b574-4add-b00c-67308925a37d">
-            <i>OGRDB: a reference database of inferred immune receptor genes</i></a><br>
-            Lees et al., Nucleic Acids Research, September 2019.</p>
-        <p>Acknowledgements and citations for individual sequences are provided under each sequence and submission.</p>
-    </div>
-    <div class="row">
-        <h3>Contacts and Support</h3>
-        <p>For help in using OGRDB, or if you encounter any issues, please <a href="mailto:william@lees.org.uk">contact us</a>.</p>
-        <p>The site is developed and maintained by <a href="http://shepherd-group.ismb.lon.ac.uk/people.html" target="_blank">William Lees</a> (william@lees.org.uk)</p>
-    </div>
-    </div>
+            <!-- Contacts and Support -->
+            <div class="info-card">
+                <h2 class="h4 mb-3">
+                    <i class="bi bi-headset me-2"></i>
+                    Contacts and Support
+                </h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-envelope me-2 mt-1 text-primary"></i>
+                            <div>
+                                <strong>Need Help?</strong><br>
+                                <small class="text-muted">For help using OGRDB or if you encounter issues</small><br>
+                                <a href="mailto:william@lees.org.uk">william@lees.org.uk</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-person me-2 mt-1 text-primary"></i>
+                            <div>
+                                <strong>Developer</strong><br>
+                                <small class="text-muted">Site developed and maintained by</small><br>
+                                <a href="http://shepherd-group.ismb.lon.ac.uk/people.html" target="_blank">William Lees</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
