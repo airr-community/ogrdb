@@ -343,7 +343,7 @@ def copy_%s(c_from, c_to):
 
         # Object view
 
-        fo.write('class %s_view(Table):\n    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})\n    value = Col("")\n\n\n' % section)
+        fo.write('class %s_view(Table):\n    item = ViewCol("", column_html_attrs={"class": "view-table-row"})\n    value = Col("")\n\n\n' % section)
 
         fo.write('def make_%s_view(sub, private = False):\n    ret = %s_view([])\n' % (section, section))
 

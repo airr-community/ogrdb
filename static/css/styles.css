@@ -284,6 +284,10 @@ div.menu {
     padding-top: 10px;
     padding-bottom: 10px;
     font-weight: bold;
+    padding-right: 1rem;
+    /* Bootstrap classes consolidated */
+    width: 25%; /* equivalent to col-sm-3 */
+    text-align: right;
 }
 
 .notes-table-row {
