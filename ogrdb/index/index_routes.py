@@ -111,6 +111,100 @@ def create_user():
     return render_template('security/first_account.html', form=form)
 
 
+@app.route('/help')
+def help_page():
+    """OGRDB Help and Documentation page with WordPress integration"""
+    
+    # Get help articles from WordPress with pagination to fetch all articles
+    help_articles = []
+    
+    try:
+        wp_url = app.config['WORDPRESS_NEWS_URL'] + app.config['WORDPRESS_REST']
+        r = requests.get(wp_url + 'categories')
+        if r.status_code == 200:
+            resp = r.content.decode("utf-8")
+            resp = json.loads(resp)
+
+            # Find both OGRDB category IDs
+            ogrdb_news_cat_id = None
+            ogrdb_cat_id = None
+            
+            for rec in resp:
+                if rec['slug'] == 'ogrdb_news':
+                    ogrdb_news_cat_id = rec['id']
+                elif rec['slug'] == 'ogrdb':
+                    ogrdb_cat_id = rec['id']
+            
+            # Define categories to fetch from
+            categories_to_fetch = []
+            if ogrdb_news_cat_id:
+                categories_to_fetch.append(ogrdb_news_cat_id)
+            if ogrdb_cat_id:
+                categories_to_fetch.append(ogrdb_cat_id)
+            
+            # Fetch articles from each category separately
+            for cat_id in categories_to_fetch:
+                cat_url = f'{wp_url}posts?categories={cat_id}'
+                
+                # Fetch all pages of articles for this category
+                page = 1
+                per_page = 100  # Maximum allowed by WordPress REST API
+                
+                while True:
+                    paginated_url = f"{cat_url}&per_page={per_page}&page={page}&_embed"
+                    r = requests.get(paginated_url)
+                    
+                    if r.status_code != 200:
+                        break
+                        
+                    resp = r.content.decode("utf-8")
+                    resp = json.loads(resp)
+                    
+                    # If no articles returned, we've reached the end
+                    if not resp:
+                        break
+
+                    for item in resp:
+                        # Check if we already have this article (avoid duplicates)
+                        if any(article['id'] == item['id'] for article in help_articles):
+                            continue
+                            
+                        # Extract tags from embedded data
+                        tags = []
+                        if '_embedded' in item and 'wp:term' in item['_embedded']:
+                            # Tags are usually in the second array of wp:term
+                            if len(item['_embedded']['wp:term']) > 1:
+                                tags = [tag['slug'] for tag in item['_embedded']['wp:term'][1]]
+                        
+                        help_articles.append({
+                            'id': item['id'],
+                            'date': item['date'].split('T')[0],
+                            'title': item['title']['rendered'],
+                            'excerpt': item['excerpt']['rendered'],
+                            'link': item['link'],
+                            'tags': tags
+                        })
+                    
+                    # If we got fewer articles than requested, we're on the last page
+                    if len(resp) < per_page:
+                        break
+                        
+                    page += 1
+                    
+                    # Safety valve to prevent infinite loops
+                    if page > 50:  # Limit to 5000 articles max per category
+                        break
+                        
+    except Exception as e:
+        print(f"Error fetching WordPress help articles: {e}")
+        pass
+
+    # Sort articles by date (newest first)
+    help_articles.sort(key=lambda x: x['date'], reverse=True)
+
+    return render_template('help.html', current_user=current_user, help_articles=help_articles)
+
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
