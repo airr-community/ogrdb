@@ -20,7 +20,7 @@
             "justMyCode": false        },
         {
             "name": "Build From Schema",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/schema/build_from_schema.py",
             "args": [
@@ -33,7 +33,7 @@
         },
         {
             "name": "Python: Flask",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -50,14 +50,14 @@
         },
         {
             "name": "Python: File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "justMyCode": true
         },
         {
             "name": "schema_to_tabfile",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/schema/schema_to_tabfile.py",
             "cwd": "${workspaceFolder}/schema",
@@ -65,7 +65,7 @@
         },
         {
             "name": "zenodo upload",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/zenodo.py",
             "args": [

@@ -58,7 +58,7 @@ def make_PubId_table(results, private = False, classes=()):
     return ret
 
 class PubId_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 
@@ -121,7 +121,7 @@ def make_Acknowledgements_table(results, private = False, classes=()):
     return ret
 
 class Acknowledgements_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 
@@ -205,7 +205,7 @@ def make_Repertoire_table(results, private = False, classes=()):
     return ret
 
 class Repertoire_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 

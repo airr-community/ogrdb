@@ -10,19 +10,19 @@ from db.view_table import ViewCol
 from sqlalchemy.orm import backref
 
                         
-inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descriptions', db.Model.metadata,
+inferred_sequences_gene_descriptions = db.Table('inferred_sequences_gene_descriptions',
     db.Column('inferred_sequences_id', db.Integer(), db.ForeignKey('inferred_sequence.id')),
     db.Column('gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
                         
-supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions', db.Model.metadata,
+supporting_observations_supporting_gene_descriptions = db.Table('supporting_observations_supporting_gene_descriptions',
     db.Column('supporting_observations_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('supporting_gene_descriptions_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
 
                         
-duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates', db.Model.metadata,
+duplicate_sequences_published_duplicates = db.Table('duplicate_sequences_published_duplicates',
     db.Column('duplicate_sequences_id', db.Integer(), db.ForeignKey('genotype.id')),
     db.Column('published_duplicates_id', db.Integer(), db.ForeignKey('gene_description.id')))
     
@@ -325,7 +325,7 @@ def make_GeneDescription_table(results, private = False, classes=()):
     return ret
 
 class GeneDescription_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 
@@ -546,7 +546,7 @@ def make_GenomicSupport_table(results, private = False, classes=()):
     return ret
 
 class GenomicSupport_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 

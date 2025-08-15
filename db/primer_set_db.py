@@ -54,7 +54,7 @@ def make_PrimerSet_table(results, private = False, classes=()):
     return ret
 
 class PrimerSet_view(Table):
-    item = ViewCol("", column_html_attrs={"class": "col-sm-3 text-right font-weight-bold view-table-row"})
+    item = ViewCol("", column_html_attrs={"class": "view-table-row"})
     value = Col("")
 
 
