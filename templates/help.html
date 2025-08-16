@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block pagetitle %}Help & Documentation{% endblock %}
+
+{% block c_body %}
+    <div class="row g-4">
+        <!-- Left Column - Main Help Content -->
+        <div class="col-lg-8">
+                <!-- Quick Start Guide -->
+                <div class="data-card mb-4" id="quick-start">
+                    <h2 class="h3 mb-3">
+                        <i class="bi bi-rocket-takeoff me-2"></i>
+                        Data Access Quick Start
+                    </h2>
+                    
+                    <div class="alert alert-success">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>No Account Required!</strong><br>
+                                <small>You can browse and download all data without creating an account.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-search text-white" style="font-size: 2rem;"></i>
+                                </div>
+                                <h4 class="h5">Sets</h4>
+                                <p class="small text-muted">Explore our curated germline sets and download in multiple formats.</p>
+                                <a href="#" id="browse-sets-btn" class="btn btn-outline-primary btn-sm">Browse Sets</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-download text-white" style="font-size: 2rem;"></i>
+                                </div>
+                                <h4 class="h5">Sequences</h4>
+                                <p class="small text-muted">Review our database of allele sequences, supporting evidence and curation history.</p>
+                                <a href="#" id="view-sequences-btn" class="btn btn-outline-primary btn-sm">View Sequences</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-quote text-white" style="font-size: 2rem;"></i>
+                                </div>
+                                <h4 class="h5">Cite</h4>
+                                <p class="small text-muted">Please support us with a citation if you use the data in your work.</p>
+                                <a href="#citation" class="btn btn-outline-primary btn-sm">Citation Info</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inside VDJBase -->
+                <div class="data-card mb-4" id="inside-vdjbase">
+                    <h2 class="h3 mb-3">
+                        <i class="bi bi-book me-2"></i>
+                        Inside OGRDB
+                    </h2>
+                    <p class="mb-4">Explore the background and development of OGRDB through these key articles and publications.</p>
+                    
+                    <div class="d-flex justify-content-center">
+                        <div class="card px-3" style="max-width: 800px; width: 100%;">
+                            <div class="list-group list-group-flush">
+                                <a href="https://wordpress.vdjbase.org/index.php/vdjbase_news/germline-databases-or-adventures-into-the-allelic-underworld/" target="_blank" class="list-group-item list-group-item-action border-0 py-2">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-compass text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="h6 mb-1">Germline Databases, or adventures into the allelic underworld</h5>
+                                            <p class="small text-muted mb-0">A podcast exploring the challenges and discoveries in germline database development</p>
+                                        </div>
+                                        <i class="bi bi-box-arrow-up-right text-muted"></i>
+                                    </div>
+                                </a>
+                                
+                                <a href="https://wordpress.vdjbase.org/index.php/ogrdb/introduction-to-ogrdb/" target="_blank" class="list-group-item list-group-item-action border-0 py-2">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-info-circle text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="h6 mb-1">Introduction to OGRDB</h5>
+                                            <p class="small text-muted mb-0">A short introduction to the Open Germline Receptor Database</p>
+                                        </div>
+                                        <i class="bi bi-box-arrow-up-right text-muted"></i>
+                                    </div>
+                                </a>
+                                
+                                <a href="https://www.sciencedirect.com/science/article/pii/S2667119023000058" target="_blank" class="list-group-item list-group-item-action border-0 py-2">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-journal-text text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="h6 mb-1">AIRR community curation and standardised representation for immunoglobulin and T cell receptor germline sets</h5>
+                                            <p class="small text-muted mb-0">Scientific publication on AIRR community standards and curation processes</p>
+                                        </div>
+                                        <i class="bi bi-box-arrow-up-right text-muted"></i>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Features -->
+                <div class="data-card mb-4" id="features">
+                    <h2 class="h3 mb-3">
+                        <i class="bi bi-stars me-2"></i>
+                        Key Features
+                    </h2>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-collection text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h5 class="h6 mb-1">Curated Germline Sets</h5>
+                                    <p class="small text-muted mb-0">High-quality, reviewed germline gene sequences for multiple species</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h5 class="h6 mb-1">AIRR Compliance</h5>
+                                    <p class="small text-muted mb-0">Data formatted according to AIRR Community standards</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-file-earmark-code text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h5 class="h6 mb-1">Multiple Formats</h5>
+                                    <p class="small text-muted mb-0">Download in FASTA, JSON, or custom formats</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-graph-up text-primary me-3 mt-1" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h5 class="h6 mb-1">Regular Updates</h5>
+                                    <p class="small text-muted mb-0">Continuously updated with newly discovered alleles</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Citation Information -->
+                <div class="data-card mb-4" id="citation">
+                    <h2 class="h3 mb-3">
+                        <i class="bi bi-quote me-2"></i>
+                        Citation Information
+                    </h2>
+                    <p>If you use OGRDB in your research, please cite:</p>
+                    <div class="alert alert-primary">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <strong>OGRDB: a reference database of inferred immune receptor genes</strong><br>
+                                <small class="text-muted">Lees et al., Nucleic Acids Research, September 2019.</small><br>
+                                <a href="https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkz822/5576123?guestAccessKey=37bf9026-b574-4add-b00c-67308925a37d" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>View Paper
+                                </a>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm copy-citation" title="Copy citation">
+                                <i class="bi bi-clipboard me-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+                    <p class="small text-muted">Individual sequences and submissions may have additional citation requirements listed on their respective pages.</p>
+                </div>
+        </div>
+
+        <!-- Right Column - WordPress News & Documentation -->
+        <div class="col-lg-4">
+            <!-- WordPress News Articles -->
+            <div class="info-card mb-4">
+                <h3 class="h5 mb-3">
+                    <i class="bi bi-newspaper me-2"></i>
+                    OGRDB Documentation
+                </h3>
+                
+                <!-- Search Input -->
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control form-control-sm" placeholder="Search articles..." id="articleFilter">
+                    <button class="btn btn-outline-secondary btn-sm" type="button">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                
+                <!-- Topic Filters -->
+                <div class="mb-3">
+                    <small class="text-muted fw-bold text-uppercase">Filter by Topic:</small>
+                </div>
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100 active" data-filter="all">
+                            <i class="bi bi-list me-1"></i>
+                            <span class="small">All Articles</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" data-filter="data_updates">
+                            <i class="bi bi-database me-1"></i>
+                            <span class="small">Data Updates</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" data-filter="site_updates">
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            <span class="small">Site Updates</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" data-filter="howto">
+                            <i class="bi bi-question-circle me-1"></i>
+                            <span class="small">How-To Guides</span>
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" data-filter="submission">
+                            <i class="bi bi-upload me-1"></i>
+                            <span class="small">Submission Info</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="articles-container" class="help-topics-scroll" style="max-height: 800px; overflow-y: auto;">
+                    {% if help_articles %}
+                        {% for article in help_articles %}
+                        <div class="article-item border-bottom py-3" data-tags="{{ article.tags|join(' ') }}" data-title="{{ article.title|lower }}" data-excerpt="{{ article.excerpt|striptags|lower }}">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="{{ article.link }}" target="_blank" class="text-decoration-none">
+                                            {{ article.title|safe }}
+                                        </a>
+                                    </h6>
+                                    <p class="small text-muted mb-2">{{ (article.excerpt|striptags)[:120] }}{% if (article.excerpt|striptags)|length > 120 %}...{% endif %}</p>
+                                    <div class="d-flex align-items-center text-muted">
+                                        <small>
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            {{ article.date }}
+                                        </small>
+                                        {% if article.tags %}
+                                            <span class="ms-2">
+                                                {% for tag in article.tags[:2] %}
+                                                    <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                                {% endfor %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <a href="{{ article.link }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-triangle text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Unable to load articles at this time.</p>
+                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb/" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Visit WordPress Site
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Need Help Card -->
+            <div class="info-card">
+                <h3 class="h5 mb-3">
+                    <i class="bi bi-headset me-2"></i>
+                    Need Help?
+                </h3>
+                <div class="mt-3 p-3 bg-light rounded">
+                    <small class="text-muted">
+                        <strong>Developer:</strong><br>
+                        William Lees
+                        <div class="d-flex align-items-center mt-1">
+                            <span class="me-2">william@lees.org.uk</span>
+                            <a href="mailto:william@lees.org.uk" class="btn btn-outline-secondary btn-sm me-1" style="padding: 0.125rem 0.25rem;" title="Send email">
+                                <i class="bi bi-envelope" style="font-size: 0.75rem;"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/williamlees/" target="_blank" class="btn btn-outline-secondary btn-sm" style="padding: 0.125rem 0.25rem;" title="LinkedIn profile">
+                                <i class="bi bi-linkedin" style="font-size: 0.75rem;"></i>
+                            </a>
+                        </div>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <style>
+        /* Ensure dropdown menus appear above help page content */
+        .dropdown-menu {
+            z-index: 1050 !important;
+        }
+        .dropdown {
+            position: relative;
+            z-index: 1000;
+        }
+    </style>
+    <script>
+    // Client-side filtering for help articles
+    document.addEventListener('DOMContentLoaded', function() {
+        // Article filtering functionality
+        const articleFilter = document.getElementById('articleFilter');
+        const topicFilters = document.querySelectorAll('.help-content [data-filter]');
+        const articles = document.querySelectorAll('.article-item');
+        
+        // Article search/filter functionality
+        if (articleFilter) {
+            articleFilter.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterArticles(searchTerm);
+            });
+        }
+        
+        // Topic filter buttons - use event delegation on the document
+        document.addEventListener('click', function(e) {
+            // Only handle clicks on elements with data-filter attribute
+            if (e.target.hasAttribute('data-filter') || e.target.closest('[data-filter]')) {
+                const filterButton = e.target.hasAttribute('data-filter') ? e.target : e.target.closest('[data-filter]');
+                
+                if (filterButton) {
+                    e.preventDefault();
+                    
+                    // Update active state - find all filter buttons
+                    const topicFilters = document.querySelectorAll('[data-filter]');
+                    topicFilters.forEach(f => f.classList.remove('active'));
+                    filterButton.classList.add('active');
+                    
+                    const filterValue = filterButton.dataset.filter;
+                    filterByTopic(filterValue);
+                }
+            }
+        });
+        
+        // Handle Browse Sets and View Sequences button clicks
+        const browseSetsBtn = document.getElementById('browse-sets-btn');
+        const viewSequencesBtn = document.getElementById('view-sequences-btn');
+        
+        if (browseSetsBtn) {
+            browseSetsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                setTimeout(() => {
+                    const germlineDropdown = document.querySelector('#dropdownMenu1');
+                    if (germlineDropdown && typeof bootstrap !== 'undefined') {
+                        const dropdown = bootstrap.Dropdown.getOrCreateInstance(germlineDropdown);
+                        dropdown.toggle();
+                    }
+                }, 100);
+            });
+        }
+        
+        if (viewSequencesBtn) {
+            viewSequencesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                setTimeout(() => {
+                    const sequencesDropdown = document.querySelector('#dropdownMenu2');
+                    if (sequencesDropdown && typeof bootstrap !== 'undefined') {
+                        const dropdown = bootstrap.Dropdown.getOrCreateInstance(sequencesDropdown);
+                        dropdown.toggle();
+                    }
+                }, 100);
+            });
+        }
+        
+        function filterArticles(searchTerm) {
+            articles.forEach(article => {
+                const title = article.dataset.title || '';
+                const excerpt = article.dataset.excerpt || '';
+                const tags = article.dataset.tags || '';
+                
+                const matchesSearch = !searchTerm || 
+                    title.includes(searchTerm) || 
+                    excerpt.includes(searchTerm) || 
+                    tags.includes(searchTerm);
+                
+                article.style.display = matchesSearch ? 'block' : 'none';
+            });
+            
+            updateArticleCount();
+        }
+        
+        function filterByTopic(topicFilter) {
+            articles.forEach(article => {
+                const tags = article.dataset.tags || '';
+                const matchesTopic = topicFilter === 'all' || tags.includes(topicFilter);
+                
+                article.style.display = matchesTopic ? 'block' : 'none';
+            });
+            
+            // Clear search when filtering by topic
+            if (articleFilter) {
+                articleFilter.value = '';
+            }
+            
+            updateArticleCount();
+        }
+        
+        function updateArticleCount() {
+            const visibleArticles = document.querySelectorAll('.article-item[style="display: block"], .article-item:not([style*="none"])').length;
+            const container = document.getElementById('articles-container');
+            
+            if (visibleArticles === 0 && articles.length > 0) {
+                // Show "no results" message if we have articles but none are visible
+                if (!document.getElementById('no-results-message')) {
+                    const noResults = document.createElement('div');
+                    noResults.id = 'no-results-message';
+                    noResults.className = 'text-center py-4';
+                    noResults.innerHTML = `
+                        <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No articles found matching your search.</p>
+                    `;
+                    container.appendChild(noResults);
+                }
+                document.getElementById('no-results-message').style.display = 'block';
+            } else {
+                const noResultsMsg = document.getElementById('no-results-message');
+                if (noResultsMsg) {
+                    noResultsMsg.style.display = 'none';
+                }
+            }
+        }
+        
+        // Smooth scrolling for anchor links - use event delegation on document
+        document.addEventListener('click', function(e) {
+            // Only handle anchor links that start with #
+            if (e.target.tagName === 'A' && e.target.getAttribute('href')?.startsWith('#')) {
+                const href = e.target.getAttribute('href');
+                if (href && href.length > 1) {
+                    // Skip if this is a dropdown toggle or other Bootstrap component
+                    if (!e.target.hasAttribute('data-bs-toggle')) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Copy to clipboard functionality for citation
+        const copyButtons = document.querySelectorAll('.copy-citation');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const citationText = this.closest('.alert').querySelector('strong').textContent;
+                navigator.clipboard.writeText(citationText).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check me-1"></i>Copied!';
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-outline-secondary');
+                    }, 2000);
+                });
+            });
+        });
+    });
+    </script>
+{% endblock %}
