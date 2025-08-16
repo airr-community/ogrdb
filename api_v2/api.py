@@ -245,6 +245,11 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version, format
             q = q.filter(GermlineSet.release_version == release_version)
 
         germline_set = q.one_or_none()
+
+        if not germline_set:
+            error_response = {'message': "Set not found"}
+            return jsonify(error_response), 404
+
         if not format:
             format = 'airr_ex' if 'Homo sapiens' in germline_set.species else 'airr'
 
