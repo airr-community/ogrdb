@@ -373,7 +373,7 @@ def convert_to_GermlineSetResponse_obj(dl):
             pub_ids=temp_dl['pub_ids'],
             species=Ontology(id=temp_dl['species']['id'], label=temp_dl['species']['label']),
             species_subgroup=temp_dl['species_subgroup'],
-            species_subgroup_type=SpeciesSubgroupType(temp_dl['species_subgroup_type']) if temp_dl['species_subgroup_type'] is not None else None,
+            species_subgroup_type=temp_dl['species_subgroup_type'],
             locus=Locus(temp_dl['locus']),
             allele_descriptions=create_allele_description_list(temp_dl['allele_descriptions']),
             curation=temp_dl.get('curation', None)
@@ -482,7 +482,7 @@ def create_allele_description_list(allele_descriptions):
             inference_type=InferenceType(temp_allele_descriptions['inference_type']),
             species=Ontology(id=temp_allele_descriptions['species']['id'], label=temp_allele_descriptions['species']['label']),
             species_subgroup=temp_allele_descriptions['species_subgroup'],
-            species_subgroup_type=SpeciesSubgroupType(temp_allele_descriptions['species_subgroup_type']) if temp_allele_descriptions['species_subgroup_type'] is not None else None,
+            species_subgroup_type=temp_allele_descriptions['species_subgroup_type'],
             subgroup_designation=temp_allele_descriptions['subgroup_designation'],
             gene_designation=temp_allele_descriptions['gene_designation'],
             allele_designation=temp_allele_descriptions['allele_designation'],
