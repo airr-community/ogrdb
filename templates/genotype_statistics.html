@@ -4,74 +4,124 @@
 
 {% block c_body %}
 
-    <div class="row pad">
-
+    <div class="data-card">
         <form action="{{ url_for('genotype_statistics') }}" method="POST" name="form" class="form-horizontal">
-
             {{ form.hidden_tag() }}
 
-            <div class="row">
-                <div class="col-sm-10 offset-sm-1">
-
-                <h4>Purpose</h4>
-
-                <p >This report lists the number of times that each alelle in the IMGT germline library has been identified
+            <div class="info-card mb-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Purpose
+                </h4>
+                <p class="mb-0">This report lists the number of times that each allele in the IMGT germline library has been identified
                 in genotypes submitted to OGRDB. Currently only genotypes from which inferred sequences have been affirmed are included.
                 Filtering criteria may be used to remove low-confidence observations. Default settings are suggested by IARC.</p>
+            </div>
 
-                <h4>Species and locus for which the report should be created. </h4>
-
-                {{ render_field_with_errors(form.species, class="form-control") }}
-                {{ render_field_with_errors(form.locus, class="form-control") }}
-                {{ render_field_with_errors(form.sequence_type, class="form-control") }}
-
-                <p >An allele is counted as being present in a genotype if it meets the following criteria:</p>
-
-                <h4>Within-Allele Critera</h4>
-                <p>The allele's sequence count must meet the following thresholds:</p>
-
-                {{ render_narrow_field_with_errors(form.allelic_threshold, class="form-control") }}
-                {{ render_narrow_field_with_errors(form.assigned_unmutated_threshold, class="form-control") }}
-
-                <h4>Within-Genotype Criteria</h4>
-
-                <p>Considering all sequences in the genotype that are unmutated compared to their corresponding allele, the proportion
-                    assigned to this allele, expressed as a percentage, must exceed the threshold below.
-                Allowances can be made for groups of alleles that are known generally to be present at lower levels:</p>
-
-                {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
-                {{ render_field_with_errors(form.rare_genes, class="form-control") }}
-                {{ render_narrow_field_with_errors(form.rare_threshold, class="form-control") }}
-                {{ render_field_with_errors(form.very_rare_genes, class="form-control") }}
-                {{ render_narrow_field_with_errors(form.very_rare_threshold, class="form-control") }}
-
-                <div class="form-group row">
-                    <div class="col-sm-10 offset-sm-2">
-                        {{ form.create(class="btn btn-primary") }}
+            <div class="info-card mb-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-gear me-2"></i>Species and locus for which the report should be created
+                </h4>
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        {{ render_field_with_errors(form.species, class="form-control") }}
                     </div>
-                </div>
-
-                {% if  tables %}
-                    <div class="row">
-                        <div class="col-sm-10 offset-sm-1">
-                    {% if logged_in %}
-                        <p>You can <a id="download" href={{  url_for('download_userfile', filename='genotype_stats.csv')}}>Download</a>
-                            a file listing unmutated frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
-                            but contains all usage frequencies regardless of the Within-Genotype Criteria.</p>
-                    {% else %}
-                        <p>Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}">register</a> or <a href="{{ url_for_security('login') }}">log in</a> if you would like to do this.</p>
-                    {% endif %}
-                        {% if tables['gene_table'] %}
-                            <p>Compiling data from {{ tables['count'] }} published genotypes:</p>
-                            {{ tables['gene_table'] }}
-                        {% else %}
-                            <p>No genotypes were found for that species and locus.</p>
-                        {% endif %}
-                        </div>
+                    <div class="col-md-4">
+                        {{ render_field_with_errors(form.locus, class="form-control") }}
                     </div>
-                {% endif %}
+                    <div class="col-md-4">
+                        {{ render_field_with_errors(form.sequence_type, class="form-control") }}
+                    </div>
                 </div>
             </div>
+
+            <div class="info-card mb-4">
+                <p class="mb-3">An allele is counted as being present in a genotype if it meets the following criteria:</p>
+
+                <h4 class="mb-3">
+                    <i class="bi bi-sliders me-2"></i>Within-Allele Criteria
+                </h4>
+                <p class="mb-3">The allele's sequence count must meet the following thresholds:</p>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        {{ render_narrow_field_with_errors(form.allelic_threshold, class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ render_narrow_field_with_errors(form.assigned_unmutated_threshold, class="form-control") }}
+                    </div>
+                </div>
+
+                <h4 class="mb-3">
+                    <i class="bi bi-bar-chart me-2"></i>Within-Genotype Criteria
+                </h4>
+                <p class="mb-3">Considering all sequences in the genotype that are unmutated compared to their corresponding allele, the proportion
+                    assigned to this allele, expressed as a percentage, must exceed the threshold below.
+                    Allowances can be made for groups of alleles that are known generally to be present at lower levels:</p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
+                    </div>
+                    <div class="col-md-8">
+                        {{ render_field_with_errors(form.rare_genes, class="form-control") }}
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        {{ render_narrow_field_with_errors(form.rare_threshold, class="form-control") }}
+                    </div>
+                    <div class="col-md-8">
+                        {{ render_field_with_errors(form.very_rare_genes, class="form-control") }}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        {{ render_narrow_field_with_errors(form.very_rare_threshold, class="form-control") }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center">
+                    {{ form.create(class="btn btn-primary btn-lg") }}
+                </div>
+            </div>
+
+            {% if tables %}
+            <div class="info-card mb-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-table me-2"></i>Results
+                </h4>
+                
+                {% if logged_in %}
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-download me-2"></i>
+                    You can <a id="download" href="{{ url_for('download_userfile', filename='genotype_stats.csv') }}" class="alert-link">Download</a>
+                    a file listing unmutated frequency per genotype. The file is filtered to comply with the Within-Allele criteria above,
+                    but contains all usage frequencies regardless of the Within-Genotype Criteria.
+                </div>
+                {% else %}
+                <div class="alert alert-warning mb-3">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Registered users can download a file listing usage in each genotype. Please <a href="{{ url_for_security('register') }}" class="alert-link">register</a> or <a href="{{ url_for_security('login') }}" class="alert-link">log in</a> if you would like to do this.
+                </div>
+                {% endif %}
+
+                {% if tables['gene_table'] %}
+                <p class="mb-3">Compiling data from {{ tables['count'] }} published genotypes:</p>
+                <div class="table-responsive">
+                    {{ tables['gene_table'] }}
+                </div>
+                {% else %}
+                <div class="alert alert-secondary">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    No genotypes were found for that species and locus.
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
         </form>
     </div>
 

@@ -37,6 +37,7 @@
     
     <!-- Tab Content -->
     <div class="tab-content">
+        <!-- Download Tab -->
         <div role="tabpanel" class="tab-pane active" id="download">
             {% if extended %}
             <div class="info-card mb-4">
@@ -50,19 +51,19 @@
                 </div>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr_ex') }}" id="dl-airr" class="btn btn-primary w-100">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr_ex') }}" id="dl-airr-ex" class="btn btn-primary w-100">
                             <i class="bi bi-file-earmark-arrow-down me-2"></i>
                             AIRR Format (JSON)
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped_ex') }}" id="dl-ungapped" class="btn btn-primary w-100">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped_ex') }}" id="dl-ungapped-ex" class="btn btn-primary w-100">
                             <i class="bi bi-file-earmark-code me-2"></i>
                             Ungapped Sequences (FASTA)
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped_ex') }}" id="dl-gapped" class="btn btn-primary w-100">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped_ex') }}" id="dl-gapped-ex" class="btn btn-primary w-100">
                             <i class="bi bi-file-earmark-text me-2"></i>
                             Gapped Sequences (FASTA)
                         </a>
@@ -70,102 +71,109 @@
                 </div>
             </div>
             {% endif %}
-                        {% if extended %}
-                    <h3 class="col-sm-11 offset-sm-1">Download Source Set (Not recommended for AIRR-seq analysis)</h3>
-                    {% else %}
-                    <h3 class="col-sm-11 offset-sm-1">Download</h3>
-                    {% endif %}
-                    <div class="form-group">
-                        <div class="col-sm-3 offset-sm-1">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr') }}" id="dl-airr" class="btn btn-primary">AIRR Format (JSON)</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-3">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped') }}" id="dl-ungapped" class="btn btn-primary">Ungapped Sequences (FASTA)</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-3">
-                            <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped') }}" id="dl-gapped" class="btn btn-primary">Gapped Sequences (FASTA)</a>
-                        </div>
-                    </div>
-                </div>
-                {% if notes %}
-                    <div class="row">
-                        <h3 class="col-sm-11 offset-sm-1">Notes</h3>
-                        <div class="col-sm-11 offset-sm-1">
-                            <p>{{ notes | textile_filter }}</p>
-                        </div>
-                    </div>
+
+            <!-- Source Set Downloads -->
+            <div class="info-card mb-4">
+                {% if extended %}
+                <h3 class="h4 mb-3">Download Source Set (Not recommended for AIRR-seq analysis)</h3>
+                {% else %}
+                <h3 class="h4 mb-3">Download</h3>
                 {% endif %}
-                {% if supplementary_files %}
-                    <div class="row">
-                        <h3 class="col-sm-11 offset-sm-1">Supplementary Files</h3>
-                        <div class="col-sm-8 offset-sm-2">
-                            {{ tables['attachments'] }}
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/airr') }}" id="dl-airr" class="btn btn-primary w-100">
+                            <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                            AIRR Format (JSON)
+                        </a>
                     </div>
-                {% endif %}
-            </div>
-
-            <div role="tabpanel" class="tab-pane" id="det">
-                <div class="row">
-                    <h3 class="col-sm-11 offset-sm-1">Details</h3>
-                    <div  class="col-sm-11 offset-sm-1">
-                        {{ tables['description'] }}
+                    <div class="col-md-4">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/ungapped') }}" id="dl-ungapped" class="btn btn-primary w-100">
+                            <i class="bi bi-file-earmark-code me-2"></i>
+                            Ungapped Sequences (FASTA)
+                        </a>
                     </div>
-                </div>
-
-                <div class="row">
-                    <h3 class="col-sm-11 offset-sm-1">Included Sequences</h3>
-                    <p class="col-sm-11 offset-sm-1">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
-                    <div class="col-sm-10 offset-sm-1">
-                        <div class="form-group">
-                            {{ tables['genes'] }}
-                        </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('download_germline_set', varargs=dl_args + '/gapped') }}" id="dl-gapped" class="btn btn-primary w-100">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            Gapped Sequences (FASTA)
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div role="tabpanel" class="tab-pane" id="ack">
-                <div class="row">
-                    <h3 class="col-sm-11 offset-sm-1">Acknowledgements</h3>
-                    <p class="col-sm-11 offset-sm-1">Individuals acknowledged as contributing to this sequence:</p>
-                        <div class="col-sm-10 offset-sm-1">
-                            {{ tables['acknowledgements'] }}
-                        </div>
+            {% if notes %}
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Notes</h3>
+                <div>{{ notes | textile_filter }}</div>
+            </div>
+            {% endif %}
+
+            {% if supplementary_files %}
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Supplementary Files</h3>
+                <div class="table-responsive">
+                    {{ tables['attachments'] }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Details Tab -->
+        <div role="tabpanel" class="tab-pane" id="det">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Details</h3>
+                <div class="table-responsive">
+                    {{ tables['description'] }}
                 </div>
             </div>
 
-            <div role="tabpanel" class="tab-pane" id="history">
-                <div class="row">
-                    <h3 class="col-sm-11 offset-sm-1">History</h3>
-                    <p class="col-sm-10 offset-sm-1">History logs the times and reasons for the publication of each version of this germline set. Key changes are noted.
-                    For detailed changes, click on the link to the sequence.</p>
-                    <div class="col-sm-10 offset-sm-1">
-                        {% for t in tables['history'] %}
-                            {{ t }}
-                        {% endfor %}
-                    </div>
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Included Sequences</h3>
+                <p class="mb-3">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
+                <div class="table-responsive">
+                    {{ tables['genes'] }}
                 </div>
-                {% if changes != '' %}
-                    <div class="row">
-                        <h3 class="col-sm-11 offset-sm-1">Changes from published version</h3>
-                        <div class="col-sm-10 offset-sm-1">
-                            {{  changes }}
-                        </div>
-                    </div>
-                {% endif %}
             </div>
+        </div>
 
-            <div role="tabpanel" class="tab-pane" id="versions">
-                <div class="row">
-                    <h3 class="col-sm-11 offset-sm-1">Versions</h3>
-                    <p class="col-sm-10 offset-sm-1">All published versions of this germline set.</p>
-                    <div class="col-sm-10 offset-sm-1">
-                        {{ tables['versions'] }}
-                    </div>
+        <!-- Acknowledgements Tab -->
+        <div role="tabpanel" class="tab-pane" id="ack">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Acknowledgements</h3>
+                <p class="mb-3">Individuals acknowledged as contributing to this sequence:</p>
+                <div class="table-responsive">
+                    {{ tables['acknowledgements'] }}
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div role="tabpanel" class="tab-pane" id="history">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">History</h3>
+                <p class="mb-3">History logs the times and reasons for the publication of each version of this germline set. Key changes are noted.
+                For detailed changes, click on the link to the sequence.</p>
+                <div class="table-responsive">
+                    {% for t in tables['history'] %}
+                        {{ t }}
+                    {% endfor %}
+                </div>
+            </div>
+            {% if changes != '' %}
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Changes from published version</h3>
+                <div>{{ changes }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Versions Tab -->
+        <div role="tabpanel" class="tab-pane" id="versions">
+            <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Versions</h3>
+                <p class="mb-3">All published versions of this germline set.</p>
+                <div class="table-responsive">
+                    {{ tables['versions'] }}
                 </div>
             </div>
         </div>

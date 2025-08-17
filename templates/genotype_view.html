@@ -8,66 +8,74 @@
 {% endblock %}
 
 {% block c_body %}
-
-    <ul class="nav nav-tabs">
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
-        <li class="nav-item"><a class="nav-link" href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
-        {% if reviewer %}
-        <li class="nav-item"><a class="nav-link" href="#review">Review</a></li>
-        {% endif %}
-    </ul>
+<div class="data-card">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id) }}>Submission Details</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="ack") }}>Acknowledgements</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="rep") }}>Repertoire</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="primer_sets") }}>Primers</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="tools") }}>Inference Tools</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="genotype_description") }}>Genotypes</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="inferred_sequence") }}>Inferred Seqs</a></li>
+            <li class="breadcrumb-item"><a href={{ url_for(submission_link, id=sub_id, _anchor="notes") }}>Notes</a></li>
+            {% if reviewer %}
+            <li class="breadcrumb-item"><a href="#review">Review</a></li>
+            {% endif %}
+        </ol>
+    </nav>
 
 
     <form action="{{ url_for(this_link, id=id) }}" method="POST" name="form" class="form-horizontal">
-        <div class="row">
-            <div class="col-sm-11 offset-sm-1">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div>
-                            {{ tables['desc'] }}
-                        </div>
+        <div class="info-card mb-4">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="table-responsive">
+                        {{ tables['desc'] }}
                     </div>
+                </div>
 
-                    <div class="col-sm-6">
-                        <table>
-                            <thead>
-                                <tr><th class="col-sm-3 view-table-row"> </th></tr>
-                            </thead>
-                        </table>
-                        <div class="form-group">
-                        {{ form.hidden_tag() }}
-
-                        {{ render_narrow_field_with_errors(form.occ_threshold, class="form-control") }}
-                        {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
-                        {{ render_narrow_field_with_errors(form.sub_only, class="checkbox") }}
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Filter Options</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ render_narrow_field_with_errors(form.occ_threshold, class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ render_narrow_field_with_errors(form.freq_threshold, class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ render_narrow_field_with_errors(form.sub_only, class="form-check-input") }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-sm-11 offset-sm-1">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div class="btn-toolbar">
-                            <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
-                            <button type="button" class="tablebutton btn btn-secondary" id="show_all_fasta" data-sequence="{{ fasta }}">FASTA</button>
-                            <a href="{{  url_for('download_genotype', id=id) }}" class="tablebutton btn btn-secondary" role="button" id="download_genotype">Download</a>
-                        </div>
+        <div class="info-card mb-4">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                            <i class="bi bi-arrow-left me-1"></i>Close
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="show_all_fasta" data-sequence="{{ fasta }}">
+                            <i class="bi bi-file-earmark-code me-1"></i>FASTA
+                        </button>
+                        <a href="{{  url_for('download_genotype', id=id) }}" class="btn btn-secondary" role="button" id="download_genotype">
+                            <i class="bi bi-download me-1"></i>Download
+                        </a>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            <div class="offset-sm-2">
-                                {{ form.update(class="btn btn-success") }}
-                            </div>
-                        </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="d-flex justify-content-end">
+                        {{ form.update(class="btn btn-primary") }}
                     </div>
                 </div>
             </div>
@@ -75,13 +83,16 @@
     </form>
 
     {% if ncbi %}
-    <div class="row">
-        <div class="col-sm-11 offset-sm-1">
-            <div class="row">
-                <div class="col-sm-6">
+    <div class="info-card mb-4">
+        <h5 class="mb-3">NCBI Information</h5>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="table-responsive">
                     {{ sam_table }}
                 </div>
-                <div class="col-sm-6">
+            </div>
+            <div class="col-lg-6">
+                <div class="table-responsive">
                     {{ srr_table }}
                 </div>
             </div>
@@ -89,33 +100,219 @@
     </div>
     {% endif %}
 
-    <div class="row">
-        <div class="col-sm-11 offset-sm-1">
-        <p>Allele names in <em>italic</em> are not listed in the reference set. Allele names in <strong>bold</strong> are put forward in the submission for consideration as inferred sequences.</p>
-        <p>A cross in the Sequence column indicates that the sequence listed in the genotype does not match the sequence of the corresponding allele in the reference set.</p>
-        <p>An information icon in the Sequence column alerts you to other information on this sequence - hover over for details.</p>
+    <div class="info-card mb-4">
+        <div class="alert alert-info">
+            <div class="mb-2">
+                <strong><i class="bi bi-info-circle me-1"></i>Legend:</strong>
+            </div>
+            <ul class="mb-0">
+                <li>Allele names in <em>italic</em> are not listed in the reference set.</li>
+                <li>Allele names in <strong>bold</strong> are put forward in the submission for consideration as inferred sequences.</li>
+                <li>A cross in the Sequence column indicates that the sequence listed in the genotype does not match the sequence of the corresponding allele in the reference set.</li>
+                <li>An information icon in the Sequence column alerts you to other information on this sequence - hover over for details.</li>
+            </ul>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-sm-11 offset-sm-1">
-        <h3> Novel Alleles </h3>
+    <div class="info-card mb-4">
+        <h3 class="h4 mb-3">
+            <i class="bi bi-stars me-2"></i>Novel Alleles
+        </h3>
+        <div class="table-responsive">
+            <div class="genotype-table-wrapper">
+                {{ tables['inferred'] | safe}}
+            </div>
         </div>
     </div>
 
-    <div class="table pad">
-        {{ tables['inferred'] | safe}}
-    </div>
-
-    <div class="row">
-        <div class="col-sm-11 offset-sm-1">
-        <h3> Genotype </h3>
+    <div class="info-card mb-4">
+        <h3 class="h4 mb-3">
+            <i class="bi bi-table me-2"></i>Genotype
+        </h3>
+        <div class="table-responsive">
+            <div class="genotype-table-wrapper">
+                {{ tables['genotype'] | safe}}
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="table pad">
-        {{ tables['genotype'] | safe}}
-    </div>
+<!-- Add custom CSS for better table display -->
+<style>
+.genotype-table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.genotype-table-wrapper table {
+    width: 100%;
+    table-layout: auto;
+    font-size: 0.875rem;
+}
+
+.genotype-table-wrapper th,
+.genotype-table-wrapper td {
+    white-space: nowrap;
+    padding: 0.25rem 0.3rem;
+    vertical-align: middle;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+/* Override for headers to allow wrapping */
+.genotype-table-wrapper thead th {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: initial;
+    min-width: 120px;
+}
+
+/* Ensure consistent alignment for all columns */
+.genotype-table-wrapper td {
+    text-align: left;
+}
+
+.genotype-table-wrapper td.count-column,
+.genotype-table-wrapper td.freq-column {
+    text-align: center;
+}
+
+.genotype-table-wrapper .gene-column {
+    max-width: 120px;
+    min-width: 80px;
+}
+
+.genotype-table-wrapper .allele-column {
+    max-width: 100px;
+    min-width: 70px;
+}
+
+.genotype-table-wrapper .sequence-column {
+    max-width: 200px;
+    min-width: 150px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.genotype-table-wrapper .count-column {
+    max-width: 80px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.genotype-table-wrapper .freq-column {
+    max-width: 80px;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .genotype-table-wrapper {
+        font-size: 0.75rem;
+    }
+    
+    .genotype-table-wrapper th,
+    .genotype-table-wrapper td {
+        padding: 0.2rem 0.2rem;
+        max-width: 100px;
+        font-size: 0.75rem;
+    }
+    
+    .genotype-table-wrapper .sequence-column {
+        max-width: 120px;
+        min-width: 100px;
+    }
+}
+
+/* Improve table header styling */
+.genotype-table-wrapper thead th {
+    background-color: var(--bs-primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+    padding: 12px 8px;
+    white-space: nowrap;
+    min-width: 120px;
+    font-size: 0.9rem;
+}
+
+/* Allow wrapping only for very long headers */
+.genotype-table-wrapper thead th.long-header {
+    white-space: normal;
+    min-width: 100px;
+    max-width: 150px;
+}
+
+.genotype-table-wrapper thead th:first-child {
+    text-align: left;
+}
+
+.genotype-table-wrapper thead th:last-child {
+    text-align: center;
+}
+
+/* Fix specific column alignment issues */
+.genotype-table-wrapper th:nth-child(2),
+.genotype-table-wrapper td:nth-child(2) {
+    vertical-align: middle;
+    text-align: left;
+}
+
+.genotype-table-wrapper th:last-child,
+.genotype-table-wrapper td:last-child {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Ensure headers for 2nd and last columns have proper width */
+.genotype-table-wrapper thead th:nth-child(2),
+.genotype-table-wrapper thead th:last-child {
+    min-width: 120px;
+    white-space: nowrap;
+    padding: 12px 8px;
+}
+
+/* Override any conflicting styles for problematic columns */
+.genotype-table-wrapper thead th:nth-child(2) {
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+.genotype-table-wrapper thead th:last-child {
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+/* Ensure table has consistent border and spacing */
+.genotype-table-wrapper table {
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.genotype-table-wrapper thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Zebra striping for better readability */
+.genotype-table-wrapper tbody tr:nth-child(even) {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.genotype-table-wrapper tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+</style>
 {% endblock %}
 
 
@@ -127,20 +324,79 @@
     <script>
 
     $('#show_all_fasta').on('click', function () {
-        var sequence = $('#show_all_fasta').data('sequence'); // Extract info from data-* attributes
-        BootstrapDialog.show({
-            size: 'size-wide',
-            title: 'All Sequences',
-            message: '<pre>' + sequence + '</pre>',
-            buttons: [{
-                label: 'Close',
-                action: function(dialogItself){
-                    dialogItself.close();
-                }
-            }]
+        var sequence = $('#show_all_fasta').data('sequence');
+        
+        // Create Bootstrap 5 modal
+        var modalHtml = `
+            <div class="modal fade" id="fastaModal" tabindex="-1" aria-labelledby="fastaModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="fastaModalLabel">All Sequences</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">${sequence}</pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        $('#fastaModal').remove();
+        
+        // Add modal to body and show
+        $('body').append(modalHtml);
+        var modal = new bootstrap.Modal(document.getElementById('fastaModal'));
+        modal.show();
+        
+        // Clean up when modal is hidden
+        $('#fastaModal').on('hidden.bs.modal', function () {
+            $(this).remove();
         });
-    })
+    });
 
     $('#genotype_table').stickyTableHeaders();
+    
+    // Initialize responsive table handling
+    $(document).ready(function() {
+        // Apply column classes based on header text for better responsive behavior
+        $('.genotype-table-wrapper table').each(function() {
+            var table = $(this);
+            table.find('thead th').each(function(index) {
+                var headerText = $(this).text().toLowerCase().trim();
+                var columnClass = '';
+                
+                if (headerText.includes('gene')) {
+                    columnClass = 'gene-column';
+                } else if (headerText.includes('allele')) {
+                    columnClass = 'allele-column';
+                } else if (headerText.includes('sequence')) {
+                    columnClass = 'sequence-column';
+                } else if (headerText.includes('count') || headerText.includes('total')) {
+                    columnClass = 'count-column';
+                } else if (headerText.includes('freq') || headerText.includes('%')) {
+                    columnClass = 'freq-column';
+                }
+                
+                if (columnClass) {
+                    table.find('td:nth-child(' + (index + 1) + ')').addClass(columnClass);
+                    $(this).addClass(columnClass);
+                }
+            });
+        });
+        
+        // Add tooltips for truncated content
+        $('.genotype-table-wrapper td').each(function() {
+            var $cell = $(this);
+            if ($cell[0].scrollWidth > $cell[0].clientWidth) {
+                $cell.attr('title', $cell.text().trim());
+            }
+        });
+    });
     </script>
 {% endblock %}

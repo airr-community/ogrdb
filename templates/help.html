@@ -352,31 +352,47 @@
         const browseSetsBtn = document.getElementById('browse-sets-btn');
         const viewSequencesBtn = document.getElementById('view-sequences-btn');
         
+        function handleHelpDropdownClick(dropdownSelector) {
+            // First, scroll to top so user can see the navigation
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            // Check if navbar is collapsed (on mobile)
+            const navbarCollapse = document.getElementById('navbarCollapse');
+            const isCollapsed = navbarCollapse && !navbarCollapse.classList.contains('show');
+            
+            if (isCollapsed) {
+                // Expand the navbar first
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                if (navbarToggler && typeof bootstrap !== 'undefined') {
+                    const collapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapse);
+                    collapse.show();
+                }
+            }
+            
+            // Wait a bit for scroll and potential navbar expansion, then show dropdown
+            setTimeout(() => {
+                const dropdown = document.querySelector(dropdownSelector);
+                if (dropdown && typeof bootstrap !== 'undefined') {
+                    const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(dropdown);
+                    dropdownInstance.show();
+                }
+            }, isCollapsed ? 400 : 200); // Longer delay if we had to expand navbar
+        }
+        
         if (browseSetsBtn) {
             browseSetsBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                setTimeout(() => {
-                    const germlineDropdown = document.querySelector('#dropdownMenu1');
-                    if (germlineDropdown && typeof bootstrap !== 'undefined') {
-                        const dropdown = bootstrap.Dropdown.getOrCreateInstance(germlineDropdown);
-                        dropdown.toggle();
-                    }
-                }, 100);
+                handleHelpDropdownClick('#dropdownMenu1');
             });
         }
         
         if (viewSequencesBtn) {
             viewSequencesBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                setTimeout(() => {
-                    const sequencesDropdown = document.querySelector('#dropdownMenu2');
-                    if (sequencesDropdown && typeof bootstrap !== 'undefined') {
-                        const dropdown = bootstrap.Dropdown.getOrCreateInstance(sequencesDropdown);
-                        dropdown.toggle();
-                    }
-                }, 100);
+                handleHelpDropdownClick('#dropdownMenu2');
             });
         }
         

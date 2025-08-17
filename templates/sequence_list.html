@@ -30,7 +30,9 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        {{ t['draft'] }}
+                        <div class="sequence-table-wrapper">
+                            {{ t['draft'] }}
+                        </div>
                     </div>
                     <div class="mt-3">
                         <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='draft') }}" id="alignment_draft" class="btn btn-primary">
@@ -49,7 +51,9 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        {{ t['level_0'] }}
+                        <div class="sequence-table-wrapper">
+                            {{ t['level_0'] }}
+                        </div>
                     </div>
                     <div class="mt-3">
                         <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='level_0') }}" id="alignment_level_0" class="btn btn-primary">
@@ -70,7 +74,9 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                {{ tables['affirmed'] }}
+                <div class="sequence-table-wrapper">
+                    {{ tables['affirmed'] }}
+                </div>
             </div>
             <div class="mt-3">
                 <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='affirmed') }}" id="affirmed" class="btn btn-primary">
@@ -165,12 +171,208 @@
         </div>
     </div>
 
+<!-- Add custom CSS for better sequence table display -->
+<style>
+.sequence-table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.sequence-table-wrapper table {
+    width: 100%;
+    table-layout: auto;
+    font-size: 0.85rem;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.sequence-table-wrapper th,
+.sequence-table-wrapper td {
+    white-space: nowrap;
+    padding: 0.25rem 0.2rem;
+    vertical-align: middle;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    line-height: 1.1;
+}
+
+/* Header styling */
+.sequence-table-wrapper thead th {
+    background-color: var(--bs-primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+    padding: 8px 4px;
+    white-space: normal;
+    word-wrap: break-word;
+    min-width: 60px;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    height: auto;
+    min-height: 40px;
+    vertical-align: middle;
+}
+
+/* Specific column width management - much tighter */
+.sequence-table-wrapper .sequence-name-column {
+    max-width: 100px;
+    min-width: 80px;
+}
+
+.sequence-table-wrapper .species-column {
+    max-width: 70px;
+    min-width: 50px;
+}
+
+.sequence-table-wrapper .locus-column {
+    max-width: 50px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.sequence-table-wrapper .version-column {
+    max-width: 60px;
+    min-width: 45px;
+    text-align: center;
+}
+
+.sequence-table-wrapper .status-column {
+    max-width: 70px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.sequence-table-wrapper .affirmation-column {
+    max-width: 80px;
+    min-width: 60px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.sequence-table-wrapper .date-column {
+    max-width: 80px;
+    min-width: 70px;
+    font-size: 0.75rem;
+}
+
+.sequence-table-wrapper .notes-column {
+    max-width: 120px;
+    min-width: 80px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.sequence-table-wrapper .action-column {
+    max-width: 60px;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sequence-table-wrapper {
+        font-size: 0.75rem;
+    }
+    
+    .sequence-table-wrapper th,
+    .sequence-table-wrapper td {
+        padding: 0.2rem 0.2rem;
+        max-width: 100px;
+        font-size: 0.75rem;
+    }
+    
+    .sequence-table-wrapper .notes-column {
+        max-width: 120px;
+        min-width: 100px;
+    }
+}
+
+/* Zebra striping for better readability */
+.sequence-table-wrapper tbody tr:nth-child(even) {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.sequence-table-wrapper tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Ensure table has consistent border and spacing */
+.sequence-table-wrapper thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Column alignment */
+.sequence-table-wrapper td {
+    text-align: left;
+}
+
+.sequence-table-wrapper td.locus-column,
+.sequence-table-wrapper td.status-column {
+    text-align: center;
+}
+</style>
+
 {% endblock %}
 
 
 {% block scripts %}
     {{ super() }}
     <script>
+    // Auto-apply column classes based on header text
+    $(document).ready(function() {
+        $('.sequence-table-wrapper table').each(function() {
+            var table = $(this);
+            table.find('thead th').each(function(index) {
+                var headerText = $(this).text().toLowerCase().trim();
+                var columnClass = '';
+                
+                if (headerText.includes('sequence') || headerText.includes('name')) {
+                    columnClass = 'sequence-name-column';
+                } else if (headerText.includes('species')) {
+                    columnClass = 'species-column';
+                } else if (headerText.includes('locus')) {
+                    columnClass = 'locus-column';
+                } else if (headerText.includes('version')) {
+                    columnClass = 'version-column';
+                } else if (headerText.includes('status')) {
+                    columnClass = 'status-column';
+                } else if (headerText.includes('affirmation') || headerText.includes('level')) {
+                    columnClass = 'affirmation-column';
+                } else if (headerText.includes('date') || headerText.includes('created') || headerText.includes('updated')) {
+                    columnClass = 'date-column';
+                } else if (headerText.includes('note') || headerText.includes('comment')) {
+                    columnClass = 'notes-column';
+                } else if (headerText.includes('action') || headerText.includes('edit') || headerText.includes('delete')) {
+                    columnClass = 'action-column';
+                }
+                
+                if (columnClass) {
+                    table.find('td:nth-child(' + (index + 1) + ')').addClass(columnClass);
+                    $(this).addClass(columnClass);
+                }
+            });
+        });
+        
+        // Add tooltips for truncated content
+        $('.sequence-table-wrapper td').each(function() {
+            var $cell = $(this);
+            if ($cell[0].scrollWidth > $cell[0].clientWidth) {
+                $cell.attr('title', $cell.text().trim());
+            }
+        });
+    });
+
     $("#species").change(function(e) {
         update_dls()
     });

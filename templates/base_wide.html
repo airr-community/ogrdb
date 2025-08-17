@@ -54,7 +54,6 @@
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
                             <li><a href="{{ url_for('sequences', sp='Homo sapiens') }}" class="dropdown-item m-item">Human (Homo sapiens)</a></li>
                             <li><a href="{{ url_for('sequences', sp='Mus musculus') }}" class="dropdown-item m-item">Mouse (Mus musculus)</a></li>
-                            <li><a href="{{ url_for('sequences', sp='Macaca mulatta') }}" class="dropdown-item m-item">Macaque (Macaca mulatta)</a></li>
                             {% if current_user.has_role('Salmo salar') %}
                             <li><a href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}" class="dropdown-item m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
                             <li><a href="{{ url_for('sequences', sp='Salmo salar') }}" class="dropdown-item m-item">Salmon (Salmo salar)</a></li>

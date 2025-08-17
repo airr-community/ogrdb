@@ -3,52 +3,77 @@
 
 {% block c_body %}
 
-<h3>Submission: <a href="{{ url_for('edit_submission', id=submission_id) }}"> {{ submission_id }} </a> </h3>
+<div class="data-card">
+    <div class="mb-4">
+        <h3>Submission: <a href="{{ url_for('edit_submission', id=submission_id) }}" class="text-decoration-none"> {{ submission_id }} </a></h3>
+    </div>
 
-<form action="{{ url_for('edit_genotype_description', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+    <form action="{{ url_for('edit_genotype_description', id=id) }}" method="POST" name="form" class="form-horizontal" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
-            {{ form.hidden_tag() }}
+        {% include 'genotype_description_form.html' %}
 
-            {% include 'genotype_description_form.html' %}
-
-            {% if ncbi %}
-                <div class="row">
-                    <div class="col-sm-8 offset-sm-2">
+        {% if ncbi %}
+        <div class="info-card mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-database me-2"></i>NCBI Information
+            </h5>
+            <div class="row g-4 mb-3">
+                <div class="col-lg-6">
+                    <div class="table-responsive">
                         {{ sam_table }}
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-sm-8 offset-sm-2">
+                <div class="col-lg-6">
+                    <div class="table-responsive">
                         {{ srr_table }}
                     </div>
                 </div>
+            </div>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                (Details will be updated from NCBI when you save)
+            </div>
+        </div>
+        {% endif %}
 
-                <div class="row">
-                    <div class="col-sm-9 offset-sm-3">
-                    <p >(Details will be updated from NCBI when you save)</p>
-                    </div>
+        <div class="info-card mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>Genotype File Upload
+            </h5>
+            <div class="alert alert-warning mb-3">
+                <ul class="mb-0">
+                    <li>Choosing a Genotype File to upload will overwrite any existing data.</li>
+                    <li>This <a href="https://github.com/airr-community/ogrdbstats" target="_blank" class="alert-link">R script</a> can be used to create the Genotype File.</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="/static/templates/genotype_template.csv" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-download me-2"></i>Download Template
+                    </a>
                 </div>
+                <div class="col-md-4">
+                    <a href="/static/templates/genotype_fields.csv" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-file-text me-2"></i>Field Descriptions
+                    </a>
                 </div>
-            {% endif %}
-
-            <div class="form-group">
-                <div class="col-sm-8 offset-sm-3">
-                    <ul class="list-unstyled">
-                        <li>Choosing a Genotype File to upload will overwrite any existing data.</li>
-                        <li>This <a href="https://github.com/airr-community/ogrdbstats" target="_blank">R script</a> can be used to create the Genotype File.</li>
-                        <li><a href="/static/templates/genotype_template.csv">Download Genotype File Template</a></li>
-                        <li><a href="/static/templates/genotype_fields.csv">Download Field Descriptions</a></li>
-                        <li><a href="/static/docs/genotype_1.csv">Download Example File</a></li>
-                    </ul>
+                <div class="col-md-4">
+                    <a href="/static/docs/genotype_1.csv" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-file-earmark-code me-2"></i>Example File
+                    </a>
                 </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <div class="offset-sm-3">
-                    <input type="submit" value="Save" class="btn btn-primary" id="save_genotype">
-                    <input type="submit" value="Save & Close" class="btn btn-default" id="save_close_genotype"  name="save_close_genotype">
-                    {{ form.cancel(class="btn btn-cancel") }}
-                </div>
+        <div class="d-flex gap-3 justify-content-center">
+            <input type="submit" value="Save" class="btn btn-primary" id="save_genotype">
+            <input type="submit" value="Save & Close" class="btn btn-success" id="save_close_genotype" name="save_close_genotype">
+            {{ form.cancel(class="btn btn-secondary") }}
+        </div>
+
+    </form>
+</div>
             </div>
 </form>
 

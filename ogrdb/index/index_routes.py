@@ -14,6 +14,8 @@ from werkzeug.utils import redirect
 
 from db.misc_db import Committee
 from db.userdb import User, Role
+from db.germline_set_db import GermlineSet
+from db.gene_description_db import GeneDescription
 from forms.security import ExtendedRegisterForm, FirstAccountForm, ProfileForm, save_Profile
 from head import app, security, db
 
@@ -77,7 +79,33 @@ def index():
     except:
         pass
 
-    return render_template('index.html', current_user=current_user, news_items=news_items)
+    # Calculate database statistics
+    stats = {
+        'germline_sets': 0,
+        'sequences': 0,
+        'species': 0,
+        'last_updated': 'N/A'
+    }
+    
+    try:
+        # Count published germline sets
+        stats['germline_sets'] = db.session.query(GermlineSet).filter(GermlineSet.status == 'published').count()
+        
+        # Count distinct species with published germline sets
+        stats['species'] = db.session.query(GermlineSet.species).filter(GermlineSet.status == 'published').distinct().count()
+        
+        # Count total sequences (gene descriptions)
+        stats['sequences'] = db.session.query(GeneDescription).count()
+        
+        # Get most recent release date from published germline sets
+        latest_release = db.session.query(GermlineSet.release_date).filter(GermlineSet.status == 'published').order_by(GermlineSet.release_date.desc()).first()
+        if latest_release and latest_release[0]:
+            stats['last_updated'] = latest_release[0]
+    except Exception as e:
+        print(f"Error calculating database statistics: {e}")
+        pass
+
+    return render_template('index.html', current_user=current_user, news_items=news_items, stats=stats)
 
 
 @app.route('/render_page/<page>')

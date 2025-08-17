@@ -42,46 +42,7 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
         
-        .modal-header {
-            background: var(--ogrdb-primary);
-            color: white;
-        }
-        
-        .modal-header .btn-close {
-            filter: invert(1);
-        }
-        
-        .species-selector {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .species-selector:hover,
-        .species-selector.selected {
-            border-color: var(--ogrdb-primary);
-            background: rgba(24, 141, 251, 0.05);
-        }
-        
-        .locus-checkbox {
-            margin: 0.25rem 0;
-        }
-        
-        .format-option {
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .format-option:hover,
-        .format-option.selected {
-            border-color: var(--ogrdb-primary);
-            background: rgba(24, 141, 251, 0.05);
-        }
+
         
         /* Modern Navigation Styling */
         .navbar-brand {
@@ -188,11 +149,8 @@
                     
                     <!-- Primary CTA -->
                     <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
-                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                        <button class="btn btn-light btn-lg" id="heroDownloadBtn">
                             <i class="bi bi-download me-2"></i>Download Germline Sets
-                        </button>
-                        <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#searchModal">
-                            <i class="bi bi-search me-2"></i>Search Sequences
                         </button>
                     </div>
                 </div>
@@ -203,22 +161,22 @@
                         <h4 class="mb-3">Database Overview</h4>
                         <div class="row">
                             <div class="col-4">
-                                <div class="h2 fw-bold">127</div>
+                                <div class="h2 fw-bold">{{ stats.germline_sets }}</div>
                                 <small class="opacity-75">Germline Sets</small>
                             </div>
                             <div class="col-4">
-                                <div class="h2 fw-bold">8,439</div>
+                                <div class="h2 fw-bold">{{ "{:,}".format(stats.sequences) }}</div>
                                 <small class="opacity-75">Sequences</small>
                             </div>
                             <div class="col-4">
-                                <div class="h2 fw-bold">12</div>
+                                <div class="h2 fw-bold">{{ stats.species }}</div>
                                 <small class="opacity-75">Species</small>
                             </div>
                         </div>
                         <hr class="my-3 opacity-25">
                         <div class="d-flex justify-content-between small">
                             <span>Last Updated</span>
-                            <span>Jan 15, 2025</span>
+                            <span>{{ stats.last_updated }}</span>
                         </div>
                     </div>
                 </div>
@@ -230,20 +188,6 @@
     <section class="py-5">
         <div class="container">
             <div class="row g-4">
-                <!-- Browse Sets Feature -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="card feature-card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-circle bg-primary bg-opacity-10">
-                                <i class="bi bi-collection fs-1 text-primary"></i>
-                            </div>
-                            <h5 class="card-title">Browse Sets</h5>
-                            <p class="card-text text-muted">Explore germline sets by species and locus</p>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#browseSetsModal">Browse Sets</button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Browse Sequences Feature -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card feature-card h-100 border-0 shadow-sm">
@@ -252,8 +196,8 @@
                                 <i class="bi bi-list-ul fs-1 text-success"></i>
                             </div>
                             <h5 class="card-title">Browse Sequences</h5>
-                            <p class="card-text text-muted">Browse all sequences by species and locus</p>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#browseSequencesModal">Browse Sequences</button>
+                            <p class="card-text text-muted">Browse and search all sequences by species and locus</p>
+                            <button class="btn btn-success" id="heroBrowseSequencesBtn">Browse Sequences</button>
                         </div>
                     </div>
                 </div>
@@ -267,56 +211,25 @@
                             </div>
                             <h5 class="card-title">Submit Data</h5>
                             <p class="card-text text-muted">Contribute new germline sequences and genotypes</p>
-                            <a href="{{ url_for('submissions') }}" class="btn btn-warning">Start Submission</a>
+                            <a href="https://wordpress.vdjbase.org/index.php/ogrdb/submitting-inferences-to-ogrdb/" class="btn btn-warning">Submission Guide</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- API Feature -->
+                <!-- Get Help Feature -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card feature-card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <div class="icon-circle bg-info bg-opacity-10">
                                 <i class="bi bi-code-slash fs-1 text-info"></i>
                             </div>
-                            <h5 class="card-title">API Access</h5>
-                            <p class="card-text text-muted">Programmatic access to all data and functionality</p>
-                            <a href="#" class="btn btn-info">View Docs</a>
+                            <h5 class="card-title">Documentation</h5>
+                            <p class="card-text text-muted">Howto guides, news and data updates, API and tools</p>
+                            <a href="/help" class="btn btn-info">View Docs</a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick Access Section -->
-    <section class="bg-light py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8">
-                    <h2 class="mb-4">Quick Access</h2>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <a href="{{ url_for('germline_sets', species='Homo sapiens') }}" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-person-fill me-2"></i>
-                                Human Germline Sets
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{{ url_for('germline_sets', species='Mus musculus') }}" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-collection me-2"></i>
-                                Mouse Germline Sets
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        You do not need to create an account to use this site. Click the links above to download reference sets.
-                    </div>
-                </div>
-                
-                <div class="col-lg-4">
+                <div class="col-md-6 col-lg-3">
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">
@@ -340,362 +253,59 @@
         </div>
     </section>
 
-    <!-- Download Germline Sets Modal -->
-    <div class="modal fade" id="downloadModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Download Germline Sets</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Select species, locus, and format to download germline sets:</p>
-                    
-                    <!-- Species Selection -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Select Species</label>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="human">
-                                    <div class="text-center">
-                                        <i class="bi bi-person fs-2 text-primary mb-2"></i>
-                                        <h6>Human</h6>
-                                        <small class="text-muted">Homo sapiens</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="mouse">
-                                    <div class="text-center">
-                                        <i class="bi bi-mouse fs-2 text-success mb-2"></i>
-                                        <h6>Mouse</h6>
-                                        <small class="text-muted">Mus musculus</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="other">
-                                    <div class="text-center">
-                                        <i class="bi bi-plus-circle fs-2 text-secondary mb-2"></i>
-                                        <h6>Other</h6>
-                                        <small class="text-muted">Various species</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Locus Selection -->
-                    <div id="locusSelection" style="display: none;" class="mb-4">
-                        <label class="form-label fw-bold">Select Locus</label>
-                        <div class="row" id="locusOptions"></div>
-                    </div>
-
-                    <!-- Format Selection -->
-                    <div id="formatSelection" style="display: none;" class="mb-4">
-                        <label class="form-label fw-bold">Select Format</label>
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <div class="format-option" data-format="fasta">
-                                    <strong>FASTA</strong><br>
-                                    <small class="text-muted">Standard sequence format</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="format-option" data-format="airr">
-                                    <strong>AIRR</strong><br>
-                                    <small class="text-muted">AIRR-compliant format</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="format-option" data-format="excel">
-                                    <strong>Excel</strong><br>
-                                    <small class="text-muted">Spreadsheet format</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="downloadBtn" disabled>Download</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Browse Sets Modal -->
-    <div class="modal fade" id="browseSetsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Browse Germline Sets</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="browseSpeciesSelect" class="form-label">Select Species</label>
-                    <select class="form-select" id="browseSpeciesSelect">
-                        <option value="">Choose a species...</option>
-                        <option value="Homo sapiens">Human (Homo sapiens)</option>
-                        <option value="Mus musculus">Mouse (Mus musculus)</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="browseSetsBtn" disabled>Browse Sets</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Browse Sequences Modal -->
-    <div class="modal fade" id="browseSequencesModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Browse Sequences</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="browseSeqSpeciesSelect" class="form-label">Select Species</label>
-                    <select class="form-select" id="browseSeqSpeciesSelect">
-                        <option value="">Choose a species...</option>
-                        <option value="Homo sapiens">Human (Homo sapiens)</option>
-                        <option value="Mus musculus">Mouse (Mus musculus)</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="browseSequencesBtn" disabled>Browse Sequences</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Search Sequences Modal -->
-    <div class="modal fade" id="searchModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Search Sequences</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Search for specific sequences across the database:</p>
-                    
-                    <!-- Species Selection -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Select Species</label>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="human">
-                                    <div class="text-center">
-                                        <i class="bi bi-person fs-2 text-primary mb-2"></i>
-                                        <h6>Human</h6>
-                                        <small class="text-muted">Homo sapiens</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="mouse">
-                                    <div class="text-center">
-                                        <i class="bi bi-mouse fs-2 text-success mb-2"></i>
-                                        <h6>Mouse</h6>
-                                        <small class="text-muted">Mus musculus</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="species-selector" data-species="other">
-                                    <div class="text-center">
-                                        <i class="bi bi-plus-circle fs-2 text-secondary mb-2"></i>
-                                        <h6>Other</h6>
-                                        <small class="text-muted">Various species</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Locus Selection -->
-                    <div id="searchLocusSelection" style="display: none;" class="mb-4">
-                        <label class="form-label fw-bold">Select Locus</label>
-                        <div class="row" id="searchLocusOptions"></div>
-                    </div>
-
-                    <!-- Search Type Selection -->
-                    <div id="searchTypeSelection" style="display: none;" class="mb-4">
-                        <label class="form-label fw-bold">Search Type</label>
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <div class="format-option" data-search-type="sequence">
-                                    <strong>Sequence Search</strong><br>
-                                    <small class="text-muted">Search by nucleotide sequence</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="format-option" data-search-type="name">
-                                    <strong>Name Search</strong><br>
-                                    <small class="text-muted">Search by gene/allele name</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Search Input -->
-                    <div id="searchInput" style="display: none;" class="mb-4">
-                        <label for="searchText" class="form-label fw-bold" id="searchInputLabel">Enter Search Query</label>
-                        <textarea class="form-control" id="searchText" rows="3" placeholder="Enter your search query..."></textarea>
-                        <div class="form-text" id="searchHint">Enter your search criteria.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="searchBtn" disabled>Search</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Locus options by species
-        const locusOptions = {
-            human: ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD'],
-            mouse: ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD'],
-            other: ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRG', 'TRD']
-        };
-
-        // Download Modal Logic
-        let selectedSpecies = null;
-        let selectedLoci = [];
-        let selectedFormat = null;
-
-        // Species selection for download modal
-        document.querySelectorAll('#downloadModal .species-selector').forEach(selector => {
-            selector.addEventListener('click', function() {
-                document.querySelectorAll('#downloadModal .species-selector').forEach(s => s.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedSpecies = this.dataset.species;
-                
-                // Show locus selection
-                showLocusSelection('locusOptions', selectedSpecies);
-                document.getElementById('locusSelection').style.display = 'block';
-                
-                // Reset selections
-                selectedLoci = [];
-                selectedFormat = null;
-                document.getElementById('formatSelection').style.display = 'none';
-                updateDownloadButton();
-            });
-        });
-
-        // Format selection for download modal
-        document.querySelectorAll('#downloadModal .format-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('#downloadModal .format-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedFormat = this.dataset.format;
-                updateDownloadButton();
-            });
-        });
-
-        function showLocusSelection(containerId, species) {
-            const container = document.getElementById(containerId);
-            const loci = locusOptions[species] || [];
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hero button click handlers - handle responsive navigation and scrolling
+            const heroDownloadBtn = document.getElementById('heroDownloadBtn');
+            const heroBrowseSequencesBtn = document.getElementById('heroBrowseSequencesBtn');
             
-            container.innerHTML = '';
-            loci.forEach(locus => {
-                const col = document.createElement('div');
-                col.className = 'col-md-4 col-6';
-                col.innerHTML = `
-                    <div class="locus-checkbox">
-                        <input type="checkbox" class="form-check-input" id="${containerId}_${locus}" value="${locus}">
-                        <label class="form-check-label" for="${containerId}_${locus}">${locus}</label>
-                    </div>
-                `;
-                container.appendChild(col);
-            });
-
-            // Add event listeners to checkboxes
-            container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateLocusSelections(containerId);
+            function handleDropdownClick(dropdownId) {
+                // First, scroll to top so user can see the navigation
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
                 });
-            });
-        }
-
-        function updateLocusSelections(containerId) {
-            const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
-            if (containerId === 'locusOptions') {
-                selectedLoci = Array.from(checkboxes).map(cb => cb.value);
-                if (selectedLoci.length > 0) {
-                    document.getElementById('formatSelection').style.display = 'block';
-                } else {
-                    document.getElementById('formatSelection').style.display = 'none';
-                    selectedFormat = null;
-                    document.querySelectorAll('#downloadModal .format-option').forEach(o => o.classList.remove('selected'));
+                
+                // Check if navbar is collapsed (on mobile)
+                const navbarCollapse = document.getElementById('navbarNav');
+                const isCollapsed = navbarCollapse && !navbarCollapse.classList.contains('show');
+                
+                if (isCollapsed) {
+                    // Expand the navbar first
+                    const navbarToggler = document.querySelector('.navbar-toggler');
+                    if (navbarToggler && typeof bootstrap !== 'undefined') {
+                        const collapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapse);
+                        collapse.show();
+                    }
                 }
-                updateDownloadButton();
+                
+                // Wait a bit for scroll and potential navbar expansion, then show dropdown
+                setTimeout(() => {
+                    const dropdown = document.getElementById(dropdownId);
+                    if (dropdown && typeof bootstrap !== 'undefined') {
+                        const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(dropdown);
+                        dropdownInstance.show();
+                    }
+                }, isCollapsed ? 400 : 200); // Longer delay if we had to expand navbar
             }
-        }
-
-        function updateDownloadButton() {
-            const btn = document.getElementById('downloadBtn');
-            btn.disabled = !(selectedSpecies && selectedLoci.length > 0 && selectedFormat);
-        }
-
-        // Browse Sets Modal Logic
-        document.getElementById('browseSpeciesSelect').addEventListener('change', function() {
-            document.getElementById('browseSetsBtn').disabled = !this.value;
-        });
-
-        document.getElementById('browseSetsBtn').addEventListener('click', function() {
-            const species = document.getElementById('browseSpeciesSelect').value;
-            window.location.href = `/germline_sets/${encodeURIComponent(species)}`;
-        });
-
-        // Browse Sequences Modal Logic
-        document.getElementById('browseSeqSpeciesSelect').addEventListener('change', function() {
-            document.getElementById('browseSequencesBtn').disabled = !this.value;
-        });
-
-        document.getElementById('browseSequencesBtn').addEventListener('click', function() {
-            const species = document.getElementById('browseSeqSpeciesSelect').value;
-            window.location.href = `/sequences/${encodeURIComponent(species)}`;
-        });
-
-        // Download button action
-        document.getElementById('downloadBtn').addEventListener('click', function() {
-            console.log('Download requested:', {
-                species: selectedSpecies,
-                loci: selectedLoci,
-                format: selectedFormat
-            });
-            // Implement actual download logic here
-            alert(`Download would start for ${selectedSpecies} ${selectedLoci.join(', ')} in ${selectedFormat} format`);
-        });
-
-        // Reset modals when they're hidden
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('hidden.bs.modal', function() {
-                // Reset all selections and hide progressive sections
-                this.querySelectorAll('.species-selector, .format-option').forEach(el => el.classList.remove('selected'));
-                this.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                this.querySelectorAll('select').forEach(select => select.value = '');
-                this.querySelectorAll('textarea').forEach(textarea => textarea.value = '');
-                
-                // Hide progressive sections
-                this.querySelectorAll('[id$="Selection"]').forEach(section => section.style.display = 'none');
-                
-                // Reset variables
-                if (this.id === 'downloadModal') {
-                    selectedSpecies = null;
-                    selectedLoci = [];
-                    selectedFormat = null;
-                    updateDownloadButton();
-                }
-            });
+            
+            if (heroDownloadBtn) {
+                heroDownloadBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleDropdownClick('germlineSetsDropdown');
+                });
+            }
+            
+            if (heroBrowseSequencesBtn) {
+                heroBrowseSequencesBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleDropdownClick('sequencesDropdown');
+                });
+            }
         });
     </script>
 </body>

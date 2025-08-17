@@ -3,13 +3,24 @@
 {% block pagetitle %} Un-rearranged sequence support for {{ name }} {% endblock %}
 
 {% block c_body %}
-        <div class=".table">
+
+<div class="data-card">
+    <div class="info-card mb-4">
+        <h4 class="mb-3">
+            <i class="bi bi-table me-2"></i>Un-rearranged sequence support
+        </h4>
+        <div class="table-responsive">
             {{ table }}
         </div>
-        <div class="row">
-            <div class="col-sm-11 offset-sm-1">
-                <input type="button" class="tablebutton btn btn-primary" value="Close" onclick="window.history.back()" />
-        </div>
+    </div>
+    
+    <div class="d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+            <i class="bi bi-arrow-left me-2"></i>Close
+        </button>
+    </div>
+</div>
+
 {% endblock %}
 
 
