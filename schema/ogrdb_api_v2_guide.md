@@ -12,6 +12,9 @@ The OGRDB API v2.0.0 is a REST API that follows the OpenAPI 3.1.0 specification.
 - Download specific germline sets in different formats
 - List available versions of a germline set
 
+If you want to experiment with the API, you can use the [Swagger UI](https://ogrdb.airr-community.org/api_v2/swagger) to explore the endpoints interactively.
+The schema is [here](https://ogrdb.airr-community.org/schema/ogrdb-api-openapi3.yaml).
+
 ## Base URL
 
 All API requests should be made to:
