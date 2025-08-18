@@ -22,13 +22,13 @@ class SubmissionListActionCol(StyledCol):
         if item.editable:
             fmt_string.append('''
             <a href="%s" 
-            class="btn btn-xs text-warning icon_back">
+            class="btn btn-xs text-ogrdb-warning icon_back">
             <i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;
             </a>
             ''' % (url_for('edit_submission', id=item.submission_id)))
             fmt_string.append('''
             <button onclick="sub_delete(this.id)" 
-            class="btn btn-xs text-danger icon_back" id="%s">
+            class="btn btn-xs text-ogrdb-danger icon_back" id="%s">
             <i class="bi bi-trash-fill" 
             data-bs-toggle="tooltip" 
             title="Delete">

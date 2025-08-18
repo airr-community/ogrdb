@@ -28,19 +28,19 @@ class DetailsCol(StyledCol):
             else:
                 value = popup_seq_button(item.vdjbase_name, item.sequence, '', item.sequence).replace('btn_view_seq', 'seq_coding_view')
 
-        value += '''<a href=%s id="btn_view_notes" class="btn btn-xs text-info icon_back">
+        value += '''<a href=%s id="btn_view_notes" class="btn btn-xs text-ogrdb-info icon_back">
                      <i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Notes">
                      </a>
                  ''' % (url_for('vdjbase_review_detail', id=item.id))
 
         if item.editable:
-            value += '''<button onclick="sequence_warn(%s, '/sequence_from_vdjbase/', \'Press Create to create a sequence in OGRDB from this entry\')" 
-                        type="button" class="btn btn-xs text-warning icon_back" id="%s">
+            value += '''<button onclick="sequence_warn(%s, '/sequence_from_vdjbase/', 'Press Create to create a sequence in OGRDB from this entry')" 
+                        type="button" class="btn btn-xs text-ogrdb-warning icon_back" id="%s">
                         <i class="bi bi-save-fill" data-bs-toggle="tooltip" title="Create sequence in OGRDB">
                         </span>&nbsp;</button>''' % (item.id, item.id)
 
-            value += '''<button onclick="sequence_warn(%s, '/submission_from_vdjbase/', \'Press Create to create or add to a submission in OGRDB from this entry\')" 
-                        type="button" class="btn btn-xs text-warning icon_back" id="%s">
+            value += '''<button onclick="sequence_warn(%s, '/submission_from_vdjbase/', 'Press Create to create or add to a submission in OGRDB from this entry')" 
+                        type="button" class="btn btn-xs text-ogrdb-warning icon_back" id="%s">
                         <i class="bi bi-inbox-fill" data-bs-toggle="tooltip" title="Create submission in OGRDB">
                         </span>&nbsp;</button>''' % (item.id, item.id)
 

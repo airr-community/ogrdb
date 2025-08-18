@@ -28,7 +28,7 @@ class MessageBodyCol(StyledCol):
 class InferredSequenceTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         contents = '''
-        <button type="button" class="del_inf_button btn btn-xs text-danger icon_back" 
+        <button type="button" class="del_inf_button btn btn-xs text-ogrdb-danger icon_back" 
         data-id="%s" data-inf="%s" id="del_inf_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
         <i class="bi bi-trash-fill"></i>&nbsp;
@@ -40,10 +40,10 @@ class InferredSequenceTableMatchCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item['gene_sequence'] == item['nt_sequence']:
             icon = 'bi-check-circle-fill'
-            colour = 'text-info'
+            colour = 'text-ogrdb-info'
         else:
             icon = 'bi-x-circle-fill'
-            colour = 'text-danger'
+            colour = 'text-ogrdb-danger'
 
         alignment = report_dupe(item['gene_sequence'], 'Sequence', item['nt_sequence'], item['sequence_name'])
         content = Markup('''
@@ -107,7 +107,7 @@ class SupportingObservationTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         contents = '''
         <button type="button" 
-        class="del_obs_button btn btn-xs text-danger icon_back" 
+        class="del_obs_button btn btn-xs text-ogrdb-danger icon_back" 
         data-id="%s" data-gid="%s" id="del_obs_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
         <i class="bi bi-trash-fill"></i>&nbsp;
@@ -181,10 +181,10 @@ class MatchingSubmissionsTableMatchCol(StyledCol):
     def td_contents(self, item, attr_list):
         if item['gene_sequence'] == item['nt_sequence']:
             icon = 'bi-check-circle-fill'
-            colour = 'text-info'
+            colour = 'text-ogrdb-info'
         else:
             icon = 'bi-x-circle-fill'
-            colour = 'text-danger'
+            colour = 'text-ogrdb-danger'
 
         # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
         alignment = report_dupe(item['gene_sequence'], 'Sequence', item['nt_sequence'], item['sequence_name'])
@@ -312,7 +312,7 @@ class GenomicSupportTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
         contents = '''
         <button type="button" 
-        class="del_genomic_button btn btn-xs text-danger icon_back" 
+        class="del_genomic_button btn btn-xs text-ogrdb-danger icon_back" 
         data-id="%s" data-gen="%s" id="del_gen_%s_%s" data-bs-toggle="tooltip" 
         title="Delete">
         <i class="bi bi-trash-fill"></i>&nbsp;
@@ -320,7 +320,7 @@ class GenomicSupportTableActionCol(StyledCol):
         ''' % (item.sequence_id, item.id, item.sequence_id, item.id)
         contents += ('''
         <a href="%s" 
-        class="btn btn-xs text-warning icon_back">
+        class="btn btn-xs text-ogrdb-warning icon_back">
         <i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;
         </a>
         ''' % (url_for('seq_edit_genomic', seq_id=item.sequence_id, support_id=item.id)))

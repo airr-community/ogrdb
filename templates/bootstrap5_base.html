@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% block head %}
     <title>{% block title %}OGRDB{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ogrdb-design-system.css') }}">
     <style>
@@ -23,8 +24,8 @@
         --ogrdb-success-light: #d4edda;
         --ogrdb-info: #17a2b8;
         --ogrdb-info-light: #d1ecf1;
-        --ogrdb-warning: #5f3c11;
-        --ogrdb-warning-light: #fff3cd;
+        --ogrdb-warning: #aa6e25;
+        --ogrdb-warning-light: #a18e4f;
         --ogrdb-danger: #991414;
         --ogrdb-danger-light: #f8d7da;
         
@@ -154,6 +155,13 @@
     .text-primary-dark { color: var(--ogrdb-primary-dark) !important; }
     .text-primary-light { color: var(--ogrdb-primary-light) !important; }
     .text-muted { color: var(--ogrdb-text-muted) !important; }
+    
+    /* OGRDB Semantic Color Utilities */
+    .text-ogrdb-warning { color: var(--ogrdb-warning) !important; }
+    .text-ogrdb-danger { color: var(--ogrdb-danger) !important; }
+    .text-ogrdb-success { color: var(--ogrdb-success) !important; }
+    .text-ogrdb-info { color: var(--ogrdb-info) !important; }
+    .text-ogrdb-primary { color: var(--ogrdb-primary) !important; }
     
     .bg-primary { background-color: var(--ogrdb-primary) !important; }
     .bg-primary-light { background-color: var(--ogrdb-primary-light) !important; }
@@ -649,6 +657,7 @@
         }
     };
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     {% endblock %}
 </body>
 </html>

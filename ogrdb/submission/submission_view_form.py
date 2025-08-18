@@ -142,7 +142,7 @@ def setup_matching_sequences_table(sub):
                 if dup not in our_descriptions:
                     alignment = report_dupe(seq.nt_sequence, 'Sequence', dup.sequence, dup.description_id)
                     match = Markup('<button id="aln_view" name="aln_view" type="button" class="btn btn-xs %s icon_back" data-bs-toggle="modal" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-bs-toggle="tooltip" title="View"><i class="bi %s"></i>&nbsp;</button>' \
-                                   % ('text-info', alignment, dup.description_id, format_fasta_sequence('Sequence', seq.nt_sequence, 50) + format_fasta_sequence(dup.description_id, dup.sequence, 50), 'bi-search'))
+                                   % ('text-ogrdb-info', alignment, dup.description_id, format_fasta_sequence('Sequence', seq.nt_sequence, 50) + format_fasta_sequence(dup.description_id, dup.sequence, 50), 'bi-search'))
 
                     results.append({'subject_id': seq.genotype_description.genotype_subject_id,
                                     'genotype_name': seq.genotype_description.genotype_name,

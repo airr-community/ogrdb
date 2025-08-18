@@ -27,15 +27,15 @@ class ActionCol(StyledCol):
         fmt_string = []
 
         if self.view_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><i class="bi bi-eye-fill" data-bs-toggle="tooltip" title="View Detail"></i>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-ogrdb-info icon_back"><i class="bi bi-eye-fill" data-bs-toggle="tooltip" title="View Detail"></i>&nbsp;</a>'  % (url_for(self.view_route, id=content)))
         if self.edit_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-ogrdb-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>'  % (url_for(self.edit_route, id=content)))
         if self.download_route:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-info icon_back"><i class="bi bi-download" data-bs-toggle="tooltip" title="Download"></i>&nbsp;</a>'  % (url_for(self.download_route, id=content)))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-ogrdb-info icon_back"><i class="bi bi-download" data-bs-toggle="tooltip" title="Download"></i>&nbsp;</a>'  % (url_for(self.download_route, id=content)))
         if self.delete_route:
-            fmt_string.append('<button onclick="delete_warn(this.id, \'%s\')" type="button" class="btn btn-xs text-danger icon_back" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>' % (self.delete_message, url_for(self.delete_route, id=content)))
+            fmt_string.append('<button onclick="delete_warn(this.id, \'%s\')" type="button" class="btn btn-xs text-ogrdb-danger icon_back" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>' % (self.delete_message, url_for(self.delete_route, id=content)))
         elif self.delete:
-            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs text-danger icon_back"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>'  % (self.cname, content, self.cname, content))
+            fmt_string.append('<button id="%s_del_%s" name="%s_del_%s" type="submit" value="Del" class="btn btn-xs text-ogrdb-danger icon_back"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>'  % (self.cname, content, self.cname, content))
 
         return '&nbsp'.join(fmt_string)
 

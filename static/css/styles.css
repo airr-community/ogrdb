@@ -83,27 +83,37 @@ div.logo > div {
     text-align: center;
     line-height: 65px; /* Set line height for vertical centering */
     min-height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .logo-left {
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 30px;
-    margin-right: auto;
-    float: left;
-    height: 45px;
+    display: block;
+    height: 45px !important;
+    width: auto;
+    max-width: 200px;
 }
 
 .logo-right {
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 30px;
-    margin-left: auto;
-    float: right;
-    height: 40px;
+    display: block;
+    height: 40px !important;
+    width: auto;
+    max-width: 200px;
+    padding-right: 20px !important;
 }
 div.logo > div > a {
     color: white !important;
+}
+
+.logo-title {
+    color: white !important;
+    font-size: 30px;
+    font-weight: bolder;
+    display: inline-block;
+    text-align: center;
+    flex: 1;
+    line-height: normal;
 }
 
 span.tagline {

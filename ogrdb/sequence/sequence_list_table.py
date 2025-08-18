@@ -24,13 +24,15 @@ class SequenceListActionCol(StyledCol):
             fmt_string.append(item.sequence_name)
 
         if item.editable:
-            fmt_string.append('<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
-            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>' % (item.id))
+            fmt_string.append('<a href="%s" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>'  % (url_for('edit_sequence', id=item.id)))
+            fmt_string.append('<button onclick="seq_delete(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i>&nbsp;</button>' % (item.id))
 
         if item.draftable:
-            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (item.id))
-            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-tag-fill" data-bs-toggle="tooltip" title="IMGT Name"></i></button>' % (item.id))
-            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-tag-fill" data-bs-toggle="tooltip" title="IMGT Name"></i></button>' % (item.id))
+
+        if item.draftable and not item.editable:
+            fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (item.id))
 
         if (item.editable or item.draftable) and int(item.affirmation_level) < 3:
             inf_genotypes = [x.sequence_details for x in item.inferred_sequences]

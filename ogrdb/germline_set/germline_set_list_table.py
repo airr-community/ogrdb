@@ -20,25 +20,25 @@ def make_germline_action_string(item):
 
     if item.editable:
         fmt_string.append(
-            '<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>' % (
+            '<a href="%s" class="btn btn-xs text-ogrdb-warning icon_back"><i class="bi bi-pencil-fill" data-bs-toggle="tooltip" title="Edit"></i>&nbsp;</a>' % (
                 url_for('edit_germline_set', id=item.id)))
         fmt_string.append(
-            '<button onclick="set_delete(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (
+            '<button onclick="set_delete(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (
                 item.id))
     if item.draftable:
         fmt_string.append(
-            '<button onclick="set_new_draft(this.id)" class="btn btn-xs text-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (
+            '<button onclick="set_new_draft(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (
                 item.id))
         fmt_string.append(
-            '<button onclick="set_withdraw(this.id)" class="btn btn-xs text-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (
+            '<button onclick="set_withdraw(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (
                 item.id))
     if item.zenodo_updateable:
         fmt_string.append(
-            '<button onclick="set_update_doi(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><i class="bi bi-cloud-upload-fill" data-bs-toggle="tooltip" title="Update doi"></i>&nbsp;</button>' % (
+            '<button onclick="set_update_doi(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" id="%s"><i class="bi bi-cloud-upload-fill" data-bs-toggle="tooltip" title="Update doi"></i>&nbsp;</button>' % (
                 item.id))
     if item.zenodo_createable:
         fmt_string.append(
-            '<button onclick="set_create_doi(this.id)" class="btn btn-xs text-danger icon_back" id="%s"><i class="bi bi-broadcast-pin" data-bs-toggle="tooltip" title="Create doi"></i>&nbsp;</button>' % (
+            '<button onclick="set_create_doi(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" id="%s"><i class="bi bi-broadcast-pin" data-bs-toggle="tooltip" title="Create doi"></i>&nbsp;</button>' % (
                 item.id))
     return ''.join(fmt_string)
 
@@ -58,13 +58,13 @@ def make_download_items(item, extended):
         args = "%s/%s/%s" % (item.species, item.germline_set_name.replace('/', '%252f'), version)
 
     fmt_string.append(
-        '<a href="%s" class="btn btn-xs text-primary icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;AIRR (JSON)</a>' %
+        '<a href="%s" class="btn btn-xs text-ogrdb-primary icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;AIRR (JSON)</a>' %
         url_for('download_germline_set', varargs='%s/%s' % (args, 'airr'+ext)))
     fmt_string.append(
-        '<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;FASTA Gapped</a>' %
+        '<a href="%s" class="btn btn-xs text-ogrdb-warning icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;FASTA Gapped</a>' %
         url_for('download_germline_set', varargs='%s/%s' % (args, 'gapped'+ext)))
     fmt_string.append(
-        '<a href="%s" class="btn btn-xs text-warning icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;FASTA Ungapped</a>' %
+        '<a href="%s" class="btn btn-xs text-ogrdb-warning icon_back"><i class="bi bi-file-earmark-text-fill"></i>&nbsp;FASTA Ungapped</a>' %
         url_for('download_germline_set', varargs='%s/%s' % (args, 'ungapped'+ext)))
     if item.notes_entries:
         for af in item.notes_entries[0].attached_files:

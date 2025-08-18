@@ -19,7 +19,7 @@ from operator import attrgetter
 
 class GeneDescriptionTableActionCol(StyledCol):
     def td_contents(self, item, attr_list):
-        contents = '<button type="button" class="del_gene_button btn btn-xs text-danger icon_back" data-sid="%s" data-gid="%s" id="del_gene_%s" data-bs-toggle="tooltip" title="Delete"><i class="bi bi-trash-fill"></i>&nbsp;</button>' % (item['set_id'], item['gene_id'], item['gene_id'])
+        contents = '<button type="button" class="del_gene_button btn btn-xs text-ogrdb-danger icon_back" data-sid="%s" data-gid="%s" id="del_gene_%s" data-bs-toggle="tooltip" title="Delete"><i class="bi bi-trash-fill"></i>&nbsp;</button>' % (item['set_id'], item['gene_id'], item['gene_id'])
         return(contents)
 
 
