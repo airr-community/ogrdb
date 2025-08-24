@@ -17,13 +17,13 @@
             </div>
             {% include 'genomic_support_form.html' %}
 
-            <div class="form-group row col-sm-10">
-                <div class="row">
-                    <div class="offset-sm-1">
-                        <input type="submit" value="Cancel" class="btn btn-default" id="cancel" name="cancel">
+            <div class="form-group row">
+                <div class="col-sm-10 offset-sm-1">
+                    <div class="d-flex gap-3 justify-content-start">
+                        <input type="submit" value={{ action }} class="btn btn-primary" id="create" name="create">
+                        <input type="submit" value="Cancel" class="btn btn-warning" id="cancel" name="cancel">
                     </div>
                 </div>
-                <input type="submit" value={{ action }} class="btn btn-primary" id="create" name="create">
             </div>
         </form>
     </div>

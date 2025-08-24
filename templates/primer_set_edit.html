@@ -12,15 +12,12 @@
         {% include 'primer_set_form.html' %}
 
         <div class="row">
-            <div class="offset-sm-3">
-            <div class="btn-toolbar ">
-                <div class="row">
-                    <div class="offset-sm-3">
-                        <input type="submit" value="Save" class="btn btn-primary" name="submit_btn" id="submit_btn">
-                    </div>
+            <div class="col-sm-10 offset-sm-1">
+                <div class="d-flex gap-3 justify-content-start flex-wrap">
+                    <input type="submit" value="Save" class="btn btn-primary" name="submit_btn" id="submit_btn">
+                    <input type="submit" value="Add/Edit Primers" class="btn btn-outline-primary" name="edit_btn" id="edit_btn">
+                    <input type="submit" value="Close" class="btn btn-secondary" name="cancel_btn" id="cancel_btn">
                 </div>
-                <input type="submit" value="Add/Edit Primers" class="btn btn-default" name="edit_btn" id="edit_btn">
-                <input type="submit" value="Close" class="btn btn-default" name="cancel_btn" id="cancel_btn">
             </div>
         </div>
 </form>

@@ -84,6 +84,9 @@
                             <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}">Rainbow Trout (Oncorhynchus mykiss)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Salmo salar') }}">Atlantic Salmon (Salmo salar)</a></li>
                             {% endif %}
+                            {% if current_user.has_role('Peromyscus leucopus') %}
+                            <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Peromyscus leucopus') }}">White Footed Mouse (Peromyscus leucopus)</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -96,6 +99,9 @@
                             {% if current_user.has_role('Salmo salar') %}
                             <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}">Rainbow Trout (Oncorhynchus mykiss)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Salmo salar') }}">Salmon (Salmo salar)</a></li>
+                            {% endif %}
+                            {% if current_user.has_role('Peromyscus leucopus') %}
+                            <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Peromyscus leucopus') }}">White Footed Mouse (Peromyscus leucopus)</a></li>
                             {% endif %}
                             {% if current_user.has_role('Admin') %}
                             <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Test') }}">Test</a></li>

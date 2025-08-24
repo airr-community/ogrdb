@@ -51,7 +51,7 @@
                     <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                            {{ tables['inferred_sequence'] }}
-                            <input type="submit" value="Add Inference" class="btn btn-default" id="add_inference_btn" name="add_inference_btn" data-action="add_inference">
+                            <input type="submit" value="Add Inference" class="btn btn-outline-primary" id="add_inference_btn" name="add_inference_btn" data-action="add_inference">
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                     <div class="col-sm-10 offset-sm-1">
                         <div class="form-group">
                             {{ tables['genomic_support'] }}
-                            <input type="submit" value="Add Genomic" class="btn btn-default" id="add_genomic_btn" name="add_genomic_btn" data-action="add_genomic">
+                            <input type="submit" value="Add Genomic" class="btn btn-outline-primary" id="add_genomic_btn" name="add_genomic_btn" data-action="add_genomic">
                         </div>
                     </div>
                 </div>
@@ -163,13 +163,15 @@
         </div>
 
         <div class="row">
-            <div class="offset-sm-1">
-                <input type="submit" value="Save Draft" class="btn btn-primary" id="save_draft_btn" name="save_draft_btn">
+            <div class="col-sm-10 offset-sm-1">
+                <div class="d-flex gap-3 justify-content-start">
+                    <input type="submit" value="Save Draft" class="btn btn-primary" id="save_draft_btn" name="save_draft_btn">
+                    <button type="button" class="btn btn-warning" id="publish_btn" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="published"
+                            data-header="Publish Affirmation" data-instr="Please provide brief notes on this version"
+                            data-title="Sequence {{ sequence_name }} Version {{ version }} - Published" id="published">Publish</button>
+                </div>
             </div>
         </div>
-        <button type="button" class="btn btn-warning tablebutton" id="publish_btn" data-bs-toggle="modal" data-bs-target="#messageModal" data-type="history" data-action="published"
-                data-header="Publish Affirmation" data-instr="Please provide brief notes on this version"
-                data-title="Sequence {{ sequence_name }} Version {{ version }} - Published" id="published">Publish</button>
     </div>
 
     {% include 'dupe_gene_notes_modal.html' %}
