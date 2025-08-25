@@ -7,6 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        .logo-left {
+            display: block;
+            height: 50px !important;
+            width: auto;
+            max-width: 200px;
+            padding-top: 8px;
+        }
+
+        .logo-right {
+            display: block;
+            height: 40px !important;
+            width: auto;
+            max-width: 200px;
+            padding-right: 20px !important;
+        }
+
         :root {
             --ogrdb-primary: #188DFB;
             --ogrdb-secondary: #0056b3;
@@ -65,7 +81,7 @@
     <!-- Modern Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">OGRDB</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}"><img class="logo-left" src="/static/img/ogre-lozenge.png"></a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -138,6 +154,8 @@
                     <a class="nav-link" href="{{ url_for_security('login') }}">Login</a>
                     {% endif %}
                 </div>
+
+                <a class="navbar-brand fw-bold" href="https://www.antibodysociety.org/the-airr-community/"><img class="logo-right" src="/static/img/airr-lozenge.png"></a>
             </div>
         </div>
     </nav>
