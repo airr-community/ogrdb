@@ -1,82 +1,66 @@
 {% extends "security/base.html" %}
 {% from "security/_macros.html" import render_field_with_errors, render_field %}
 
-{% block title %}Register | Forum{% endblock %}
+{% block title %}Register{% endblock %}
 
 {% block s_body %}
 {% include "security/_messages.html" %}
-<div class="pageTitle">{{ _fsdomain('Register') }}</div>
+
+<div class="text-center mb-4">
+    <h4 class="text-primary fw-semibold">{{ _fsdomain('Register') }}</h4>
+    <p class="text-muted mb-0">Create your OGRDB account</p>
+</div>
+
 <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form" role="form">
-    <div class="row pad">
-        <div class="col-lg-12">
-            {{ register_user_form.hidden_tag() }}
-  
-            <div class="form-group">
-                {{ render_field_with_errors(register_user_form.email, class="form-control", placeholder="Enter email" ) }}
-            </div>
+    {{ register_user_form.hidden_tag() }}
 
-            <div class="form-group">
-                {{ render_field_with_errors(register_user_form.password, class="form-control", placeholder="Enter password") }}
-            </div>
-
-            {% if register_user_form.password_confirm %}
-                <div class="form-group">
-                    {{ render_field_with_errors(register_user_form.password_confirm, class="form-control", placeholder="Enter password") }}
-                </div>
-            {% endif %}
-
-            <div class="form-group">
-                {{ render_field_with_errors(register_user_form.name, class="form-control", placeholder="Enter name") }}
-            </div>
-
-            <div class="form-group">
-                {{ render_field_with_errors(register_user_form.address, class="form-control", placeholder="Enter address") }}
-            </div>
-
-            <div class="form-group">
-                <div class="col-sm-1">
-                {{ register_user_form.accepted_terms()|safe }}
-                </div>
-                {{ register_user_form.accepted_terms.label(class="col-sm-11 control-label") }}
-                {% if register_user_form.accepted_terms.errors %}
-                    <div class="col-sm-9 offset-sm-3 red">
-                        <ul>
-                            {% for error in register_user_form.accepted_terms.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ render_field(register_user_form.submit,  class="btn btn-primary") }}
-            </div>
-        </div>
+    <div class="mb-3">
+        {{ render_field_with_errors(register_user_form.email, class="form-control", placeholder="Enter your email address") }}
     </div>
 
-    <div class="row">
-        <div class="col-sm-12">
-              <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-        </div>
+    <div class="mb-3">
+        {{ render_field_with_errors(register_user_form.password, class="form-control", placeholder="Create a password") }}
     </div>
 
+    {% if register_user_form.password_confirm %}
+    <div class="mb-3">
+        {{ render_field_with_errors(register_user_form.password_confirm, class="form-control", placeholder="Confirm your password") }}
+    </div>
+    {% endif %}
+
+    <div class="mb-3">
+        {{ render_field_with_errors(register_user_form.name, class="form-control", placeholder="Enter your full name") }}
+    </div>
+
+    <div class="mb-4">
+        {{ render_field_with_errors(register_user_form.address, class="form-control", placeholder="Enter your institutional address", rows="3") }}
+    </div>
+
+    <!-- Terms acceptance -->
+    <div class="mb-4">
+        <div class="form-check">
+            {{ register_user_form.accepted_terms(class="form-check-input")|safe }}
+            {{ register_user_form.accepted_terms.label(class="form-check-label") }}
+        </div>
+        {% if register_user_form.accepted_terms.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in register_user_form.accepted_terms.errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="d-grid gap-2 mb-4">
+        {{ render_field(register_user_form.submit, class="btn btn-primary btn-lg") }}
+    </div>
+
+    <div class="text-center">
+        <p class="text-muted small mb-2">Already have an account?</p>
+        <a href="{{ url_for_security('login') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}" class="btn btn-outline-secondary">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+        </a>
+    </div>
 </form>
 
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-        $(document).ready(function ()
-        {
-            $("#submit").prop('disabled', true);
-        });
-
-
-        $("#accepted_terms").change( function()
-        {
-            $("#submit").prop('disabled', !$("#accepted_terms:checked").val());
-        });
-    </script>
 {% endblock %}

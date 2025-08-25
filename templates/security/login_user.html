@@ -5,37 +5,51 @@
 
 {% block s_body %}
 {% include "security/_messages.html" %}
-<div class="pageTitle">{{ _fsdomain('Login') }}</div>
 
-<div class="row pad">
-    <div class="col-lg-10 col-lg-offset-1">
-        <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form" role="form">
-            {{ login_user_form.hidden_tag() }}
-
-            <div class="form-group">
-                {{ render_field_with_errors(login_user_form.email, class="form-control", placeholder="Enter email") }}
-            </div>
-
-            <div class="form-group">
-                {{ render_field_with_errors(login_user_form.password, class="form-control", placeholder="Enter password") }}
-            </div>       
-
-            {{ render_field_with_errors(login_user_form.remember) }}
-            {{ render_field(login_user_form.next) }}
-        
-            <div class="form-group">
-                {{ render_field(login_user_form.submit, class="btn btn-primary") }}
-            </div>
-
-            <div class="row">
-                <div class="col-sm-12">
-                      <a href="{{ url_for_security('register') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}"  class="btn btn-link"><i class="bi bi-person-plus-fill"></i> Register</a>
-                      <a href="{{ url_for_security('forgot_password') }}" class="btn btn-link"><i class="bi bi-key-fill"></i> Recover password</a>
-                      <a href="{{ url_for_security('send_confirmation') }}" class="btn btn-link"><i class="bi bi-envelope-fill"></i> Resend confirmation</a>
-                </div>
-            </div>
-        </form>
-    </div>
+<div class="text-center mb-4">
+    <h4 class="text-primary fw-semibold">{{ _fsdomain('Login') }}</h4>
+    <p class="text-muted mb-0">Welcome back! Please sign in to your account</p>
 </div>
+
+<form action="{{ url_for_security('login') }}" method="POST" name="login_user_form" role="form">
+    {{ login_user_form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ render_field_with_errors(login_user_form.email, class="form-control form-control-lg", placeholder="Enter your email") }}
+    </div>
+
+    <div class="mb-3">
+        {{ render_field_with_errors(login_user_form.password, class="form-control form-control-lg", placeholder="Enter your password") }}
+    </div>
+
+    <div class="mb-3 form-check">
+        {{ render_field_with_errors(login_user_form.remember, class="form-check-input") }}
+    </div>
+    {{ render_field(login_user_form.next) }}
+
+    <div class="d-grid gap-2 mb-4">
+        {{ render_field(login_user_form.submit, class="btn btn-primary btn-lg") }}
+    </div>
+
+    <div class="text-center">
+        <div class="row g-2">
+            <div class="col-12 mb-2">
+                <a href="{{ url_for_security('register') }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-person-plus me-1"></i> Create Account
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for_security('forgot_password') }}" class="btn btn-link btn-sm w-100">
+                    <i class="bi bi-key me-1"></i> Forgot Password?
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for_security('send_confirmation') }}" class="btn btn-link btn-sm w-100">
+                    <i class="bi bi-envelope me-1"></i> Resend Confirmation
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
 
 {% endblock %}
