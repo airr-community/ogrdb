@@ -86,7 +86,7 @@ class AIRRAlleleDescription:
         self.acknowledgements = fnone(self.acknowledgements)
         self.lab_address = fnone(gd.lab_address)
         self.release_version = gd.release_version
-        self.release_date = gd.release_date.strftime('%d-%b-%Y')
+        self.release_date = gd.release_date.strftime('%d-%b-%Y') if gd.release_date else "01-01-1970"
         self.release_description = fnone(gd.release_description)
         self.label = gd.sequence_name
 
