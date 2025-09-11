@@ -57,18 +57,8 @@
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                            <li><a href="{{ url_for('sequences', sp='Homo sapiens') }}" class="dropdown-item m-item">Human (Homo sapiens)</a></li>
-                            <li><a href="{{ url_for('sequences', sp='Mus musculus') }}" class="dropdown-item m-item">Mouse (Mus musculus)</a></li>
-                            {% if current_user.has_role('Salmo salar') %}
-                            <li><a href="{{ url_for('sequences', sp='Oncorhynchus mykiss') }}" class="dropdown-item m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
-                            <li><a href="{{ url_for('sequences', sp='Salmo salar') }}" class="dropdown-item m-item">Salmon (Salmo salar)</a></li>
-                            {% endif %}
-                            {% if current_user.has_role('Admin') %}
-                                <li><a href="{{ url_for('sequences', sp='Test') }}" class="dropdown-item m-item">Test</a></li>
-                            {% endif %}
-                            {% if current_user.has_role('Peromyscus leucopus') %}
-                            <li><a class="dropdown-item m-item" href="{{ url_for('sequences', sp='Peromyscus leucopus') }}">White Footed Mouse (Peromyscus leucopus)</a></li>
-                            {% endif %}
+                            <li><a href="{{ url_for('gene_table') }}" class="dropdown-item m-item"><i class="bi bi-table me-1"></i>Gene Tables</a></li>
+                            <li><a href="{{ url_for('sequences') }}" class="dropdown-item m-item"><i class="bi bi-list-ul me-1"></i>Sequence Tables</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a href="{{ url_for('vdjbase_review') }}" class="dropdown-item m-item">Review VDJbase</a></li>
                         </ul>

@@ -1,27 +1,98 @@
 {% extends "base_wide.html" %}
-{% block pagetitle %} Sequences {% endblock %}
-
+{% block pagetitle %} Sequence Tables {% endblock %}
 
 {% block c_body %}
-    {% if 'species' in tables %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="bi bi-list-ul me-2"></i>
+                Sequence Tables
+            </h1>
+            
+            <div class="data-card mb-4">
+                <div class="card-header">
+                    <h2 class="h4 mb-0">
+                        <i class="bi bi-funnel me-2"></i>
+                        Selection Criteria
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.species.label(class="form-label") }}
+                                    {{ form.species(class="form-select", id="species-select") }}
+                                    {% if form.species.description %}
+                                        <div class="form-text">{{ form.species.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.species.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4" id="subgroup-container" style="display: none;">
+                                <div class="form-group">
+                                    {{ form.species_subgroup.label(class="form-label") }}
+                                    {{ form.species_subgroup(class="form-select", id="subgroup-select") }}
+                                    {% if form.species_subgroup.description %}
+                                        <div class="form-text">{{ form.species_subgroup.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.species_subgroup.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4" id="locus-container">
+                                <div class="form-group">
+                                    {{ form.locus.label(class="form-label") }}
+                                    {{ form.locus(class="form-select", id="locus-select") }}
+                                    {% if form.locus.description %}
+                                        <div class="form-text">{{ form.locus.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.locus.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mt-3">
+                            <div class="col-sm-10 offset-sm-1">
+                                <div class="d-flex gap-3 justify-content-start">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+    {% if selected_species and selected_locus and tables %}
+        {% if 'species' in tables %}
         {% for sp, t in tables['species'].items() %}
             <div class="data-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h2 class="h4 mb-0 text-warning">
                         <i class="bi bi-file-earmark-text me-2"></i>
-                        Draft Sequences for IARC {{ sp }} Committee
+                        Draft Sequences for IARC {{ selected_species }}{% if selected_subgroup %} ({{ selected_subgroup }}){% endif %} Committee - {{ selected_locus }}
                     </h2>
                     <div class="btn-group gap-2" role="group">
-                        <a href="{{ url_for('new_sequence', species=sp) }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('new_sequence', species=selected_species) }}" class="btn btn-outline-primary">
                             <i class="bi bi-plus-circle me-1"></i>New Sequence
                         </a>
                         {% if loop.previtem is not defined %}
                            {% if show_withdrawn %}
-                                <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=no" class="btn btn-outline-secondary">
+                                <a href="{{ url_for('sequences') }}?withdrawn=no" class="btn btn-outline-secondary">
                                     <i class="bi bi-eye-slash me-1"></i>Hide Withdrawn
                                 </a>
                             {% else %}
-                                <a href="{{ url_for(request.endpoint, sp=sp) }}?withdrawn=yes" class="btn btn-outline-secondary">
+                                <a href="{{ url_for('sequences') }}?withdrawn=yes" class="btn btn-outline-secondary">
                                     <i class="bi bi-eye me-1"></i>Show Withdrawn
                                 </a>
                             {% endif %}
@@ -35,7 +106,7 @@
                         </div>
                     </div>
                     <div class="mt-3">
-                        <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='draft') }}" id="alignment_draft" class="btn btn-primary">
+                        <a href="{{ url_for('sequences_aa_alignment', sp=selected_species, category='draft') }}" id="alignment_draft" class="btn btn-primary">
                             <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
                         </a>
                     </div>
@@ -46,7 +117,7 @@
                 <div class="card-header">
                     <h2 class="h4 mb-0 text-info">
                         <i class="bi bi-shield-check me-2"></i>
-                        Level 0 Sequences for IARC {{ sp }} Committee
+                        Level 0 Sequences for IARC {{ selected_species }}{% if selected_subgroup %} ({{ selected_subgroup }}){% endif %} Committee - {{ selected_locus }}
                     </h2>
                 </div>
                 <div class="card-body">
@@ -56,105 +127,99 @@
                         </div>
                     </div>
                     <div class="mt-3">
-                        <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='level_0') }}" id="alignment_level_0" class="btn btn-primary">
+                        <a href="{{ url_for('sequences_aa_alignment', sp=selected_species, category='level_0') }}" id="alignment_level_0" class="btn btn-primary">
                             <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
                         </a>
                     </div>
                 </div>
             </div>
         {% endfor %}
-    {% endif %}
+        {% endif %}
 
-    <div class="data-card mb-4">
-        <div class="card-header">
-            <h2 class="h4 mb-0 text-success">
-                <i class="bi bi-check-circle me-2"></i>
-                Affirmed Sequences
-            </h2>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <div class="sequence-table-wrapper">
-                    {{ tables['affirmed'] }}
-                </div>
-            </div>
-            <div class="mt-3">
-                <a href="{{ url_for('sequences_aa_alignment', sp=sp, category='affirmed') }}" id="affirmed" class="btn btn-primary">
-                    <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
-                </a>
-            </div>
-        </div>
-    </div>
-
-    {% if form %}
         <div class="data-card mb-4">
             <div class="card-header">
-                <h2 class="h4 mb-0 text-primary">
-                    <i class="bi bi-download me-2"></i>
-                    Download Affirmed Sequences
+                <h2 class="h4 mb-0 text-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Affirmed Sequences
                 </h2>
             </div>
             <div class="card-body">
-                <form class="row">
-                    <div class="col-12">
-                        {{ render_field_with_errors(form.species, class="form-select") }}
+                <div class="table-responsive">
+                    <div class="sequence-table-wrapper">
+                        {{ tables['affirmed'] }}
                     </div>
-                    <div class="col-12">
-                        {{ render_field_with_errors(form.exclude_imgt, class="form-check-input") }}
-                    </div>
-                    <div class="col-12">
-                        <div class="btn-group d-flex gap-2" role="group">
-                            <a href="foo" id="dl-gapped" class="btn btn-primary flex-fill">
-                                <i class="bi bi-file-earmark-text me-1"></i>Gapped (FASTA)
-                            </a>
-                            <a href="foo" id="dl-ungapped" class="btn btn-primary flex-fill">
-                                <i class="bi bi-file-earmark-code me-1"></i>Ungapped (FASTA)
-                            </a>
-                            <a href="foo" id="dl-airr" class="btn btn-primary flex-fill">
-                                <i class="bi bi-file-earmark-arrow-down me-1"></i>AIRR (JSON)
-                            </a>
-                        </div>
-                    </div>
-                </form>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ url_for('sequences_aa_alignment', sp=selected_species, category='affirmed') }}" id="affirmed" class="btn btn-primary">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>AA Alignment
+                    </a>
+                </div>
             </div>
         </div>
+
+        {% if selected_species and selected_locus and 'affirmed' in tables and tables['affirmed'].items|length > 0 %}
+            <div class="data-card mb-4">
+                <div class="card-header">
+                    <h2 class="h4 mb-0 text-primary">
+                        <i class="bi bi-download me-2"></i>
+                        Download Affirmed Sequences
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group d-flex gap-2" role="group">
+                        <a href="{{ url_for('download_sequences', species=selected_species, format='gapped', exc='all') }}" class="btn btn-primary flex-fill">
+                            <i class="bi bi-file-earmark-text me-1"></i>Gapped (FASTA)
+                        </a>
+                        <a href="{{ url_for('download_sequences', species=selected_species, format='ungapped', exc='all') }}" class="btn btn-primary flex-fill">
+                            <i class="bi bi-file-earmark-code me-1"></i>Ungapped (FASTA)
+                        </a>
+                        <a href="{{ url_for('download_sequences', species=selected_species, format='airr', exc='all') }}" class="btn btn-primary flex-fill">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i>AIRR (JSON)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
 
-    <div class="modal fade type-warning" role="dialog" aria-hidden="true" id="imgt_name_dlg" aria-labelledby="imgt_name_dlg_label">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="imgt_name_title">Change IMGT Name</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="mb-3 row">
-                                    <label class="col-sm-3 col-form-label" for="imgt_name_text" title="">IMGT Name</label>
-                                    <div class="col-sm-9">
-                                        <input class="form-control" id="imgt_name_text" name="imgt_name_text" type="text" value="">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="imgt_name_cancel" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-warning" id="imgt_name_save">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dialogs -->
+<div class="modal fade type-warning" role="dialog" aria-hidden="true" id="imgt_name_dlg" aria-labelledby="imgt_name_dlg_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imgt_name_title">Change IMGT Name</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label" for="imgt_name_text" title="">IMGT Name</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="imgt_name_text" name="imgt_name_text" type="text" value="">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="imgt_name_cancel" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="imgt_name_save">Save</button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="modal fade type-warning" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
+<div class="modal fade type-warning" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title" id="messageModallLabel">Publish selected sequences</h4>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h4 class="modal-title" id="messageModallLabel">Publish selected sequences</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="modal-instructions">
@@ -164,244 +229,172 @@
                 <br>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <input type="submit" value="Save" class="btn btn-primary" name="save_btn" id="publish-save-btn">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <input type="submit" value="Save" class="btn btn-primary" name="save_btn" id="publish-save-btn">
             </div>
-          </div>
         </div>
     </div>
-
-<!-- Add custom CSS for better sequence table display -->
-<style>
-.sequence-table-wrapper {
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-.sequence-table-wrapper table {
-    width: 100%;
-    table-layout: auto;
-    font-size: 0.85rem;
-    border-collapse: collapse;
-    margin: 0;
-}
-
-.sequence-table-wrapper th,
-.sequence-table-wrapper td {
-    white-space: nowrap;
-    padding: 0.25rem 0.2rem;
-    vertical-align: middle;
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    font-size: 0.8rem;
-    line-height: 1.1;
-}
-
-/* Header styling */
-.sequence-table-wrapper thead th {
-    background-color: var(--bs-primary);
-    color: white;
-    font-weight: 600;
-    border: none;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    text-align: center;
-    padding: 8px 4px;
-    white-space: normal;
-    word-wrap: break-word;
-    min-width: 60px;
-    font-size: 0.8rem;
-    line-height: 1.2;
-    height: auto;
-    min-height: 40px;
-    vertical-align: middle;
-}
-
-/* Specific column width management - much tighter */
-.sequence-table-wrapper .sequence-name-column {
-    max-width: 100px;
-    min-width: 80px;
-}
-
-.sequence-table-wrapper .species-column {
-    max-width: 70px;
-    min-width: 50px;
-}
-
-.sequence-table-wrapper .locus-column {
-    max-width: 50px;
-    min-width: 40px;
-    text-align: center;
-}
-
-.sequence-table-wrapper .version-column {
-    max-width: 60px;
-    min-width: 45px;
-    text-align: center;
-}
-
-.sequence-table-wrapper .status-column {
-    max-width: 70px;
-    min-width: 50px;
-    text-align: center;
-}
-
-.sequence-table-wrapper .affirmation-column {
-    max-width: 80px;
-    min-width: 60px;
-    white-space: normal;
-    word-break: break-word;
-    text-align: center;
-    line-height: 1.2;
-}
-
-.sequence-table-wrapper .date-column {
-    max-width: 80px;
-    min-width: 70px;
-    font-size: 0.75rem;
-}
-
-.sequence-table-wrapper .notes-column {
-    max-width: 120px;
-    min-width: 80px;
-    white-space: normal;
-    word-break: break-word;
-}
-
-.sequence-table-wrapper .action-column {
-    max-width: 60px;
-    min-width: 50px;
-    text-align: center;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .sequence-table-wrapper {
-        font-size: 0.75rem;
-    }
-    
-    .sequence-table-wrapper th,
-    .sequence-table-wrapper td {
-        padding: 0.2rem 0.2rem;
-        max-width: 100px;
-        font-size: 0.75rem;
-    }
-    
-    .sequence-table-wrapper .notes-column {
-        max-width: 120px;
-        min-width: 100px;
-    }
-}
-
-/* Zebra striping for better readability */
-.sequence-table-wrapper tbody tr:nth-child(even) {
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
-}
-
-.sequence-table-wrapper tbody tr:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-}
-
-/* Ensure table has consistent border and spacing */
-.sequence-table-wrapper thead {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-}
-
-/* Column alignment */
-.sequence-table-wrapper td {
-    text-align: left;
-}
-
-.sequence-table-wrapper td.locus-column,
-.sequence-table-wrapper td.status-column {
-    text-align: center;
-}
-</style>
+</div>
 
 {% endblock %}
 
+{% block styles %}
+    {{ super() }}
+    <!-- Custom CSS for sequence table display -->
+    <style>
+    .sequence-table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .sequence-table-wrapper table {
+        width: 100%;
+        table-layout: auto;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .sequence-table-wrapper th,
+    .sequence-table-wrapper td {
+        white-space: nowrap;
+        padding: 0.25rem 0.2rem;
+        vertical-align: middle;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 0.8rem;
+        line-height: 1.1;
+    }
+
+    /* Header styling */
+    .sequence-table-wrapper thead th {
+        background-color: var(--bs-primary);
+        color: white;
+        font-weight: 600;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: center;
+        padding: 8px 4px;
+        white-space: normal;
+        word-wrap: break-word;
+        min-width: 60px;
+        font-size: 0.8rem;
+        line-height: 1.2;
+        height: auto;
+        min-height: 40px;
+        vertical-align: middle;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sequence-table-wrapper {
+            font-size: 0.75rem;
+        }
+        
+        .sequence-table-wrapper th,
+        .sequence-table-wrapper td {
+            padding: 0.2rem 0.2rem;
+            max-width: 100px;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Zebra striping for better readability */
+    .sequence-table-wrapper tbody tr:nth-child(even) {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+
+    .sequence-table-wrapper tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    </style>
+{% endblock %}
 
 {% block scripts %}
     {{ super() }}
     <script>
-    // Auto-apply column classes based on header text
-    $(document).ready(function() {
-        $('.sequence-table-wrapper table').each(function() {
-            var table = $(this);
-            table.find('thead th').each(function(index) {
-                var headerText = $(this).text().toLowerCase().trim();
-                var columnClass = '';
-                
-                if (headerText.includes('sequence') || headerText.includes('name')) {
-                    columnClass = 'sequence-name-column';
-                } else if (headerText.includes('species')) {
-                    columnClass = 'species-column';
-                } else if (headerText.includes('locus')) {
-                    columnClass = 'locus-column';
-                } else if (headerText.includes('version')) {
-                    columnClass = 'version-column';
-                } else if (headerText.includes('status')) {
-                    columnClass = 'status-column';
-                } else if (headerText.includes('affirmation') || headerText.includes('level')) {
-                    columnClass = 'affirmation-column';
-                } else if (headerText.includes('date') || headerText.includes('created') || headerText.includes('updated')) {
-                    columnClass = 'date-column';
-                } else if (headerText.includes('note') || headerText.includes('comment')) {
-                    columnClass = 'notes-column';
-                } else if (headerText.includes('action') || headerText.includes('edit') || headerText.includes('delete')) {
-                    columnClass = 'action-column';
-                }
-                
-                if (columnClass) {
-                    table.find('td:nth-child(' + (index + 1) + ')').addClass(columnClass);
-                    $(this).addClass(columnClass);
+    function updateSubgroups() {
+        $("#subgroup-select").empty();
+        $("#locus-select").empty();
+        
+        var species = $("#species-select").find("option:selected").val();
+
+        if(species != '') {
+            $.ajax({
+                type: "GET",
+                url: '{{ url_for("get_subgroups_for_species", species="xxx") }}'.replace("xxx", encodeURIComponent(species)),
+                success: function (data) {
+                    if(data.length > 0) {
+                        // Species has subgroups - show subgroup selector
+                        $("#subgroup-container").show();
+                        $("#locus-container").removeClass("col-md-4").addClass("col-md-4");
+                        
+                        $("#subgroup-select").append('<option value="">All</option>');
+                        $.each(data, function (i, subgroup) {
+                            $("#subgroup-select").append('<option value="' + subgroup + '">' + subgroup + '</option>');
+                        });
+                        
+                        // Update loci for species (all subgroups)
+                        updateLoci(species, null);
+                    } else {
+                        // No subgroups - hide subgroup selector
+                        $("#subgroup-container").hide();
+                        $("#locus-container").removeClass("col-md-4").addClass("col-md-6");
+                        
+                        // Update loci for species only
+                        updateLoci(species, null);
+                    }
                 }
             });
-        });
+        }
+    }
+    
+    function updateLoci(species, subgroup) {
+        $("#locus-select").empty();
         
-        // Add tooltips for truncated content
-        $('.sequence-table-wrapper td').each(function() {
-            var $cell = $(this);
-            if ($cell[0].scrollWidth > $cell[0].clientWidth) {
-                $cell.attr('title', $cell.text().trim());
+        var url = '{{ url_for("get_loci_for_species", species="xxx") }}'.replace("xxx", encodeURIComponent(species));
+        if(subgroup) {
+            url += '?subgroup=' + encodeURIComponent(subgroup);
+        }
+        
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function (data) {
+                $.each(data, function (i, locus) {
+                    $("#locus-select").append('<option value="' + locus + '">' + locus + '</option>');
+                });
             }
         });
-    });
-
-    $("#species").change(function(e) {
-        update_dls()
-    });
-
-    {% if form %}
-    $("#exclude_imgt").change(function(e) {
-        update_dls()
-    });
-
-    $(document).ready(function() {
-        update_dls()
-    })
-
-    function update_dls() {
-        sp = $("#species").find("option:selected").val();
-        if($("#exclude_imgt")[0].checked) {
-            imgt = 'non'
-        }
-        else {
-            imgt = 'all'
-        }
-        $("#dl-gapped").attr("href", "/download_sequences/" + sp + "/gapped/" + imgt);
-        $("#dl-ungapped").attr("href", "/download_sequences/" + sp + "/ungapped/" + imgt);
-        $("#dl-airr").attr("href", "/download_sequences/" + sp + "/airr/" + imgt)
     }
-    {% endif %}
 
-    {% if 'species' in tables %}
-        {% for sp, t in tables['species'].items() %}
+    $("#species-select").change(function(e) {
+        updateSubgroups();
+    });
+    
+    $("#subgroup-select").change(function(e) {
+        var species = $("#species-select").find("option:selected").val();
+        var subgroup = $(this).find("option:selected").val();
+        
+        if(species != '') {
+            updateLoci(species, subgroup || null);
+        }
+    });
+    
+    // Initialize on page load
+    $(document).ready(function() {
+        if($("#species-select").val()) {
+            updateSubgroups();
+        }
+    });
+
+    {% if selected_species and selected_locus and tables %}
+        {% if 'species' in tables %}
+            {% for sp, t in tables['species'].items() %}
                 $(document).ready(function() {
                     $("#{{ t['draft'].table_id }}").DataTable({
                         dom: 'Blfrtip',
@@ -475,161 +468,156 @@
                         ]
                     })
                 })
-        {% endfor %}
-    {% endif %}
+            {% endfor %}
+        {% endif %}
 
-    $(document).ready(function() {
-        $("#{{ tables['affirmed'].table_id }}").DataTable({
-            dom: 'Blfrtip',
-            "paging":   true,
-            "searching": true,
-            "info":     false,
-            "lengthMenu": [ 25, 100, 500, 5000 ],
-            "colReorder": true,
-            "columnDefs": [
-                {"visible": false, "targets": [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26]},
-                {"width": "0px", "targets": [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26]},
-            ],
-            "buttons": [
-                "excel", "csv"
-            ]
-        });
-    } );
+        $(document).ready(function() {
+            $("#{{ tables['affirmed'].table_id }}").DataTable({
+                dom: 'Blfrtip',
+                "paging":   true,
+                "searching": true,
+                "info":     false,
+                "lengthMenu": [ 25, 100, 500, 5000 ],
+                "colReorder": true,
+                "columnDefs": [
+                    {"visible": false, "targets": [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26]},
+                    {"width": "0px", "targets": [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26]},
+                ],
+                "buttons": [
+                    "excel", "csv"
+                ]
+            });
+        } );
 
-    function seq_delete(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Delete Sequence?',
-            message: 'This draft will be removed. You will not be able to recover it later.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Delete',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/delete_sequence/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function seq_delete_selected(ids) {
-        foo = BootstrapDialog.confirm({
-            title: 'Delete selected sequences?',
-            message: 'These draft sequences will be removed. You will not be able to recover them later.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Delete',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        url: "/delete_sequences",
-                        data: {'ids': ids.join(",")},
-                        type: "POST",
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function seq_publish_selected(ids) {
-        $('#publish-user-input').val('');
-        $('#publishModal').modal('show');
-
-        $('#publish-save-btn').off('click').on('click', function() {
-            var note = $('#publish-user-input').val();
-            $('#publishModal').modal('hide');
-
-            $.ajax({
-                url: "/publish_sequences",
-                data: {'ids': ids.join(","), 'note': note},
-                type: "POST",
-                success: function(data) {
-                    window.location.reload(true);
-                }
-            })
-        });
-    }
-
-    function seq_new_draft(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Create New Draft?',
-            message: 'This will create a new draft of the sequence, which can then be updated and published.',
-            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'New Draft',
-            btnOKClass: 'btn-warning',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/draft_sequence/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function seq_withdraw(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Withdraw Sequence?',
-            message: 'This will withdraw the sequence from publication.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Withdraw',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/withdraw_sequence/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function seq_imgt_name(id) {
-        $('#imgt_name_dlg').on('show.bs.modal', function (event) {
-            $('#imgt_name_save').on('click', function (event) {
-                var new_name = $('#imgt_name_text').val();
-                if(new_name.length > 0) {
-                    $.ajax({
-                        type: "POST",
-                        dataType: "json",
-                        url: "/sequence_imgt_name",
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            'id': id,
-                            'imgt_name': new_name
-                            }),
-                        success: function (data) {
-                            window.location.reload(true);
-                        }
-                    });
+        // Sequence interaction functions
+        function seq_delete(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Delete Sequence?',
+                message: 'This draft will be removed. You will not be able to recover it later.',
+                type: BootstrapDialog.TYPE_DANGER,
+                btnOKLabel: 'Delete',
+                btnOKClass: 'btn-danger',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/delete_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
                 }
             });
-        });
+        }
 
-        $('#imgt_name_dlg').modal()
-    }
+        function seq_delete_selected(ids) {
+            foo = BootstrapDialog.confirm({
+                title: 'Delete selected sequences?',
+                message: 'These draft sequences will be removed. You will not be able to recover them later.',
+                type: BootstrapDialog.TYPE_DANGER,
+                btnOKLabel: 'Delete',
+                btnOKClass: 'btn-danger',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            url: "/delete_sequences",
+                            data: {'ids': ids.join(",")},
+                            type: "POST",
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
 
+        function seq_publish_selected(ids) {
+            $('#publish-user-input').val('');
+            $('#publishModal').modal('show');
 
+            $('#publish-save-btn').off('click').on('click', function() {
+                var note = $('#publish-user-input').val();
+                $('#publishModal').modal('hide');
 
+                $.ajax({
+                    url: "/publish_sequences",
+                    data: {'ids': ids.join(","), 'note': note},
+                    type: "POST",
+                    success: function(data) {
+                        window.location.reload(true);
+                    }
+                })
+            });
+        }
 
+        function seq_new_draft(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Create New Draft?',
+                message: 'This will create a new draft of the sequence, which can then be updated and published.',
+                type: BootstrapDialog.TYPE_WARNING,
+                btnOKLabel: 'New Draft',
+                btnOKClass: 'btn-warning',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/draft_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
+
+        function seq_withdraw(id) {
+            foo = BootstrapDialog.confirm({
+                title: 'Withdraw Sequence?',
+                message: 'This will withdraw the sequence from publication.',
+                type: BootstrapDialog.TYPE_DANGER,
+                btnOKLabel: 'Withdraw',
+                btnOKClass: 'btn-danger',
+                  callback: function(result) {
+                    if(result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/withdraw_sequence/" + id,
+                            success: function(data) {
+                                window.location.reload(true);
+                            }
+                        })
+                    }
+                }
+            });
+        }
+
+        function seq_imgt_name(id) {
+            $('#imgt_name_dlg').on('show.bs.modal', function (event) {
+                $('#imgt_name_save').on('click', function (event) {
+                    var new_name = $('#imgt_name_text').val();
+                    if(new_name.length > 0) {
+                        $.ajax({
+                            type: "POST",
+                            dataType: "json",
+                            url: "/sequence_imgt_name",
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                                'id': id,
+                                'imgt_name': new_name
+                                }),
+                            success: function (data) {
+                                window.location.reload(true);
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('#imgt_name_dlg').modal()
+        }
+    {% endif %}
     </script>
-
 {% endblock %}
-
-

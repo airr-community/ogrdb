@@ -44,7 +44,8 @@ from forms.gene_description_notes_form import GeneDescriptionNotesForm
 from forms.genomic_support_form import GenomicSupportForm
 from forms.journal_entry_form import JournalEntryForm
 from forms.sequence_new_form import NewSequenceForm
-from forms.sequences_species_form import SpeciesForm
+from forms.sequence_table_form import SequenceTableForm
+from ogrdb.sequence.gene_table import get_available_species, get_available_subgroups, get_available_loci
 from imgt.imgt_ref import get_imgt_reference_genes
 from ogrdb.germline_set.descs_to_fasta import descs_to_fasta
 
@@ -196,50 +197,118 @@ def check_seq_withdraw(id):
     return desc
 
 
-@app.route('/sequences/<sp>', methods=['GET', 'POST'])
-def sequences(sp):
-    tables = {}
-    show_withdrawn = False
-
-    species = [s[0] for s in db.session.query(Committee.species).all()]
-
-    if sp not in species:
-        return redirect('/')
+@app.route('/sequences', methods=['GET', 'POST'])
+def sequences():
+    form = SequenceTableForm()
     
-    if current_user.is_authenticated:
-        if current_user.has_role(sp):
-            if 'species' not in tables:
-                tables['species'] = {}
-            tables['species'][sp] = {}
-
-            if 'withdrawn' in request.args and request.args['withdrawn'] == 'yes':
-                q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft', 'withdrawn']))
-                show_withdrawn = True
+    # Get available species based on published sequences and user committee membership
+    available_species = get_available_species()
+    form.species.choices = [(sp, sp) for sp in available_species]
+    
+    # Set up form choices before validation
+    if form.species.choices:
+        # Determine which species to use for setting up choices
+        if request.method == 'POST' and form.species.data:
+            current_species = form.species.data
+        elif form.species.choices:
+            current_species = form.species.choices[0][0]
+        else:
+            current_species = None
+            
+        if current_species:
+            # Set subgroup choices
+            available_subgroups = get_available_subgroups(current_species)
+            form.species_subgroup.choices = [('', 'All')] + [(sg, sg) for sg in available_subgroups]
+            
+            # Determine subgroup for loci choices
+            if request.method == 'POST' and form.species_subgroup.data:
+                current_subgroup = form.species_subgroup.data if form.species_subgroup.data != '' else None
             else:
-                q = db.session.query(GeneDescription).filter(GeneDescription.species == sp).filter(GeneDescription.status.in_(['draft']))
-                show_withdrawn = False
-            results = q.all()
+                current_subgroup = None
+                
+            # Set locus choices
+            available_loci = get_available_loci(current_species, current_subgroup)
+            form.locus.choices = [(locus, locus) for locus in available_loci]
+    
+    tables = {}
+    selected_species = None
+    selected_subgroup = None
+    selected_locus = None
+    show_withdrawn = False
+    
+    if form.validate_on_submit():
+        selected_species = form.species.data
+        selected_subgroup = form.species_subgroup.data if form.species_subgroup.data else None
+        selected_locus = form.locus.data
+        
+        # Generate sequence tables based on selected species, subgroup, and locus
+        tables = create_sequence_tables(selected_species, selected_subgroup, selected_locus)
+        
+        # Check for withdrawn parameter
+        show_withdrawn = 'withdrawn' in request.args and request.args['withdrawn'] == 'yes'
+    elif request.method == 'POST':
+        # Debug form validation errors
+        print("Form validation failed:")
+        for field_name, errors in form.errors.items():
+            print(f"  {field_name}: {errors}")
+    
+    return render_template('sequence_list.html', form=form, tables=tables,
+                           selected_species=selected_species, selected_subgroup=selected_subgroup,
+                           selected_locus=selected_locus, show_withdrawn=show_withdrawn)
 
-            tables['species'][sp]['draft'] = setup_sequence_list_table(results, current_user)
-            tables['species'][sp]['draft'].table_id = sp.replace(' ', '_') + '_draft'
 
-            q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level == '0')
-            results = q.all()
-            tables['species'][sp]['level_0'] = setup_sequence_list_table(results, current_user)
-            tables['species'][sp]['level_0'].table_id = sp.replace(' ', '_') + '_level_0'
-
-    q = db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.species == sp, GeneDescription.affirmation_level != '0')
-    results = q.all()
-    tables['affirmed'] = setup_sequence_list_table(results, current_user)
+def create_sequence_tables(species, subgroup, locus):
+    """Create sequence tables based on selection criteria"""
+    tables = {}
+    
+    # Base query filters
+    base_filters = [
+        GeneDescription.species == species,
+        GeneDescription.locus == locus
+    ]
+    
+    if subgroup:
+        base_filters.append(GeneDescription.species_subgroup == subgroup)
+    
+    # Check if user has committee access for this species
+    has_committee_access = current_user.is_authenticated and current_user.has_role(species)
+    
+    # Create draft sequences table (only for committee members)
+    if has_committee_access:
+        if 'species' not in tables:
+            tables['species'] = {}
+        tables['species'][species] = {}
+        
+        # Draft sequences
+        draft_query = db.session.query(GeneDescription).filter(
+            *base_filters,
+            GeneDescription.status.in_(['draft'])
+        )
+        draft_results = draft_query.all()
+        tables['species'][species]['draft'] = setup_sequence_list_table(draft_results, current_user)
+        tables['species'][species]['draft'].table_id = species.replace(' ', '_') + '_draft'
+        
+        # Level 0 sequences
+        level_0_query = db.session.query(GeneDescription).filter(
+            *base_filters,
+            GeneDescription.status == 'published',
+            GeneDescription.affirmation_level == '0'
+        )
+        level_0_results = level_0_query.all()
+        tables['species'][species]['level_0'] = setup_sequence_list_table(level_0_results, current_user)
+        tables['species'][species]['level_0'].table_id = species.replace(' ', '_') + '_level_0'
+    
+    # Affirmed sequences (available to all users)
+    affirmed_query = db.session.query(GeneDescription).filter(
+        *base_filters,
+        GeneDescription.status == 'published',
+        GeneDescription.affirmation_level != '0'
+    )
+    affirmed_results = affirmed_query.all()
+    tables['affirmed'] = setup_sequence_list_table(affirmed_results, current_user)
     tables['affirmed'].table_id = 'affirmed'
-
-    if len(db.session.query(GeneDescription).filter(GeneDescription.status == 'published', GeneDescription.affirmation_level != '0', GeneDescription.species == sp).all()) >= 1:
-        form = SpeciesForm()
-        form.species.choices = [sp]
-    else:
-        form = None
-
-    return render_template('sequence_list.html', tables=tables, show_withdrawn=show_withdrawn, form=form, sp=sp)
+    
+    return tables
 
 
 def copy_acknowledgements(seq, gene_description):

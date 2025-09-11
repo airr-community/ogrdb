@@ -410,3 +410,15 @@ code {
     padding-left: 8px;
     padding-right: 8px;
 }
+
+/* Fix button focus state issue */
+.btn-outline-primary:focus {
+    color: #fff !important;
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+.btn-outline-primary:not(:focus):not(:hover):not(:active) {
+    color: var(--bs-primary) !important;
+    background-color: transparent !important;
+    border-color: var(--bs-primary) !important;
+}

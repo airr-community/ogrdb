@@ -125,6 +125,7 @@ from ogrdb.submission.primer_set_routes import *
 from ogrdb.submission.submission_from_vdjbase import *
 
 from ogrdb.sequence.sequence_routes import *
+from ogrdb.sequence.gene_table import *
 from ogrdb.germline_set.germline_set_routes import *
 from ogrdb.vdjbase.vdjbase_routes import *
 from ogrdb.maint.maint_routes import *

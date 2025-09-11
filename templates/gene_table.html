@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block pagetitle %} Gene Tables {% endblock %}
+
+{% block c_body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="bi bi-table me-2"></i>
+                Gene Tables
+            </h1>
+            
+            <div class="data-card mb-4">
+                <div class="card-header">
+                    <h2 class="h4 mb-0">
+                        <i class="bi bi-funnel me-2"></i>
+                        Selection Criteria
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.species.label(class="form-label") }}
+                                    {{ form.species(class="form-select", id="species-select") }}
+                                    {% if form.species.description %}
+                                        <div class="form-text">{{ form.species.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.species.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4" id="subgroup-container" style="display: none;">
+                                <div class="form-group">
+                                    {{ form.species_subgroup.label(class="form-label") }}
+                                    {{ form.species_subgroup(class="form-select", id="subgroup-select") }}
+                                    {% if form.species_subgroup.description %}
+                                        <div class="form-text">{{ form.species_subgroup.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.species_subgroup.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4" id="locus-container">
+                                <div class="form-group">
+                                    {{ form.locus.label(class="form-label") }}
+                                    {{ form.locus(class="form-select", id="locus-select") }}
+                                    {% if form.locus.description %}
+                                        <div class="form-text">{{ form.locus.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.locus.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mt-3">
+                            <div class="col-sm-10 offset-sm-1">
+                                <div class="d-flex gap-3 justify-content-start">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if selected_species and selected_locus %}
+                <div class="data-card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="h4 mb-0 text-primary">
+                                <i class="bi bi-table me-2"></i>
+                                Gene Table: {{ selected_species }}{% if selected_subgroup %} ({{ selected_subgroup }}){% endif %} - {{ selected_locus }}
+                            </h2>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                                <i class="bi bi-download me-2"></i>Download Sequences
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if tables and 'gene_table' in tables %}
+                            <div class="table-responsive">
+                                {{ tables.gene_table }}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                No gene data available for {{ selected_species }}{% if selected_subgroup %} {{ selected_subgroup }}{% endif %} {{ selected_locus }}.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Download Sequences Modal -->
+<div class="modal fade type-primary" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="downloadModalLabel">
+                    <i class="bi bi-download me-2"></i>Download Sequences
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="downloadForm">
+                    <div class="mb-3 row">
+                        <label class="col-sm-3 col-form-label" for="format">Format:</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="format" name="format">
+                                <option value="fasta">FASTA</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label class="col-sm-3 col-form-label" for="affirmation_level">Affirmation Level:</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="affirmation_level" name="affirmation_level">
+                                <option value="all">All</option>
+                                <option value="gt0">&gt;0</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label class="col-sm-3 col-form-label" for="in_set_only">In Set Only:</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="in_set_only" name="in_set_only">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="downloadBtn">
+                    <i class="bi bi-download me-2"></i>Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+    function updateSubgroups() {
+        $("#subgroup-select").empty();
+        $("#locus-select").empty();
+        
+        var species = $("#species-select").find("option:selected").val();
+
+        if(species != '') {
+            $.ajax({
+                type: "GET",
+                url: '{{ url_for("get_subgroups_for_species", species="xxx") }}'.replace("xxx", encodeURIComponent(species)),
+                success: function (data) {
+                    if(data.length > 0) {
+                        // Species has subgroups - show subgroup selector
+                        $("#subgroup-container").show();
+                        $("#locus-container").removeClass("col-md-4").addClass("col-md-4");
+                        
+                        $("#subgroup-select").append('<option value="">All</option>');
+                        $.each(data, function (i, subgroup) {
+                            $("#subgroup-select").append('<option value="' + subgroup + '">' + subgroup + '</option>');
+                        });
+                        
+                        // Update loci for species (all subgroups)
+                        updateLoci(species, null);
+                    } else {
+                        // No subgroups - hide subgroup selector
+                        $("#subgroup-container").hide();
+                        $("#locus-container").removeClass("col-md-4").addClass("col-md-6");
+                        
+                        // Update loci for species only
+                        updateLoci(species, null);
+                    }
+                }
+            });
+        }
+    }
+    
+    function updateLoci(species, subgroup) {
+        $("#locus-select").empty();
+        
+        var url = '{{ url_for("get_loci_for_species", species="xxx") }}'.replace("xxx", encodeURIComponent(species));
+        if(subgroup) {
+            url += '?subgroup=' + encodeURIComponent(subgroup);
+        }
+        
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function (data) {
+                $.each(data, function (i, locus) {
+                    $("#locus-select").append('<option value="' + locus + '">' + locus + '</option>');
+                });
+            }
+        });
+    }
+
+    $("#species-select").change(function(e) {
+        updateSubgroups();
+    });
+    
+    $("#subgroup-select").change(function(e) {
+        var species = $("#species-select").find("option:selected").val();
+        var subgroup = $(this).find("option:selected").val();
+        
+        if(species != '') {
+            updateLoci(species, subgroup || null);
+        }
+    });
+    
+    // Initialize on page load
+    $(document).ready(function() {
+        if($("#species-select").val()) {
+            updateSubgroups();
+        }
+        
+        // Initialize DataTable if gene table exists
+        if($("#gene_table").length > 0) {
+            init_gene_datatable();
+        }
+    });
+    
+    function init_gene_datatable() {
+        if(!$.fn.DataTable.isDataTable($("#gene_table"))) {
+            $("#gene_table").DataTable({
+                dom: 'lfrtip',
+                "paging": true,
+                "searching": true,
+                "select": false,
+                "info": true,
+                "lengthMenu": [ 250, 500, 2000 ],
+                "colReorder": true,
+                "order": [[ 0, "asc" ]], // Sort by gene column by default
+            });
+        }
+    }
+
+    
+    // Download button functionality
+    $("#downloadBtn").click(function() {
+        var species = '{{ selected_species }}';
+        var subgroup = '{{ selected_subgroup }}' || '';
+        var locus = '{{ selected_locus }}';
+        var format = $("#format").val();
+        var affirmation = $("#affirmation_level").val();
+        var inSetOnly = $("#in_set_only").val();
+        
+        if(species && locus) {
+            var url = '/download_gene_table_sequences/' + encodeURIComponent(species) + '/' + encodeURIComponent(locus) + '/' + format + '/' + affirmation + '/' + inSetOnly;
+            if(subgroup) {
+                url += '?subgroup=' + encodeURIComponent(subgroup);
+            }
+            window.location.href = url;
+            $("#downloadModal").modal('hide');
+        }
+    });
+
+    
+    </script>
+{% endblock %}
