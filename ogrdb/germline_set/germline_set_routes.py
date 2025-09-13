@@ -30,10 +30,12 @@ from forms.aggregate_form import AggregateForm
 from forms.germline_set_form import GermlineSetForm
 from forms.germline_set_gene_form import NewGermlineSetGeneForm
 from forms.germline_set_new_form import NewGermlineSetForm
+from forms.germline_set_selection_form import GermlineSetSelectionForm
 from forms.journal_entry_form import JournalEntryForm
 from forms.notes_entry_form import NotesEntryForm
 from ogrdb.germline_set.descs_to_fasta import descs_to_fasta
 
+from ogrdb.sequence.gene_table import get_available_species
 from ogrdb.sequence.sequence_list_table import setup_sequence_list_table
 from ogrdb.sequence.sequence_routes import publish_sequence
 from ogrdb.submission.submission_edit_form import process_table_updates
@@ -52,8 +54,76 @@ from mail import send_mail
 import zenodo
 
 
+@app.route('/germline_sets', methods=['GET', 'POST'])
+def germline_sets():
+    form = GermlineSetSelectionForm()
+    
+    # Get available species based on published germline sets and user committee membership
+    available_species = get_available_germline_set_species()
+    form.species.choices = [(sp, sp) for sp in available_species]
+    
+    tables = None
+    selected_species = None
+    affirmed = None
+    show_withdrawn = False
+    
+    if form.validate_on_submit():
+        selected_species = form.species.data
+        return redirect(url_for('germline_sets_species', species=selected_species))
+    elif request.method == 'POST':
+        # Debug form validation errors
+        print("Form validation failed:")
+        for field_name, errors in form.errors.items():
+            print(f"  {field_name}: {errors}")
+    
+    return render_template('germline_set_list.html', form=form, tables=tables, 
+                           selected_species=selected_species, affirmed=affirmed, 
+                           show_withdrawn=show_withdrawn, any_published=False)
+
+
+def get_available_germline_set_species():
+    """Get species that have published germline sets or unpublished sets for user's committees"""
+    species_set = set()
+    
+    # Get species with published germline sets
+    published_species = db.session.query(GermlineSet.species).filter(
+        GermlineSet.status == 'published'
+    ).distinct().all()
+    species_set.update([s[0] for s in published_species])
+    
+    # If user is authenticated and has committee roles, add species
+    if current_user.is_authenticated:
+        user_committees = [role.name for role in current_user.roles if role.name not in ('Admin', 'AdminEdit')]
+        
+        for committee_species in user_committees:
+            species_set.add(committee_species)
+    
+    return sorted(list(species_set))
+
+
 @app.route('/germline_sets/<species>', methods=['GET', 'POST'])
-def germline_sets(species):
+def germline_sets_species(species):
+    # Create form for species selection (to allow switching)
+    form = GermlineSetSelectionForm()
+    available_species = get_available_germline_set_species()
+    form.species.choices = [(sp, sp) for sp in available_species]
+    
+    # Handle form submission (species change)
+    if request.method == 'POST' and form.validate_on_submit():
+        new_species = form.species.data
+        if new_species != species:
+            return redirect(url_for('germline_sets_species', species=new_species))
+        # If same species selected, continue to show the current page
+    elif request.method == 'POST':
+        # Debug form validation errors
+        print(f"Form validation failed. Errors: {form.errors}")
+        print(f"Form data: species={form.species.data}")
+        print(f"Available choices: {form.species.choices}")
+    
+    # Pre-populate with current species for GET requests or when form processing is complete
+    if request.method == 'GET' or not form.species.data:
+        form.species.data = species
+    
     tables = {}
     show_withdrawn = False
 
@@ -87,7 +157,7 @@ def germline_sets(species):
     if len(affirmed.items) == 0 and not current_user.has_role(species):
         return redirect('/')
 
-    foo = render_template('germline_set_list.html', tables=tables, species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
+    foo = render_template('germline_set_list.html', form=form, tables=tables, selected_species=species, affirmed=affirmed, show_withdrawn=show_withdrawn, any_published=(len(affirmed.items) > 0))
     return foo
 
 
@@ -102,7 +172,7 @@ def new_germline_set(species):
 
     if request.method == 'POST':
         if form.cancel.data:
-            return redirect(url_for('germline_sets', species=species))
+            return redirect(url_for('germline_sets_species', species=species))
 
         if form.validate():
             try:
@@ -125,7 +195,7 @@ def new_germline_set(species):
                 add_history(current_user, '%s germline set %s (%s) created' % (germline_set.species, germline_set.germline_set_id, germline_set.germline_set_name), germline_set, db)
                 db.session.commit()
 
-                return redirect(url_for('germline_sets', species=species))
+                return redirect(url_for('germline_sets_species', species=species))
 
             except ValidationError as e:
                 return render_template('germline_set_new.html', form=form, species=species)
@@ -284,10 +354,10 @@ def edit_germline_set(id):
                                        jump=validation_result.tag,
                                        version=germline_set.release_version)
 
-            if validation_result.tag:
-                return redirect(url_for('edit_germline_set', id=id, _anchor=validation_result.tag))
-            else:
-                return redirect(url_for('germline_sets', species=germline_set.species))
+                if validation_result.tag:
+                    return redirect(url_for('edit_germline_set', id=id, _anchor=validation_result.tag))
+                else:
+                    return redirect(url_for('germline_sets_species', species=germline_set.species))
 
         else:
             for field in tables['ack'].form:

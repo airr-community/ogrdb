@@ -1,51 +1,105 @@
 {% extends "base_wide.html" %}
-{% block pagetitle %} Germline Sets - {{ species }}{% endblock %}
+{% block pagetitle %} Germline Sets{% if selected_species %} - {{ selected_species }}{% endif %}{% endblock %}
 
 {% block c_body %}
-    {% if 'species' in tables %}
-        {% for sp, t in tables['species'].items() %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="bi bi-collection me-2"></i>
+                Germline Sets
+            </h1>
+            
+            <div class="col-4">
             <div class="data-card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="h4 mb-0 text-primary">
-                        <i class="bi bi-collection me-2"></i>
-                        Draft Sets for IARC {{ sp }} Committee
+                <div class="card-header">
+                    <h2 class="h4 mb-0">
+                        <i class="bi bi-funnel me-2"></i>
+                        Species Selection
                     </h2>
-                    <div class="btn-group gap-2" role="group">
-                        <a href="{{ url_for('new_germline_set', species=sp) }}" class="btn btn-outline-primary">
-                            <i class="bi bi-plus-circle me-1"></i>New Set
-                        </a>
-                        {% if loop.previtem is not defined %}
-                           {% if show_withdrawn %}
-                                <a href="{{ url_for(request.endpoint, species=sp) }}?withdrawn=no" class="btn btn-outline-secondary">
-                                    <i class="bi bi-eye-slash me-1"></i>Hide Previous Versions
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for(request.endpoint, species=sp) }}?withdrawn=yes" class="btn btn-outline-secondary">
-                                    <i class="bi bi-eye me-1"></i>Show Previous Versions
-                                </a>
-                            {% endif %}
-                        {% endif %}
-                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        {{ t['draft'] }}
-                    </div>
+                    {% if form %}
+                    <form method="post" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.species.label(class="form-label") }}
+                                    {{ form.species(class="form-select") }}
+                                    {% if form.species.description %}
+                                        <div class="form-text">{{ form.species.description }}</div>
+                                    {% endif %}
+                                    {% for error in form.species.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mt-3">
+                            <div class="col-sm-10 offset-sm-1">
+                                <div class="d-flex gap-3 justify-content-start">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Please select a species to view germline sets.
+                    </p>
+                    {% endif %}
                 </div>
             </div>
-        {% endfor %}
-
-        <div class="data-card mb-4">
-            <div class="card-header">
-                <h2 class="h4 mb-0 text-primary">
-                    <i class="bi bi-check-circle me-2"></i>
-                    Published Sets (click on Set Name for details and version history)
-                </h2>
             </div>
-        </div>
-    {% endif %}
 
-        {% if any_published %}
+            {% if tables and 'species' in tables %}
+                {% for sp, t in tables['species'].items() %}
+                    <div class="data-card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="h4 mb-0 text-primary">
+                                <i class="bi bi-collection me-2"></i>
+                                Draft Sets for IARC {{ sp }} Committee
+                            </h2>
+                            <div class="btn-group gap-2" role="group">
+                                <a href="{{ url_for('new_germline_set', species=sp) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>New Set
+                                </a>
+                                {% if loop.previtem is not defined %}
+                                   {% if show_withdrawn %}
+                                        <a href="{{ url_for('germline_sets_species', species=sp) }}?withdrawn=no" class="btn btn-outline-secondary">
+                                            <i class="bi bi-eye-slash me-1"></i>Hide Previous Versions
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('germline_sets_species', species=sp) }}?withdrawn=yes" class="btn btn-outline-secondary">
+                                            <i class="bi bi-eye me-1"></i>Show Previous Versions
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                {{ t['draft'] }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="data-card mb-4">
+                    <div class="card-header">
+                        <h2 class="h4 mb-0 text-primary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Published Sets (click on Set Name for details and version history)
+                        </h2>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if any_published %}
            <div class="info-card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0 text-info">
@@ -85,9 +139,9 @@
                                 for programmatic access.
                             </p>
                         </div>
-                        {%  if species == 'Mus musculus' %}
+                        {%  if selected_species == 'Mus musculus' %}
                             <div class="col-12">
-                                <div class="alert alert-warning border-0 py-2">
+                                <div class="alert alert-success border-0 py-2">
                                     <i class="bi bi-collection me-2"></i>
                                     <strong>Mouse-specific resources:</strong> 
                                     <a href="https://wordpress.vdjbase.org/index.php/ogrdb_news/using-the-ogrdb-mouse-germline-sets/" class="alert-link">Usage guide</a> • 
@@ -98,7 +152,7 @@
                                 </div>
                             </div>
                         {% endif %}
-                        {%  if species == 'Homo sapiens' %}
+                        {%  if selected_species == 'Homo sapiens' %}
                             <div class="col-12">
                                 <div class="alert alert-success border-0 py-2">
                                     <i class="bi bi-file-text me-2"></i>
@@ -135,142 +189,8 @@
                 </div>
             </div>
         {% endif %}
-        <h3></h3>
-
-
+       
+        </div>
+    </div>
+</div>
 {% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-
-    {% if 'species' in tables %}
-        {% for sp, t in tables['species'].items() %}
-                $(document).ready(function() {
-                    $("#{{ t['draft'].table_id }}").DataTable({
-                        "paging":   false,
-                        "searching": false,
-                        "info":     false
-                    });
-                })
-        {% endfor %}
-    {% endif %}
-
-    $(document).ready(function() {
-        $("#{{ affirmed.table_id }}").DataTable({
-            "paging":   false,
-            "searching": false,
-            "info":     false
-        });
-    })
-
-
-    function set_delete(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Delete Sequence?',
-            message: 'This draft will be removed. You will not be able to recover it later.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Delete',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/delete_germline_set/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function set_new_draft(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Create New Draft?',
-            message: 'This will create a new draft of the germline set, which can then be updated and published.',
-            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'New Draft',
-            btnOKClass: 'btn-warning',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/draft_germline_set/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function set_withdraw(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Withdraw Sequence?',
-            message: 'This will withdraw the germline set from publication.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Withdraw',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/withdraw_germline_set/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function set_update_doi(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Update germline set on Zenodo?',
-            message: 'This action cannot be reversed.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Update',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/update_germline_set_doi/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    function set_create_doi(id) {
-        foo = BootstrapDialog.confirm({
-            title: 'Create germline set series on Zenodo?',
-            message: 'This action cannot be reversed.',
-            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
-            btnOKLabel: 'Create',
-            btnOKClass: 'btn-danger',
-              callback: function(result) {
-                if(result) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/create_germline_set_doi_series/" + id,
-                        success: function(data) {
-                            window.location.reload(true);
-                        }
-                    })
-                }
-            }
-        });
-    }
-    </script>
-
-{% endblock %}
-
-

@@ -11,6 +11,7 @@ from forms.attached_file_form import *
 from sequence_format import *
 from textile_filter import safe_textile
 from ogrdb.germline_set.germline_set_table import annotate_flanking_regions
+from ogrdb.sequence.sequence_formatting import pretty_sequence_item
 
 
 class GeneDescriptionNotes_table(StyledTable):
@@ -22,31 +23,6 @@ def make_GeneDescriptionNotes_table(results, private = False, classes=()):
     t=create_table(base=GeneDescriptionNotes_table)
     ret = t(results, classes=classes)
     return ret
-
-
-def pretty_item(fn, value, seq, trailer_text, gv_items):
-    if fn == 'sequence':
-        if value is not None and len(value) > 0:
-            value = Markup('<button id="seq_view" name="seq_view" type="button" class="btn btn-xs text-ogrdb-info icon_back" data-bs-toggle="modal" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-bs-toggle="tooltip" title="View"><i class="bi bi-search"></i>&nbsp;</button>' \
-                           % (format_unrearranged_sequence(value, 50, gv_items) + trailer_text, seq.sequence_name, format_fasta_sequence(seq.sequence_name, seq.sequence, 50)))
-        else:
-            value = 'None'
-    elif fn == 'coding_seq_imgt':
-        if value is not None and len(value) > 0:
-            if seq.sequence_type == 'V':
-                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt.replace('.', ''), seq.coding_seq_imgt, seq).replace('btn_view_seq', 'seq_coding_view'))
-            else:
-                value = Markup(popup_seq_button(seq.sequence_name, seq.coding_seq_imgt, '', seq).replace('btn_view_seq', 'seq_coding_view'))
-        else:
-            value = 'None'
-    elif fn == 'release_description':
-        if value is not None and len(value) > 0:
-            value = Markup(safe_textile(value))
-    elif fn == 'release_date':
-        if value is not None:
-            value = value.strftime('%Y-%m-%d')
-
-    return value
 
 
 def add_RSS_view_definitions(view, seq_vals):
@@ -113,7 +89,7 @@ def setup_sequence_view_tables(db, seq, private):
         trailer_text = ''
 
     for fn, field in gv_items.items():
-        rep = pretty_item(fn, field['value'], seq, trailer_text, gv_items)
+        rep = pretty_sequence_item(fn, field['value'], seq, trailer_text, gv_items)
         gv_items[fn]['value'] = rep
 
     tables = {}
@@ -142,8 +118,8 @@ def setup_sequence_view_tables(db, seq, private):
 
     if tables['diffs'] is not None:
         for row in tables['diffs'].items:
-            row['value'] = pretty_item(row['field'], row['value'], seq, trailer_text, gv_items)
-            row['value2'] = pretty_item(row['field'], row['value2'], seq, trailer_text, gv_items)
+            row['value'] = pretty_sequence_item(row['field'], row['value'], seq, trailer_text, gv_items)
+            row['value2'] = pretty_sequence_item(row['field'], row['value2'], seq, trailer_text, gv_items)
 
     for entry in history:
         t = StyledTable([entry], classes=['tablefixed'])

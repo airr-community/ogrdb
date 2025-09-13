@@ -145,3 +145,5 @@ attach_path = app.config['ATTACHPATH'] + '/'
 ## Cautions
 
 - jinja2 templating is used. Be careful to respect its syntax and preserve blocks. Check the block structure after changes to html files.
+- when testing code always use the conda environment ogre311
+- some python files are auto generated. If the first few lines of a file indicate that it is automatically generated, do not modify it.

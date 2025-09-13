@@ -3,6 +3,7 @@
 {% block pagetitle %} Un-rearranged sequence support for {{ name }} {% endblock %}
 
 {% block c_body %}
+{% include 'sequence_popup.html' %}
 
 <div class="data-card">
     <div class="info-card mb-4">
@@ -23,4 +24,11 @@
 
 {% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/script/helpers.js"></script>
+
+    {% include 'sequence_popup_script.html' %}
+
+{% endblock %}
 

@@ -1938,9 +1938,46 @@ def genomic_support(id):
 
     table = make_GenomicSupport_view(genomic_support, genomic_support.gene_description.can_edit(current_user))
 
+    # Import the sequence formatting functions
+    from ogrdb.sequence.sequence_formatting import pretty_sequence_item, create_genomic_support_view_items
+
+    # Create view items for genomic support coordinates
+    gv_items = create_genomic_support_view_items(genomic_support)
+    
+    # Calculate coordinate offset for genomic support
+    coordinate_offset = genomic_support.sequence_start if genomic_support.sequence_start else 0
+    
+    # Determine trailer text
+    if genomic_support.sequence and len(genomic_support.sequence) > 0 and genomic_support.sequence[-1] == '.':
+        trailer_text = "A trailing . indicates IARC's opinion that the sequence\n" \
+                       "is likely to contain additional 3' nucleotides for which\n" \
+                       "there is insufficient evidence to make an affirmation.\n" \
+                       "Please see Notes for details."
+    else:
+        trailer_text = ''
+
+    seq_pos = 0
+    ind = 0
     for item in table.items:
         if item['item'] == 'URL':
             item['value'] = Markup('<a href="%s">%s</a>' % (item['value'], item['value']))
+        elif item['field'] == 'sequence':
+            # Apply sequence formatting with coordinate adjustment
+            item['value'] = pretty_sequence_item('sequence', item['value'], genomic_support, trailer_text, gv_items, coordinate_offset)
+            seq_pos = ind
+        ind += 1
+
+    try:
+        coding_seq = genomic_support.sequence[genomic_support.gene_start - genomic_support.sequence_start:genomic_support.gene_end - genomic_support.sequence_start + 1]
+    except:
+        coding_seq = ''
+
+    table.items.insert(seq_pos + 1, {
+        'item': 'Coding sequence',
+        'field': 'coding_seq_imgt',
+        'value': pretty_sequence_item('genomic_coding_seq', coding_seq, genomic_support, trailer_text, gv_items, coordinate_offset),
+        'tooltip': 'The portion of the genomic sequence that corresponds to the coding sequence of the gene.'
+        })
 
     return render_template('genomic_support_view.html', table=table, name=genomic_support.gene_description.sequence_name)
 

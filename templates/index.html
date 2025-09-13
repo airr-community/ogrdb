@@ -89,21 +89,8 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="germlineSetsDropdown" role="button" data-bs-toggle="dropdown">
-                            Germline Sets
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Homo sapiens') }}">Human (Homo sapiens)</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Mus musculus') }}">Mouse (Mus musculus)</a></li>
-                            {% if current_user.has_role('Salmo salar') %}
-                            <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}">Rainbow Trout (Oncorhynchus mykiss)</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('germline_sets', species='Salmo salar') }}">Atlantic Salmon (Salmo salar)</a></li>
-                            {% endif %}
-                            {% if current_user.has_role('Peromyscus leucopus') %}
-                            <li><a class="dropdown-item" href="{{ url_for('sequences', sp='Peromyscus leucopus') }}">White Footed Mouse (Peromyscus leucopus)</a></li>
-                            {% endif %}
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('germline_sets') }}">Germline Sets</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="sequencesDropdown" role="button" data-bs-toggle="dropdown">
@@ -160,9 +147,7 @@
                     
                     <!-- Primary CTA -->
                     <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
-                        <button class="btn btn-light btn-lg" id="heroDownloadBtn">
-                            <i class="bi bi-download me-2"></i>Download Germline Sets
-                        </button>
+                        <a href="/germline_sets" class="btn btn-light btn-lg">Download Germline Sets</a>
                     </div>
                 </div>
                 

@@ -31,23 +31,7 @@
         <div class="row">
                 <div class="menu">
                     <a href="{{ url_for('index') }}" class="m-item">Home</a> |
-                    <div class="dropdown d-inline">
-                        <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu1" data-bs-toggle="dropdown">
-                            Germline Sets
-                            <span class="caret"></span>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                            <li><a href="{{ url_for('germline_sets', species='Homo sapiens') }}" class="dropdown-item m-item">Human (Homo sapiens)</a></li>
-                            <li><a href="{{ url_for('germline_sets', species='Mus musculus') }}" class="dropdown-item m-item">Mouse (Mus musculus)</a></li>
-                            {% if current_user.has_role('Salmo salar') %}
-                            <li><a href="{{ url_for('germline_sets', species='Oncorhynchus mykiss') }}" class="dropdown-item m-item">Rainbow Trout (Oncorhynchus mykiss)</a></li>
-                            <li><a href="{{ url_for('germline_sets', species='Salmo salar') }}" class="dropdown-item m-item">Atlantic Salmon (Salmo salar)</a></li>
-                            {% endif %}
-                            {% if current_user.has_role('Peromyscus leucopus') %}
-                            <li><a class="dropdown-item m-item" href="{{ url_for('germline_sets', species='Peromyscus leucopus') }}">White Footed Mouse (Peromyscus leucopus)</a></li>
-                            {% endif %}
-                        </ul>
-                    </div> |
+                    <a href="{{ url_for('germline_sets') }}" class="m-item">Germline Sets</a> |
                     <div class="dropdown d-inline">
                         <a href="#" class="dropdown-toggle m-item" style="padding-left: 10px" id="dropdownMenu2" data-bs-toggle="dropdown">
                             Sequences
