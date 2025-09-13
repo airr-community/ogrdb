@@ -31,7 +31,7 @@
                                 </div>
                                 <h4 class="h5">Sets</h4>
                                 <p class="small text-muted">Explore our curated germline sets and download in multiple formats.</p>
-                                <a href="#" id="browse-sets-btn" class="btn btn-outline-primary btn-sm">Browse Sets</a>
+                                <a href="/germline_sets" class="btn btn-outline-primary btn-sm">Browse Sets</a>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -41,7 +41,7 @@
                                 </div>
                                 <h4 class="h5">Sequences</h4>
                                 <p class="small text-muted">Review our database of allele sequences, supporting evidence and curation history.</p>
-                                <a href="#" id="view-sequences-btn" class="btn btn-outline-primary btn-sm">View Sequences</a>
+                                <a href="/gene_table" class="btn btn-outline-primary btn-sm">View Sequences</a>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -381,21 +381,7 @@
                 }
             }, isCollapsed ? 400 : 200); // Longer delay if we had to expand navbar
         }
-        
-        if (browseSetsBtn) {
-            browseSetsBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleHelpDropdownClick('#dropdownMenu1');
-            });
-        }
-        
-        if (viewSequencesBtn) {
-            viewSequencesBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleHelpDropdownClick('#dropdownMenu2');
-            });
-        }
-        
+                
         function filterArticles(searchTerm) {
             articles.forEach(article => {
                 const title = article.dataset.title || '';
