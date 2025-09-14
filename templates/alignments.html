@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block pagetitle %} Sequence Alignments {% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+.alignment-container {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+    padding: 1rem;
+}
+
+.alignment-text {
+    font-family: 'Courier New', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #212529;
+}
+
+@media (max-width: 768px) {
+    .alignment-text {
+        font-size: 10px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block c_body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>Sequence Alignments</h1>
+            
+            <!-- Selection Panel -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Select Sequences for Alignment</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.species.id }}" class="form-label">{{ form.species.label.text }}</label>
+                                {{ form.species(class_="form-select", id="species-select") }}
+                                {% if form.species.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.species.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.locus.id }}" class="form-label">{{ form.locus.label.text }}</label>
+                                {{ form.locus(class_="form-select", id="locus-select") }}
+                                {% if form.locus.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.locus.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.gene_name.id }}" class="form-label">{{ form.gene_name.label.text }}</label>
+                                {{ form.gene_name(class_="form-select", id="gene-name-select") }}
+                                {% if form.gene_name.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.gene_name.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="codons-per-line" class="form-label">Codons per line</label>
+                                <input type="number" class="form-control" id="codons-per-line" name="codons_per_line" value="{{ codons_per_line }}" min="1" max="1000">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="include-evidence" name="include_evidence"{% if include_evidence %} checked{% endif %}>
+                                    <label class="form-check-label" for="include-evidence">
+                                        Include evidence
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    {{ form.submit(class_="btn btn-primary") }}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Alignment Results -->
+            {% if selected_species and selected_locus and selected_gene_name %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Alignment for {{ selected_species }} {{ selected_locus }} {{ selected_gene_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if alignment_data %}
+                        {% if alignment_data.error %}
+                            <div class="alert alert-warning" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>{{ alignment_data.error }}
+                            </div>
+                        {% elif alignment_data.alignment %}
+                            <div class="mb-3 d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-2">
+                                        <strong>{{ alignment_data.count }}</strong> sequence(s) found for alignment.
+                                        {% if alignment_data.suffixes %}
+                                            <br>
+                                            Sequences marked with (U) are unpublished. Sequences marked with (N) are not in any published germline set.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-secondary" id="download-alignment-btn">
+                                        <i class="bi bi-download me-2"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Alignment Display -->
+                            <div class="alignment-container">
+                                <pre class="alignment-text" id="alignment-text">{{ alignment_data.alignment }}</pre>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No alignment data available.</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No alignment data available for the selected criteria.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const speciesSelect = document.getElementById('species-select');
+    const locusSelect = document.getElementById('locus-select');
+    const geneNameSelect = document.getElementById('gene-name-select');
+    
+    // Store original selected values to preserve them
+    const originalSpecies = speciesSelect.value;
+    const originalLocus = locusSelect.value;
+    const originalGeneName = geneNameSelect.value;
+    
+    // Flag to prevent auto-submit during programmatic updates
+    let isUpdatingProgrammatically = false;
+    
+    // Update locus choices when species changes
+    speciesSelect.addEventListener('change', function() {
+        const species = this.value;
+        if (species) {
+            fetch(`/get_loci/${species}`)
+                .then(response => response.json())
+                .then(loci => {
+                    locusSelect.innerHTML = '';
+                    loci.forEach(locus => {
+                        const option = document.createElement('option');
+                        option.value = locus;
+                        option.textContent = locus;
+                        // Preserve original selection if it exists in the new choices
+                        if (locus === originalLocus) {
+                            option.selected = true;
+                        }
+                        locusSelect.appendChild(option);
+                    });
+                    
+                    // Update gene names for selected locus
+                    if (locusSelect.value) {
+                        locusSelect.dispatchEvent(new Event('change'));
+                    }
+                })
+                .catch(error => console.error('Error fetching loci:', error));
+        } else {
+            locusSelect.innerHTML = '<option value="">Select Locus</option>';
+            geneNameSelect.innerHTML = '<option value="">Select Gene Name</option>';
+        }
+    });
+    
+    // Update gene name choices when locus changes
+    locusSelect.addEventListener('change', function() {
+        const species = speciesSelect.value;
+        const locus = this.value;
+        if (species && locus) {
+            isUpdatingProgrammatically = true;
+            fetch(`/get_gene_names/${species}/${locus}`)
+                .then(response => response.json())
+                .then(geneNames => {
+                    geneNameSelect.innerHTML = '';
+                    if (geneNames.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No genes available';
+                        geneNameSelect.appendChild(option);
+                    } else {
+                        geneNames.forEach(geneName => {
+                            const option = document.createElement('option');
+                            option.value = geneName;
+                            option.textContent = geneName;
+                            // Preserve original selection if it exists in the new choices
+                            if (geneName === originalGeneName) {
+                                option.selected = true;
+                            }
+                            geneNameSelect.appendChild(option);
+                        });
+                    }
+                    isUpdatingProgrammatically = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching gene names:', error);
+                    isUpdatingProgrammatically = false;
+                });
+        } else {
+            isUpdatingProgrammatically = true;
+            geneNameSelect.innerHTML = '<option value="">Select Gene Name</option>';
+            isUpdatingProgrammatically = false;
+        }
+    });
+    
+    // Auto-submit form when gene name changes
+    geneNameSelect.addEventListener('change', function() {
+        // Don't auto-submit if we're updating programmatically
+        if (isUpdatingProgrammatically) {
+            return;
+        }
+        
+        const species = speciesSelect.value;
+        const locus = locusSelect.value;
+        const geneName = this.value;
+        
+        console.log('Gene name changed:', geneName, 'Species:', species, 'Locus:', locus);
+        
+        // Only auto-submit if all required fields are selected and gene name is not empty
+        if (species && locus && geneName && geneName !== '') {
+            // Find the alignment form specifically
+            const alignmentForm = document.querySelector('form[method="POST"]');
+            if (alignmentForm) {
+                console.log('Submitting form automatically');
+                alignmentForm.submit();
+            } else {
+                console.log('Form not found');
+            }
+        } else {
+            console.log('Not all fields selected, not submitting');
+        }
+    });
+    
+    // Initialize choices if species is already selected (for URL pre-population or form submission)
+    if (speciesSelect.value) {
+        speciesSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Simple download functionality
+    const downloadButton = document.getElementById('download-alignment-btn');
+    if (downloadButton) {
+        downloadButton.addEventListener('click', function() {
+            const alignmentText = document.getElementById('alignment-text');
+            
+            if (!alignmentText || !alignmentText.textContent.trim()) {
+                alert('No alignment data available to download.');
+                return;
+            }
+            
+            // Get the current selection values for filename
+            const species = speciesSelect.value || 'unknown';
+            const locus = locusSelect.value || 'unknown';
+            const geneName = geneNameSelect.value || 'unknown';
+            
+            // Clean filename components (replace spaces and special characters with underscores)
+            const cleanSpecies = species.replace(/[^a-zA-Z0-9]/g, '_');
+            const cleanLocus = locus.replace(/[^a-zA-Z0-9]/g, '_');
+            const cleanGeneName = geneName.replace(/[^a-zA-Z0-9]/g, '_');
+            
+            const filename = `${cleanSpecies}_${cleanLocus}_${cleanGeneName}.txt`;
+            
+            // Download the alignment text as-is
+            const blob = new Blob([alignmentText.textContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        });
+    }
+});
+</script>
+{% endblock %}

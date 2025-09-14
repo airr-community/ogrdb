@@ -147,3 +147,9 @@ attach_path = app.config['ATTACHPATH'] + '/'
 - jinja2 templating is used. Be careful to respect its syntax and preserve blocks. Check the block structure after changes to html files.
 - when testing code always use the conda environment ogre311
 - some python files are auto generated. If the first few lines of a file indicate that it is automatically generated, do not modify it.
+
+## File Creation Standards
+- All python files and other text files must end with a single newline character
+- Do not create files with trailing null bytes
+- Use simple string concatenation: `content + '\n'` when creating files
+- Avoid multiple attempts to add newlines if the first approach does not work. Ask the user to add it manually if needed.

@@ -190,7 +190,7 @@ class InSetTickCol(StyledCol):
 
 class GeneTable(StyledTable):
     """Custom table for displaying gene information"""
-    gene = Col('Gene')
+    gene = LinkCol('Gene', 'alignments', url_kwargs=dict(species='species', locus='locus', gene_name='gene_name'), attr='gene_name')
     allele = LinkCol('Allele', 'sequence', url_kwargs=dict(id='description_id'), attr='allele')
     affirmation_level = Col('Affirmation Level')
     unrearranged = InferenceTypeTickCol('Unrearranged', 'Unrearranged')
@@ -245,7 +245,9 @@ def create_gene_table(species, subgroup, locus):
         in_published_set = any(gs.status == 'published' for gs in seq.germline_sets)
         
         table_data.append({
-            'gene': gene_name,
+            'species': species,
+            'locus': locus,
+            'gene_name': gene_name,
             'allele': allele_name,
             'description_id': seq.id,  # For linking to sequence detail page
             'inference_type': seq.inference_type or '',  # For tick display in unrearranged/rearranged columns
@@ -254,7 +256,7 @@ def create_gene_table(species, subgroup, locus):
         })
     
     # Sort by gene name
-    table_data.sort(key=lambda x: x['gene'])
+    table_data.sort(key=lambda x: x['gene_name'])
     
     # Create table
     table = GeneTable(table_data)

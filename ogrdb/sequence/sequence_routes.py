@@ -14,13 +14,15 @@ from os.path import isdir
 from traceback import format_exc
 import shutil
 
-from flask import flash, redirect, request, render_template, url_for, Response
+from flask import current_app, flash, redirect, request, render_template, url_for, Response, jsonify
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from markupsafe import Markup
 from sqlalchemy import and_, or_
 from wtforms import ValidationError
 from receptor_utils import simple_bio_seq as simple
+from receptor_utils.sequence_alignment import create_alignment
+from receptor_utils.number_v import gap_align
 
 from head import db, app, attach_path
 
@@ -37,6 +39,7 @@ from db.repertoire_db import Acknowledgements
 from db.submission_db import Submission
 from db.novel_vdjbase_db import NovelVdjbase
 from db.species_lookup_db import SpeciesLookup
+from db.germline_set_db import GermlineSet
 
 from forms.aggregate_form import AggregateForm
 from forms.gene_description_form import GeneDescriptionForm
@@ -45,6 +48,7 @@ from forms.genomic_support_form import GenomicSupportForm
 from forms.journal_entry_form import JournalEntryForm
 from forms.sequence_new_form import NewSequenceForm
 from forms.sequence_table_form import SequenceTableForm
+from forms.alignment_form import AlignmentForm
 from ogrdb.sequence.gene_table import get_available_species, get_available_subgroups, get_available_loci
 from imgt.imgt_ref import get_imgt_reference_genes
 from ogrdb.germline_set.descs_to_fasta import descs_to_fasta
@@ -54,7 +58,7 @@ from ogrdb.submission.submission_edit_form import process_table_updates
 from ogrdb.submission.submission_routes import check_sub_view
 from ogrdb.submission.submission_view_form import HiddenReturnForm
 
-from ogrdb.sequence.sequence_view_form import setup_sequence_view_tables
+from forms.sequence_view_form import setup_sequence_view_tables
 from ogrdb.sequence.inferred_sequence_table import setup_sequence_edit_tables
 from ogrdb.sequence.sequence_list_table import setup_sequence_list_table, setup_sequence_version_table
 
@@ -251,10 +255,322 @@ def sequences():
         print("Form validation failed:")
         for field_name, errors in form.errors.items():
             print(f"  {field_name}: {errors}")
-    
+
     return render_template('sequence_list.html', form=form, tables=tables,
                            selected_species=selected_species, selected_subgroup=selected_subgroup,
                            selected_locus=selected_locus, show_withdrawn=show_withdrawn)
+
+
+@app.route('/alignments', methods=['GET', 'POST'])
+@app.route('/alignments/<species>/<locus>/<gene_name>', methods=['GET', 'POST'])
+def alignments(species=None, locus=None, gene_name=None):
+    form = AlignmentForm()
+    
+    # Get available species based on published sequences and user committee membership
+    available_species = get_available_species()
+    form.species.choices = [(sp, sp) for sp in available_species]
+    
+    # If URL parameters are provided, pre-populate form
+    if species and species in [s[0] for s in form.species.choices]:
+        form.species.data = species
+    
+    # Set up form choices before validation
+    if form.species.choices:
+        # Determine which species to use for setting up choices
+        if species:
+            current_species = species
+        elif request.method == 'POST' and form.species.data:
+            current_species = form.species.data
+        elif form.species.choices:
+            current_species = form.species.choices[0][0]
+        else:
+            current_species = None
+            
+        if current_species:
+            # Set locus choices
+            available_loci = get_available_loci(current_species)
+            form.locus.choices = [(locus, locus) for locus in available_loci]
+            
+            # Pre-populate locus if provided in URL
+            if locus and locus in [l[0] for l in form.locus.choices]:
+                form.locus.data = locus
+            
+            # Determine locus for gene name choices
+            if locus:
+                current_locus = locus
+            elif request.method == 'POST' and form.locus.data:
+                current_locus = form.locus.data
+            elif form.locus.choices:
+                current_locus = form.locus.choices[0][0]
+            else:
+                current_locus = None
+                
+            # Set gene name choices
+            if current_locus:
+                available_gene_names = get_available_gene_names(current_species, current_locus)
+                form.gene_name.choices = [(gene, gene) for gene in available_gene_names]
+                
+                # Pre-populate gene name if provided in URL
+                if gene_name and gene_name in [g[0] for g in form.gene_name.choices]:
+                    form.gene_name.data = gene_name
+    
+    selected_species = None
+    selected_locus = None
+    selected_gene_name = None
+    alignment_data = None
+    codons_per_line = 20  # Default value
+    include_evidence = False  # Default value
+    
+    if form.validate_on_submit():
+        selected_species = form.species.data
+        selected_locus = form.locus.data
+        selected_gene_name = form.gene_name.data
+        
+        # Capture additional form data
+        codons_per_line = int(request.form.get('codons_per_line', 20))
+        include_evidence = 'include_evidence' in request.form
+        
+        # Generate alignment data based on selection
+        # TODO - need to work out codon positions of the CDRs in the gapped sequence from the CDR start/end coords in the ungapped sequence
+        alignment_data = create_alignment_data(selected_species, selected_locus, selected_gene_name, codons_per_line, include_evidence)
+        
+    elif request.method == 'POST':
+        # Even if form validation fails, preserve the additional form data
+        codons_per_line = int(request.form.get('codons_per_line', 20))
+        include_evidence = 'include_evidence' in request.form
+        
+        # Debug form validation errors
+        print("Form validation failed:")
+        for field_name, errors in form.errors.items():
+            print(f"  {field_name}: {errors}")
+    
+    return render_template('alignments.html', form=form, 
+                           selected_species=selected_species, 
+                           selected_locus=selected_locus,
+                           selected_gene_name=selected_gene_name,
+                           alignment_data=alignment_data,
+                           codons_per_line=codons_per_line,
+                           include_evidence=include_evidence)
+
+
+def get_available_gene_names(species, locus):
+    """Get available gene names for a specific species and locus"""
+    gene_names_set = set()
+    
+    # Base query filters
+    base_filters = [
+        GeneDescription.species == species,
+        GeneDescription.locus == locus,
+        GeneDescription.sequence_name.isnot(None)
+    ]
+    
+    # Get gene names from published sequences
+    published_query = db.session.query(GeneDescription.sequence_name).filter(
+        *base_filters,
+        GeneDescription.status == 'published'
+    ).distinct()
+    
+    published_genes = published_query.all()
+    for gene_tuple in published_genes:
+        gene_name = gene_tuple[0]
+        if gene_name and '*' in gene_name:
+            # Extract gene name without allele designation
+            base_gene = gene_name.split('*')[0]
+            gene_names_set.add(base_gene)
+        elif gene_name:
+            gene_names_set.add(gene_name)
+    
+    # If user has access to this species committee, include unpublished gene names
+    if current_user.is_authenticated and current_user.has_role(species):
+        unpublished_query = db.session.query(GeneDescription.sequence_name).filter(
+            *base_filters,
+            GeneDescription.status.in_(['draft'])
+        ).distinct()
+        
+        unpublished_genes = unpublished_query.all()
+        for gene_tuple in unpublished_genes:
+            gene_name = gene_tuple[0]
+            if gene_name and '*' in gene_name:
+                # Extract gene name without allele designation
+                base_gene = gene_name.split('*')[0]
+                gene_names_set.add(base_gene)
+            elif gene_name:
+                gene_names_set.add(gene_name)
+    
+    return sorted(list(gene_names_set))
+
+
+@app.route('/get_gene_names/<species>/<locus>', methods=['GET'])
+def get_gene_names_for_species_locus(species, locus):
+    """AJAX endpoint to get available gene names for a species and locus"""
+    gene_names = get_available_gene_names(species, locus)
+    return jsonify(gene_names)
+
+
+def create_alignment_data(species, locus, gene_name, codons_per_line=20, include_evidence=False):
+    """Create alignment data for all alleles of a specific gene"""
+    try:
+        # Base query filters to find all alleles of the specified gene
+        base_filters = [
+            GeneDescription.species == species,
+            GeneDescription.locus == locus,
+            or_(GeneDescription.sequence_name.like(f'{gene_name}*%'), GeneDescription.sequence_name == gene_name),
+            GeneDescription.coding_seq_imgt.isnot(None),
+            GeneDescription.coding_seq_imgt != ''
+        ]
+        
+        # Get published sequences (always included)
+        published_query = db.session.query(GeneDescription).filter(
+            *base_filters,
+            GeneDescription.status == 'published'
+        ).order_by(GeneDescription.sequence_name)
+        
+        published_alleles = published_query.all()
+        
+        # If user has access to this species committee, include unpublished alleles
+        unpublished_alleles = []
+        if current_user.is_authenticated and current_user.has_role(species):
+            unpublished_query = db.session.query(GeneDescription).filter(
+                *base_filters,
+                GeneDescription.status.in_(['draft'])
+            ).order_by(GeneDescription.sequence_name)
+            
+            unpublished_alleles = unpublished_query.all()
+
+        # if include evidence is selected, include genomic_evidence records for all alleles
+        published_evidence = {}
+        if include_evidence and published_alleles:
+            published_evidence_query = db.session.query(GenomicSupport, GeneDescription.sequence_name).join(GeneDescription).filter(
+                GeneDescription.species == species,
+                GeneDescription.locus == locus,
+                or_(GeneDescription.sequence_name.like(f'{gene_name}*%'), GeneDescription.sequence_name == gene_name),
+                GeneDescription.status == 'published'
+            )
+
+            published_recs = published_evidence_query.all()
+            if published_recs:
+                for rec, seq_name in published_recs:
+                    try:
+                        seq = rec.sequence[rec.gene_start - 1 - rec.sequence_start + 1:rec.gene_end - rec.sequence_start + 1]
+                        seq = gap_align(seq, published_alleles[0].coding_seq_imgt)  # Align to first published allele
+                        label = f'{seq_name} {rec.accession}'
+                        published_evidence[label] = seq
+                    except:
+                        continue
+
+        unpublished_evidence = {}
+        if current_user.is_authenticated and current_user.has_role(species):
+            if include_evidence and (published_alleles or unpublished_alleles):
+                unpublished_evidence_query = db.session.query(GenomicSupport, GeneDescription.sequence_name).join(GeneDescription).filter(
+                    GeneDescription.species == species,
+                    GeneDescription.locus == locus,
+                    or_(GeneDescription.sequence_name.like(f'{gene_name}*%'), GeneDescription.sequence_name == gene_name),
+                    GeneDescription.status == 'draft'
+                )
+
+                unpublished_recs = unpublished_evidence_query.all()
+                if unpublished_recs:
+                    for rec, seq_name in unpublished_recs:
+                        try:
+                            seq = rec.sequence[rec.gene_start - 1 - rec.sequence_start + 1:rec.gene_end - rec.sequence_start + 1]
+                            ref = published_alleles[0] if published_alleles else unpublished_alleles[0]
+                            seq = gap_align(seq, ref.coding_seq_imgt)  # Align to reference allele
+                            label = f'{seq_name} {rec.accession} (U)'
+                            unpublished_evidence[label] = seq
+                        except:
+                            continue
+
+
+        # Combine all alleles
+        all_alleles = list(published_alleles) + unpublished_alleles
+        
+        if not all_alleles:
+            return {
+                'error': f'No sequences found for {species} {locus} {gene_name}',
+                'alignment': None,
+                'sequences': []
+            }
+        
+        # Prepare sequences for alignment
+        sequences = {}
+        sequence_type = None
+        suffixes = False
+        
+        for allele in all_alleles:
+            coding_seq = allele.coding_seq_imgt
+            if coding_seq:  # Only include non-empty sequences
+                # Add status indicator for unpublished sequences
+                if not sequence_type:
+                    sequence_type = allele.sequence_type
+
+                name = allele.sequence_name
+                suffix = ''
+                if allele.status == 'draft':
+                    suffix += 'U'
+                # Add status if sequence is not in a published germline set
+                sets = db.session.query(GermlineSet).filter(
+                    GermlineSet.gene_descriptions.any(id=allele.id),
+
+                ).all()
+
+                published = False
+                for s in sets:
+                    if s.status == 'published':
+                        published = True
+                        break
+
+                if not published:
+                    suffix += 'N'
+
+                if suffix:
+                    name += f' ({suffix})'
+                    suffixes = True
+
+                prefix = ''
+                if sequence_type == 'J' and allele.j_codon_frame:
+                    try:
+                        prefix = '.' * ((4 - int(allele.j_codon_frame)) % 3)
+                    except:
+                        prefix = ''
+                sequences.update({name: prefix + allele.coding_seq_imgt})
+        
+        sequences.update(published_evidence)
+        sequences.update(unpublished_evidence)
+
+        if not sequences:
+            return {
+                'error': f'No valid coding sequences found for {species} {locus} {gene_name}',
+                'alignment': None,
+                'sequences': [],
+                'suffixes': False,
+            }
+        
+        # Create alignment using receptor_utils
+        try:
+            alignment_result = create_alignment(sequences, sequence_type, codon_wrap=codons_per_line)
+            
+            return {
+                'error': None,
+                'alignment': alignment_result,
+                'sequences': list(sequences.keys()),
+                'count': len(sequences),
+                'suffixes': suffixes
+            }
+        except Exception as e:
+            return {
+                'error': f'Error creating alignment: {str(e)}',
+                'alignment': None,
+                'sequences': list(sequences.keys()),
+                'suffixes': False
+            }
+            
+    except Exception as e:
+        return {
+            'error': f'Error retrieving sequences: {str(e)}',
+            'alignment': None,
+            'sequences': [],
+            'suffixes': False
+        }
 
 
 def create_sequence_tables(species, subgroup, locus):
