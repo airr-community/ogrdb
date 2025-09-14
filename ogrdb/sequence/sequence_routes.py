@@ -480,6 +480,33 @@ def create_alignment_data(species, locus, gene_name, codons_per_line=20, include
                         except:
                             continue
 
+        # Calculate codon positions for CDRs in the gapped sequence
+        ref = published_alleles[0] if published_alleles else unpublished_alleles[0]
+        sequence_type = ref.sequence_type
+
+        v_coords = None
+        if sequence_type == 'V':
+            try:
+                seq_gapped = ref.coding_seq_imgt
+                # build a mapping of ungapped to gapped positions
+                ungapped_to_gapped = {}
+                ungapped_index = 0                    
+
+                for gapped_index in range(len(seq_gapped)):
+                    if seq_gapped[gapped_index] != '.':
+                        ungapped_to_gapped[ungapped_index] = gapped_index
+                        ungapped_index += 1
+
+                cdr1_codon_start = int(1 + (ungapped_to_gapped[ref.cdr1_start - ref.gene_start])/3)
+                cdr1_codon_end = int(1 + (ungapped_to_gapped[ref.cdr1_end - ref.gene_start - 2])/3)
+                cdr2_codon_start = int(1 + (ungapped_to_gapped[ref.cdr2_start - ref.gene_start])/3)
+                cdr2_codon_end = int(1 + (ungapped_to_gapped[ref.cdr2_end - ref.gene_start - 2])/3)
+                cdr3_codon_start = int(1 + (ungapped_to_gapped[ref.cdr3_start - ref.gene_start])/3)
+                v_coords = (cdr1_codon_start, cdr1_codon_end, cdr2_codon_start, cdr2_codon_end, cdr3_codon_start)
+                print(v_coords)
+            except:
+                print('error calculating v_coords')
+                v_coords = None
 
         # Combine all alleles
         all_alleles = list(published_alleles) + unpublished_alleles
@@ -493,16 +520,12 @@ def create_alignment_data(species, locus, gene_name, codons_per_line=20, include
         
         # Prepare sequences for alignment
         sequences = {}
-        sequence_type = None
         suffixes = False
         
         for allele in all_alleles:
             coding_seq = allele.coding_seq_imgt
             if coding_seq:  # Only include non-empty sequences
                 # Add status indicator for unpublished sequences
-                if not sequence_type:
-                    sequence_type = allele.sequence_type
-
                 name = allele.sequence_name
                 suffix = ''
                 if allele.status == 'draft':
@@ -547,7 +570,7 @@ def create_alignment_data(species, locus, gene_name, codons_per_line=20, include
         
         # Create alignment using receptor_utils
         try:
-            alignment_result = create_alignment(sequences, sequence_type, codon_wrap=codons_per_line)
+            alignment_result = create_alignment(sequences, sequence_type, codon_wrap=codons_per_line, v_coords=v_coords)
             
             return {
                 'error': None,
