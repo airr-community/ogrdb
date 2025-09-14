@@ -196,10 +196,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update locus choices when species changes
     speciesSelect.addEventListener('change', function() {
         const species = this.value;
+        console.log('Species changed to:', species);
+        
         if (species) {
+            console.log('Fetching loci for species:', species);
             fetch(`/get_loci/${species}`)
                 .then(response => response.json())
                 .then(loci => {
+                    console.log('Received loci:', loci);
                     locusSelect.innerHTML = '';
                     loci.forEach(locus => {
                         const option = document.createElement('option');
@@ -215,12 +219,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     // Trigger gene name update if locus is selected
                     if (locusSelect.value) {
+                        console.log('Triggering locus change event');
                         locusSelect.dispatchEvent(new Event('change'));
                     }
                     
                 })
                 .catch(error => console.error('Error fetching loci:', error));
         } else {
+            console.log('No species selected, clearing options');
             locusSelect.innerHTML = '<option value="">Select Locus</option>';
             geneNameSelect.innerHTML = '<option value="">Select Gene Name</option>';
         }
@@ -230,11 +236,16 @@ document.addEventListener('DOMContentLoaded', function() {
     locusSelect.addEventListener('change', function() {
         const species = speciesSelect.value;
         const locus = this.value;
+        console.log('Locus changed to:', locus, 'for species:', species);
+        
         if (species && locus) {
             isUpdatingProgrammatically = true;
+            console.log('Fetching gene names for', species, locus);
+            
             fetch(`/get_gene_names/${species}/${locus}`)
                 .then(response => response.json())
                 .then(geneNames => {
+                    console.log('Received gene names:', geneNames);
                     geneNameSelect.innerHTML = '';
                     if (geneNames.length === 0) {
                         const option = document.createElement('option');
@@ -256,15 +267,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Set gene name to original (no user interaction):', originalGeneName);
                     }
                     
+                    console.log('Clearing isUpdatingProgrammatically flag');
                     isUpdatingProgrammatically = false;
                 })
                 .catch(error => {
                     console.error('Error fetching gene names:', error);
+                    console.log('Clearing isUpdatingProgrammatically flag (error)');
                     isUpdatingProgrammatically = false;
                 });
         } else {
             isUpdatingProgrammatically = true;
+            console.log('Clearing gene name options (no species/locus)');
             geneNameSelect.innerHTML = '<option value="">Select Gene Name</option>';
+            console.log('Clearing isUpdatingProgrammatically flag (no selection)');
             isUpdatingProgrammatically = false;
         }
     });
@@ -284,6 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
     geneNameSelect.addEventListener('change', function() {
         // Don't auto-submit if we're updating programmatically
         if (isUpdatingProgrammatically) {
+            console.log('Skipping auto-submit: programmatic update');
             return;
         }
         
@@ -291,22 +307,68 @@ document.addEventListener('DOMContentLoaded', function() {
         const locus = locusSelect.value;
         const geneName = this.value;
         
-        console.log('Gene name changed:', geneName, 'Species:', species, 'Locus:', locus);
+        console.log('Gene name changed by user:', geneName, 'Species:', species, 'Locus:', locus);
         
         // Only auto-submit if all required fields are selected and gene name is not empty
         if (species && locus && geneName && geneName !== '') {
-            // Find the alignment form specifically
+            console.log('All fields valid, submitting form automatically');
+            autoSubmitForm();
+        } else {
+            console.log('Not all fields selected, not submitting. Values:', {species, locus, geneName});
+        }
+    });
+    
+    // Auto-submit form when include evidence switch changes
+    const includeEvidenceSwitch = document.getElementById('include-evidence');
+    if (includeEvidenceSwitch) {
+        includeEvidenceSwitch.addEventListener('change', function() {
+            const species = speciesSelect.value;
+            const locus = locusSelect.value;
+            const geneName = geneNameSelect.value;
+            
+            console.log('Include evidence changed by user:', this.checked, 'Species:', species, 'Locus:', locus, 'Gene:', geneName);
+            
+            // Only auto-submit if all required fields are selected
+            if (species && locus && geneName && geneName !== '') {
+                console.log('All fields valid, submitting form automatically');
+                autoSubmitForm();
+            } else {
+                console.log('Not all fields selected, not submitting. Values:', {species, locus, geneName});
+            }
+        });
+    }
+    
+    // Helper function to auto-submit the form
+    function autoSubmitForm() {
+        // Add a small delay to ensure dropdown is fully updated
+        setTimeout(function() {
             const alignmentForm = document.querySelector('form[method="POST"]');
             if (alignmentForm) {
-                console.log('Submitting form automatically');
-                alignmentForm.submit();
+                console.log('Submitting form');
+                // Use requestSubmit() if available, otherwise create and dispatch submit event
+                if (alignmentForm.requestSubmit) {
+                    alignmentForm.requestSubmit();
+                } else {
+                    // Fallback for older browsers - create a submit event
+                    const submitEvent = new Event('submit', {
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    alignmentForm.dispatchEvent(submitEvent);
+                    
+                    // If that doesn't work, find and click the submit button
+                    if (!submitEvent.defaultPrevented) {
+                        const submitButton = alignmentForm.querySelector('input[type="submit"], button[type="submit"]');
+                        if (submitButton) {
+                            submitButton.click();
+                        }
+                    }
+                }
             } else {
                 console.log('Form not found');
             }
-        } else {
-            console.log('Not all fields selected, not submitting');
-        }
-    });
+        }, 100);
+    }
     
     // Initialize choices if species is already selected (for URL pre-population or form submission)
     if (speciesSelect.value) {
