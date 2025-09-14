@@ -271,47 +271,32 @@ def alignments(species=None, locus=None, gene_name=None):
     form.species.choices = [(sp, sp) for sp in available_species]
     
     # If URL parameters are provided, pre-populate form
-    if species and species in [s[0] for s in form.species.choices]:
+    if form.species.data is None and species and species in [s[0] for s in form.species.choices]:
         form.species.data = species
     
     # Set up form choices before validation
     if form.species.choices:
         # Determine which species to use for setting up choices
-        if species:
-            current_species = species
-        elif request.method == 'POST' and form.species.data:
-            current_species = form.species.data
-        elif form.species.choices:
-            current_species = form.species.choices[0][0]
-        else:
-            current_species = None
-            
+        current_species = form.species.data
+
         if current_species:
             # Set locus choices
             available_loci = get_available_loci(current_species)
             form.locus.choices = [(locus, locus) for locus in available_loci]
             
             # Pre-populate locus if provided in URL
-            if locus and locus in [l[0] for l in form.locus.choices]:
+            if form.locus.data is None and locus and locus in [l[0] for l in form.locus.choices]:
                 form.locus.data = locus
+
+            current_locus = form.locus.data
             
-            # Determine locus for gene name choices
-            if locus:
-                current_locus = locus
-            elif request.method == 'POST' and form.locus.data:
-                current_locus = form.locus.data
-            elif form.locus.choices:
-                current_locus = form.locus.choices[0][0]
-            else:
-                current_locus = None
-                
             # Set gene name choices
             if current_locus:
                 available_gene_names = get_available_gene_names(current_species, current_locus)
                 form.gene_name.choices = [(gene, gene) for gene in available_gene_names]
                 
                 # Pre-populate gene name if provided in URL
-                if gene_name and gene_name in [g[0] for g in form.gene_name.choices]:
+                if form.gene_name.data is None and gene_name and gene_name in [g[0] for g in form.gene_name.choices]:
                     form.gene_name.data = gene_name
     
     selected_species = None
@@ -320,6 +305,7 @@ def alignments(species=None, locus=None, gene_name=None):
     alignment_data = None
     codons_per_line = 20  # Default value
     include_evidence = False  # Default value
+    is_form_submission = request.method == 'POST'  # Flag to distinguish form submissions from URL access
     
     if form.validate_on_submit():
         selected_species = form.species.data
@@ -350,7 +336,8 @@ def alignments(species=None, locus=None, gene_name=None):
                            selected_gene_name=selected_gene_name,
                            alignment_data=alignment_data,
                            codons_per_line=codons_per_line,
-                           include_evidence=include_evidence)
+                           include_evidence=include_evidence,
+                           is_form_submission=is_form_submission)
 
 
 def get_available_gene_names(species, locus):
@@ -522,6 +509,7 @@ def create_alignment_data(species, locus, gene_name, codons_per_line=20, include
         sequences = {}
         suffixes = False
         
+        j_codon_frame = None
         for allele in all_alleles:
             coding_seq = allele.coding_seq_imgt
             if coding_seq:  # Only include non-empty sequences
@@ -550,15 +538,20 @@ def create_alignment_data(species, locus, gene_name, codons_per_line=20, include
                     suffixes = True
 
                 prefix = ''
-                if sequence_type == 'J' and allele.j_codon_frame:
+                if sequence_type == 'J' and allele.j_codon_frame and j_codon_frame is None:
                     try:
-                        prefix = '.' * ((4 - int(allele.j_codon_frame)) % 3)
+                        j_codon_frame = int(allele.j_codon_frame)
                     except:
-                        prefix = ''
+                        j_codon_frame = None
                 sequences.update({name: prefix + allele.coding_seq_imgt})
-        
+
         sequences.update(published_evidence)
         sequences.update(unpublished_evidence)
+
+        if sequence_type == 'J' and j_codon_frame is not None:
+            prefix = '.' * ((4 - int(j_codon_frame)) % 3)
+            for name, sequence in sequences.items():
+                sequences[name] = prefix + sequence
 
         if not sequences:
             return {

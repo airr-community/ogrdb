@@ -168,13 +168,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const locusSelect = document.getElementById('locus-select');
     const geneNameSelect = document.getElementById('gene-name-select');
     
-    // Store original selected values to preserve them
+    // Store original selected values only for debugging
     const originalSpecies = speciesSelect.value;
     const originalLocus = locusSelect.value;
     const originalGeneName = geneNameSelect.value;
     
     // Flag to prevent auto-submit during programmatic updates
     let isUpdatingProgrammatically = false;
+    
+    // Flags to track user interactions
+    let userChangedLocus = false;
+    let userChangedGeneName = false;
+    
+    console.log('Page loaded with:', {originalSpecies, originalLocus, originalGeneName});
+    
+    // Track user interaction with locus selector
+    locusSelect.addEventListener('focus', function() {
+        userChangedLocus = true;
+        console.log('User focused locus selector');
+    });
+    
+    locusSelect.addEventListener('click', function() {
+        userChangedLocus = true;
+        console.log('User clicked locus selector');
+    });
     
     // Update locus choices when species changes
     speciesSelect.addEventListener('change', function() {
@@ -188,17 +205,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         const option = document.createElement('option');
                         option.value = locus;
                         option.textContent = locus;
-                        // Preserve original selection if it exists in the new choices
-                        if (locus === originalLocus) {
-                            option.selected = true;
-                        }
                         locusSelect.appendChild(option);
                     });
                     
-                    // Update gene names for selected locus
+                    // After populating loci, set the selected value only if user hasn't changed it
+                    if (!userChangedLocus && originalLocus) {
+                        locusSelect.value = originalLocus;
+                        console.log('Set locus to original (no user interaction):', originalLocus);
+                    }
+                    // Trigger gene name update if locus is selected
                     if (locusSelect.value) {
                         locusSelect.dispatchEvent(new Event('change'));
                     }
+                    
                 })
                 .catch(error => console.error('Error fetching loci:', error));
         } else {
@@ -227,13 +246,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             const option = document.createElement('option');
                             option.value = geneName;
                             option.textContent = geneName;
-                            // Preserve original selection if it exists in the new choices
-                            if (geneName === originalGeneName) {
-                                option.selected = true;
-                            }
                             geneNameSelect.appendChild(option);
                         });
                     }
+                    
+                    // After populating gene names, set the selected value only if user hasn't changed it
+                    if (!userChangedGeneName && originalGeneName) {
+                        geneNameSelect.value = originalGeneName;
+                        console.log('Set gene name to original (no user interaction):', originalGeneName);
+                    }
+                    
                     isUpdatingProgrammatically = false;
                 })
                 .catch(error => {
@@ -245,6 +267,17 @@ document.addEventListener('DOMContentLoaded', function() {
             geneNameSelect.innerHTML = '<option value="">Select Gene Name</option>';
             isUpdatingProgrammatically = false;
         }
+    });
+    
+    // Track user interaction with gene name selector
+    geneNameSelect.addEventListener('focus', function() {
+        userChangedGeneName = true;
+        console.log('User focused gene name selector');
+    });
+    
+    geneNameSelect.addEventListener('click', function() {
+        userChangedGeneName = true;
+        console.log('User clicked gene name selector');
     });
     
     // Auto-submit form when gene name changes
