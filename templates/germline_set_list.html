@@ -193,4 +193,117 @@
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+
+    function set_delete(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Delete Sequence?',
+            message: 'This draft will be removed. You will not be able to recover it later.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Delete',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/delete_germline_set/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_new_draft(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Create New Draft?',
+            message: 'This will create a new draft of the germline set, which can then be updated and published.',
+            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'New Draft',
+            btnOKClass: 'btn-warning',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/draft_germline_set/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_withdraw(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Withdraw Sequence?',
+            message: 'This will withdraw the germline set from publication.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Withdraw',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/withdraw_germline_set/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_update_doi(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Update germline set on Zenodo?',
+            message: 'This action cannot be reversed.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Update',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/update_germline_set_doi/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function set_create_doi(id) {
+        foo = BootstrapDialog.confirm({
+            title: 'Create germline set series on Zenodo?',
+            message: 'This action cannot be reversed.',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            btnOKLabel: 'Create',
+            btnOKClass: 'btn-danger',
+              callback: function(result) {
+                if(result) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/create_germline_set_doi_series/" + id,
+                        success: function(data) {
+                            window.location.reload(true);
+                        }
+                    })
+                }
+            }
+        });
+    }
+    </script>
+
 {% endblock %}

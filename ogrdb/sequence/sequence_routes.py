@@ -966,7 +966,7 @@ def upload_sequences(form, species):
     for row in reader:
         row['sequence'] = row['sequence'].upper()
         if not row['sequence_gapped']:
-            row['sequence_gapped'] = row['sequence']
+            row['sequence_gapped'] = row['sequence'][int(row['gene_start']) - 1:int(row['gene_end'])]
         else:
             row['sequence_gapped'] = row['sequence_gapped'].upper()
         gene_description = GeneDescription()
