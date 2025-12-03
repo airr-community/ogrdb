@@ -32,11 +32,12 @@ def add_RSS_view_definitions(view, seq_vals):
 
 def setup_sequence_view_tables(db, seq, private):
     sections = {}
-    sections['details'] = ["species", "species_subgroup", "species_subgroup_type", "sequence_name", "imgt_name", "alt_names", "affirmation_level", "sequence", "coding_seq_imgt", "functionality", "inference_type", "mapped", "paralogs", "paralog_rep"]
+    sections['details'] = ["species", "species_subgroup", "species_subgroup_type", "sequence_name", "imgt_name", "alt_names", "affirmation_level", "sequence", "coding_seq_imgt", "transmembrane_coding_sequence", "functionality", "inference_type", "mapped", "paralogs", "paralog_rep"]
     sections['cdr'] = ["cdr1_start", "cdr1_end", "cdr2_start", "cdr2_end", "cdr3_start"]
     sections['non-coding'] = ["utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "l_part1", "leader_2_start", "leader_2_end", "l_part2", "v_rs_start", "v_rs_end", "v_heptamer", "v_nonamer", 
                               "d_rs_3_prime_start", "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer", 
-                              "j_rs_start", "j_rs_end", "j_heptamer", "j_nonamer"]
+                              "j_rs_start", "j_rs_end", "j_heptamer", "j_nonamer", "c_exon_1_start", "c_exon_1_end", "c_exon_2_start", "c_exon_2_end", "c_exon_3_start", "c_exon_3_end", "c_exon_4_start", "c_exon_4_end", "c_exon_5_start", "c_exon_5_end", "c_exon_6_start", "c_exon_6_end", "c_exon_7_start", 
+                              "c_exon_7_end", "c_exon_8_start", "c_exon_8_end", "utr_3_prime_start", "utr_3_prime_end"]
     sections['extension'] = ["inferred_extension", "ext_3prime", "start_3prime_ext", "end_3prime_ext", "ext_5prime", "start_5prime_ext", "end_5prime_ext"]
     sections['meta'] = ["description_id", "maintainer", "lab_address", "release_version", "release_date", "release_description", "locus", "sequence_type", "gene_subgroup", "subgroup_designation", "allele_designation", "gene_start", "gene_end", "j_codon_frame", "j_cdr3_end"]
 
@@ -72,7 +73,11 @@ def setup_sequence_view_tables(db, seq, private):
     if seq.sequence_type == 'V':
         wanted.extend(['cdr1_start', 'cdr1_end', 'cdr2_start', 'cdr2_end', 'cdr3_start'])
 
-    optional_fields = ['leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end', 'l_part1', 'l_part2', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
+    if seq.sequence_type == 'C':
+        wanted.extend(['c_exon_1_start', 'c_exon_1_end', 'c_exon_2_start', 'c_exon_2_end', 'c_exon_3_start', 'c_exon_3_end', 'c_exon_4_start', 'c_exon_4_end', 'c_exon_5_start', 'c_exon_5_end', 'c_exon_6_start', 'c_exon_6_end', 'c_exon_7_start', 'c_exon_7_end', 
+                       'c_exon_8_start', 'c_exon_8_end', 'utr_3_prime_start', 'utr_3_prime_end', 'transmembrane_coding_sequence'])
+
+    optional_fields = ['transmembrane_coding_sequence', 'leader_1_start', 'leader_1_end', 'leader_2_start', 'leader_2_end', 'l_part1', 'l_part2', 'utr_5_prime_start', 'utr_5_prime_end', 'inferred_extension', 'ext_3prime', 'start_3prime_ext', 'end_3prime_ext', 'ext_5prime', 'start_5prime_ext', 'end_5prime_ext',
                   'v_rs_start', 'v_rs_end', 'v_heptamer', 'v_nonamer', 'd_rs_3_prime_start', 'd_rs_3_prime_end', 'd_rs_5_prime_start', 'd_rs_5_prime_end', "d_3_heptamer", "d_3_nonamer", "d_5_heptamer", "d_5_nonamer",
                   'j_rs_start', 'j_rs_end', "j_heptamer", "j_nonamer", 'j_cdr3_end', 'j_codon_frame', 'cdr1_start', 'cdr1_end', 'cdr2_start', 'cdr2_end', 'cdr3_start']
 

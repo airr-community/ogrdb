@@ -52,7 +52,7 @@ def pretty_sequence_item(fn, value, seq, trailer_text, gv_items, coordinate_offs
                            % (format_unrearranged_sequence(value, 50, display_gv_items) + trailer_text, sequence_name, format_fasta_sequence(sequence_name, sequence_value, 50)))
         else:
             value = 'None'
-    elif fn == 'coding_seq_imgt' or fn == 'genomic_coding_seq':
+    elif fn == 'coding_seq_imgt' or fn == 'genomic_coding_seq' or fn == 'transmembrane_coding_sequence':
         if value is not None and len(value) > 0:
             sequence_name = getattr(seq, 'sequence_name', None) or getattr(seq, 'accession', 'sequence')
             if fn == 'coding_seq_imgt' and seq.sequence_type == 'V' and '.' in value:

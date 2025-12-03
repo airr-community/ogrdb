@@ -868,6 +868,71 @@ def get_opt_bool(row, key, default=None):  # get an optional bool value from a r
     return bool(row[key])
 
 
+def check_c_exons(gene_description):
+    """
+    Validate C-gene exon coordinates.
+    
+    Returns a list of error messages. An empty list indicates no errors.
+    
+    Rules:
+    - For each exon (c_exon_1 to c_exon_8), start and end should either both be null or both be positive integers
+    - If both are provided, end must be > start
+    - If any exon coordinates are null, all successive exon coordinates must also be null
+    - Successive exons must have coordinates higher than the previous exon
+    - c_exon_1 should never be null
+    """
+    errors = []
+    
+    # Check c_exon_1 is not null
+    if gene_description.c_exon_1_start is None or gene_description.c_exon_1_end is None:
+        errors.append(("c_exon_1_start", "C-gene exon 1 coordinates cannot be null"))
+        return errors  # No point checking further if exon 1 is null
+    
+    # Check all 8 exons
+    last_end = 0
+    found_null = False
+    
+    for i in range(1, 9):
+        start_attr = f'c_exon_{i}_start'
+        end_attr = f'c_exon_{i}_end'
+        
+        start = getattr(gene_description, start_attr, None)
+        end = getattr(gene_description, end_attr, None)
+        
+        # Check that both are null or both are not null
+        if (start is None) != (end is None):
+            errors.append((f"c_exon_{i}_start", f"Exon c_exon_{i}: start and end must both be null or both be provided"))
+            continue
+        
+        # If both are null
+        if start is None and end is None:
+            found_null = True
+            continue
+        
+        # If we previously found a null exon, current exon should also be null
+        if found_null:
+            errors.append((f"c_exon_{i}_start", f"Exon c_exon_{i}: coordinates must be null because a previous exon has null coordinates"))
+            continue
+        
+        # Check that both are positive integers
+        if start <= 0:
+            errors.append((f"c_exon_{i}_start", f"Exon c_exon_{i}: start coordinate must be a positive integer"))
+        if end <= 0:
+            errors.append((f"c_exon_{i}_end", f"Exon c_exon_{i}: end coordinate must be a positive integer"))
+        
+        # Check that end > start
+        if end <= start:
+            errors.append((f"c_exon_{i}_end", f"Exon c_exon_{i}: end coordinate must be greater than start coordinate"))
+        
+        # Check that this exon's coordinates are higher than the previous exon
+        if start <= last_end:
+            errors.append((f"c_exon_{i}_start", f"Exon c_exon_{i}: start coordinate must be greater than the previous exon's end coordinate"))
+        
+        last_end = end
+    
+    return errors
+
+
 def upload_sequences(form, species):
     errors = []
 
@@ -1635,6 +1700,9 @@ def delineate_v_gene(seq, feature_ranges=[default_imgt_fr1, default_imgt_cdr1, d
     return coords
 
 
+
+
+
 # Copy submitter and acknowledgements from sequence submission to gene_description
 
 
@@ -1670,6 +1738,17 @@ def edit_sequence(id):
                     form[field].errors = []
                 else:
                     valid = False
+
+        if seq.sequence_type == 'C':
+            g = GeneDescription()
+            for n in range(1, 9):
+                g.__setattr__(f'c_exon_{n}_start', form[f'c_exon_{n}_start'].data)
+                g.__setattr__(f'c_exon_{n}_end', form[f'c_exon_{n}_end'].data)
+            errors = check_c_exons(g)
+            if errors:
+                for field, error in errors:
+                    form[field].errors.append(error)
+                valid = False
 
         if form.action.data == 'published':
             for inferred_sequence in seq.inferred_sequences:
@@ -1748,7 +1827,7 @@ def edit_sequence(id):
             
                 pos = seq.sequence.find(seq.coding_seq_imgt.replace('.', ''))
 
-                if pos < 0:
+                if pos < 0 and seq.sequence_type != 'C':
                     form.coding_seq_imgt.errors.append('Coding sequence not found in sequence')
                     raise ValidationError()
                 else:

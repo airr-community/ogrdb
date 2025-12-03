@@ -876,8 +876,8 @@ GeneDescription:
             tableview: true
             width: narrow
         sequence_type:
-            type: [V,D,J,CH1,CH2,CH3,CH4,Leader]
-            description: Sequence type (V, D, J, CH1 ... CH4, Leader)
+            type: [V,D,J,C]
+            description: Sequence type (V, D, J, C)
             label: Sequence Type
             tableview: true
             width: narrow
@@ -944,9 +944,19 @@ GeneDescription:
             tableview: true
         coding_seq_imgt:
             type: IUPAC GAPPED
-            description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme
+            description: nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the secretory form.
             label: Coding Sequence
             rows: 12
+            tableview: true
+        transmembrane_coding_sequence:
+            type: text
+            nullable: true
+            x-airr:
+                miairr: important
+            description:
+                Nucleotide sequence of the coding region of the transmembrane domain of an IGH/IGI C-gene). The sequence of the cytoplasmic form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.
+            rows: 12
+            label: TM Coding Sequence
             tableview: true
         gene_start:
             type: integer
@@ -1102,6 +1112,132 @@ GeneDescription:
             nonblank: false
             width: narrow
             tableview: true
+        c_exon_1_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the first constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 1 Start
+        c_exon_1_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the first constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 1 End
+        c_exon_2_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the second constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 2 Start
+        c_exon_2_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the second constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 2 End
+        c_exon_3_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the third constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 3 Start
+        c_exon_3_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the third constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 3 End
+        c_exon_4_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the fourth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 4 Start
+        c_exon_4_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the fourth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 4 End
+        c_exon_5_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the fifth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 5 Start
+        c_exon_5_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the fifth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 5 End
+        c_exon_6_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the sixth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 6 Start
+        c_exon_6_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the sixth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 6 End
+        c_exon_7_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the seventh constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 7 Start
+        c_exon_7_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the seventh constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 7 End
+        c_exon_8_start:
+            type: integer
+            nullable: true
+            description: Start coordinate in the sequence field of the eighth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 8 Start
+        c_exon_8_end:
+            type: integer
+            nullable: true
+            description: End coordinate in the sequence field of the eighth constant region exon (C-genes only).
+            nonblank: false
+            width: narrow
+            label: Exon 8 End
+        utr_3_prime_start:
+            type: integer
+            nullable: true
+            description: Start co-ordinate in the sequence field of the 3 prime UTR (V-genes only).
+            nonblank: false
+            width: narrow
+            label: UTR 3\' Start
+        utr_3_prime_end:
+            type: integer
+            nullable: true
+            description: End co-ordinate in the sequence field of the 3 prime UTR (V-genes only).
+            nonblank: false
+            width: narrow
+            label: UTR 3\' End
         paralogs:
             type: string
             label: Paralogs

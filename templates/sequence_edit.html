@@ -292,6 +292,12 @@
                 $("label[for='leader_2_end']").parent().show();
                 $("label[for='v_rs_start']").parent().show();
                 $("label[for='v_rs_end']").parent().show();
+                $("label[for='cdr1_start']").parent().show();
+                $("label[for='cdr1_end']").parent().show();
+                $("label[for='cdr2_start']").parent().show();
+                $("label[for='cdr2_end']").parent().show();
+                $("label[for='cdr3_start']").parent().show();
+                $("label[for='cdr3_end']").parent().show();
             } else {
                 $("label[for='utr_5_prime_start']").parent().hide();
                 $("label[for='utr_5_prime_end']").parent().hide();
@@ -301,6 +307,12 @@
                 $("label[for='leader_2_end']").parent().hide();
                 $("label[for='v_rs_start']").parent().hide();
                 $("label[for='v_rs_end']").parent().hide();
+                $("label[for='cdr1_start']").parent().hide();
+                $("label[for='cdr1_end']").parent().hide();
+                $("label[for='cdr2_start']").parent().hide();
+                $("label[for='cdr2_end']").parent().hide();
+                $("label[for='cdr3_start']").parent().hide();
+                $("label[for='cdr3_end']").parent().hide();
             }
             if($("#sequence_type").val() == 'D') {
                 $("label[for='d_rs_3_prime_start']").parent().show();
@@ -316,9 +328,52 @@
             if($("#sequence_type").val() == 'J') {
                 $("label[for='j_rs_start']").parent().show();
                 $("label[for='j_rs_end']").parent().show();
+                $("label[for='j_codon_frame']").parent().show();
             } else {
                 $("label[for='j_rs_start']").parent().hide();
                 $("label[for='j_rs_end']").parent().hide();
+                $("label[for='j_codon_frame']").parent().hide();
+            }
+            if($("#sequence_type").val() == 'C') {
+                $("label[for='c_exon_1_start']").parent().show();
+                $("label[for='c_exon_1_end']").parent().show();
+                $("label[for='c_exon_2_start']").parent().show();
+                $("label[for='c_exon_2_end']").parent().show();
+                $("label[for='c_exon_3_start']").parent().show();
+                $("label[for='c_exon_3_end']").parent().show();
+                $("label[for='c_exon_4_start']").parent().show();
+                $("label[for='c_exon_4_end']").parent().show();
+                $("label[for='c_exon_5_start']").parent().show();
+                $("label[for='c_exon_5_end']").parent().show();
+                $("label[for='c_exon_6_start']").parent().show();
+                $("label[for='c_exon_6_end']").parent().show();
+                $("label[for='c_exon_7_start']").parent().show();
+                $("label[for='c_exon_7_end']").parent().show();
+                $("label[for='c_exon_8_start']").parent().show();
+                $("label[for='c_exon_8_end']").parent().show();
+                $("label[for='transmembrane_coding_sequence']").parent().show();
+                $("label[for='utr_3_prime_start']").parent().show();
+                $("label[for='utr_3_prime_end']").parent().show();
+            } else {
+                $("label[for='c_exon_1_start']").parent().hide();
+                $("label[for='c_exon_1_end']").parent().hide();
+                $("label[for='c_exon_2_start']").parent().hide();
+                $("label[for='c_exon_2_end']").parent().hide();
+                $("label[for='c_exon_3_start']").parent().hide();
+                $("label[for='c_exon_3_end']").parent().hide();
+                $("label[for='c_exon_4_start']").parent().hide();
+                $("label[for='c_exon_4_end']").parent().hide();
+                $("label[for='c_exon_5_start']").parent().hide();
+                $("label[for='c_exon_5_end']").parent().hide();
+                $("label[for='c_exon_6_start']").parent().hide();
+                $("label[for='c_exon_6_end']").parent().hide();
+                $("label[for='c_exon_7_start']").parent().hide();
+                $("label[for='c_exon_7_end']").parent().hide();
+                $("label[for='c_exon_8_start']").parent().hide();
+                $("label[for='c_exon_8_end']").parent().hide();
+                $("label[for='transmembrane_coding_sequence']").parent().hide();
+                $("label[for='utr_3_prime_start']").parent().hide();
+                $("label[for='utr_3_prime_end']").parent().hide();
             }
         } else {
             if($("#sequence_type").val() == 'V') {
@@ -328,6 +383,12 @@
                 $("label[for='leader_2_end']").parent().show();
                 $("label[for='utr_5_prime_start']").parent().show();
                 $("label[for='utr_5_prime_end']").parent().show();
+                $("label[for='cdr1_start']").parent().show();
+                $("label[for='cdr1_end']").parent().show();
+                $("label[for='cdr2_start']").parent().show();
+                $("label[for='cdr2_end']").parent().show();
+                $("label[for='cdr3_start']").parent().show();
+                $("label[for='cdr3_end']").parent().show();
             } else {
                 $("label[for='leader_1_start']").parent().hide();
                 $("label[for='leader_1_end']").parent().hide();
@@ -335,6 +396,17 @@
                 $("label[for='leader_2_end']").parent().hide();
                 $("label[for='utr_5_prime_start']").parent().hide();
                 $("label[for='utr_5_prime_end']").parent().hide();
+                $("label[for='cdr1_start']").parent().hide();
+                $("label[for='cdr1_end']").parent().hide();
+                $("label[for='cdr2_start']").parent().hide();
+                $("label[for='cdr2_end']").parent().hide();
+                $("label[for='cdr3_start']").parent().hide();
+                $("label[for='cdr3_end']").parent().hide();
+            }
+            if($("#sequence_type").val() == 'J') {
+                $("label[for='j_codon_frame']").parent().show();
+            } else {
+                $("label[for='j_codon_frame']").parent().hide();
             }
             $("label[for='v_rs_start']").parent().hide();
             $("label[for='v_rs_end']").parent().hide();
@@ -344,6 +416,22 @@
             $("label[for='d_rs_5_prime_end']").parent().hide();
             $("label[for='j_rs_start']").parent().hide();
             $("label[for='j_rs_end']").parent().hide();
+            $("label[for='c_exon_1_start']").parent().hide();
+            $("label[for='c_exon_1_end']").parent().hide();
+            $("label[for='c_exon_2_start']").parent().hide();
+            $("label[for='c_exon_2_end']").parent().hide();
+            $("label[for='c_exon_3_start']").parent().hide();
+            $("label[for='c_exon_3_end']").parent().hide();
+            $("label[for='c_exon_4_start']").parent().hide();
+            $("label[for='c_exon_4_end']").parent().hide();
+            $("label[for='c_exon_5_start']").parent().hide();
+            $("label[for='c_exon_5_end']").parent().hide();
+            $("label[for='c_exon_6_start']").parent().hide();
+            $("label[for='c_exon_6_end']").parent().hide();
+            $("label[for='c_exon_7_start']").parent().hide();
+            $("label[for='c_exon_7_end']").parent().hide();
+            $("label[for='c_exon_8_start']").parent().hide();
+            $("label[for='c_exon_8_end']").parent().hide();
         }
     }
 
