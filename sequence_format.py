@@ -59,7 +59,9 @@ def format_unrearranged_sequence(seq, width, gv_items):
     if seq is None or len(seq) == 0:
         return ''
 
-    possible_features = {'utr_5_prime': 'UTR', 'leader_1': 'LDR1', 'leader_2': 'LDR2', 'v_rs': 'RSS', 'd_rs_3_prime': "3' RSS", 'd_rs_5_prime': "5' RSS", 'j_rs': 'RSS'}
+    possible_features = {'utr_5_prime': 'UTR', 'leader_1': 'LDR1', 'leader_2': 'LDR2', 'v_rs': 'RSS', 'd_rs_3_prime': "3' RSS", 'd_rs_5_prime': "5' RSS", 'j_rs': 'RSS',
+                         'c_exon_1': 'EXON_1', 'c_exon_2': 'EXON_2', 'c_exon_3': 'EXON_3', 'c_exon_4': 'EXON_4', 'c_exon_5': 'EXON_5', 'c_exon_6': 'EXON_6', 'c_exon_7': 'EXON_7', 'c_exon_8': 'EXON_8', 'c_exon_9': 'EXON_9',
+                         'utr_3_prime': 'UTR'}
     feature_string = ' ' * len(seq)
     for feature in possible_features.keys():
         if feature + '_start' in gv_items and feature + '_end' in gv_items and gv_items[feature + '_start']['value'] and gv_items[feature + '_end']['value']:

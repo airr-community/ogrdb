@@ -57,7 +57,7 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     allele_designation = db.Column(db.String(50))
     sequence = db.Column(db.Text())
     coding_seq_imgt = db.Column(db.Text())
-    transmembrane_coding_sequence = db.Column(db.Text())
+    secretory_coding_sequence = db.Column(db.Text())
     gene_start = db.Column(db.Integer)
     gene_end = db.Column(db.Integer)
     utr_5_prime_start = db.Column(db.Integer)
@@ -97,6 +97,8 @@ class GeneDescription(db.Model, GeneDescriptionMixin):
     c_exon_7_end = db.Column(db.Integer)
     c_exon_8_start = db.Column(db.Integer)
     c_exon_8_end = db.Column(db.Integer)
+    c_exon_9_start = db.Column(db.Integer)
+    c_exon_9_end = db.Column(db.Integer)
     utr_3_prime_start = db.Column(db.Integer)
     utr_3_prime_end = db.Column(db.Integer)
     paralogs = db.Column(db.String(1000))
@@ -138,7 +140,7 @@ def save_GeneDescription(db, object, form, new=False):
     object.allele_designation = form.allele_designation.data
     object.sequence = form.sequence.data
     object.coding_seq_imgt = form.coding_seq_imgt.data
-    object.transmembrane_coding_sequence = form.transmembrane_coding_sequence.data
+    object.secretory_coding_sequence = form.secretory_coding_sequence.data
     object.gene_start = form.gene_start.data
     object.gene_end = form.gene_end.data
     object.utr_5_prime_start = form.utr_5_prime_start.data
@@ -178,6 +180,8 @@ def save_GeneDescription(db, object, form, new=False):
     object.c_exon_7_end = form.c_exon_7_end.data
     object.c_exon_8_start = form.c_exon_8_start.data
     object.c_exon_8_end = form.c_exon_8_end.data
+    object.c_exon_9_start = form.c_exon_9_start.data
+    object.c_exon_9_end = form.c_exon_9_end.data
     object.utr_3_prime_start = form.utr_3_prime_start.data
     object.utr_3_prime_end = form.utr_3_prime_end.data
     object.paralogs = form.paralogs.data
@@ -218,7 +222,7 @@ def populate_GeneDescription(db, object, form):
     form.allele_designation.data = object.allele_designation
     form.sequence.data = object.sequence
     form.coding_seq_imgt.data = object.coding_seq_imgt
-    form.transmembrane_coding_sequence.data = object.transmembrane_coding_sequence
+    form.secretory_coding_sequence.data = object.secretory_coding_sequence
     form.gene_start.data = object.gene_start
     form.gene_end.data = object.gene_end
     form.utr_5_prime_start.data = object.utr_5_prime_start
@@ -258,6 +262,8 @@ def populate_GeneDescription(db, object, form):
     form.c_exon_7_end.data = object.c_exon_7_end
     form.c_exon_8_start.data = object.c_exon_8_start
     form.c_exon_8_end.data = object.c_exon_8_end
+    form.c_exon_9_start.data = object.c_exon_9_start
+    form.c_exon_9_end.data = object.c_exon_9_end
     form.utr_3_prime_start.data = object.utr_3_prime_start
     form.utr_3_prime_end.data = object.utr_3_prime_end
     form.paralogs.data = object.paralogs
@@ -299,7 +305,7 @@ def copy_GeneDescription(c_from, c_to):
     c_to.allele_designation = c_from.allele_designation
     c_to.sequence = c_from.sequence
     c_to.coding_seq_imgt = c_from.coding_seq_imgt
-    c_to.transmembrane_coding_sequence = c_from.transmembrane_coding_sequence
+    c_to.secretory_coding_sequence = c_from.secretory_coding_sequence
     c_to.gene_start = c_from.gene_start
     c_to.gene_end = c_from.gene_end
     c_to.utr_5_prime_start = c_from.utr_5_prime_start
@@ -339,6 +345,8 @@ def copy_GeneDescription(c_from, c_to):
     c_to.c_exon_7_end = c_from.c_exon_7_end
     c_to.c_exon_8_start = c_from.c_exon_8_start
     c_to.c_exon_8_end = c_from.c_exon_8_end
+    c_to.c_exon_9_start = c_from.c_exon_9_start
+    c_to.c_exon_9_end = c_from.c_exon_9_end
     c_to.utr_3_prime_start = c_from.utr_3_prime_start
     c_to.utr_3_prime_end = c_from.utr_3_prime_end
     c_to.paralogs = c_from.paralogs
@@ -369,8 +377,8 @@ class GeneDescription_table(StyledTable):
     species_subgroup = StyledCol("Species subgroup", tooltip="Race, strain or other species subgroup to which this subject belongs")
     species_subgroup_type = StyledCol("Subgroup type", tooltip="Category of subgroup")
     sequence = StyledCol("Full Sequence", tooltip="nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences")
-    coding_seq_imgt = StyledCol("Coding Sequence", tooltip="nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the secretory form.")
-    transmembrane_coding_sequence = StyledCol("TM Coding Sequence", tooltip="Nucleotide sequence of the coding region of the transmembrane domain of an IGH/IGI C-gene). The sequence of the cytoplasmic form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.")
+    coding_seq_imgt = StyledCol("Coding Sequence", tooltip="nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the transmembrane form.")
+    secretory_coding_sequence = StyledCol("SC Coding Sequence", tooltip="Nucleotide sequence of the coding region of the secretory domain of an IGH/IGI C-gene). The sequence of the cytoplasmic form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.")
     gene_start = StyledCol("Gene start", tooltip="Co-ordinate (in the sequence field) of the first nucleotide in the coding_sequence field")
     gene_end = StyledCol("Gene end", tooltip="Co-ordinate (in the sequence field) of the last gene-coding nucleotide in the coding_sequence field")
     utr_5_prime_start = StyledCol("UTR 5\' Start", tooltip="Start co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)")
@@ -431,8 +439,8 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Gene Designation", "value": sub.subgroup_designation, "tooltip": "Gene designation within this subgroup, if identified", "field": "subgroup_designation"})
     ret.items.append({"item": "Allele Designation", "value": sub.allele_designation, "tooltip": "Allele designation, if identified", "field": "allele_designation"})
     ret.items.append({"item": "Full Sequence", "value": sub.sequence, "tooltip": "nt sequence of the gene. This should cover the full length that is available, including where possible 5' UTR and lead-in for V-gene sequences", "field": "sequence"})
-    ret.items.append({"item": "Coding Sequence", "value": sub.coding_seq_imgt, "tooltip": "nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the secretory form.", "field": "coding_seq_imgt"})
-    ret.items.append({"item": "TM Coding Sequence", "value": sub.transmembrane_coding_sequence, "tooltip": "Nucleotide sequence of the coding region of the transmembrane domain of an IGH/IGI C-gene). The sequence of the cytoplasmic form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.", "field": "transmembrane_coding_sequence"})
+    ret.items.append({"item": "Coding Sequence", "value": sub.coding_seq_imgt, "tooltip": "nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the transmembrane form.", "field": "coding_seq_imgt"})
+    ret.items.append({"item": "SC Coding Sequence", "value": sub.secretory_coding_sequence, "tooltip": "Nucleotide sequence of the coding region of the secretory domain of an IGH/IGI C-gene). The sequence of the cytoplasmic form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.", "field": "secretory_coding_sequence"})
     ret.items.append({"item": "Gene start", "value": sub.gene_start, "tooltip": "Co-ordinate (in the sequence field) of the first nucleotide in the coding_sequence field", "field": "gene_start"})
     ret.items.append({"item": "Gene end", "value": sub.gene_end, "tooltip": "Co-ordinate (in the sequence field) of the last gene-coding nucleotide in the coding_sequence field", "field": "gene_end"})
     ret.items.append({"item": "UTR 5\' Start", "value": sub.utr_5_prime_start, "tooltip": "Start co-ordinate in the Full Sequence of 5 prime UTR (V-genes only)", "field": "utr_5_prime_start"})
@@ -472,6 +480,8 @@ def make_GeneDescription_view(sub, private = False):
     ret.items.append({"item": "Exon 7 End", "value": sub.c_exon_7_end, "tooltip": "End coordinate in the sequence field of the seventh constant region exon (C-genes only).", "field": "c_exon_7_end"})
     ret.items.append({"item": "Exon 8 Start", "value": sub.c_exon_8_start, "tooltip": "Start coordinate in the sequence field of the eighth constant region exon (C-genes only).", "field": "c_exon_8_start"})
     ret.items.append({"item": "Exon 8 End", "value": sub.c_exon_8_end, "tooltip": "End coordinate in the sequence field of the eighth constant region exon (C-genes only).", "field": "c_exon_8_end"})
+    ret.items.append({"item": "Exon 9 Start", "value": sub.c_exon_9_start, "tooltip": "Start coordinate in the sequence field of the ninth constant region exon (C-genes only).", "field": "c_exon_9_start"})
+    ret.items.append({"item": "Exon 9 End", "value": sub.c_exon_9_end, "tooltip": "End coordinate in the sequence field of the ninth constant region exon (C-genes only).", "field": "c_exon_9_end"})
     ret.items.append({"item": "UTR 3\' Start", "value": sub.utr_3_prime_start, "tooltip": "Start co-ordinate in the sequence field of the 3 prime UTR (V-genes only).", "field": "utr_3_prime_start"})
     ret.items.append({"item": "UTR 3\' End", "value": sub.utr_3_prime_end, "tooltip": "End co-ordinate in the sequence field of the 3 prime UTR (V-genes only).", "field": "utr_3_prime_end"})
     ret.items.append({"item": "Paralogs", "value": sub.paralogs, "tooltip": "Canonical names of 0 or more paralogs", "field": "paralogs"})
@@ -502,6 +512,8 @@ class GenomicSupport(db.Model):
     sense = db.Column(db.String(255))
     sequence_id = db.Column(db.Integer, db.ForeignKey('gene_description.id'))
     gene_description = db.relationship('GeneDescription', backref = 'genomic_accessions')
+    coding_seq_imgt = db.Column(db.Text())
+    secretory_coding_sequence = db.Column(db.Text())
     gene_start = db.Column(db.Integer)
     gene_end = db.Column(db.Integer)
     utr_5_prime_start = db.Column(db.Integer)
@@ -520,6 +532,26 @@ class GenomicSupport(db.Model):
     j_rs_end = db.Column(db.Integer)
     j_codon_frame = db.Column(db.String(255))
     j_cdr3_end = db.Column(db.Integer)
+    c_exon_1_start = db.Column(db.Integer)
+    c_exon_1_end = db.Column(db.Integer)
+    c_exon_2_start = db.Column(db.Integer)
+    c_exon_2_end = db.Column(db.Integer)
+    c_exon_3_start = db.Column(db.Integer)
+    c_exon_3_end = db.Column(db.Integer)
+    c_exon_4_start = db.Column(db.Integer)
+    c_exon_4_end = db.Column(db.Integer)
+    c_exon_5_start = db.Column(db.Integer)
+    c_exon_5_end = db.Column(db.Integer)
+    c_exon_6_start = db.Column(db.Integer)
+    c_exon_6_end = db.Column(db.Integer)
+    c_exon_7_start = db.Column(db.Integer)
+    c_exon_7_end = db.Column(db.Integer)
+    c_exon_8_start = db.Column(db.Integer)
+    c_exon_8_end = db.Column(db.Integer)
+    c_exon_9_start = db.Column(db.Integer)
+    c_exon_9_end = db.Column(db.Integer)
+    utr_3_prime_start = db.Column(db.Integer)
+    utr_3_prime_end = db.Column(db.Integer)
 
 
 def save_GenomicSupport(db, object, form, new=False):   
@@ -534,6 +566,8 @@ def save_GenomicSupport(db, object, form, new=False):
     object.sequence_start = form.sequence_start.data
     object.sequence_end = form.sequence_end.data
     object.sense = form.sense.data
+    object.coding_seq_imgt = form.coding_seq_imgt.data
+    object.secretory_coding_sequence = form.secretory_coding_sequence.data
     object.gene_start = form.gene_start.data
     object.gene_end = form.gene_end.data
     object.utr_5_prime_start = form.utr_5_prime_start.data
@@ -552,6 +586,26 @@ def save_GenomicSupport(db, object, form, new=False):
     object.j_rs_end = form.j_rs_end.data
     object.j_codon_frame = form.j_codon_frame.data
     object.j_cdr3_end = form.j_cdr3_end.data
+    object.c_exon_1_start = form.c_exon_1_start.data
+    object.c_exon_1_end = form.c_exon_1_end.data
+    object.c_exon_2_start = form.c_exon_2_start.data
+    object.c_exon_2_end = form.c_exon_2_end.data
+    object.c_exon_3_start = form.c_exon_3_start.data
+    object.c_exon_3_end = form.c_exon_3_end.data
+    object.c_exon_4_start = form.c_exon_4_start.data
+    object.c_exon_4_end = form.c_exon_4_end.data
+    object.c_exon_5_start = form.c_exon_5_start.data
+    object.c_exon_5_end = form.c_exon_5_end.data
+    object.c_exon_6_start = form.c_exon_6_start.data
+    object.c_exon_6_end = form.c_exon_6_end.data
+    object.c_exon_7_start = form.c_exon_7_start.data
+    object.c_exon_7_end = form.c_exon_7_end.data
+    object.c_exon_8_start = form.c_exon_8_start.data
+    object.c_exon_8_end = form.c_exon_8_end.data
+    object.c_exon_9_start = form.c_exon_9_start.data
+    object.c_exon_9_end = form.c_exon_9_end.data
+    object.utr_3_prime_start = form.utr_3_prime_start.data
+    object.utr_3_prime_end = form.utr_3_prime_end.data
 
     if new:
         db.session.add(object)
@@ -572,6 +626,8 @@ def populate_GenomicSupport(db, object, form):
     form.sequence_start.data = object.sequence_start
     form.sequence_end.data = object.sequence_end
     form.sense.data = object.sense
+    form.coding_seq_imgt.data = object.coding_seq_imgt
+    form.secretory_coding_sequence.data = object.secretory_coding_sequence
     form.gene_start.data = object.gene_start
     form.gene_end.data = object.gene_end
     form.utr_5_prime_start.data = object.utr_5_prime_start
@@ -590,6 +646,26 @@ def populate_GenomicSupport(db, object, form):
     form.j_rs_end.data = object.j_rs_end
     form.j_codon_frame.data = object.j_codon_frame
     form.j_cdr3_end.data = object.j_cdr3_end
+    form.c_exon_1_start.data = object.c_exon_1_start
+    form.c_exon_1_end.data = object.c_exon_1_end
+    form.c_exon_2_start.data = object.c_exon_2_start
+    form.c_exon_2_end.data = object.c_exon_2_end
+    form.c_exon_3_start.data = object.c_exon_3_start
+    form.c_exon_3_end.data = object.c_exon_3_end
+    form.c_exon_4_start.data = object.c_exon_4_start
+    form.c_exon_4_end.data = object.c_exon_4_end
+    form.c_exon_5_start.data = object.c_exon_5_start
+    form.c_exon_5_end.data = object.c_exon_5_end
+    form.c_exon_6_start.data = object.c_exon_6_start
+    form.c_exon_6_end.data = object.c_exon_6_end
+    form.c_exon_7_start.data = object.c_exon_7_start
+    form.c_exon_7_end.data = object.c_exon_7_end
+    form.c_exon_8_start.data = object.c_exon_8_start
+    form.c_exon_8_end.data = object.c_exon_8_end
+    form.c_exon_9_start.data = object.c_exon_9_start
+    form.c_exon_9_end.data = object.c_exon_9_end
+    form.utr_3_prime_start.data = object.utr_3_prime_start
+    form.utr_3_prime_end.data = object.utr_3_prime_end
 
 
 
@@ -606,6 +682,8 @@ def copy_GenomicSupport(c_from, c_to):
     c_to.sequence_start = c_from.sequence_start
     c_to.sequence_end = c_from.sequence_end
     c_to.sense = c_from.sense
+    c_to.coding_seq_imgt = c_from.coding_seq_imgt
+    c_to.secretory_coding_sequence = c_from.secretory_coding_sequence
     c_to.gene_start = c_from.gene_start
     c_to.gene_end = c_from.gene_end
     c_to.utr_5_prime_start = c_from.utr_5_prime_start
@@ -624,6 +702,26 @@ def copy_GenomicSupport(c_from, c_to):
     c_to.j_rs_end = c_from.j_rs_end
     c_to.j_codon_frame = c_from.j_codon_frame
     c_to.j_cdr3_end = c_from.j_cdr3_end
+    c_to.c_exon_1_start = c_from.c_exon_1_start
+    c_to.c_exon_1_end = c_from.c_exon_1_end
+    c_to.c_exon_2_start = c_from.c_exon_2_start
+    c_to.c_exon_2_end = c_from.c_exon_2_end
+    c_to.c_exon_3_start = c_from.c_exon_3_start
+    c_to.c_exon_3_end = c_from.c_exon_3_end
+    c_to.c_exon_4_start = c_from.c_exon_4_start
+    c_to.c_exon_4_end = c_from.c_exon_4_end
+    c_to.c_exon_5_start = c_from.c_exon_5_start
+    c_to.c_exon_5_end = c_from.c_exon_5_end
+    c_to.c_exon_6_start = c_from.c_exon_6_start
+    c_to.c_exon_6_end = c_from.c_exon_6_end
+    c_to.c_exon_7_start = c_from.c_exon_7_start
+    c_to.c_exon_7_end = c_from.c_exon_7_end
+    c_to.c_exon_8_start = c_from.c_exon_8_start
+    c_to.c_exon_8_end = c_from.c_exon_8_end
+    c_to.c_exon_9_start = c_from.c_exon_9_start
+    c_to.c_exon_9_end = c_from.c_exon_9_end
+    c_to.utr_3_prime_start = c_from.utr_3_prime_start
+    c_to.utr_3_prime_end = c_from.utr_3_prime_end
 
 
 
@@ -634,6 +732,8 @@ class GenomicSupport_table(StyledTable):
     accession = StyledCol("Accession", tooltip="Accession number of the assembly or sequence within the repository")
     sequence_start = StyledCol("Start", tooltip="start co-ordinate of the sequence of this gene in the assembly or sequence")
     sequence_end = StyledCol("End", tooltip="end co-ordinate of the sequence of this gene in the assembly or sequence")
+    coding_seq_imgt = StyledCol("Coding Sequence", tooltip="nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the transmembrane form.")
+    secretory_coding_sequence = StyledCol("SC Coding Sequence", tooltip="Nucleotide sequence of the coding region of the secretory domain of an IGH/IGI C-gene). The sequence of the transmembrane form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.")
 
 
 def make_GenomicSupport_table(results, private = False, classes=()):
@@ -659,6 +759,8 @@ def make_GenomicSupport_view(sub, private = False):
     ret.items.append({"item": "Start", "value": sub.sequence_start, "tooltip": "start co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_start"})
     ret.items.append({"item": "End", "value": sub.sequence_end, "tooltip": "end co-ordinate of the sequence of this gene in the assembly or sequence", "field": "sequence_end"})
     ret.items.append({"item": "Sense", "value": sub.sense, "tooltip": "+ (forward) or - (reverse)", "field": "sense"})
+    ret.items.append({"item": "Coding Sequence", "value": sub.coding_seq_imgt, "tooltip": "nucleotide sequence of the coding region, aligned, in the case of a V-gene, with the IMGT numbering scheme. For a heavy chain C gene, this should be the transmembrane form.", "field": "coding_seq_imgt"})
+    ret.items.append({"item": "SC Coding Sequence", "value": sub.secretory_coding_sequence, "tooltip": "Nucleotide sequence of the coding region of the secretory domain of an IGH/IGI C-gene). The sequence of the transmembrane form and the sequence of the coding domain of all other C-genes should be placed in coding_sequence.", "field": "secretory_coding_sequence"})
     ret.items.append({"item": "Gene start", "value": sub.gene_start, "tooltip": "Co-ordinate in the assembly or sequence of the first nucleotide in the coding_sequence field", "field": "gene_start"})
     ret.items.append({"item": "Gene end", "value": sub.gene_end, "tooltip": "Co-ordinate in the assembly or sequence of the last gene-coding nucleotide in the coding_sequence field", "field": "gene_end"})
     ret.items.append({"item": "UTR 5\' Start", "value": sub.utr_5_prime_start, "tooltip": "Start co-ordinate in the assembly or sequence of 5 prime UTR (V-genes only)", "field": "utr_5_prime_start"})
@@ -677,5 +779,25 @@ def make_GenomicSupport_view(sub, private = False):
     ret.items.append({"item": "j_rs_end", "value": sub.j_rs_end, "tooltip": "End co-ordinate in the assembly or sequence of J recombination site (J-genes only)", "field": "j_rs_end"})
     ret.items.append({"item": "Codon Frame", "value": sub.j_codon_frame, "tooltip": "Codon position of the first sequence symbol in the Coding Sequence. Mandatory for J genes. Not used for V or D genes. ('1' means the sequence is in-frame, '2' means that the first bp is missing from the first codon, '3' means that the first 2 bp are missing)", "field": "j_codon_frame"})
     ret.items.append({"item": "J CDR3 End", "value": sub.j_cdr3_end, "tooltip": "In the case of a J-gene, the co-ordinate in the assembly or sequence of the first nucelotide of the conserved PHE or TRP (IMGT codon position 118)", "field": "j_cdr3_end"})
+    ret.items.append({"item": "Exon 1 Start", "value": sub.c_exon_1_start, "tooltip": "Start coordinate in the sequence field of the first constant region exon (C-genes only).", "field": "c_exon_1_start"})
+    ret.items.append({"item": "Exon 1 End", "value": sub.c_exon_1_end, "tooltip": "End coordinate in the sequence field of the first constant region exon (C-genes only).", "field": "c_exon_1_end"})
+    ret.items.append({"item": "Exon 2 Start", "value": sub.c_exon_2_start, "tooltip": "Start coordinate in the sequence field of the second constant region exon (C-genes only).", "field": "c_exon_2_start"})
+    ret.items.append({"item": "Exon 2 End", "value": sub.c_exon_2_end, "tooltip": "End coordinate in the sequence field of the second constant region exon (C-genes only).", "field": "c_exon_2_end"})
+    ret.items.append({"item": "Exon 3 Start", "value": sub.c_exon_3_start, "tooltip": "Start coordinate in the sequence field of the third constant region exon (C-genes only).", "field": "c_exon_3_start"})
+    ret.items.append({"item": "Exon 3 End", "value": sub.c_exon_3_end, "tooltip": "End coordinate in the sequence field of the third constant region exon (C-genes only).", "field": "c_exon_3_end"})
+    ret.items.append({"item": "Exon 4 Start", "value": sub.c_exon_4_start, "tooltip": "Start coordinate in the sequence field of the fourth constant region exon (C-genes only).", "field": "c_exon_4_start"})
+    ret.items.append({"item": "Exon 4 End", "value": sub.c_exon_4_end, "tooltip": "End coordinate in the sequence field of the fourth constant region exon (C-genes only).", "field": "c_exon_4_end"})
+    ret.items.append({"item": "Exon 5 Start", "value": sub.c_exon_5_start, "tooltip": "Start coordinate in the sequence field of the fifth constant region exon (C-genes only).", "field": "c_exon_5_start"})
+    ret.items.append({"item": "Exon 5 End", "value": sub.c_exon_5_end, "tooltip": "End coordinate in the sequence field of the fifth constant region exon (C-genes only).", "field": "c_exon_5_end"})
+    ret.items.append({"item": "Exon 6 Start", "value": sub.c_exon_6_start, "tooltip": "Start coordinate in the sequence field of the sixth constant region exon (C-genes only).", "field": "c_exon_6_start"})
+    ret.items.append({"item": "Exon 6 End", "value": sub.c_exon_6_end, "tooltip": "End coordinate in the sequence field of the sixth constant region exon (C-genes only).", "field": "c_exon_6_end"})
+    ret.items.append({"item": "Exon 7 Start", "value": sub.c_exon_7_start, "tooltip": "Start coordinate in the sequence field of the seventh constant region exon (C-genes only).", "field": "c_exon_7_start"})
+    ret.items.append({"item": "Exon 7 End", "value": sub.c_exon_7_end, "tooltip": "End coordinate in the sequence field of the seventh constant region exon (C-genes only).", "field": "c_exon_7_end"})
+    ret.items.append({"item": "Exon 8 Start", "value": sub.c_exon_8_start, "tooltip": "Start coordinate in the sequence field of the eighth constant region exon (C-genes only).", "field": "c_exon_8_start"})
+    ret.items.append({"item": "Exon 8 End", "value": sub.c_exon_8_end, "tooltip": "End coordinate in the sequence field of the eighth constant region exon (C-genes only).", "field": "c_exon_8_end"})
+    ret.items.append({"item": "Exon 9 Start", "value": sub.c_exon_9_start, "tooltip": "Start coordinate in the sequence field of the ninth constant region exon (C-genes only).", "field": "c_exon_9_start"})
+    ret.items.append({"item": "Exon 9 End", "value": sub.c_exon_9_end, "tooltip": "End coordinate in the sequence field of the ninth constant region exon (C-genes only).", "field": "c_exon_9_end"})
+    ret.items.append({"item": "UTR 3\' Start", "value": sub.utr_3_prime_start, "tooltip": "Start co-ordinate in the sequence field of the 3 prime UTR (V-genes only).", "field": "utr_3_prime_start"})
+    ret.items.append({"item": "UTR 3\' End", "value": sub.utr_3_prime_end, "tooltip": "End co-ordinate in the sequence field of the 3 prime UTR (V-genes only).", "field": "utr_3_prime_end"})
     return ret
 

@@ -39,7 +39,7 @@
 
         {{ render_field_with_errors(form.coding_seq_imgt, class="form-control", rows="12") }}
 
-        {{ render_field_with_errors(form.transmembrane_coding_sequence, class="form-control", rows="12") }}
+        {{ render_field_with_errors(form.secretory_coding_sequence, class="form-control", rows="12") }}
 
         {{ render_narrow_field_with_errors(form.gene_start, class="form-control") }}
 
@@ -118,6 +118,10 @@
         {{ render_narrow_field_with_errors(form.c_exon_8_start, class="form-control") }}
 
         {{ render_narrow_field_with_errors(form.c_exon_8_end, class="form-control") }}
+
+        {{ render_narrow_field_with_errors(form.c_exon_9_start, class="form-control") }}
+
+        {{ render_narrow_field_with_errors(form.c_exon_9_end, class="form-control") }}
 
         {{ render_narrow_field_with_errors(form.utr_3_prime_start, class="form-control") }}
 

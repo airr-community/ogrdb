@@ -67,7 +67,7 @@ def main(argv):
     write_inp(schema, 'GermlineSet', 'templates/germline_set_form.html')
 
     write_model(schema, 'GenomicSupport', 'db/gene_description_db.py', True)
-    write_flaskform(schema, 'GenomicSupport', 'forms/genomic_support_form.py', True)
+    write_flaskform(schema, 'GenomicSupport', 'forms/genomic_support_form.py')
     write_inp(schema, 'GenomicSupport', 'templates/genomic_support_form.html')
     
     write_model(schema, 'DupeGeneNote', 'db/dupe_gene_note_db.py')

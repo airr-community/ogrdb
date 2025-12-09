@@ -875,7 +875,7 @@ def check_c_exons(gene_description):
     Returns a list of error messages. An empty list indicates no errors.
     
     Rules:
-    - For each exon (c_exon_1 to c_exon_8), start and end should either both be null or both be positive integers
+    - For each exon (c_exon_1 to c_exon_9), start and end should either both be null or both be positive integers
     - If both are provided, end must be > start
     - If any exon coordinates are null, all successive exon coordinates must also be null
     - Successive exons must have coordinates higher than the previous exon
@@ -892,7 +892,7 @@ def check_c_exons(gene_description):
     last_end = 0
     found_null = False
     
-    for i in range(1, 9):
+    for i in range(1, 10):
         start_attr = f'c_exon_{i}_start'
         end_attr = f'c_exon_{i}_end'
         
@@ -962,8 +962,20 @@ def upload_sequences(form, species):
             return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
         return redirect(url_for('sequences', sp=species))
 
-    required_headers = ['gene_label', 'imgt', 'functionality', 'type', 'inference_type', 'sequence', 'sequence_gapped', 'species_subgroup', 'subgroup_type', 
-                        'alt_names', 'affirmation', 'j_codon_frame', 'j_cdr3_end', 'gene_start', 'gene_end']
+    required_headers = [
+            "gene_label", "imgt", "functionality", "type", "inference_type", "sequence", "sequence_gapped", 
+            "species_subgroup", "subgroup_type", "alt_names", "affirmation", "chromosome", "paralogs", 
+            "varb_rep", "notes", "inferred_extension", "ext_3_prime", "ext_5_prime", "curational_tags", 
+            "mapped", "gene_start", "gene_end", "utr_5_prime_start", "utr_5_prime_end", "leader_1_start", 
+            "leader_1_end", "leader_2_start", "leader_2_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", 
+            "d_rs_3_prime_end", "d_rs_5_prime_start", "d_rs_5_prime_end", "j_codon_frame", "j_rs_start", 
+            "j_rs_end", "j_cdr3_end", "start", "end",
+            "c_exon_1_start", "c_exon_1_end", "c_exon_2_start", "c_exon_2_end", "c_exon_3_start",
+            "c_exon_3_end", "c_exon_4_start", "c_exon_4_end", "c_exon_5_start", "c_exon_5_end",
+            "c_exon_6_start", "c_exon_6_end", "c_exon_7_start", "c_exon_7_end", "c_exon_8_start", "c_exon_8_end",
+            "c_exon_9_start", "c_exon_9_end", "utr_3_prime_start", "utr_3_prime_end", "c_tm_sequence", "c_sc_sequence"
+        ]
+
     headers = None
     row_count = 2
     for row in reader:
@@ -979,8 +991,8 @@ def upload_sequences(form, species):
             errors.append('row %d: functionality must be F, ORF or P' % row_count)
         if row['type'][:3] not in ['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG']:
             errors.append('row %d: locus in type must be one of %s' % (row_count, ','.join(['IGH', 'IGK', 'IGL', 'TRA', 'TRB', 'TRD', 'TRG'])))
-        if row['type'][3:] not in ['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader']:
-            errors.append('row %d: sequence_type in type must be one of %s' % (row_count, ','.join(['V', 'D', 'J', 'CH1', 'CH2', 'CH3', 'CH4', 'Leader'])))
+        if row['type'][3:] not in ['V', 'D', 'J', 'C']:
+            errors.append('row %d: sequence_type in type must be one of %s' % (row_count, ','.join(['V', 'D', 'J', 'C'])))
         if not row['sequence']:
             errors.append('row %d: no sequence' % row_count)
         if row['type'][3:] == 'V':
@@ -1039,6 +1051,7 @@ def upload_sequences(form, species):
         existing_entry = db.session.query(GeneDescription).filter(
                 and_(
                     GeneDescription.species == species,
+                    GeneDescription.locus == row['type'][:3],
                      or_(
                         GeneDescription.sequence_name == row['gene_label'],
                         GeneDescription.sequence_name == row['imgt'],
@@ -1123,6 +1136,31 @@ def upload_sequences(form, species):
             gene_description.j_rs_end = get_opt_int(row, 'j_rs_end')
             gene_description.j_codon_frame = row['j_codon_frame']
             gene_description.j_cdr3_end = row['j_cdr3_end']
+        elif gene_description.sequence_type == 'C':
+            gene_description.c_exon_1_start = get_opt_int(row, 'c_exon_1_start')
+            gene_description.c_exon_1_end = get_opt_int(row, 'c_exon_1_end')
+            gene_description.c_exon_2_start = get_opt_int(row, 'c_exon_2_start')
+            gene_description.c_exon_2_end = get_opt_int(row, 'c_exon_2_end')
+            gene_description.c_exon_3_start = get_opt_int(row, 'c_exon_3_start')
+            gene_description.c_exon_3_end = get_opt_int(row, 'c_exon_3_end')
+            gene_description.c_exon_4_start = get_opt_int(row, 'c_exon_4_start')
+            gene_description.c_exon_4_end = get_opt_int(row, 'c_exon_4_end')
+            gene_description.c_exon_5_start = get_opt_int(row, 'c_exon_5_start')
+            gene_description.c_exon_5_end = get_opt_int(row, 'c_exon_5_end')
+            gene_description.c_exon_6_start = get_opt_int(row, 'c_exon_6_start')
+            gene_description.c_exon_6_end = get_opt_int(row, 'c_exon_6_end')
+            gene_description.c_exon_7_start = get_opt_int(row, 'c_exon_7_start')
+            gene_description.c_exon_7_end = get_opt_int(row, 'c_exon_7_end')
+            gene_description.c_exon_8_start = get_opt_int(row, 'c_exon_8_start')
+            gene_description.c_exon_8_end = get_opt_int(row, 'c_exon_8_end')
+            gene_description.c_exon_9_start = get_opt_int(row, 'c_exon_9_start')
+            gene_description.c_exon_9_end = get_opt_int(row, 'c_exon_9_end')
+            gene_description.coding_seq_imgt = row['c_tm_sequence']
+            gene_description.secretory_coding_sequence = row['c_sc_sequence']
+
+            exon_errors = check_c_exons(gene_description)
+            for field, msg in exon_errors:
+                errors.append(f'row {reader.line_num}: {msg}')
 
         notes = []
         if 'notes' in row:
@@ -1342,7 +1380,6 @@ def custom_merge(reader, species, form):
             errors.append(f'No existing sequence found for {row["gene_label"]}: sequence not merged')
 
     return errors
-        
 
 
 def upload_evidence(form, species):
@@ -1350,7 +1387,17 @@ def upload_evidence(form, species):
     errors = []
     fi = io.StringIO(form.evidence_file.data.read().decode("utf-8"))
     reader = csv.DictReader(fi)
-    required_headers = ['gene_label', 'sequence', 'repository', 'accession', 'patch', 'start', 'end', 'sense', 'notes', 'species_subgroup', 'subgroup_type']
+    required_headers = [
+            "gene_label", "sequence", "sequence_type", "repository", "accession", "patch", "start",
+            "end", "sense", "species_subgroup", "subgroup_type", "notes", "gene_start", "gene_end",
+            "utr_5_prime_start", "utr_5_prime_end", "leader_1_start", "leader_1_end", "leader_2_start",
+            "leader_2_end", "v_rs_start", "v_rs_end", "d_rs_3_prime_start", "d_rs_3_prime_end",
+            "d_rs_5_prime_start", "d_rs_5_prime_end", "j_codon_frame", "j_rs_start", "j_rs_end", "j_cdr3_end",
+            "c_exon_1_start", "c_exon_1_end", "c_exon_2_start", "c_exon_2_end", "c_exon_3_start",
+            "c_exon_3_end", "c_exon_4_start", "c_exon_4_end", "c_exon_5_start", "c_exon_5_end",
+            "c_exon_6_start", "c_exon_6_end", "c_exon_7_start", "c_exon_7_end", "c_exon_8_start", "c_exon_8_end",
+            "c_exon_9_start", "c_exon_9_end", "utr_3_prime_start", "utr_3_prime_end", "c_tm_sequence", "c_sc_sequence"
+            ]
     headers = None
     row_count = 2
     missing_drafts = False
@@ -1385,6 +1432,7 @@ def upload_evidence(form, species):
                     and_(
                         GeneDescription.species == species,
                         GeneDescription.sequence_name == row['gene_label'],
+                        GeneDescription.locus == row['gene_label'][:3],
                         or_(   
                             GeneDescription.species_subgroup == row['species_subgroup'],
                             GeneDescription.species_subgroup == None,
@@ -1470,6 +1518,29 @@ def upload_evidence(form, species):
                     genomic_support.j_rs_end = get_opt_int(row, 'j_rs_end')  
                     genomic_support.j_codon_frame = get_opt_int(row, 'j_codon_frame')
                     genomic_support.j_cdr3_end = get_opt_int(row, 'j_cdr3_end')
+                elif gene_description.sequence_type == 'C':
+                    genomic_support.c_exon_1_start = get_opt_int(row, 'c_exon_1_start')  
+                    genomic_support.c_exon_1_end = get_opt_int(row, 'c_exon_1_end')  
+                    genomic_support.c_exon_2_start = get_opt_int(row, 'c_exon_2_start')  
+                    genomic_support.c_exon_2_end = get_opt_int(row, 'c_exon_2_end')  
+                    genomic_support.c_exon_3_start = get_opt_int(row, 'c_exon_3_start')  
+                    genomic_support.c_exon_3_end = get_opt_int(row, 'c_exon_3_end')  
+                    genomic_support.c_exon_4_start = get_opt_int(row, 'c_exon_4_start')  
+                    genomic_support.c_exon_4_end = get_opt_int(row, 'c_exon_4_end')  
+                    genomic_support.c_exon_5_start = get_opt_int(row, 'c_exon_5_start')  
+                    genomic_support.c_exon_5_end = get_opt_int(row, 'c_exon_5_end')  
+                    genomic_support.c_exon_6_start = get_opt_int(row, 'c_exon_6_start')  
+                    genomic_support.c_exon_6_end = get_opt_int(row, 'c_exon_6_end')  
+                    genomic_support.c_exon_7_start = get_opt_int(row, 'c_exon_7_start')  
+                    genomic_support.c_exon_7_end = get_opt_int(row, 'c_exon_7_end')  
+                    genomic_support.c_exon_8_start = get_opt_int(row, 'c_exon_8_start')  
+                    genomic_support.c_exon_8_end = get_opt_int(row, 'c_exon_8_end')  
+                    genomic_support.c_exon_9_start = get_opt_int(row, 'c_exon_9_start')  
+                    genomic_support.c_exon_9_end = get_opt_int(row, 'c_exon_9_end')  
+                    genomic_support.utr_3_prime_start = get_opt_int(row, 'utr_3_prime_start')  
+                    genomic_support.utr_3_prime_end = get_opt_int(row, 'utr_3_prime_end')  
+                    genomic_support.secretory_coding_sequence = row['c_sc_sequence']
+                    genomic_support.coding_seq_imgt = row['c_tm_sequence']
 
                 gene_description.genomic_accessions.append(genomic_support)
                 existing_accessions.append(row['accession'])
@@ -1943,6 +2014,7 @@ def edit_sequence(id):
                 return redirect(url_for('sequences', sp=seq.species))
 
         else:
+            flash('Please correct the errors below.')
             for field in tables['ack'].form:
                 if len(field.errors) > 0:
                     return render_template('sequence_edit.html', form=form, sequence_name=seq.sequence_name, id=id, tables=tables, jump='ack', version=seq.release_version, attachment=len(seq.attached_files) > 0)
