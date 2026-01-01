@@ -26,10 +26,18 @@ def germline_set_to_airr(germline_set, extend, taxonomy, fake_allele=False):
                 if gd.paralog_rep:
                     rep = gd
                     break
-                if int(re.sub(r"[^0-9]", "", gd.gene_subgroup)) < lowest_subgroup:
-                    lowest_subgroup = int(re.sub(r"[^0-9]", "", gd.gene_subgroup))
-                    rep = gd
+                try:
+                    if int(re.sub(r"[^0-9]", "", gd.gene_subgroup)) < lowest_subgroup:
+                        lowest_subgroup = int(re.sub(r"[^0-9]", "", gd.gene_subgroup))
+                        rep = gd
+                except:
+                    pass
+
+            if not rep:
+                rep = sorted([gd for gd in gd_group], key=lambda x: x.sequence_name)[0]
+
             gds.append(rep)
+
     else:
         gds.extend(germline_set.gene_descriptions)
 
@@ -172,6 +180,27 @@ class AIRRAlleleDescription:
             self.j_cdr3_end = fnone(gd.j_cdr3_end)
             self.j_rs_start = fnone(gd.j_rs_start)
             self.j_rs_end = fnone(gd.j_rs_end)
+
+        if self.sequence_type == 'C':
+            self.secretory_coding_sequence = fnone(gd.secretory_coding_sequence)
+            self.c_exon_1_start = fnone(gd.c_exon_1_start)
+            self.c_exon_1_end = fnone(gd.c_exon_1_end)
+            self.c_exon_2_start = fnone(gd.c_exon_2_start)
+            self.c_exon_2_end = fnone(gd.c_exon_2_end)
+            self.c_exon_3_start = fnone(gd.c_exon_3_start)
+            self.c_exon_3_end = fnone(gd.c_exon_3_end)
+            self.c_exon_4_start = fnone(gd.c_exon_4_start)
+            self.c_exon_4_end = fnone(gd.c_exon_4_end)
+            self.c_exon_5_start = fnone(gd.c_exon_5_start)
+            self.c_exon_5_end = fnone(gd.c_exon_5_end)
+            self.c_exon_6_start = fnone(gd.c_exon_6_start)
+            self.c_exon_6_end = fnone(gd.c_exon_6_end)
+            self.c_exon_7_start = fnone(gd.c_exon_7_start)
+            self.c_exon_7_end = fnone(gd.c_exon_7_end)
+            self.c_exon_8_start = fnone(gd.c_exon_8_start)
+            self.c_exon_8_end = fnone(gd.c_exon_8_end)
+            self.c_exon_9_start = fnone(gd.c_exon_9_start)
+            self.c_exon_9_end = fnone(gd.c_exon_9_end)
 
         self.unrearranged_support = []
         for gen in gd.genomic_accessions:
