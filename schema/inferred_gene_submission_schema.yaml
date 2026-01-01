@@ -1119,6 +1119,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 1 Start
+            tableview: true
         c_exon_1_end:
             type: integer
             nullable: true
@@ -1126,6 +1127,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 1 End
+            tableview: true
         c_exon_2_start:
             type: integer
             nullable: true
@@ -1133,6 +1135,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 2 Start
+            tableview: true
         c_exon_2_end:
             type: integer
             nullable: true
@@ -1140,6 +1143,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 2 End
+            tableview: true
         c_exon_3_start:
             type: integer
             nullable: true
@@ -1147,6 +1151,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 3 Start
+            tableview: true
         c_exon_3_end:
             type: integer
             nullable: true
@@ -1154,6 +1159,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 3 End
+            tableview: true
         c_exon_4_start:
             type: integer
             nullable: true
@@ -1161,6 +1167,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 4 Start
+            tableview: true
         c_exon_4_end:
             type: integer
             nullable: true
@@ -1168,6 +1175,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 4 End
+            tableview: true
         c_exon_5_start:
             type: integer
             nullable: true
@@ -1175,6 +1183,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 5 Start
+            tableview: true
         c_exon_5_end:
             type: integer
             nullable: true
@@ -1182,6 +1191,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 5 End
+            tableview: true
         c_exon_6_start:
             type: integer
             nullable: true
@@ -1189,6 +1199,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 6 Start
+            tableview: true
         c_exon_6_end:
             type: integer
             nullable: true
@@ -1196,6 +1207,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 6 End
+            tableview: true
         c_exon_7_start:
             type: integer
             nullable: true
@@ -1203,6 +1215,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 7 Start
+            tableview: true
         c_exon_7_end:
             type: integer
             nullable: true
@@ -1210,6 +1223,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 7 End
+            tableview: true
         c_exon_8_start:
             type: integer
             nullable: true
@@ -1217,6 +1231,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 8 Start
+            tableview: true
         c_exon_8_end:
             type: integer
             nullable: true
@@ -1224,6 +1239,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 8 End
+            tableview: true
         c_exon_9_start:
             type: integer
             nullable: true
@@ -1231,6 +1247,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 9 Start
+            tableview: true
         c_exon_9_end:
             type: integer
             nullable: true
@@ -1238,6 +1255,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: Exon 9 End
+            tableview: true
         utr_3_prime_start:
             type: integer
             nullable: true
@@ -1245,6 +1263,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: UTR 3\' Start
+            tableview: true
         utr_3_prime_end:
             type: integer
             nullable: true
@@ -1252,6 +1271,7 @@ GeneDescription:
             nonblank: false
             width: narrow
             label: UTR 3\' End
+            tableview: true
         paralogs:
             type: string
             label: Paralogs

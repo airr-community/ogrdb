@@ -139,8 +139,16 @@
         <!-- Acknowledgements Tab -->
         <div role="tabpanel" class="tab-pane" id="ack">
             <div class="info-card mb-4">
+                <h3 class="h4 mb-3">Publications</h3>
+                <p class="mb-3">Publications relating to this set:</p>
+                <div class="table-responsive">
+                    {{ tables['publications'] }}
+                </div>
+            </div>
+
+            <div class="info-card mb-4">
                 <h3 class="h4 mb-3">Acknowledgements</h3>
-                <p class="mb-3">Individuals acknowledged as contributing to this sequence:</p>
+                <p class="mb-3">Individuals acknowledged as contributing to this set:</p>
                 <div class="table-responsive">
                     {{ tables['acknowledgements'] }}
                 </div>

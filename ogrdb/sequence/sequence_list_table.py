@@ -73,6 +73,36 @@ class SequenceListIMGTCol(StyledCol):
         return fmt_string
 
 
+def add_feature_to_table(table, feature_name, col_name=None):
+    if not col_name:
+        col_name = feature_name
+
+    # Derive start and end attribute names from feature_name
+    start_attr = f"{feature_name}_start"
+    end_attr = f"{feature_name}_end"
+
+    class FeatureCol(StyledCol):
+        def td_contents(self, item, attr_list):
+            # Try to extract sequence from start/end coordinates
+            start = getattr(item, start_attr, None)
+            end = getattr(item, end_attr, None)
+            
+            if start is not None and end is not None:
+                # Convert 1-based to 0-based for Python slicing
+                seq = item.sequence[start - 1:end]
+                if seq:
+                    return seq
+            
+            # If no coordinates, check for feature presence/absence
+            feature = getattr(item, feature_name, None)
+            if feature:
+                return '<i class="bi bi-check-lg text-ogrdb-success" data-bs-toggle="tooltip" title="%s present"></i>' % (feature_name.replace('_', ' ').capitalize())
+            else:
+                return '<i class="bi bi-x-lg text-ogrdb-danger" data-bs-toggle="tooltip" title="%s absent"></i>' % (feature_name.replace('_', ' ').capitalize())
+
+    table.add_column(col_name, FeatureCol(feature_name.capitalize(), tooltip=f"{feature_name.replace('_', ' ').capitalize()} presence"))
+
+
 def setup_sequence_list_table(results, current_user, edit=True):
     table = make_GeneDescription_table(results)
     for item in table.items:
@@ -86,6 +116,24 @@ def setup_sequence_list_table(results, current_user, edit=True):
 
     table.add_column('sequence_name', SequenceListActionCol('Sequence Name'))
     table._cols.move_to_end('sequence_name', last=False)
+
+    add_feature_to_table(table, 'utr_5_prime')
+    add_feature_to_table(table, 'utr_3_prime')
+    add_feature_to_table(table, 'leader_1')
+    add_feature_to_table(table, 'leader_2')
+    add_feature_to_table(table, 'v_rs')
+    add_feature_to_table(table, 'd_rs_5_prime')
+    add_feature_to_table(table, 'd_rs_3_prime')
+    add_feature_to_table(table, 'j_rs')
+    add_feature_to_table(table, 'c_exon_1')
+    add_feature_to_table(table, 'c_exon_2')
+    add_feature_to_table(table, 'c_exon_3')
+    add_feature_to_table(table, 'c_exon_4')
+    add_feature_to_table(table, 'c_exon_5')
+    add_feature_to_table(table, 'c_exon_6')
+    add_feature_to_table(table, 'c_exon_7')
+    add_feature_to_table(table, 'c_exon_8')
+    add_feature_to_table(table, 'c_exon_9')
     return table
 
 
