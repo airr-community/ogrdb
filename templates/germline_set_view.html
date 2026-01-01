@@ -129,7 +129,12 @@
 
             <div class="info-card mb-4">
                 <h3 class="h4 mb-3">Included Sequences</h3>
-                <p class="mb-3">The download in Excel or CSV format includes sequences, flanking regions and additional detail.</p>
+                <div class="col-12">
+                    <div class="alert alert-success border-0 py-2">
+                        <i class="bi bi-file-text me-2"></i>
+                        The download in Excel or CSV format includes sequences, flanking regions and additional detail.
+                    </div>
+                </div>
                 <div class="table-responsive">
                     {{ tables['genes'] }}
                 </div>
