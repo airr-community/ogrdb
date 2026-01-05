@@ -37,7 +37,7 @@ def pretty_sequence_item(fn, value, seq, trailer_text, gv_items, coordinate_offs
             # Adjust coordinates in gv_items if offset is provided
             display_gv_items = gv_items
             if coordinate_offset != 0:
-                display_gv_items = adjust_coordinates_for_display(gv_items, coordinate_offset)
+                display_gv_items = adjust_coordinates_for_display(gv_items, coordinate_offset, len(seq.sequence), getattr(seq, 'sense', '+'))
             
             # Get sequence name - handle both GeneDescription and GenomicSupport
             if hasattr(seq, 'sequence_name'):
@@ -71,7 +71,7 @@ def pretty_sequence_item(fn, value, seq, trailer_text, gv_items, coordinate_offs
     return value
 
 
-def adjust_coordinates_for_display(gv_items, coordinate_offset):
+def adjust_coordinates_for_display(gv_items, coordinate_offset, sequence_length, sense):
     """
     Adjust coordinate values in gv_items by subtracting the coordinate_offset and adding 1
     to convert from genomic coordinates to 1-based sequence coordinates.
@@ -98,7 +98,16 @@ def adjust_coordinates_for_display(gv_items, coordinate_offset):
         'j_cdr3_end',
         'cdr1_start', 'cdr1_end',
         'cdr2_start', 'cdr2_end',
-        'cdr3_start'
+        'cdr3_start',
+        'c_exon_1_start', 'c_exon_1_end',
+        'c_exon_2_start', 'c_exon_2_end',
+        'c_exon_3_start', 'c_exon_3_end',
+        'c_exon_4_start', 'c_exon_4_end',
+        'c_exon_5_start', 'c_exon_5_end',
+        'c_exon_6_start', 'c_exon_6_end',
+        'c_exon_7_start', 'c_exon_7_end',
+        'c_exon_8_start', 'c_exon_8_end',
+        'c_exon_9_start', 'c_exon_9_end'
     ]
     
     for field_name, item in gv_items.items():
@@ -113,6 +122,33 @@ def adjust_coordinates_for_display(gv_items, coordinate_offset):
             except (ValueError, TypeError):
                 # Keep original value if conversion fails
                 pass
+
+    if sense == '-' or sense == 'reverse':
+        # make a list of fields with both _start and _end
+        coordinate_pairs = []
+        for field_name in coordinate_fields:
+            if field_name.endswith('_start'):
+                end_field = field_name[:-6] + '_end'
+                if end_field in coordinate_fields:
+                    coordinate_pairs.append((field_name, end_field))
+
+        # swap start and end coordinates in each pair
+        for start_field, end_field in coordinate_pairs:
+            if start_field in adjusted_items and end_field in adjusted_items:
+                start_value = adjusted_items[start_field]['value']
+                end_value = adjusted_items[end_field]['value']
+                adjusted_items[start_field]['value'] = end_value
+                adjusted_items[end_field]['value'] = start_value
+        
+        # reverse coordinates by subtracting from sequence length + 1
+        for field_name in coordinate_fields:
+            if field_name in adjusted_items and adjusted_items[field_name]['value'] is not None:
+                try:
+                    adjusted_value = sequence_length - (adjusted_items[field_name]['value'] - 1)
+                    adjusted_items[field_name]['value'] = adjusted_value
+                except (ValueError, TypeError, KeyError):
+                    # Keep original value if conversion fails
+                    pass
     
     return adjusted_items
 
@@ -147,7 +183,25 @@ def create_genomic_support_view_items(genomic_support):
         'd_rs_5_prime_end': 'd_rs_5_prime_end',
         'j_rs_start': 'j_rs_start',
         'j_rs_end': 'j_rs_end',
-        'j_cdr3_end': 'j_cdr3_end'
+        'j_cdr3_end': 'j_cdr3_end',
+        'c_exon_1_start': 'c_exon_1_start',
+        'c_exon_1_end': 'c_exon_1_end',
+        'c_exon_2_start': 'c_exon_2_start',
+        'c_exon_2_end': 'c_exon_2_end',
+        'c_exon_3_start': 'c_exon_3_start',
+        'c_exon_3_end': 'c_exon_3_end',
+        'c_exon_4_start': 'c_exon_4_start',
+        'c_exon_4_end': 'c_exon_4_end',
+        'c_exon_5_start': 'c_exon_5_start',
+        'c_exon_5_end': 'c_exon_5_end',
+        'c_exon_6_start': 'c_exon_6_start',
+        'c_exon_6_end': 'c_exon_6_end',
+        'c_exon_7_start': 'c_exon_7_start',
+        'c_exon_7_end': 'c_exon_7_end',
+        'c_exon_8_start': 'c_exon_8_start',
+        'c_exon_8_end': 'c_exon_8_end',
+        'c_exon_9_start': 'c_exon_9_start',
+        'c_exon_9_end': 'c_exon_9_end'
     }
     
     for field_name, attr_name in coordinate_fields.items():
