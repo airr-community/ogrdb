@@ -2,18 +2,18 @@
   {% if messages %}
     {% for category, message in messages %}
         {% if  category == 'success' or category == 'message' %}
-            <div class="alert alert-success alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               {{ message }}
             </div>
         {% elif category == 'error' %}
-            <div class="alert alert-danger alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               {{ message }}
             </div>
         {% else %}
-            <div class="alert alert-success alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               {{ category }} : {{ message }}
             </div>
         {% endif %}

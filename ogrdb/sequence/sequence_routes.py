@@ -131,6 +131,11 @@ def check_seq_attachment_edit(id):
         flash('Attachment not found')
         return None
     seq = af.gene_description
+
+    if not seq:
+        flash('Attachment not found')
+        return None
+
     if not seq.can_edit(current_user):
         flash('You do not have rights to delete that attachment')
         return None
@@ -143,6 +148,11 @@ def check_seq_attachment_view(id):
         flash('Attachment not found')
         return None
     seq = af.gene_description
+
+    if not seq:
+        flash('Attachment not found')
+        return None
+
     if not seq.can_see(current_user):
         flash('You do not have rights to download that attachment')
         return None
@@ -161,6 +171,7 @@ def check_seq_draft(id):
             return None
 
         clones = db.session.query(GeneDescription).filter_by(sequence_name = desc.sequence_name).all()
+
         for clone in clones:
             if clone.status == 'draft':
                 flash('There is already a draft of that sequence')
