@@ -183,7 +183,7 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
         resp = check_response(r, 'update metadata')
 
         logging.warning('Publishing')
-        # r = requests.post(f"{deposition_url}/actions/publish", params=params)
+        r = requests.post(f"{deposition_url}/actions/publish", params=params)
         resp = check_response(r, 'publish the new deposition')
 
         logging.warning(f"Publishing successful")
