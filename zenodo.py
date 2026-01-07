@@ -115,13 +115,17 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
 
         # fetch the record to find the latest version
 
-        r = requests.get(f"{zenodo_url}/api/records/{deposit_id}", params=params)
+        r = requests.get(f"{zenodo_url}/api/deposit/depositions/{deposit_id}", params=params)
         resp = check_response(r, 'return records')
 
-        latest_id = resp['links']['latest'].split('/')[-3]
+        latest_id = resp['links']['latest_draft'].split('/')[-1]
 
         r = requests.get(f"{zenodo_url}/api/records/{latest_id}", params=params)
-        resp = check_response(r, 'return records')
+
+        # if this is the very first deposition, we'll get this error when querying for the latest version
+        # ... but in that case we know we already have it
+        if not (r.status_code == 404 and 'identifier is not registered' in r.text):
+            resp = check_response(r, 'return records')
 
         if 'latest_draft' not in resp['links']:
             logging.warning('Requesting new draft deposition')
@@ -179,7 +183,7 @@ def zenodo_new_version(zenodo_url, access_token, deposit_id, filenames, file_str
         resp = check_response(r, 'update metadata')
 
         logging.warning('Publishing')
-        r = requests.post(f"{deposition_url}/actions/publish", params=params)
+        # r = requests.post(f"{deposition_url}/actions/publish", params=params)
         resp = check_response(r, 'publish the new deposition')
 
         logging.warning(f"Publishing successful")
