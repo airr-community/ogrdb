@@ -66,12 +66,13 @@ class VDJbaseError(Exception):
 
 def call_vdjbase(payload):
     try:
-        resp = requests.get(os.path.join(app.config['VDJBASE_API'] + payload))
+        payload = app.config['VDJBASE_API'] + payload
+        resp = requests.get(payload)
     except Exception as e:
-        raise VDJbaseError(f'Error contacting VDJbase: {e}')
+        raise VDJbaseError(f'Error contacting VDJbase: request: {payload} status code {e}')
 
     if resp.status_code != 200:
-        raise VDJbaseError('Error contacting VDJbase: status code %d' % resp.status_code)
+        raise VDJbaseError('Error contacting VDJbase. request: %s status code %d' % (payload, resp.status_code))
     return json.loads(resp.text)
 
 
@@ -95,8 +96,8 @@ def update_from_vdjbase():
         common_to_binomial[sp[0].lower()] = sp[1]
         binomial_to_common[sp[1]] = sp[0]
         
-    if last_run and datetime.now() - last_run < timedelta(hours=21):
-        return 'Update_from_VDJbase: frequency limit exceeded: restart to over-ride'
+    #if last_run and datetime.now() - last_run < timedelta(hours=21):
+    #    return 'Update_from_VDJbase: frequency limit exceeded: restart to over-ride'
 
     last_run = datetime.now()
 
@@ -133,7 +134,7 @@ def update_from_vdjbase():
                     if ds['dataset'] in ogrdb_sets[v_s]:
                         if v_s not in vdjbase_sets:
                             vdjbase_sets[v_s] = []
-                        vdjbase_sets[v_s].append(ds['dataset'])
+                        vdjbase_sets[v_s].append((ds['dataset'], vdjbase_species))
 
     except VDJbaseError as e:
         app.logger.error(e)
@@ -142,9 +143,9 @@ def update_from_vdjbase():
     # Pull the datasets back and merge results into our table
 
     for species, datasets in vdjbase_sets.items():
-        for dataset in datasets:
+        for dataset, vdjbase_species in datasets:
             ogrdb_species = species
-            vdjbase_species = binomial_to_common[species]
+            # vdjbase_species = binomial_to_common[species]
             expected_alleles = db.session.query(NovelVdjbase.vdjbase_name) \
                 .filter(and_(NovelVdjbase.species == ogrdb_species, NovelVdjbase.locus == dataset)).all()
             expected_alleles = [r[0] for r in expected_alleles]
