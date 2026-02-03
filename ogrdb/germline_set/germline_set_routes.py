@@ -483,7 +483,7 @@ def check_set_draft(id):
             flash('Only published germline sets can be cloned.')
             return None
 
-        clones = db.session.query(GermlineSet).filter_by(germline_set_name=set.germline_set_name).all()
+        clones = db.session.query(GermlineSet).filter_by(germline_set_name=set.germline_set_name, species=set.species).all()
         for clone in clones:
             if clone.status == 'draft':
                 flash('There is already a draft of that germline set')

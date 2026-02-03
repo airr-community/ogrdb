@@ -700,10 +700,10 @@ def sequences_aa_alignment(sp, category):
 
     results = q.all()
 
-    ret = ""
+    ret = f"{'Gene Label'.ljust(20)}  {'Gapped V-sequence'.ljust(140)}  {'CDR1'.ljust(20)}  {'CDR2'.ljust(15)}  {'CDR3'.ljust(15)}\r\n"
     for seq in sorted(results, key=lambda x: x.sequence_name):
         if 'V' in seq.sequence_type:
-            ret += f'{seq.sequence_name.ljust(20)}  {simple.translate(seq.coding_seq_imgt)}  {simple.translate(seq.sequence[seq.cdr1_start-1:seq.cdr1_end])}  {simple.translate(seq.sequence[seq.cdr2_start-1:seq.cdr2_end])}  {simple.translate(seq.sequence[seq.cdr3_start-1:])}\r\n'
+            ret += f'{seq.sequence_name.ljust(20)}  {simple.translate(seq.coding_seq_imgt).ljust(140)}  {simple.translate(seq.sequence[seq.cdr1_start-1:seq.cdr1_end]).ljust(20)}  {simple.translate(seq.sequence[seq.cdr2_start-1:seq.cdr2_end]).ljust(15)}  {simple.translate(seq.sequence[seq.cdr3_start-4:seq.gene_end]).ljust(15)}\r\n'
 
     if len(ret) == 0:
         return redirect(url_for('sequences', sp=sp))
@@ -1081,9 +1081,14 @@ def upload_sequences(form, species):
         if existing_entry:
             existing_entry = existing_entry[0]
 
-            merge_errors = merge_sequence_upload(existing_entry, row, gene_description)
-            if merge_errors:
-                errors.extend(merge_errors)
+            # custom for macaque merge feb 2026: check that gene start has changed, otherwise we don't need a merge, leave things as they are
+
+            if existing_entry.gene_start != int(row['gene_start']):
+                merge_errors = merge_sequence_upload(existing_entry, row, gene_description)
+                if merge_errors:
+                    errors.extend(merge_errors)
+                    continue
+            else:
                 continue
         else:
             gene_description.release_version = 1
@@ -1215,9 +1220,6 @@ def upload_sequences(form, species):
 
 def merge_sequence_upload(existing_entry, row, gene_description):
     errors = []
-    # only update if the existing record is an inference - we only want to merge if there's an IARC record in OGRDB that pre-dates the germline set
-    if existing_entry.inference_type != 'Rearranged Only' and existing_entry.inference_type != 'Rearranged':
-        errors.append(f"Cannot merge {existing_entry.sequence_name} as there is an existing record which is not simply an inference")
 
     # don't update if there's an existing draft
     if existing_entry.status == 'draft':
@@ -1265,10 +1267,10 @@ def merge_sequence_upload(existing_entry, row, gene_description):
     while existing_entry.coding_seq_imgt[0 - iarc_ext_length - 1] == '.':
         iarc_ext_length += 1
 
-    if iarc_ext_length > 0 and not gene_description.ext_3prime or len(gene_description.ext_3prime) != iarc_ext_length:
+    if iarc_ext_length > 0 and (not gene_description.ext_3prime or len(gene_description.ext_3prime) != iarc_ext_length):
         errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: IARC extension length is {iarc_ext_length} but supplied ext_3prime length is {len(gene_description.ext_3prime)}")
 
-    gene_description.coding_seq_imgt = existing_entry.coding_seq_imgt.upper()
+    gene_description.coding_seq_imgt = row['sequence_gapped']
     gene_description.sequence = row['sequence']
     gene_description.sequence_name = row['gene_label']
     gene_description.imgt_name = row['imgt'] if row['imgt'] else existing_entry.imgt_name
