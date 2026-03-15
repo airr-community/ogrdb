@@ -355,7 +355,7 @@ def list_sequence_changes(gene_description):
             prevs = db.session.query(GeneDescription).filter(GeneDescription.description_id == gene_description.description_id, GeneDescription.status == 'superceded').all()
 
             if len(prevs) > 0:
-                prev = prevs.sorted(key=attrgetter('release_version'))[0]
+                prev = sorted(prevs, key=attrgetter('release_version'))[0]
     else:
         prev = None
         prevs = db.session.query(GeneDescription)\
