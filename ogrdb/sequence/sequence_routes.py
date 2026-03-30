@@ -703,7 +703,19 @@ def sequences_aa_alignment(sp, category):
     ret = f"{'Gene Label'.ljust(20)}  {'Gapped V-sequence'.ljust(140)}  {'CDR1'.ljust(20)}  {'CDR2'.ljust(15)}  {'CDR3'.ljust(15)}\r\n"
     for seq in sorted(results, key=lambda x: x.sequence_name):
         if 'V' in seq.sequence_type:
-            ret += f'{seq.sequence_name.ljust(20)}  {simple.translate(seq.coding_seq_imgt).ljust(140)}  {simple.translate(seq.sequence[seq.cdr1_start-1:seq.cdr1_end]).ljust(20)}  {simple.translate(seq.sequence[seq.cdr2_start-1:seq.cdr2_end]).ljust(15)}  {simple.translate(seq.sequence[seq.cdr3_start-4:seq.gene_end]).ljust(15)}\r\n'
+            ret += f'{seq.sequence_name.ljust(20)}'
+            ret += f'  {simple.translate(seq.coding_seq_imgt).ljust(140)}'
+
+            if seq.cdr1_start and seq.cdr1_end:
+                ret += f'  {simple.translate(seq.sequence[seq.cdr1_start-1:seq.cdr1_end]).ljust(20)}'
+
+            if seq.cdr2_start and seq.cdr2_end:
+                ret += f'  {simple.translate(seq.sequence[seq.cdr2_start-1:seq.cdr2_end]).ljust(15)}'
+
+            if seq.cdr3_start:
+                ret += f'  {simple.translate(seq.sequence[seq.cdr3_start-4:seq.gene_end]).ljust(15)}'
+
+            ret += '\r\n'
 
     if len(ret) == 0:
         return redirect(url_for('sequences', sp=sp))
@@ -1987,10 +1999,10 @@ def edit_sequence(id):
                             form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
 
-                    if not form.cdr3_start.data:
-                        form.cdr3_start.errors.append('Please specify the start coordinate')
-                        cdr_coord_errors = True
-                    else:
+                    # if not form.cdr3_start.data:
+                    #     form.cdr3_start.errors.append('Please specify the start coordinate')
+                    #     cdr_coord_errors = True
+                    if form.cdr3_start.data:
                         if (form.cdr3_start.data - seq.gene_start) % 3 != 0:
                             form.cdr3_start.errors.append('CDR must start on a codon boundary')
                             cdr_coord_errors = True

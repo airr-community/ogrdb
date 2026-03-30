@@ -1,6 +1,7 @@
-from flask import flash, redirect
+from flask import flash, redirect, Response
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
+from markupsafe import escape
 from db.userdb import User
 from db.submission_db import Submission
 from receptor_utils import simple_bio_seq as simple
@@ -11,6 +12,45 @@ from db.germline_set_db import GermlineSet
 from db.submission_db import Submission
 from db.novel_vdjbase_db import NovelVdjbase
 from head import app, db
+
+
+STOP_CODONS = {'TAA', 'TAG', 'TGA'}
+CYS_CODONS = {'TGT', 'TGC'}
+
+
+def has_stop_before_aa(coding_seq, aa_limit):
+    if not coding_seq:
+        return False, None
+    scan_len = min(len(coding_seq), aa_limit * 3)
+    for i in range(0, scan_len - 2, 3):
+        if coding_seq[i:i + 3] in STOP_CODONS:
+            return True, (i // 3) + 1
+    return False, None
+
+
+def get_codon_at_aa(coding_seq, aa_pos):
+    if not coding_seq:
+        return None
+    seq = coding_seq.upper()
+    start = (aa_pos - 1) * 3
+    end = start + 3
+    if len(seq) < end:
+        return None
+    return seq[start:end]
+
+
+def _norm_seq(value):
+    if not value:
+        return ''
+    return ''.join(str(value).split()).upper()
+
+
+def _aligned_to_ungapped_pos(aligned_seq, aligned_pos):
+    if aligned_pos < 1 or aligned_pos > len(aligned_seq):
+        return None
+    if aligned_seq[aligned_pos - 1] == '.':
+        return None
+    return sum(1 for ch in aligned_seq[:aligned_pos] if ch != '.')
 
 # Unpublished route that will remove all sequences and submissions published by the selenium test account
 @app.route('/remove_test', methods=['GET'])
@@ -259,5 +299,280 @@ def check_trout():
                 #print(f'Matched coords for {seq.sequence_name} {rec.accession} {rec.sense} start:{rec.sequence_start} end:{rec.sequence_end}') 
 
 
-    return ret
+    return 'Check complete'
+
+
+# List published mouse gene descriptions with functionality F and early stop codons
+@app.route('/mouse_f_stop_104', methods=['GET'])
+@login_required
+def mouse_f_stop_104():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    species = 'Mus musculus'
+    functionality = 'F'
+
+    descs = db.session.query(GeneDescription).filter(
+        GeneDescription.status == 'published',
+        GeneDescription.species == species,
+        GeneDescription.functionality == functionality
+    ).all()
+
+    results = []
+    for desc in descs:
+        has_stop, aa_pos = has_stop_before_aa(desc.coding_seq_imgt, 103)
+        if not has_stop:
+            continue
+        results.append({
+            'id': desc.id,
+            'sequence_name': desc.sequence_name or '',
+            'imgt_name': desc.imgt_name or '',
+            'stop_aa': aa_pos
+        })
+
+    non_cys = []
+    for desc in descs:
+        codon = get_codon_at_aa(desc.coding_seq_imgt, 104)
+        if not codon or codon in CYS_CODONS:
+            continue
+        non_cys.append({
+            'id': desc.id,
+            'sequence_name': desc.sequence_name or '',
+            'imgt_name': desc.imgt_name or '',
+            'codon_104': codon or 'N/A'
+        })
+
+    title = 'Published mouse gene_descriptions with functionality F and stop codon before aa 104'
+    html_lines = [
+        '<!doctype html>',
+        '<html>',
+        '<head>',
+        f'<title>{escape(title)}</title>',
+        '<style>',
+        'body{font-family:Segoe UI,Arial,sans-serif;margin:24px;}',
+        'table{border-collapse:collapse;width:100%;margin-top:12px;}',
+        'th,td{border:1px solid #c8c8c8;padding:6px 8px;text-align:left;}',
+        'th{background:#f2f2f2;}',
+        '.meta{margin:8px 0 0 0;}',
+        '</style>',
+        '</head>',
+        '<body>',
+        f'<h2>{escape(title)}</h2>',
+        f'<p class="meta"><strong>Total candidates:</strong> {len(descs)}</p>',
+        f'<p class="meta"><strong>Total hits:</strong> {len(results)}</p>'
+    ]
+
+    if results:
+        html_lines.extend([
+            '<table>',
+            '<thead>',
+            '<tr>',
+            '<th>ID</th>',
+            '<th>Sequence Name</th>',
+            '<th>IMGT Name</th>',
+            '<th>Stop AA</th>',
+            '</tr>',
+            '</thead>',
+            '<tbody>'
+        ])
+        for row in results:
+            html_lines.append(
+                '<tr>'
+                f'<td>{escape(str(row["id"]))}</td>'
+                f'<td>{escape(row["sequence_name"])}</td>'
+                f'<td>{escape(row["imgt_name"])}</td>'
+                f'<td>{escape(str(row["stop_aa"]))}</td>'
+                '</tr>'
+            )
+        html_lines.extend(['</tbody>', '</table>'])
+    else:
+        html_lines.append('<p>No matches found.</p>')
+
+    html_lines.extend([
+        '<hr>',
+        '<h3>Published mouse gene_descriptions without cysteine at aa 104</h3>',
+        f'<p class="meta"><strong>Total candidates:</strong> {len(descs)}</p>',
+        f'<p class="meta"><strong>Total hits:</strong> {len(non_cys)}</p>'
+    ])
+
+    if non_cys:
+        html_lines.extend([
+            '<table>',
+            '<thead>',
+            '<tr>',
+            '<th>ID</th>',
+            '<th>Sequence Name</th>',
+            '<th>IMGT Name</th>',
+            '<th>Codon 104</th>',
+            '</tr>',
+            '</thead>',
+            '<tbody>'
+        ])
+        for row in non_cys:
+            html_lines.append(
+                '<tr>'
+                f'<td>{escape(str(row["id"]))}</td>'
+                f'<td>{escape(row["sequence_name"])}</td>'
+                f'<td>{escape(row["imgt_name"])}</td>'
+                f'<td>{escape(row["codon_104"])}</td>'
+                '</tr>'
+            )
+        html_lines.extend(['</tbody>', '</table>'])
+    else:
+        html_lines.append('<p>No matches found.</p>')
+
+    html_lines.extend(['</body>', '</html>'])
+    return Response('\n'.join(html_lines), mimetype='text/html')
+
+
+# Validate published mouse V-gene records for sequence and coordinate consistency
+@app.route('/check_mouse_v_gene_descriptions', methods=['GET'])
+@login_required
+def check_mouse_v_gene_descriptions():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    species = 'Mus musculus'
+    descs = db.session.query(GeneDescription).filter(
+        GeneDescription.status == 'published',
+        GeneDescription.species == species,
+        GeneDescription.sequence_type.like('V%')
+    ).all()
+
+    cdr_spec = [
+        ('cdr1_start', 79),
+        ('cdr1_end', 114),
+        ('cdr2_start', 166),
+        ('cdr2_end', 195),
+        ('cdr3_start', 313),
+    ]
+
+    exceptions = []
+
+    for desc in sorted(descs, key=lambda x: (x.sequence_name or '', x.id)):
+        print(desc.sequence_name)
+        row_issues = []
+        raw_coding = _norm_seq(desc.coding_seq_imgt)
+        raw_sequence = _norm_seq(desc.sequence)
+        ungapped_coding = raw_coding.replace('.', '')
+
+        # 1) coding_seq_imgt (ungapped) should match sequence
+        if ungapped_coding != raw_sequence:
+            row_issues.append(
+                f'check1: coding/sequence mismatch (ungapped coding {len(ungapped_coding)} bp, sequence {len(raw_sequence)} bp)'
+            )
+
+        # 2) sequence length implied by gene_start/gene_end should match sequence length
+        if desc.gene_start is None or desc.gene_end is None:
+            row_issues.append('check2: missing gene_start or gene_end')
+        else:
+            implied_len = (desc.gene_end - desc.gene_start) + 1
+            if implied_len <= 0:
+                row_issues.append(
+                    f'check2: invalid gene span (gene_start={desc.gene_start}, gene_end={desc.gene_end})'
+                )
+            elif implied_len != len(raw_sequence):
+                row_issues.append(
+                    f'check2: implied length {implied_len} != sequence length {len(raw_sequence)}'
+                )
+
+        # 3) CDR coordinates should match unaligned positions from fixed aligned coordinates
+        if not raw_coding:
+            row_issues.append('check3: missing coding_seq_imgt')
+        else:
+            for field_name, aligned_pos in cdr_spec:
+                actual_val = getattr(desc, field_name)
+                expected_val = _aligned_to_ungapped_pos(raw_coding, aligned_pos)
+
+                if actual_val is None:
+                    row_issues.append(f'check3: {field_name} missing (expected {expected_val})')
+                    continue
+
+                if expected_val is None:
+                    if field_name == 'cdr3_start' and aligned_pos == 313:
+                        codon_positions = [310, 311, 312]
+                        all_present = all(
+                            pos <= len(raw_coding) and raw_coding[pos - 1] != '.'
+                            for pos in codon_positions
+                        )
+                        if all_present:
+                            codon_310_312 = ''.join(raw_coding[pos - 1] for pos in codon_positions)
+                            if codon_310_312 != 'TGT':
+                                row_issues.append('check3: second cysteine corrupted')
+                        else:
+                            row_issues.append('check3: sequence truncated before 2nd cysteine')
+                    else:
+                        row_issues.append(
+                            f'check3: aligned position {aligned_pos} has no base in coding_seq_imgt for {field_name}'
+                        )
+                    continue
+
+                if actual_val != expected_val:
+                    row_issues.append(
+                        f'check3: {field_name}={actual_val}, expected {expected_val} from aligned pos {aligned_pos}'
+                    )
+
+        if row_issues:
+            exceptions.append({
+                'id': desc.id,
+                'sequence_name': desc.sequence_name or '',
+                'imgt_name': desc.imgt_name or '',
+                'issues': row_issues
+            })
+
+    title = 'Published mouse V gene_descriptions: sequence/coordinate checks'
+    html_lines = [
+        '<!doctype html>',
+        '<html>',
+        '<head>',
+        f'<title>{escape(title)}</title>',
+        '<style>',
+        'body{font-family:Segoe UI,Arial,sans-serif;margin:24px;}',
+        'table{border-collapse:collapse;width:100%;margin-top:12px;}',
+        'th,td{border:1px solid #c8c8c8;padding:6px 8px;text-align:left;vertical-align:top;}',
+        'th{background:#f2f2f2;}',
+        '.meta{margin:8px 0 0 0;}',
+        'ul{margin:0;padding-left:18px;}',
+        '</style>',
+        '</head>',
+        '<body>',
+        f'<h2>{escape(title)}</h2>',
+        '<p class="meta">Checks: (1) sequence vs ungapped coding_seq_imgt, '
+        '(2) gene_start/gene_end implied length vs sequence length, '
+        '(3) CDR coords vs fixed aligned positions (cdr1 79-114, cdr2 166-195, cdr3 start 313).</p>',
+        '<p class="meta">Coordinates are treated as 1-based.</p>',
+        f'<p class="meta"><strong>Total records checked:</strong> {len(descs)}</p>',
+        f'<p class="meta"><strong>Records with exceptions:</strong> {len(exceptions)}</p>'
+    ]
+
+    if exceptions:
+        html_lines.extend([
+            '<table>',
+            '<thead>',
+            '<tr>',
+            '<th>ID</th>',
+            '<th>Sequence Name</th>',
+            '<th>IMGT Name</th>',
+            '<th>Exceptions</th>',
+            '</tr>',
+            '</thead>',
+            '<tbody>'
+        ])
+        for row in exceptions:
+            issue_items = ''.join(f'<li>{escape(issue)}</li>' for issue in row['issues'])
+            html_lines.append(
+                '<tr>'
+                f'<td>{escape(str(row["id"]))}</td>'
+                f'<td>{escape(row["sequence_name"])}</td>'
+                f'<td>{escape(row["imgt_name"])}</td>'
+                f'<td><ul>{issue_items}</ul></td>'
+                '</tr>'
+            )
+        html_lines.extend(['</tbody>', '</table>'])
+    else:
+        html_lines.append('<p>No exceptions found.</p>')
+
+    html_lines.extend(['</body>', '</html>'])
+    return Response('\n'.join(html_lines), mimetype='text/html')
+
 
