@@ -173,10 +173,10 @@ def get_germline_sets_by_id(species_id):
                 GermlineSet.species,
                 GermlineSet.species_subgroup,
                 GermlineSet.species_subgroup_type,
-                GermlineSet.locus
+                GermlineSet.locus,
             )\
             .filter(GermlineSet.species == species)\
-            .filter(or_(GermlineSet.status == 'published', GermlineSet.status == 'superceded'))\
+            .filter(or_(GermlineSet.status == 'published'))\
             .distinct()
         results = q.all()
 
@@ -247,6 +247,23 @@ def get_germline_sets_by_id_and_version(germline_set_id, release_version, format
         germline_set = q.one_or_none()
 
         if not germline_set:
+            if release_version == 'published' or release_version == 'latest':
+                q = db.session.query(GermlineSet) \
+                    .filter(GermlineSet.species == species) \
+                    .filter(GermlineSet.germline_set_name == germline_set_name) \
+                    .filter(GermlineSet.status == 'superceded')
+                    
+                if species_subgroup:
+                    q = q.filter(GermlineSet.species_subgroup == species_subgroup)
+
+                germline_sets = q.all()
+
+                if germline_sets:
+                    # Find the most recent version
+                    germline_set = max(germline_sets, key=lambda x: x.release_version)
+                    error_response = {'message': "This set has been superceded: there is no current published version. The most recent superceded version is {}".format(germline_set.release_version)}
+                    return jsonify(error_response), 404
+
             error_response = {'message': "Set not found"}
             return jsonify(error_response), 404
 
