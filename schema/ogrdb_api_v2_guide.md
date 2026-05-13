@@ -250,8 +250,8 @@ When requesting a germline set in a specific format, the following options are a
 - `ungapped`: FASTA format with ungapped sequences
 - `airr`: AIRR-compliant format
 
-For human sets, germline sets are curated from the [source set](https://wordpress.vdjbase.org/index.php/ogrdb/explanation-of-germline-set-formats/) for best
-results in airr-seq annotation. To download 'Source' sets, which contain all sequences as provided by the underlying data source, append _ex to the format (`gapped_ex`, `ungapped_ex`, `airr_ex`).
+For human sets, germline sets are [optimised](https://wordpress.vdjbase.org/index.php/ogrdb/explanation-of-germline-set-formats/) for best
+results in airr-seq annotation. To download 'Source' sets, which contain all sequences without optimisation, append _ex to the format (`gapped_ex`, `ungapped_ex`, `airr_ex`).
 
 ## Using Germline Set Identifiers
 
