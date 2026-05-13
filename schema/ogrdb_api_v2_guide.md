@@ -197,6 +197,8 @@ Response:
   ]
 }
 ```
+The germline set is returned in JSON format. For human sets, the [source set](https://wordpress.vdjbase.org/index.php/ogrdb/explanation-of-germline-set-formats/) is returned.
+Please note that the source set is not optimised for airr-seq annotation: see the Format Options section below.
 
 ### Get a Germline Set in a Specific Format
 
@@ -247,6 +249,9 @@ When requesting a germline set in a specific format, the following options are a
 - `gapped`: FASTA format with IMGT-gapped sequences
 - `ungapped`: FASTA format with ungapped sequences
 - `airr`: AIRR-compliant format
+
+For human sets, germline sets are curated from the [source set](https://wordpress.vdjbase.org/index.php/ogrdb/explanation-of-germline-set-formats/) for best
+results in airr-seq annotation. To download 'Source' sets, which contain all sequences as provided by the underlying data source, append _ex to the format (`gapped_ex`, `ungapped_ex`, `airr_ex`).
 
 ## Using Germline Set Identifiers
 
