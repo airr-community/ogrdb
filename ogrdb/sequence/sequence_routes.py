@@ -1092,14 +1092,11 @@ def upload_sequences(form, species):
 
         if existing_entry:
             existing_entry = existing_entry[0]
-
-            # custom for macaque merge feb 2026: check that gene start has changed, otherwise we don't need a merge, leave things as they are
-
-            if existing_entry.gene_start != int(row['gene_start']):
-                merge_errors = merge_sequence_upload(existing_entry, row, gene_description)
-                if merge_errors:
-                    errors.extend(merge_errors)
-                    continue
+            merge_errors = merge_sequence_upload(existing_entry, row, gene_description)
+            
+            if merge_errors:
+                errors.extend(merge_errors)
+                continue
             else:
                 continue
         else:
@@ -1263,10 +1260,10 @@ def merge_sequence_upload(existing_entry, row, gene_description):
         # Retain the existing coding_sequence_imgt. Adjust extensions if necessary
         pos = new_ungapped.find(existing_ungapped)
 
-        if pos > 0:
+        if pos and pos > 0:
             gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
             gene_description.ext_5prime += new_ungapped.coding_seq_imgt[:pos]
-        if len(new_ungapped) > pos + len(existing_ungapped):
+        if pos and (len(new_ungapped) > pos + len(existing_ungapped)):
             gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
             gene_description.ext_3prime += new_ungapped[pos + len(existing_ungapped):]
 
