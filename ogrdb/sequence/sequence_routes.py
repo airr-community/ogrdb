@@ -1097,9 +1097,9 @@ def upload_sequences(form, species):
             if merge_errors:
                 errors.extend(merge_errors)
                 continue
-            else:
-                continue
+
         else:
+            print("new sequence: %s" % row['gene_label'])
             gene_description.release_version = 1
             gene_description.notes = ''
             gene_description.sequence_name = row['gene_label']
@@ -1112,7 +1112,8 @@ def upload_sequences(form, species):
             gene_description.end_5prime_ext = None
             gene_description.sequence = row['sequence']
             gene_description.coding_seq_imgt = row['sequence_gapped']
-            gene_description.paralogs = get_opt_text(row, 'paralogs')       
+            gene_description.paralogs = get_opt_text(row, 'paralogs')
+            gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'      
 
         gene_description.imgt_name = row['imgt']
         gene_description.alt_names = row['alt_names']
@@ -1127,7 +1128,6 @@ def upload_sequences(form, species):
         gene_description.affirmation_level = int(row['affirmation'])
         gene_description.chromosome = get_opt_int(row, 'chromosome')
         gene_description.mapped = get_opt_text(row, 'mapped') == 'Y'
-        gene_description.paralog_rep = get_opt_text(row, 'varb_rep') == 'Y'
         gene_description.curational_tags = get_opt_text(row, 'curational_tags')     
         gene_description.gene_start = get_opt_int(row, 'gene_start')
         gene_description.gene_end = get_opt_int(row, 'gene_end')
@@ -1244,7 +1244,25 @@ def merge_sequence_upload(existing_entry, row, gene_description):
     if errors:
         return errors
     
-    # Replace extensions with info from the new record
+    # we don't support merges including extensions at the moment
+    if get_opt_text(row, 'ext_5_prime', '') or get_opt_text(row, 'ext_3_prime', ''):
+        errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: merging of new sequences with extensions is not supported")        
+    
+    if existing_ungapped != new_ungapped:
+        existing_extended = ''
+        if existing_entry.ext_5prime:
+            existing_extended += existing_entry.ext_5prime
+        existing_extended += existing_ungapped
+        if existing_entry.ext_3prime:
+            existing_extended += existing_entry.ext_3prime
+
+        if existing_extended != new_ungapped:
+            errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: new sequence does not equal extended previous sequence:")
+
+    copy_GeneDescription(existing_entry, gene_description)
+    gene_description.description_id = existing_entry.description_id
+    gene_description.status = 'draft'
+
     gene_description.ext_3prime = ''
     gene_description.start_3prime_ext = None
     gene_description.end_3prime_ext = None
@@ -1253,36 +1271,14 @@ def merge_sequence_upload(existing_entry, row, gene_description):
     gene_description.end_5prime_ext = None
     gene_description.inferred_extension = False
 
-    if existing_ungapped == new_ungapped:
-        gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
-        gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
-    else:
-        # Retain the existing coding_sequence_imgt. Adjust extensions if necessary
-        pos = new_ungapped.find(existing_ungapped)
-
-        if pos and pos > 0:
-            gene_description.ext_5prime = get_opt_text(row, 'ext_5_prime')
-            gene_description.ext_5prime += new_ungapped.coding_seq_imgt[:pos]
-        if pos and (len(new_ungapped) > pos + len(existing_ungapped)):
-            gene_description.ext_3prime = get_opt_text(row, 'ext_3_prime')
-            gene_description.ext_3prime += new_ungapped[pos + len(existing_ungapped):]
-
-    if gene_description.ext_3prime or gene_description.ext_5prime:        
-        gene_description.inferred_extension = True
-
-    # If IARC thought the sequence should be extended, did we find an extension?
-
-    iarc_ext_length = 0
-    while existing_entry.coding_seq_imgt[0 - iarc_ext_length - 1] == '.':
-        iarc_ext_length += 1
-
-    if iarc_ext_length > 0 and (not gene_description.ext_3prime or len(gene_description.ext_3prime) != iarc_ext_length):
-        errors.append(f"Cannot merge {row['gene_label']}->{existing_entry.sequence_name}: IARC extension length is {iarc_ext_length} but supplied ext_3prime length is {len(gene_description.ext_3prime)}")
-
     gene_description.coding_seq_imgt = row['sequence_gapped']
     gene_description.sequence = row['sequence']
     gene_description.sequence_name = row['gene_label']
     gene_description.imgt_name = row['imgt'] if row['imgt'] else existing_entry.imgt_name
+
+    if row['inference_type'] not in gene_description.inference_type:
+        gene_description.inference_type = 'Unrearranged and rearranged'
+        row['inference_type'] = 'Unrearranged and rearranged'
 
     alt_names = existing_entry.alt_names.split(',') if existing_entry.alt_names else []
     for an in row['alt_names'].split(','):
@@ -1314,6 +1310,10 @@ def merge_sequence_upload(existing_entry, row, gene_description):
     
     gene_description.description_id = existing_entry.description_id
     gene_description.notes = existing_entry.notes
+
+    # Ensure the parent object is in-session before relationship appends.
+    # This avoids SAWarning during autoflush on relationship lazy-loads.
+    db.session.add(gene_description)
  
     for inferred_sequence in existing_entry.inferred_sequences:
         gene_description.inferred_sequences.append(inferred_sequence)
@@ -1322,7 +1322,9 @@ def merge_sequence_upload(existing_entry, row, gene_description):
         gene_description.supporting_observations.append(gen)
 
     for acc in existing_entry.genomic_accessions:
-        gene_description.genomic_accessions.append(acc)
+        new_acc = GenomicSupport()
+        copy_GenomicSupport(acc, new_acc)
+        gene_description.genomic_accessions.append(new_acc)
 
     for journal_entry in existing_entry.journal_entries:
         new_entry = JournalEntry()
@@ -1960,17 +1962,17 @@ def edit_sequence(id):
                         if form.cdr1_start.data >= form.cdr1_end.data:
                             form.cdr1_end.errors.append('End coordinate must be greater than start coordinate')
                             cdr_coord_errors = True
-                        if (form.cdr1_start.data - seq.gene_start) % 3 != 0:
+                        if (form.cdr1_start.data - form.gene_start.data) % 3 != 0:
                             form.cdr1_start.errors.append('CDR must start on a codon boundary')
                             cdr_coord_errors = True
-                        if (form.cdr1_end.data - seq.gene_start) % 3 != 2:
+                        if (form.cdr1_end.data - form.gene_start.data) % 3 != 2:
                             form.cdr1_end.errors.append('CDR must end on a codon boundary')
                             cdr_coord_errors = True
-                        if form.cdr1_start.data < seq.gene_start or form.cdr1_start.data > seq.gene_end:
+                        if form.cdr1_start.data < form.gene_start.data or form.cdr1_start.data > form.gene_end.data:
                             form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
-                        if form.cdr1_end.data < seq.gene_start or form.cdr1_end.data > seq.gene_end:
-                            form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
+                        if form.cdr1_end.data < form.gene_start.data or form.cdr1_end.data > form.gene_end.data:
+                            form.cdr1_end.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
 
                     if not form.cdr2_end.data:
@@ -1983,27 +1985,27 @@ def edit_sequence(id):
                         if form.cdr2_start.data >= form.cdr2_end.data:
                             form.cdr2_end.errors.append('End coordinate must be greater than start coordinate')
                             cdr_coord_errors = True
-                        if (form.cdr2_start.data - seq.gene_start) % 3 != 0:
+                        if (form.cdr2_start.data - form.gene_start.data) % 3 != 0:
                             form.cdr2_start.errors.append('CDR must start on a codon boundary')
                             cdr_coord_errors = True
-                        if (form.cdr2_end.data - seq.gene_start) % 3 != 2:
+                        if (form.cdr2_end.data - form.gene_start.data) % 3 != 2:
                             form.cdr2_end.errors.append('CDR must end on a codon boundary')
                             cdr_coord_errors = True
-                        if form.cdr2_start.data < seq.gene_start or form.cdr2_start.data > seq.gene_end:
+                        if form.cdr2_start.data < form.gene_start.data or form.cdr2_start.data > form.gene_end.data:
                             form.cdr2_start.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
-                        if form.cdr1_end.data < seq.gene_start or form.cdr1_end.data > seq.gene_end:
-                            form.cdr1_start.errors.append('CDR must lie between gene start and gene end')
+                        if form.cdr2_end.data < form.gene_start.data or form.cdr2_end.data > form.gene_end.data:
+                            form.cdr2_end.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
 
                     # if not form.cdr3_start.data:
                     #     form.cdr3_start.errors.append('Please specify the start coordinate')
                     #     cdr_coord_errors = True
                     if form.cdr3_start.data:
-                        if (form.cdr3_start.data - seq.gene_start) % 3 != 0:
+                        if (form.cdr3_start.data - form.gene_start.data) % 3 != 0:
                             form.cdr3_start.errors.append('CDR must start on a codon boundary')
                             cdr_coord_errors = True
-                        if form.cdr3_start.data < seq.gene_start or form.cdr2_start.data > seq.gene_end:
+                        if form.cdr3_start.data < form.gene_start.data or form.cdr3_start.data > form.gene_end.data:
                             form.cdr3_start.errors.append('CDR must lie between gene start and gene end')
                             cdr_coord_errors = True
 
