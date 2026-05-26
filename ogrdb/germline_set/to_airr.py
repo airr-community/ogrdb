@@ -122,8 +122,8 @@ class AIRRAlleleDescription:
         self.species_subgroup = fnone(gd.species_subgroup)
         self.species_subgroup_type = enum_choice(gd.species_subgroup_type, ['breed', 'strain', 'inbred', 'outbred', 'locational'])
         self.status = enum_choice(gd.status, ['active', 'draft', 'retired', 'withdrawn'])
-        self.gene_designation = fnone(gd.gene_subgroup)
-        self.subgroup_designation = fnone(gd.subgroup_designation)
+        self.gene_designation = fnone(gd.subgroup_designation)
+        self.subgroup_designation = fnone(gd.gene_subgroup)
         self.allele_designation = fnone(gd.allele_designation)
         self.allele_similarity_cluster_designation = None
         self.allele_similarity_cluster_member_id = None
