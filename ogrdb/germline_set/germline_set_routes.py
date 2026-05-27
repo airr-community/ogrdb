@@ -633,15 +633,21 @@ def add_gene_to_set(id):
 
     form = NewGermlineSetGeneForm()
     gene_descriptions = db.session.query(GeneDescription).filter(GeneDescription.species == germline_set.species)\
-        .filter(GeneDescription.status.in_(['published', 'draft']))
+        .filter(GeneDescription.status.in_(['published', 'draft']))\
+        .filter(GeneDescription.locus == germline_set.locus)
 
     if germline_set.species_subgroup:
         gene_descriptions = gene_descriptions.filter(GeneDescription.species_subgroup == germline_set.species_subgroup)
 
     gene_descriptions = gene_descriptions.all()
+    display_gene_descriptions = []
+    germline_set_names = [g.sequence_name for g in germline_set.gene_descriptions]
 
-    gene_descriptions = [g for g in gene_descriptions if g not in germline_set.gene_descriptions]
-    gene_descriptions = [g for g in gene_descriptions if germline_set.locus == g.locus]
+    for g in gene_descriptions:
+        if g.sequence_name not in germline_set_names:
+            display_gene_descriptions.append(g)
+
+    gene_descriptions = display_gene_descriptions
     gene_descriptions.sort(key=attrgetter('sequence_name'))
     form.create.label.text = "Add"
 
