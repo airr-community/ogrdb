@@ -160,7 +160,7 @@
     {{ super() }}
 
     <script>
-    function updateSubgroups() {
+    function updateSubgroups(preservedSubgroup = '', preservedLocus = '') {
         $("#subgroup-select").empty();
         $("#locus-select").empty();
         
@@ -180,23 +180,30 @@
                         $.each(data, function (i, subgroup) {
                             $("#subgroup-select").append('<option value="' + subgroup + '">' + subgroup + '</option>');
                         });
+
+                        if (preservedSubgroup && $("#subgroup-select option[value='" + preservedSubgroup + "']").length > 0) {
+                            $("#subgroup-select").val(preservedSubgroup);
+                        } else {
+                            preservedSubgroup = '';
+                            $("#subgroup-select").val('');
+                        }
                         
                         // Update loci for species (all subgroups)
-                        updateLoci(species, null);
+                        updateLoci(species, preservedSubgroup || null, preservedLocus);
                     } else {
                         // No subgroups - hide subgroup selector
                         $("#subgroup-container").hide();
                         $("#locus-container").removeClass("col-md-4").addClass("col-md-6");
                         
                         // Update loci for species only
-                        updateLoci(species, null);
+                        updateLoci(species, null, preservedLocus);
                     }
                 }
             });
         }
     }
     
-    function updateLoci(species, subgroup) {
+    function updateLoci(species, subgroup, preservedLocus = '') {
         $("#locus-select").empty();
         
         var url = '{{ url_for("get_loci_for_species", species="xxx") }}'.replace("xxx", encodeURIComponent(species));
@@ -211,12 +218,16 @@
                 $.each(data, function (i, locus) {
                     $("#locus-select").append('<option value="' + locus + '">' + locus + '</option>');
                 });
+
+                if (preservedLocus && $("#locus-select option[value='" + preservedLocus + "']").length > 0) {
+                    $("#locus-select").val(preservedLocus);
+                }
             }
         });
     }
 
     $("#species-select").change(function(e) {
-        updateSubgroups();
+        updateSubgroups('', '');
     });
     
     $("#subgroup-select").change(function(e) {
@@ -224,14 +235,17 @@
         var subgroup = $(this).find("option:selected").val();
         
         if(species != '') {
-            updateLoci(species, subgroup || null);
+            updateLoci(species, subgroup || null, '');
         }
     });
     
     // Initialize on page load
     $(document).ready(function() {
+        var preservedSubgroup = $("#subgroup-select").val() || '';
+        var preservedLocus = $("#locus-select").val() || '';
+
         if($("#species-select").val()) {
-            updateSubgroups();
+            updateSubgroups(preservedSubgroup, preservedLocus);
         }
         
         // Initialize DataTable if gene table exists
