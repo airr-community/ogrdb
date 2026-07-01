@@ -53,8 +53,8 @@ def _aligned_to_ungapped_pos(aligned_seq, aligned_pos):
     return sum(1 for ch in aligned_seq[:aligned_pos] if ch != '.')
 
 # Unpublished route that will remove all sequences and submissions published by the selenium test account
-@app.route('/remove_test', methods=['GET'])
-@login_required
+#@app.route('/remove_test', methods=['GET'])
+#@login_required
 def remove_test():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -77,8 +77,8 @@ def remove_test():
     return redirect('/')
 
 # Permanent maintenance route to rebuild duplicate links
-@app.route('/rebuild_duplicates', methods=['GET'])
-@login_required
+#@app.route('/rebuild_duplicates', methods=['GET'])
+#@login_required
 def rebuild_duplicates():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -97,9 +97,69 @@ def rebuild_duplicates():
     return 'Gene description links rebuilt'
 
 
-# Check that genomic_support gene_start and gene_end coords have been completed, fix where necessary
-@app.route('/fix_gene_coords', methods=['GET'])
+# Fix multi-hyphenated gene_subgroup and subgroup_designation fields in gene_descriptions
+@app.route('/fix_subgroups', methods=['GET'])
 @login_required
+def fix_subgroups():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    # gene description
+
+    descs = db.session.query(GeneDescription).all()
+
+    for desc in descs:
+        if desc.sequence_name and len(desc.sequence_name.split('-')) > 2:
+            sn = desc.sequence_name.split('*')[0]
+            snq = sn.split('-')
+            subgroup_designation = '-'.join(snq[1:])
+            gene_subgroup = snq[0][4:]
+
+            if desc.subgroup_designation != subgroup_designation or desc.gene_subgroup != gene_subgroup:
+                print(f'{desc.sequence_name}: {desc.gene_subgroup}, {desc.subgroup_designation} -> {gene_subgroup}, {subgroup_designation},')
+                desc.subgroup_designation = subgroup_designation
+                desc.gene_subgroup = gene_subgroup
+
+    db.session.commit()
+    return ''
+
+
+# dump genomic support records for inspection
+@app.route('/dump_genomic_support', methods=['GET'])
+@login_required
+def dump_genomic_support():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    # gene description
+
+    recs = db.session.query(GenomicSupport).all()
+
+    for rec in recs:
+        sequence_name = ''
+        if rec.sense == 'reverse' or rec.sense == '-':
+            if not rec.gene_description:
+                continue
+
+            if rec.gene_description.sequence_type == 'C':
+                continue
+
+            sequence_name = rec.gene_description.sequence_name
+
+            if rec.gene_description.coding_seq_imgt.replace('.', '') not in rec.sequence:
+                if rec.gene_description.coding_seq_imgt.replace('.', '') in simple.reverse_complement(rec.sequence):
+                    print(f'{sequence_name} {rec.accession} - reverse complement')
+                    rec.sequence = simple.reverse_complement(rec.sequence)
+                else:
+                    print(f'{sequence_name} {rec.accession} - coding sequence not found in genomic sequence')
+
+    db.session.commit()
+    return ''
+
+
+# Check that genomic_support gene_start and gene_end coords have been completed, fix where necessary
+#@app.route('/fix_gene_coords', methods=['GET'])
+#@login_required
 def fix_genomic_support_coords():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -231,8 +291,8 @@ def fix_genomic_support_coords():
 from ogrdb.sequence.sequence_routes import delineate_v_gene
 
 # Check trout seqs
-@app.route('/check_trout', methods=['GET'])
-@login_required
+#@app.route('/check_trout', methods=['GET'])
+#@login_required
 def check_trout():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -303,8 +363,8 @@ def check_trout():
 
 
 # List published mouse gene descriptions with functionality F and early stop codons
-@app.route('/mouse_f_stop_104', methods=['GET'])
-@login_required
+#@app.route('/mouse_f_stop_104', methods=['GET'])
+#@login_required
 def mouse_f_stop_104():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -426,8 +486,8 @@ def mouse_f_stop_104():
 
 
 # Validate published mouse V-gene records for sequence and coordinate consistency
-@app.route('/check_mouse_v_gene_descriptions', methods=['GET'])
-@login_required
+#@app.route('/check_mouse_v_gene_descriptions', methods=['GET'])
+#@login_required
 def check_mouse_v_gene_descriptions():
     if not current_user.has_role('Admin'):
         return redirect('/')

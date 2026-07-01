@@ -122,7 +122,7 @@ def adjust_coordinates_for_display(gv_items, coordinate_offset, sequence_length,
             except (ValueError, TypeError):
                 # Keep original value if conversion fails
                 pass
-
+    '''
     if sense == '-' or sense == 'reverse':
         # make a list of fields with both _start and _end
         coordinate_pairs = []
@@ -149,7 +149,7 @@ def adjust_coordinates_for_display(gv_items, coordinate_offset, sequence_length,
                 except (ValueError, TypeError, KeyError):
                     # Keep original value if conversion fails
                     pass
-    
+    '''    
     return adjusted_items
 
 

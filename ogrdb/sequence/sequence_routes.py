@@ -892,8 +892,8 @@ def parse_name_to_gene_description(gene_description):
                 else:
                     gene_description.allele_designation = ''
                 snq = sn.split('-')
-                gene_description.subgroup_designation = snq[-1:][0]
-                gene_description.gene_subgroup = '-'.join(snq[:-1])[4:]
+                gene_description.subgroup_designation = '-'.join(snq[1:])
+                gene_description.gene_subgroup = snq[0][4:]
             elif '*' in sn:
                 snq = sn.split('*')
                 gene_description.gene_subgroup = snq[0][4:]
@@ -901,7 +901,7 @@ def parse_name_to_gene_description(gene_description):
             else:
                 gene_description.gene_subgroup = sn[4:]
     except:
-        pass
+        pass 
 
 
 def get_opt_int(row, key, default=None):  # get an optional integer value from a row
