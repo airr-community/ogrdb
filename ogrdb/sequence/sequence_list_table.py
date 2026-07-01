@@ -29,7 +29,7 @@ class SequenceListActionCol(StyledCol):
 
         if item.draftable:
             fmt_string.append('<button onclick="seq_new_draft(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-files" data-bs-toggle="tooltip" title="Create Draft"></i></button>' % (item.id))
-            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-tag-fill" data-bs-toggle="tooltip" title="IMGT Name"></i></button>' % (item.id))
+            fmt_string.append('<button onclick="seq_imgt_name(this.id)" class="btn btn-xs text-ogrdb-warning icon_back" style="padding: 2px" id="%s"><i class="bi bi-tag-fill" data-bs-toggle="tooltip" title="IUIS Name"></i></button>' % (item.id))
 
         if item.draftable and not item.editable:
             fmt_string.append('<button onclick="seq_withdraw(this.id)" class="btn btn-xs text-ogrdb-danger icon_back" style="padding: 2px" id="%s"><i class="bi bi-trash-fill" data-bs-toggle="tooltip" title="Delete"></i></button>' % (item.id))
@@ -111,7 +111,7 @@ def setup_sequence_list_table(results, current_user, edit=True):
         item.draftable = item.can_draft(current_user)  if edit else False
 
     del table._cols['imgt_name']
-    table.add_column('imgt_name', SequenceListIMGTCol('IMGT Name'))
+    table.add_column('imgt_name', SequenceListIMGTCol('IUIS Name'))
     table._cols.move_to_end('imgt_name', last=False)
 
     table.add_column('sequence_name', SequenceListActionCol('Sequence Name'))

@@ -626,7 +626,7 @@ Genotype:
     properties:
         sequence_id:
             type: string
-            description: Identifier of the allele (either IMGT, or the name assigned by the submitter to an inferred gene)
+            description: Identifier of the allele (either IUIS, or the name assigned by the submitter to an inferred gene)
             tableview: true
             label: Allele name
             nonblank: true

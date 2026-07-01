@@ -32,7 +32,7 @@ class GeneDescriptionTable(StyledTable):
     name = DescLinkCol("Label")
     version = StyledCol("Vn")
     date = StyledDateCol("Date")
-    imgt_name = StyledCol("IMGT Name")
+    imgt_name = StyledCol("IUIS Name")
     alt_names = StyledCol("Alt Names")
     functionality = StyledCol('Functionality')
     subgroup = StyledCol("Subgrp")

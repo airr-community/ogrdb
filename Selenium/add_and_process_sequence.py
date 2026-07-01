@@ -304,7 +304,7 @@ gtgtattactgtgcgagaga""")
 
     # Change IMGT name
 
-    print('Change IMGT name')
+    print('Change IUIS name')
     driver.find_element(By.XPATH, "//*[text()[.='%s']]/following-sibling::button[2]" % name).click()
     time.sleep(3)
     driver.find_element_by_id('imgt_name_text').send_keys(random_chars(size=random.randint(5, 10), chars=string.ascii_lowercase))
