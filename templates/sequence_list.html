@@ -94,11 +94,11 @@
                         </a>
                         {% if loop.previtem is not defined %}
                            {% if show_withdrawn %}
-                                <a href="{{ url_for('sequences') }}?withdrawn=no" class="btn btn-outline-secondary">
+                                <a href="{{ url_for('sequences', species=selected_species, species_subgroup=selected_subgroup, locus=selected_locus, withdrawn='no') }}" class="btn btn-outline-secondary">
                                     <i class="bi bi-eye-slash me-1"></i>Hide Withdrawn
                                 </a>
                             {% else %}
-                                <a href="{{ url_for('sequences') }}?withdrawn=yes" class="btn btn-outline-secondary">
+                                <a href="{{ url_for('sequences', species=selected_species, species_subgroup=selected_subgroup, locus=selected_locus, withdrawn='yes') }}" class="btn btn-outline-secondary">
                                     <i class="bi bi-eye me-1"></i>Show Withdrawn
                                 </a>
                             {% endif %}

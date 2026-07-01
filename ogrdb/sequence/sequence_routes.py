@@ -219,12 +219,20 @@ def sequences():
     # Get available species based on published sequences and user committee membership
     available_species = get_available_species()
     form.species.choices = [(sp, sp) for sp in available_species]
+
+    # Optional GET preselection parameters
+    selected_species_arg = request.args.get('species') or request.args.get('sp')
+    selected_subgroup_arg = request.args.get('species_subgroup')
+    selected_locus_arg = request.args.get('locus')
     
     # Set up form choices before validation
     if form.species.choices:
         # Determine which species to use for setting up choices
         if request.method == 'POST' and form.species.data:
             current_species = form.species.data
+        elif request.method == 'GET' and selected_species_arg in available_species:
+            current_species = selected_species_arg
+            form.species.data = current_species
         elif form.species.choices:
             current_species = form.species.choices[0][0]
         else:
@@ -238,18 +246,27 @@ def sequences():
             # Determine subgroup for loci choices
             if request.method == 'POST' and form.species_subgroup.data:
                 current_subgroup = form.species_subgroup.data if form.species_subgroup.data != '' else None
+            elif request.method == 'GET' and selected_subgroup_arg:
+                if selected_subgroup_arg in available_subgroups:
+                    current_subgroup = selected_subgroup_arg
+                    form.species_subgroup.data = selected_subgroup_arg
+                else:
+                    current_subgroup = None
             else:
                 current_subgroup = None
                 
             # Set locus choices
             available_loci = get_available_loci(current_species, current_subgroup)
             form.locus.choices = [(locus, locus) for locus in available_loci]
+
+            if request.method == 'GET' and selected_locus_arg in available_loci:
+                form.locus.data = selected_locus_arg
     
     tables = {}
     selected_species = None
     selected_subgroup = None
     selected_locus = None
-    show_withdrawn = False
+    show_withdrawn = 'withdrawn' in request.args and request.args['withdrawn'] == 'yes'
     
     if form.validate_on_submit():
         selected_species = form.species.data
@@ -258,9 +275,19 @@ def sequences():
         
         # Generate sequence tables based on selected species, subgroup, and locus
         tables = create_sequence_tables(selected_species, selected_subgroup, selected_locus)
-        
-        # Check for withdrawn parameter
-        show_withdrawn = 'withdrawn' in request.args and request.args['withdrawn'] == 'yes'
+    elif request.method == 'GET':
+        selected_species = form.species.data if form.species.data in available_species else None
+
+        subgroup_choices = [choice[0] for choice in form.species_subgroup.choices]
+        selected_subgroup = form.species_subgroup.data if form.species_subgroup.data in subgroup_choices else None
+        if selected_subgroup == '':
+            selected_subgroup = None
+
+        locus_choices = [choice[0] for choice in form.locus.choices]
+        selected_locus = form.locus.data if form.locus.data in locus_choices else None
+
+        if selected_species and selected_locus:
+            tables = create_sequence_tables(selected_species, selected_subgroup, selected_locus)
     elif request.method == 'POST':
         # Debug form validation errors
         print("Form validation failed:")
@@ -718,7 +745,7 @@ def sequences_aa_alignment(sp, category):
             ret += '\r\n'
 
     if len(ret) == 0:
-        return redirect(url_for('sequences', sp=sp))
+        return redirect(url_for('sequences', species=sp))
     
     filename = f'{sp}_{category}_aa_alignment.txt'
     return Response(ret, mimetype="application/octet-stream", headers={"Content-disposition": "attachment; filename=%s" % filename})
@@ -737,7 +764,7 @@ def new_sequence(species):
 
     if request.method == 'POST':        # Don't use form validation because the selects are dynamically updated
         if form.cancel.data:
-            return redirect(url_for('sequences', sp=species))
+            return redirect(url_for('sequences', species=species))
 
         if form.upload_file.data:
             return upload_sequences(form, species)
@@ -770,12 +797,12 @@ def new_sequence(species):
 
                 sub = db.session.query(Submission).filter_by(submission_id=form.submission_id.data).one_or_none()
                 if sub.species != species or sub.submission_status not in ('reviewing', 'published', 'complete'):
-                    return redirect(url_for('sequences', sp=species))
+                    return redirect(url_for('sequences', species=species))
 
                 seq = db.session.query(InferredSequence).filter_by(id=int(form.sequence_name.data)).one_or_none()
 
                 if seq is None or seq not in sub.inferred_sequences:
-                    return redirect(url_for('sequences', sp=species))
+                    return redirect(url_for('sequences', species=species))
 
             gene_description = GeneDescription()
             gene_description.sequence_name = form.new_name.data
@@ -824,7 +851,12 @@ def new_sequence(species):
             db.session.commit()
             if record_type == 'submission':
                 gene_description.build_duplicate_list(db, seq.sequence_details.nt_sequence)
-            return redirect(url_for('sequences', sp=species))
+            return redirect(url_for(
+                'sequences',
+                species=species,
+                species_subgroup=gene_description.species_subgroup,
+                locus=gene_description.locus
+            ))
 
         except ValidationError as e:
             return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
@@ -983,7 +1015,7 @@ def upload_sequences(form, species):
         if errors:
             form.upload_file.errors = errors
             return render_template('sequence_new.html', form=form, species=species, adminedit=current_user.has_role('AdminEdit'))
-        return redirect(url_for('sequences', sp=species))
+        return redirect(url_for('sequences', species=species))
 
     required_headers = [
             "gene_label", "imgt", "functionality", "type", "inference_type", "sequence", "sequence_gapped", 
@@ -1224,7 +1256,7 @@ def upload_sequences(form, species):
                 gene_description.description_id = "A%05d" % gene_description.id
                 db.session.commit()
 
-    return redirect(url_for('sequences', sp=species))
+    return redirect(url_for('sequences', species=species))
 
 
 def merge_sequence_upload(existing_entry, row, gene_description):
@@ -1570,7 +1602,7 @@ def upload_evidence(form, species):
                 existing_accessions.append(row['accession'])
 
     db.session.commit()
-    return redirect(url_for('sequences', sp=species))
+    return redirect(url_for('sequences', species=species))
 
           
 
@@ -2026,7 +2058,7 @@ def edit_sequence(id):
                 if form.action.data == 'published':
                     publish_sequence(seq, form.body.data, True)
                     flash('Sequence published')
-                    return redirect(url_for('sequences', sp=seq.species))
+                    return redirect(url_for('sequences', species=seq.species, species_subgroup=seq.species_subgroup, locus=seq.locus))
 
             except ValidationError:
                 flash('Please correct the errors below.')
@@ -2035,7 +2067,7 @@ def edit_sequence(id):
             if validation_result.tag:
                 return redirect(url_for('edit_sequence', id=id, _anchor=validation_result.tag))
             else:
-                return redirect(url_for('sequences', sp=seq.species))
+                return redirect(url_for('sequences', species=seq.species, species_subgroup=seq.species_subgroup, locus=seq.locus))
 
         else:
             flash('Please correct the errors below.')
