@@ -98,8 +98,8 @@ def rebuild_duplicates():
 
 
 # Fix multi-hyphenated gene_subgroup and subgroup_designation fields in gene_descriptions
-@app.route('/fix_subgroups', methods=['GET'])
-@login_required
+#@app.route('/fix_subgroups', methods=['GET'])
+#@login_required
 def fix_subgroups():
     if not current_user.has_role('Admin'):
         return redirect('/')
@@ -125,8 +125,8 @@ def fix_subgroups():
 
 
 # dump genomic support records for inspection
-@app.route('/dump_genomic_support', methods=['GET'])
-@login_required
+#@app.route('/dump_genomic_support', methods=['GET'])
+#@login_required
 def dump_genomic_support():
     if not current_user.has_role('Admin'):
         return redirect('/')
