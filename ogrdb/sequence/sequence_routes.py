@@ -15,6 +15,7 @@ from traceback import format_exc
 import shutil
 
 from flask import current_app, flash, redirect, request, render_template, url_for, Response, jsonify
+from flask import session as flask_session
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from markupsafe import Markup
@@ -334,8 +335,13 @@ def alignments(species=None, locus=None, gene_name=None):
                 form.gene_name.choices = [(gene, gene) for gene in available_gene_names]
                 
                 # Pre-populate gene name if provided in URL
-                if form.gene_name.data is None and gene_name and gene_name in [g[0] for g in form.gene_name.choices]:
-                    form.gene_name.data = gene_name
+                if form.gene_name.data is None and gene_name:
+                    if gene_name in [g[0] for g in form.gene_name.choices]:
+                        form.gene_name.data = gene_name
+                    else:
+                        flask_session.pop('_flashes', None)
+                        flash(f'Gene name {gene_name} not found in species {current_species}', 'error')
+                        return redirect('/')
     
     selected_species = None
     selected_locus = None
@@ -357,6 +363,18 @@ def alignments(species=None, locus=None, gene_name=None):
         # Generate alignment data based on selection
         # TODO - need to work out codon positions of the CDRs in the gapped sequence from the CDR start/end coords in the ungapped sequence
         alignment_data = create_alignment_data(selected_species, selected_locus, selected_gene_name, codons_per_line, include_evidence)
+    elif request.method == 'GET':
+        selected_species = form.species.data if form.species.data in [s[0] for s in form.species.choices] else None
+
+        locus_choices = [choice[0] for choice in form.locus.choices]
+        selected_locus = form.locus.data if form.locus.data in locus_choices else None
+
+        gene_name_choices = [choice[0] for choice in form.gene_name.choices]
+        selected_gene_name = form.gene_name.data if form.gene_name.data in gene_name_choices else None
+
+        if selected_species and selected_locus and selected_gene_name:
+            # Support URL-driven preselection: show alignment immediately on valid GET values.
+            alignment_data = create_alignment_data(selected_species, selected_locus, selected_gene_name, codons_per_line, include_evidence)
         
     elif request.method == 'POST':
         # Even if form validation fails, preserve the additional form data
@@ -1734,6 +1752,37 @@ def seq_edit_genomic(seq_id, support_id):
         return render_template('sequence_add_genomic.html', form=form, name=seq.sequence_name, id=seq_id, action="Save", support_id=support_id)
 
     # POST goes back to seq_add_genomic
+
+
+@app.route('/sequence/<taxon_id>/<sequence_name>', methods=['GET'])
+def sequence_by_taxon_and_gene(taxon_id, sequence_name):
+    # Implement the logic to retrieve the sequence by taxon_id and sequence_name
+    species_name = db.session.query(SpeciesLookup.binomial).filter(SpeciesLookup.ncbi_taxon_id == taxon_id).one_or_none()
+    if not species_name:
+        flash('Species not found for the given taxon ID.', 'error')
+        return redirect('/')
+
+    if '*' in sequence_name:
+        seq = db.session.query(GeneDescription).filter(
+            and_(
+                GeneDescription.species == species_name.binomial,
+                GeneDescription.sequence_name == sequence_name,
+                GeneDescription.status == 'published'
+            )
+        ).one_or_none()
+
+        if seq:
+            return redirect(url_for('sequence', id=seq.id))
+
+    gene_name = sequence_name.split('*')[0]
+    locus = sequence_name[:3]
+    allele = sequence_name.split('*')[1] if '*' in sequence_name else None
+
+    if allele:
+        flash(f'Allele {allele} not found in species {species_name.binomial} gene {gene_name}. Showing all known alleles.')
+
+    return redirect(url_for('alignments', species=species_name.binomial, locus=locus, gene_name=gene_name))
+
 
 
 @app.route('/sequence/<id>', methods=['GET'])
