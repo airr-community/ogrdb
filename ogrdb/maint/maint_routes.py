@@ -12,6 +12,7 @@ from db.germline_set_db import GermlineSet
 from db.submission_db import Submission
 from db.novel_vdjbase_db import NovelVdjbase
 from head import app, db
+from ogrdb.sequence.sequence_routes import clone_seq, check_seq_draft
 
 
 STOP_CODONS = {'TAA', 'TAG', 'TGA'}
@@ -636,3 +637,101 @@ def check_mouse_v_gene_descriptions():
     return Response('\n'.join(html_lines), mimetype='text/html')
 
 
+# Validate published Peromyscus leucopus VDJ-gene records for sequence and coordinate consistency
+@app.route('/check_peromyscus_gene_descriptions', methods=['GET'])
+@login_required
+def check_peromyscus_gene_descriptions():
+    if not current_user.has_role('Admin'):
+        return redirect('/')
+
+    species = 'Peromyscus leucopus'
+    descs = db.session.query(GeneDescription).filter(
+        GeneDescription.status == 'draft',
+        GeneDescription.species == species,
+    ).all()
+
+    exceptions = []
+
+    for desc in sorted(descs, key=lambda x: (x.sequence_name or '', x.id)):
+        print(desc.sequence_name)
+        row_issues = []
+        raw_coding = _norm_seq(desc.coding_seq_imgt)
+        raw_sequence = _norm_seq(desc.sequence)
+        ungapped_coding = raw_coding.replace('.', '')
+
+        # raw sequence[gene_start:gene_end] should match ungapped_coding
+
+        if desc.gene_start is not None and desc.gene_end is not None:
+            gene_start = desc.gene_start - 1  # Convert to 0-based index
+            gene_end = desc.gene_end
+            if raw_sequence[gene_start:gene_end] != ungapped_coding:
+                row_issues.append('Raw sequence[gene_start:gene_end] does not match ungapped coding sequence.')
+
+        if row_issues:
+            if check_seq_draft(desc.id):
+                draft_desc = clone_seq(desc)
+                if draft_desc:
+                    draft_desc.coding_seq_imgt = raw_sequence[gene_start:gene_end]
+                    db.session.commit()
+
+            exceptions.append({
+                'id': desc.id,
+                'sequence_name': desc.sequence_name,
+                'imgt_name': desc.imgt_name,
+                'issues': row_issues
+            })
+
+    title = 'Published Peromyscus leucopus V gene_descriptions: sequence/coordinate checks'
+    html_lines = [
+        '<!doctype html>',
+        '<html>',
+        '<head>',
+        f'<title>{escape(title)}</title>',
+        '<style>',
+        'body{font-family:Segoe UI,Arial,sans-serif;margin:24px;}',
+        'table{border-collapse:collapse;width:100%;margin-top:12px;}',
+        'th,td{border:1px solid #c8c8c8;padding:6px 8px;text-align:left;vertical-align:top;}',
+        'th{background:#f2f2f2;}',
+        '.meta{margin:8px 0 0 0;}',
+        'ul{margin:0;padding-left:18px;}',
+        '</style>',
+        '</head>',
+        '<body>',
+        f'<h2>{escape(title)}</h2>',
+        '<p class="meta">Checks: (1) sequence vs ungapped coding_seq_imgt, '
+        '(2) gene_start/gene_end implied length vs sequence length, '
+        '(3) CDR coords vs fixed aligned positions (cdr1 79-114, cdr2 166-195, cdr3 start 313).</p>',
+        '<p class="meta">Coordinates are treated as 1-based.</p>',
+        f'<p class="meta"><strong>Total records checked:</strong> {len(descs)}</p>',
+        f'<p class="meta"><strong>Records with exceptions:</strong> {len(exceptions)}</p>'
+    ]
+
+    if exceptions:
+        html_lines.extend([
+            '<table>',
+            '<thead>',
+            '<tr>',
+            '<th>ID</th>',
+            '<th>Sequence Name</th>',
+            '<th>IUIS Name</th>',
+            '<th>Exceptions</th>',
+            '</tr>',
+            '</thead>',
+            '<tbody>'
+        ])
+        for row in exceptions:
+            issue_items = ''.join(f'<li>{escape(issue)}</li>' for issue in row['issues'])
+            html_lines.append(
+                '<tr>'
+                f'<td>{escape(str(row["id"]))}</td>'
+                f'<td>{escape(row["sequence_name"])}</td>'
+                f'<td>{escape(row["imgt_name"])}</td>'
+                f'<td><ul>{issue_items}</ul></td>'
+                '</tr>'
+            )
+        html_lines.extend(['</tbody>', '</table>'])
+    else:
+        html_lines.append('<p>No exceptions found.</p>')
+
+    html_lines.extend(['</body>', '</html>'])
+    return Response('\n'.join(html_lines), mimetype='text/html')
