@@ -1,5 +1,4 @@
 import re
-from tkinter.font import names
 from sequence_format import format_fasta_sequence
 
 

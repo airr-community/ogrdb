@@ -80,6 +80,9 @@ def live_server(test_database):
             f"SQLALCHEMY_DATABASE_URI = {test_database!r}",
             "SECRET_KEY = 'playwright-test-secret'",
             "NCBI_API_KEY = ''",
+            "REMOTE_DEBUG = False",
+            "MAIL_LOG = False",
+            "LOGLEVEL = 20",
             "LOGPATH = 'app.log'",
             "ATTACHPATH = 'attachments'",
             "WORDPRESS_NEWS_URL = 'http://127.0.0.1:9/'",
@@ -114,6 +117,10 @@ def live_server(test_database):
         os.chdir(ROOT)
         application = importlib.import_module("app").app
         application.config["TESTING"] = True
+        from head import db
+
+        with application.app_context(), db.engine.connect() as connection:
+            connection.exec_driver_sql("SELECT 1")
         server = make_server("127.0.0.1", 0, application, threaded=True)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
