@@ -1,0 +1,14 @@
+# .github/copilot-setup-steps.yml
+version: 1
+steps:
+  - name: Install Python & Node Tooling
+    run: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install pytest pytest-playwright
+      npx playwright install --with-deps chromium
+
+  - name: Bootstrap Playwright Agent Definitions
+    run: |
+      # Installs the official Playwright agent loops and skill specs into the repo
+      npx playwright init-agents --loop=github-agent

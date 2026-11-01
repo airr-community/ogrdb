@@ -153,3 +153,29 @@ attach_path = app.config['ATTACHPATH'] + '/'
 - Do not create files with trailing null bytes
 - Use simple string concatenation: `content + '\n'` when creating files
 - Avoid multiple attempts to add newlines if the first approach does not work. Ask the user to add it manually if needed.
+
+# Playwright & Testing Guidelines
+
+When setting up and writing Playwright tests:
+
+1. LOCATOR STRATEGY (Official Playwright Standard):
+   - Always prioritize user-facing locators: `page.get_by_role()`, `page.get_by_label()`, `page.get_by_text()`.
+   - Never use brittle CSS selectors, auto-generated class names, or full XPath routes.
+   - Use web-first assertions: `expect(locator).to_be_visible()`.
+
+2. DOM EXPLORATION VIA PLAYWRIGHT:
+   - When inspecting routes, use the installed Playwright CLI or `pytest-playwright` headless runs to inspect the accessibility tree and HTML snapshots rather than guessing structure.
+   - Run tests using `pytest tests/` to verify locators against the live background server.
+
+3. CLEANUP & PORT ISOLATION:
+   - Do not bind to static port 5000. Use an ephemeral port (`sock.bind(('', 0))`) in `tests/conftest.py` so background test processes do not collide.
+
+4. TEST DATA MANAGEMENT:
+   - Use fixtures to set up and tear down test data.
+   - Avoid relying on pre-existing database state; tests should be self-contained.
+   - Clean up any temporary files or resources created during tests to prevent side effects.
+
+5. TEST NAMING CONVENTIONS:
+   - Name test files starting with `test_` and test functions starting with `test_`.
+   - Use descriptive names that clearly indicate the purpose of the test.
+   - Group related tests into classes or modules to improve organization and readability.
