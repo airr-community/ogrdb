@@ -4,7 +4,7 @@
 # the English version of which is available here: https://perma.cc/DK5U-NDVE
 #
 from imgt.imgt_ref import get_imgt_reference_genes, get_igpdb_ref, get_reference_v_codon_usage, find_family, get_imgt_gapped_reference_genes, find_gapped_index, gap_sequence
-from Bio import pairwise2, Seq
+from Bio import Seq
 from db.genotype_tables import *
 import sys
 import re
@@ -29,8 +29,7 @@ class SeqCol(StyledCol):
             else:
                 icon = 'bi-x-circle-fill'
                 colour = 'text-ogrdb-danger'
-                alignments = pairwise2.align.globalms(item.nt_sequence.lower(), imgt_ref[item.genotype_description.submission.species][item.sequence_id], 2, -1, -2, -1, one_alignment_only=True)
-                alignment = format_aln(format_alignment(*alignments[0]), item.sequence_id, 'Reference', 50)
+                alignment = format_aln(format_alignment(item.nt_sequence.lower(), imgt_ref[item.genotype_description.submission.species][item.sequence_id]), item.sequence_id, 'Reference', 50)
                 fasta_seqs = format_fasta_sequence(item.sequence_id, item.nt_sequence.lower(), 50) + format_fasta_sequence('Reference', imgt_ref[item.genotype_description.submission.species][item.sequence_id], 50)
                 aln_text =  Markup(' id="btn_view_check" data-bs-target="#seqModal" data-sequence="%s" data-name="%s" data-fa="%s" data-bs-toggle="modal" title="Differs from Reference (click to view)"' %
                     (alignment, item.sequence_id, fasta_seqs))
