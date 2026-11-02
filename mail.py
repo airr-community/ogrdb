@@ -13,7 +13,7 @@ import time
 
 from flask import current_app, render_template
 
-def log_mail(message, app):
+def log_mail(app, message):
     log_message = ""
     log_message += "Sending Mail:\nSubject: %s\n" % message.subject
     log_message += "To: %s" % ', '.join(message.recipients) + "\n"
