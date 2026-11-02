@@ -23,10 +23,10 @@ class Genotype(db.Model, GenotypeMixin):
     aa_diff = db.Column(db.Integer)
     aa_substitutions = db.Column(db.String(1000))
     unmutated_sequences = db.Column(db.Integer)
-    assigned_unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
+    assigned_unmutated_frequency = db.Column(db.Numeric(precision=12, scale=2))
     unmutated_umis = db.Column(db.Integer)
-    allelic_percentage = db.Column(db.Numeric(precision=(12,2)))
-    unmutated_frequency = db.Column(db.Numeric(precision=(12,2)))
+    allelic_percentage = db.Column(db.Numeric(precision=12, scale=2))
+    unmutated_frequency = db.Column(db.Numeric(precision=12, scale=2))
     unique_vs = db.Column(db.Integer)
     unique_ds = db.Column(db.Integer)
     unique_js = db.Column(db.Integer)
@@ -206,4 +206,3 @@ def make_Genotype_view(sub, private = False):
     ret.items.append({"item": "NT Sequence", "value": sub.nt_sequence, "tooltip": "The consensus sequence provided by the inference tool", "field": "nt_sequence"})
     ret.items.append({"item": "Gapped NT Sequence", "value": sub.nt_sequence_gapped, "tooltip": "IMGT-gapped sequence (V-gene only)", "field": "nt_sequence_gapped"})
     return ret
-

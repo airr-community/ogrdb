@@ -38,4 +38,11 @@ jobs:
       - name: Install Chromium
         run: python -m playwright install --with-deps chromium
       - name: Run tests
-        run: pytest tests/ -v
+        run: pytest tests/ -v --tracing retain-on-failure --screenshot only-on-failure --output test-results
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-diagnostics
+          path: test-results/
+          if-no-files-found: ignore

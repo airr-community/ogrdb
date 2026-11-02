@@ -2,6 +2,7 @@ from contextlib import ExitStack, contextmanager
 import importlib
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import sys
@@ -120,6 +121,7 @@ def live_server(test_database):
         from head import db
 
         with application.app_context(), db.engine.connect() as connection:
+            db.create_all()
             connection.exec_driver_sql("SELECT 1")
         server = make_server("127.0.0.1", 0, application, threaded=True)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -130,3 +132,113 @@ def live_server(test_database):
             server.shutdown()
             thread.join(timeout=5)
             server.server_close()
+            with application.app_context():
+                db.drop_all()
+
+
+@pytest.fixture
+def test_client(live_server):
+    application = importlib.import_module("head").app
+    return application.test_client()
+
+
+@pytest.fixture
+def published_records(live_server):
+    from db.gene_description_db import GeneDescription
+    from db.germline_set_db import GermlineSet
+    from db.species_lookup_db import SpeciesLookup
+    from head import app, db
+
+    species_name = "Homo sapiens"
+    gene_name = "IGHV_TEST01"
+    germline_set_name = "test-set"
+    with app.app_context():
+        species = SpeciesLookup(
+            binomial=species_name,
+            common="human",
+            ncbi_taxon_id=9606,
+        )
+        gene = GeneDescription(
+            sequence_name=gene_name,
+            species=species_name,
+            locus="IGH",
+            sequence_type="V",
+            functionality="F",
+            affirmation_level="1",
+            status="published",
+            sequence="ACGTACGT",
+            coding_seq_imgt="ACGTACGT",
+        )
+        germline_set = GermlineSet(
+            germline_set_id="GTEST01",
+            germline_set_name=germline_set_name,
+            species=species_name,
+            locus="IGH",
+            species_subgroup_type="none",
+            status="published",
+            release_version=1,
+            release_date="2024-01-01",
+        )
+        germline_set.gene_descriptions.append(gene)
+        db.session.add_all((species, gene, germline_set))
+        db.session.commit()
+        germline_set_id = germline_set.id
+
+    try:
+        yield {
+            "species": species_name,
+            "gene_name": gene_name,
+            "germline_set_name": germline_set_name,
+            "germline_set_id": germline_set_id,
+            "api_germline_set_id": "9606.test-set",
+        }
+    finally:
+        with app.app_context():
+            db.session.delete(db.session.get(GermlineSet, germline_set_id))
+            db.session.query(GeneDescription).filter_by(
+                sequence_name=gene_name, species=species_name
+            ).delete()
+            db.session.query(SpeciesLookup).filter_by(
+                binomial=species_name
+            ).delete()
+            db.session.commit()
+
+
+@pytest.fixture
+def browser_diagnostics(page, request):
+    diagnostics = []
+    page.on(
+        "console",
+        lambda message: diagnostics.append(f"console error: {message.text}")
+        if message.type == "error"
+        else None,
+    )
+    page.on(
+        "requestfailed",
+        lambda failed_request: diagnostics.append(
+            f"request failed: {failed_request.url} ({failed_request.failure})"
+        ),
+    )
+
+    yield
+
+    if getattr(request.node, "rep_call", None) and request.node.rep_call.failed:
+        results_dir = ROOT / "test-results"
+        results_dir.mkdir(exist_ok=True)
+        filename = re.sub(r"[^A-Za-z0-9_.-]+", "-", request.node.nodeid)
+        artifact = results_dir / f"{filename}.log"
+        artifact.write_text(
+            (
+                "\n".join(diagnostics)
+                if diagnostics
+                else "No console errors or failed requests captured.\n"
+            ),
+            encoding="utf-8",
+        )
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+    setattr(item, f"rep_{report.when}", report)

@@ -227,7 +227,7 @@ class %s(db.Model):
                     else:
                         fo.write("    %s = db.Column(db.Integer)" % k)
                 elif p_type == 'number':
-                    fo.write("    %s = db.Column(db.Numeric(precision=(12,2)))" % k)
+                    fo.write("    %s = db.Column(db.Numeric(precision=12, scale=2))" % k)
                 elif p_type == 'dictionary':
                     fo.write("    %s = db.Column(db.String(1000))" % k)
                 elif p_type == 'text':
@@ -554,4 +554,3 @@ from db.view_table import ViewCol
 
 if __name__=="__main__":
     main(sys.argv)
-

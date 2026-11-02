@@ -30,7 +30,7 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    {{ form.species.label(class="form-label") }}
+                                    {{ form.species.label(class="form-label", for="species-select") }}
                                     {{ form.species(class="form-select", id="species-select") }}
                                     {% if form.species.description %}
                                         <div class="form-text">{{ form.species.description }}</div>
@@ -43,7 +43,7 @@
                             
                             <div class="col-md-4" id="subgroup-container" style="display: none;">
                                 <div class="form-group">
-                                    {{ form.species_subgroup.label(class="form-label") }}
+                                    {{ form.species_subgroup.label(class="form-label", for="subgroup-select") }}
                                     {{ form.species_subgroup(class="form-select", id="subgroup-select") }}
                                     {% if form.species_subgroup.description %}
                                         <div class="form-text">{{ form.species_subgroup.description }}</div>
@@ -56,7 +56,7 @@
                             
                             <div class="col-md-4" id="locus-container">
                                 <div class="form-group">
-                                    {{ form.locus.label(class="form-label") }}
+                                    {{ form.locus.label(class="form-label", for="locus-select") }}
                                     {{ form.locus(class="form-select", id="locus-select") }}
                                     {% if form.locus.description %}
                                         <div class="form-text">{{ form.locus.description }}</div>
