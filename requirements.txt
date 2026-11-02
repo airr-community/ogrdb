@@ -135,3 +135,5 @@ wsproto==1.2.0
 WTForms==3.1.2
 xmltodict==0.13.0
 yamlordereddictloader==0.4.2
+pytest==8.4.2
+pytest-playwright==0.10.0
