@@ -6,6 +6,7 @@ secret.cfg
 secret*.cfg
 backup.sql
 app.log
+/test-results/
 migrations/*
 Selenium/*.log
 docs/_build/
