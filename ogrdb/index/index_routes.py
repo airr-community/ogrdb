@@ -20,7 +20,7 @@ from forms.security import ExtendedRegisterForm, FirstAccountForm, ProfileForm, 
 from head import app, security, db
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = security.init_app(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
+security = security.init_app(app, user_datastore, register_form=ExtendedRegisterForm)
 
 
 
