@@ -10,9 +10,17 @@ health endpoint. Expand coverage in small steps:
 2. Add browser journeys for public germline-set and sequence browsing, search
    and filtering, and public help/documentation pages. Exercise forms only
    where their route is publicly accessible and does not request a password.
+   For pages showing the current versions of reference data, test overall page
+   correctness—such as successful rendering, expected controls and headings,
+   and functioning search or filtering—without asserting data-dependent counts
+   or the presence of particular sequences or genes. These data can change over
+   time.
 3. Add deterministic database fixtures for published germline sets, sequences,
    species, and lookup data. Verify rendered results, empty states, downloads,
-   and validation feedback, and remove fixture data after each test.
+   and validation feedback, and remove fixture data after each test. Content
+   assertions are appropriate for these controlled fixtures and for retrieval
+   of explicitly specified, versioned reference sets; do not make equivalent
+   assertions against dynamic current-version pages.
 4. Audit the endpoints in `api/` and `api_v2/`. Cover successful responses,
    response schemas, pagination/filter parameters, and invalid requests using
    Flask's test client where browser interaction adds no value. Keep a small
