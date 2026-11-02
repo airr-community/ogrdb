@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import expect
 
 
@@ -35,7 +37,7 @@ def test_public_sequence_search_and_filter(
     page.get_by_label("Locus").select_option(label="IGH")
     page.get_by_role("button", name="Show Sequences").click()
 
-    expect(page.get_by_role("heading", name="Affirmed Sequences", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name=re.compile(r"^\W*Affirmed Sequences$"))).to_be_visible()
     expect(page.get_by_text(published_records["gene_name"], exact=False)).to_be_visible()
 
 
