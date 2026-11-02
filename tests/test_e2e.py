@@ -35,7 +35,7 @@ def test_public_sequence_search_and_filter(
     page.get_by_label("Locus").select_option(label="IGH")
     page.get_by_role("button", name="Show Sequences").click()
 
-    expect(page.get_by_role("heading", name="Affirmed Sequences")).to_be_visible()
+    expect(page.get_by_role("heading", name="Affirmed Sequences", exact=True)).to_be_visible()
     expect(page.get_by_text(published_records["gene_name"], exact=False)).to_be_visible()
 
 
@@ -44,9 +44,9 @@ def test_public_documentation_and_api_schema_load(page, live_server, browser_dia
     expect(page.get_by_role("heading", name="Data Access Quick Start")).to_be_visible()
     expect(page.get_by_role("link", name="Browse Sets")).to_be_visible()
 
-    response = page.goto(f"{live_server}/schema/ogrdb-api-openapi3.yaml")
+    response = page.request.get(f"{live_server}/schema/ogrdb-api-openapi3.yaml")
     assert response.status == 200
-    expect(page.locator("body")).to_contain_text("openapi:")
+    assert "openapi:" in response.text()
 
 
 def test_public_germline_set_page_renders_empty_state(
