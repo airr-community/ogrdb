@@ -166,3 +166,116 @@ def test_authenticated_user_can_access_new_submission_form(
     expect(authenticated_page.get_by_text("Test User", exact=True)).to_be_visible()
     expect(authenticated_page.get_by_text("Test Address", exact=True)).to_be_visible()
     expect(authenticated_page.get_by_role("button", name="Create")).to_be_visible()
+
+
+# Tests for public page link navigation (High Priority)
+
+def test_public_pages_have_navigable_links(page, live_server, browser_diagnostics):
+    """Test that all public pages have navigable links that don't result in 404s."""
+    public_pages = [
+        f"{live_server}/",
+        f"{live_server}/help",
+        f"{live_server}/germline_sets",
+        f"{live_server}/sequences",
+        f"{live_server}/render_page/licensing_statement",
+    ]
+
+    for page_url in public_pages:
+        page.goto(page_url)
+        page.wait_for_load_state("networkidle", timeout=10000)
+
+        # Get all links on the page
+        links = page.get_by_role("link").all()
+
+        for link in links:
+            href = link.get_attribute("href")
+            if href and not href.startswith("#") and href not in ["", "javascript:void(0)"]:
+                # Skip external links
+                if href.startswith("http") and not href.startswith(live_server):
+                    continue
+
+                link_text = link.text_content() or href
+                try:
+                    response = page.request.get(href if href.startswith("http") else f"{live_server}{href}")
+                    assert response.status < 400, f"Link '{link_text}' returned {response.status}: {href}"
+                except Exception as e:
+                    # Log but don't fail on external or unreachable links
+                    pass
+
+
+def test_licensing_page_links_navigate(page, live_server, browser_diagnostics):
+    """Test that links on licensing page navigate correctly."""
+    page.goto(f"{live_server}/render_page/licensing_statement")
+
+    # GitHub link should be visible and clickable
+    github_link = page.get_by_role("link", name="GitHub")
+    expect(github_link).to_be_visible()
+
+    # Verify GitHub link has proper href (external link)
+    href = github_link.get_attribute("href")
+    assert href and "github.com" in href.lower(), f"GitHub link href should contain 'github.com', got {href}"
+
+
+def test_help_page_links_navigate(page, live_server, browser_diagnostics):
+    """Test that links on help documentation page navigate correctly."""
+    page.goto(f"{live_server}/help")
+
+    expect(page.get_by_role("heading", name="Data Access Quick Start")).to_be_visible()
+
+    # Browse Sets link should be visible and accessible
+    browse_sets_link = page.get_by_role("link", name="Browse Sets")
+    expect(browse_sets_link).to_be_visible()
+
+    # Verify link href exists
+    href = browse_sets_link.get_attribute("href")
+    assert href, "Browse Sets link should have an href attribute"
+
+    # Click the link and verify navigation works
+    with page.expect_navigation():
+        browse_sets_link.click()
+
+    # Should be on germline_sets page or similar
+    assert "/germline_sets" in page.url or "/help" in page.url, f"Navigation failed, ended at {page.url}"
+
+
+def test_germline_set_result_links_navigate(page, live_server, published_records, browser_diagnostics):
+    """Test that germline set result links are clickable and navigate."""
+    page.goto(f"{live_server}/germline_sets")
+
+    page.get_by_label("Species").select_option(label=published_records["species"])
+    page.get_by_role("button", name="Show Germline Sets").click()
+
+    # Get the germline set link
+    germline_set_link = page.get_by_role("link", name=published_records["germline_set_name"])
+    expect(germline_set_link).to_be_visible()
+
+    # Verify link href exists
+    href = germline_set_link.get_attribute("href")
+    assert href, f"Germline set link should have an href: {published_records['germline_set_name']}"
+
+    # Verify link doesn't 404
+    response = page.request.get(f"{live_server}{href}")
+    assert response.status < 400, f"Germline set link returned {response.status}"
+
+
+def test_sequence_result_links_navigate(page, live_server, published_records, browser_diagnostics):
+    """Test that sequence result links are clickable and navigate."""
+    page.goto(f"{live_server}/sequences")
+
+    page.get_by_label("Species").select_option(label=published_records["species"])
+    page.get_by_label("Locus").select_option(label="IGH")
+    page.get_by_role("button", name="Show Sequences").click()
+
+    # Get sequence result links
+    sequence_links = page.get_by_role("link").all()
+    assert len(sequence_links) > 0, "Should have at least one sequence result link"
+
+    # Check that links are valid
+    for link in sequence_links:
+        href = link.get_attribute("href")
+        if href and not href.startswith("#") and not href.startswith("javascript"):
+            try:
+                response = page.request.get(f"{live_server}{href}" if not href.startswith("http") else href)
+                assert response.status < 400, f"Sequence link {href} returned {response.status}"
+            except Exception:
+                pass

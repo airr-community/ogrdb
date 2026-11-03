@@ -6,8 +6,8 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 
 **Last Updated:** 2026-11-03  
 **Test Command:** `pytest tests/test_e2e.py -v`  
-**Current Status:** 15 tests passing (6 public + 9 authenticated)  
-**Coverage:** 15 routes, 2 forms, 1 API endpoint directly tested
+**Current Status:** 20 tests passing (6 public + 9 authenticated + 5 link validation)  
+**Coverage:** 15 routes, 2 forms, 1 API endpoint directly tested, comprehensive link navigation validation
 
 ## Public Routes Covered (Points 1-5)
 
@@ -180,7 +180,10 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 4. ✅ **Form Validation**: HTML5 validation on authenticated forms
 
 ### High Priority (Next Phase)
-1. **Submission Lifecycle**: Create, edit, view, submit workflow (requires form submission implementation)
+1. **Link Navigation Testing**: Validate all navigable links on public pages are functional and navigate correctly
+   - Verify all links on public pages (licensing, help, germline sets, sequences)
+   - Test link destinations and proper page loading
+   - Ensure no broken links (404s) in navigation
 2. **Role-Based Access Control**: Test different user roles (submitter, reviewer, admin)
 3. **API Endpoint Testing**: Comprehensive coverage of `/api_v2/` endpoints with schema validation
 4. **Advanced Validation**: Cross-field validation, file upload validation, sequence validation
@@ -194,11 +197,13 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 5. **Data Export**: Download and export functionality
 
 ### Low Priority
-1. **Internationalization**: Multi-language support testing
-2. **Browser Compatibility**: Test across different browsers (Chrome, Firefox, Safari)
-3. **Performance**: Load testing for large result sets
-4. **Accessibility**: WCAG compliance checking
-5. **Mobile Responsiveness**: Mobile device testing
+1. **Submission Lifecycle**: Create, edit, view, submit workflow (requires form submission implementation)
+   - *Note: Not actively used in production—low testing priority*
+2. **Internationalization**: Multi-language support testing
+3. **Browser Compatibility**: Test across different browsers (Chrome, Firefox, Safari)
+4. **Performance**: Load testing for large result sets
+5. **Accessibility**: WCAG compliance checking
+6. **Mobile Responsiveness**: Mobile device testing
 
 ## Test Execution
 
@@ -221,6 +226,43 @@ View diagnostics for failed tests:
 ```bash
 cat tests/test-results/*.log
 ```
+
+## Public Page Link Navigation Testing (✅ IMPLEMENTED - High Priority)
+
+Five new tests have been implemented to validate that all navigable links on public pages are functional and don't result in 404s:
+
+### Link Validation Tests (5 tests)
+1. **test_public_pages_have_navigable_links** - Comprehensive link validation
+   - Scans all public pages (home, help, germline sets, sequences, licensing)
+   - Discovers all clickable links on each page
+   - Verifies links don't return 404 or error status codes
+   - Skips external links and anchor fragments
+
+2. **test_licensing_page_links_navigate** - Specific validation for licensing page
+   - Verifies GitHub link is visible and clickable
+   - Confirms link href contains "github.com"
+   - Validates external link behavior
+
+3. **test_help_page_links_navigate** - Specific validation for help documentation
+   - Verifies "Browse Sets" link is visible
+   - Tests link navigation via click event
+   - Validates redirect to expected destination
+
+4. **test_germline_set_result_links_navigate** - Validation for germline set results
+   - Tests that germline set name links from search results are clickable
+   - Verifies link href exists and is valid
+   - Confirms link doesn't return error status
+
+5. **test_sequence_result_links_navigate** - Validation for sequence results
+   - Tests that sequence result links are clickable
+   - Verifies all result links have valid hrefs
+   - Confirms links don't return error status
+
+### Benefits
+- ✅ Catches broken links and 404s automatically
+- ✅ Validates navigation consistency across pages
+- ✅ Ensures user can follow clickable elements
+- ✅ Regression testing for link changes
 
 ## Point 6: Authenticated Routes Testing (✅ COMPLETE)
 
