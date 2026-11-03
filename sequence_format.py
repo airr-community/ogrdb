@@ -7,7 +7,19 @@
 # Functions for formatting sequences for display
 import itertools
 from Bio.Seq import Seq
-from Bio.pairwise2 import format_alignment, align
+from Bio.Align import PairwiseAligner
+
+
+def format_alignment(s1, s2):
+    # Global alignment of s1 and s2 as three text lines (s1, match marks, s2), as formerly produced by Bio.pairwise2.
+    # Identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
+    if not s1 or not s2:
+        return ''
+    aligner = PairwiseAligner(mode='global', match_score=2, mismatch_score=-1, open_gap_score=-2, extend_gap_score=-1)
+    alignment = next(iter(aligner.align(s1, s2)))
+    a1, a2 = alignment[0], alignment[1]
+    marks = ''.join(' ' if '-' in (x, y) else '|' if x == y else '.' for x, y in zip(a1, a2))
+    return '%s\n%s\n%s\n' % (a1, marks, a2)
 
 
 def chunks(l, n):
@@ -225,14 +237,12 @@ def rem_trailing_dots(s):
 
 
 def report_dupe(s1, s1_name, s2, s2_name):
-    # identical chars 2 points, -1 for non-identical, -2 for opening a gap, -1 for extending it
-    alignments = align.globalms(s1, s2, 2, -1, -2, -1, one_alignment_only=True)
-    alignment = format_aln(format_alignment(*alignments[0]), s1_name, s2_name, 50) if len(alignments) > 0 else ''
-    return(alignment)
+    alignment = format_alignment(s1, s2)
+    return format_aln(alignment, s1_name, s2_name, 50) if alignment else ''
 
 
 def format_aln(alignment, name1, name2, width):
-    # Format an alignment returned by Bio.pairwise2: add names to start of each split line
+    # Add names to the start of each split line of an alignment returned by format_alignment
     lines = alignment.split('\n')
     ln = max(len(name1), len(name2)) + 1
     lines[0] = "%-*s" % (ln, name1) + lines[0]

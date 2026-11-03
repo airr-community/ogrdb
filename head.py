@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_admin import Admin
+from flask_admin.theme import Bootstrap4Theme
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_security import SQLAlchemyUserDatastore, Security
@@ -11,7 +12,7 @@ ncbi_api_key = None
 
 db = SQLAlchemy()
 migrate = Migrate()
-admin_obj = Admin(template_mode='bootstrap3')
+admin_obj = Admin(theme=Bootstrap4Theme())
 mail = Mail()
 security = Security()
 

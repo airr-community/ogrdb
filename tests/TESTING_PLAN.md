@@ -1,7 +1,6 @@
 # E2E testing plan
 
-The current Playwright tests are smoke tests for public content and the v2 API
-health endpoint. Expand coverage in small steps:
+The current Playwright tests cover points 1-5 outlined below.
 
 1. Inventory route decorators, methods, and authorization checks. Keep the E2E
    scope to routes and forms that do not require a password or authenticated
@@ -28,3 +27,9 @@ health endpoint. Expand coverage in small steps:
 5. Capture browser console errors and failed requests in CI artifacts when a
    browser test fails, and use accessible role- and label-based locators with
    Playwright web-first assertions throughout.
+6. Generate dummy user accounts in the test database.Add tests for password-protected 
+   routes and forms using authenticated sessions. Focus on verifying access control, 
+   form validation, and expected behavior for authorized users.
+7. Create a report COVERAGE.md summarizing test coverage, including which routes, 
+   forms, and API endpoints are and are not covered by E2E tests, and highlight 
+   any gaps or areas for future expansion.
