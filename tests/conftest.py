@@ -255,8 +255,10 @@ def authenticated_page(page, live_server, test_user):
     page.get_by_label("Password").fill(test_user["password"])
     page.get_by_role("button", name="Login").click()
     
-    # Wait for redirect to submissions page
-    page.wait_for_url(f"{live_server}/submissions")
+    # Login redirects to the index page, which needs an Admin role to render;
+    # leave the login page and go directly to the submissions page instead.
+    page.wait_for_url(lambda url: "/login" not in url)
+    page.goto(f"{live_server}/submissions")
     return page
 
 
