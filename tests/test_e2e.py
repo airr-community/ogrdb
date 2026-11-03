@@ -163,9 +163,6 @@ def test_authenticated_user_can_access_new_submission_form(
 ):
     authenticated_page.goto(f"{live_server}/new_submission")
 
-    expect(authenticated_page.get_by_label("Submitter")).to_have_value("Test User")
-    expect(authenticated_page.get_by_label("Submitter Address")).to_have_value(
-        "Test Address"
-    )
+    expect(authenticated_page.get_by_text("Test User", exact=True)).to_be_visible()
+    expect(authenticated_page.get_by_text("Test Address", exact=True)).to_be_visible()
     expect(authenticated_page.get_by_role("button", name="Create")).to_be_visible()
-
