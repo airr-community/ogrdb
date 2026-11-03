@@ -129,3 +129,43 @@ def test_registration_page_loads(page, live_server, browser_diagnostics):
     expect(page.get_by_label("Email Address")).to_be_visible()
 
 
+def test_profile_requires_authentication(page, live_server, browser_diagnostics):
+    page.goto(f"{live_server}/profile")
+
+    expect(page).to_have_url(re.compile(r".*/login(?:\?.*)?$"))
+
+
+def test_authenticated_user_can_update_profile(
+    authenticated_page, browser_diagnostics
+):
+    name_field = authenticated_page.get_by_label("Full Name")
+    address_field = authenticated_page.get_by_label("Institution and Postal Address")
+
+    expect(name_field).to_have_value("Test User")
+    expect(address_field).to_have_value("Test Address")
+    name_field.fill("")
+    expect(name_field).to_have_attribute("required", "")
+    expect(
+        name_field.evaluate("(field) => field.validity.valueMissing")
+    ).to_be(True)
+
+    name_field.fill("Updated Test User")
+    address_field.fill("Updated Test Address")
+    authenticated_page.get_by_role("button", name="Save Changes").click()
+
+    expect(authenticated_page.get_by_text("Profile updated.")).to_be_visible()
+    expect(name_field).to_have_value("Updated Test User")
+    expect(address_field).to_have_value("Updated Test Address")
+
+
+def test_authenticated_user_can_access_new_submission_form(
+    authenticated_page, live_server, browser_diagnostics
+):
+    authenticated_page.goto(f"{live_server}/new_submission")
+
+    expect(authenticated_page.get_by_label("Submitter")).to_have_value("Test User")
+    expect(authenticated_page.get_by_label("Submitter Address")).to_have_value(
+        "Test Address"
+    )
+    expect(authenticated_page.get_by_role("button", name="Create")).to_be_visible()
+
