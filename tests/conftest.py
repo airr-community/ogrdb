@@ -255,10 +255,13 @@ def authenticated_page(page, live_server, test_user):
     page.get_by_label("Password").fill(test_user["password"])
     page.get_by_role("button", name="Login").click()
     
-    # Login redirects to the index page, which needs an Admin role to render;
-    # leave the login page and go directly to the submissions page instead.
-    page.wait_for_url(lambda url: "/login" not in url)
-    page.goto(f"{live_server}/submissions")
+    # Wait for login to complete (redirect away from login page)
+    page.wait_for_url(lambda url: "/login" not in url, timeout=15000)
+    
+    # Navigate to profile page for authenticated tests
+    page.goto(f"{live_server}/profile")
+    page.wait_for_load_state("networkidle", timeout=10000)
+    
     return page
 
 

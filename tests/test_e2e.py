@@ -145,9 +145,9 @@ def test_authenticated_user_can_update_profile(
     expect(address_field).to_have_value("Test Address")
     name_field.fill("")
     expect(name_field).to_have_attribute("required", "")
-    expect(
-        name_field.evaluate("(field) => field.validity.valueMissing")
-    ).to_be(True)
+    # Check that HTML5 validation detects empty required field
+    is_invalid = name_field.evaluate("(field) => field.validity.valueMissing")
+    assert is_invalid is True, "Field should be marked as valueMissing when empty"
 
     name_field.fill("Updated Test User")
     address_field.fill("Updated Test Address")
