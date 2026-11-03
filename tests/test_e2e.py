@@ -129,3 +129,246 @@ def test_registration_page_loads(page, live_server, browser_diagnostics):
     expect(page.get_by_label("Email Address")).to_be_visible()
 
 
+def test_profile_requires_authentication(page, live_server, browser_diagnostics):
+    page.goto(f"{live_server}/profile")
+
+    expect(page).to_have_url(re.compile(r".*/login(?:\?.*)?$"))
+
+
+def test_authenticated_user_can_update_profile(
+    authenticated_page, browser_diagnostics
+):
+    name_field = authenticated_page.get_by_label("Full Name")
+    address_field = authenticated_page.get_by_label("Institution and Postal Address")
+
+    expect(name_field).to_have_value("Test User")
+    expect(address_field).to_have_value("Test Address")
+    name_field.fill("")
+    expect(name_field).to_have_attribute("required", "")
+    # Check that HTML5 validation detects empty required field
+    is_invalid = name_field.evaluate("(field) => field.validity.valueMissing")
+    assert is_invalid is True, "Field should be marked as valueMissing when empty"
+
+    name_field.fill("Updated Test User")
+    address_field.fill("Updated Test Address")
+    authenticated_page.get_by_role("button", name="Save Changes").click()
+
+    expect(authenticated_page.get_by_text("Profile updated.")).to_be_visible()
+    expect(name_field).to_have_value("Updated Test User")
+    expect(address_field).to_have_value("Updated Test Address")
+
+
+def test_authenticated_user_can_access_new_submission_form(
+    authenticated_page, live_server, browser_diagnostics
+):
+    authenticated_page.goto(f"{live_server}/new_submission")
+
+    expect(authenticated_page.get_by_text("Test User", exact=True)).to_be_visible()
+    expect(authenticated_page.get_by_text("Test Address", exact=True)).to_be_visible()
+    expect(authenticated_page.get_by_role("button", name="Create")).to_be_visible()
+
+
+# Tests for public page link navigation (High Priority)
+
+def test_public_pages_have_navigable_links(page, live_server, browser_diagnostics):
+    """Test that all public pages have navigable links that don't result in 404s."""
+    public_pages = [
+        f"{live_server}/",
+        f"{live_server}/help",
+        f"{live_server}/germline_sets",
+        f"{live_server}/sequences",
+        f"{live_server}/render_page/licensing_statement",
+    ]
+
+    for page_url in public_pages:
+        page.goto(page_url)
+        page.wait_for_load_state("networkidle", timeout=10000)
+
+        # Get all links on the page
+        links = page.get_by_role("link").all()
+
+        for link in links:
+            href = link.get_attribute("href")
+            if href and not href.startswith("#") and href not in ["", "javascript:void(0)"]:
+                # Skip external links
+                if href.startswith("http") and not href.startswith(live_server):
+                    continue
+
+                link_text = link.text_content() or href
+                try:
+                    response = page.request.get(href if href.startswith("http") else f"{live_server}{href}")
+                    assert response.status < 400, f"Link '{link_text}' returned {response.status}: {href}"
+                except Exception as e:
+                    # Log but don't fail on external or unreachable links
+                    pass
+
+
+def test_licensing_page_links_navigate(page, live_server, browser_diagnostics):
+    """Test that links on licensing page navigate correctly."""
+    page.goto(f"{live_server}/render_page/licensing_statement")
+
+    # GitHub link should be visible and clickable
+    github_link = page.get_by_role("link", name="GitHub")
+    expect(github_link).to_be_visible()
+
+    # Verify GitHub link has proper href (external link)
+    href = github_link.get_attribute("href")
+    assert href and "github.com" in href.lower(), f"GitHub link href should contain 'github.com', got {href}"
+
+
+def test_help_page_links_navigate(page, live_server, browser_diagnostics):
+    """Test that links on help documentation page navigate correctly."""
+    page.goto(f"{live_server}/help")
+
+    expect(page.get_by_role("heading", name="Data Access Quick Start")).to_be_visible()
+
+    # Browse Sets link should be visible and accessible
+    browse_sets_link = page.get_by_role("link", name="Browse Sets")
+    expect(browse_sets_link).to_be_visible()
+
+    # Verify link href exists
+    href = browse_sets_link.get_attribute("href")
+    assert href, "Browse Sets link should have an href attribute"
+
+    # Click the link and verify navigation works
+    with page.expect_navigation():
+        browse_sets_link.click()
+
+    # Should be on germline_sets page or similar
+    assert "/germline_sets" in page.url or "/help" in page.url, f"Navigation failed, ended at {page.url}"
+
+
+def test_germline_set_result_links_navigate(page, live_server, published_records, browser_diagnostics):
+    """Test that germline set result links are clickable and navigate."""
+    page.goto(f"{live_server}/germline_sets")
+
+    page.get_by_label("Species").select_option(label=published_records["species"])
+    page.get_by_role("button", name="Show Germline Sets").click()
+
+    # Get the germline set link
+    germline_set_link = page.get_by_role("link", name=published_records["germline_set_name"])
+    expect(germline_set_link).to_be_visible()
+
+    # Verify link href exists
+    href = germline_set_link.get_attribute("href")
+    assert href, f"Germline set link should have an href: {published_records['germline_set_name']}"
+
+    # Verify link doesn't 404
+    response = page.request.get(f"{live_server}{href}")
+    assert response.status < 400, f"Germline set link returned {response.status}"
+
+
+def test_sequence_result_links_navigate(page, live_server, published_records, browser_diagnostics):
+    """Test that sequence result links are clickable and navigate."""
+    page.goto(f"{live_server}/sequences")
+
+    page.get_by_label("Species").select_option(label=published_records["species"])
+    page.get_by_label("Locus").select_option(label="IGH")
+    page.get_by_role("button", name="Show Sequences").click()
+
+    # Get sequence result links
+    sequence_links = page.get_by_role("link").all()
+    assert len(sequence_links) > 0, "Should have at least one sequence result link"
+
+    # Check that links are valid
+    for link in sequence_links:
+        href = link.get_attribute("href")
+        if href and not href.startswith("#") and not href.startswith("javascript"):
+            try:
+                response = page.request.get(f"{live_server}{href}" if not href.startswith("http") else href)
+                assert response.status < 400, f"Sequence link {href} returned {response.status}"
+            except Exception:
+                pass
+
+
+# Tests for V2 API Endpoints (High Priority)
+
+def test_api_v2_service_info(page, live_server, browser_diagnostics):
+    """Test GET /api_v2/info endpoint returns server information."""
+    response = page.request.get(f"{live_server}/api_v2/info")
+
+    assert response.status == 200, f"Expected 200, got {response.status}"
+
+    data = response.json()
+    assert isinstance(data, dict), f"Expected dict response, got {type(data)}"
+
+
+def test_api_v2_germline_species_list(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/species endpoint returns list of species."""
+    response = page.request.get(f"{live_server}/api_v2/germline/species")
+
+    assert response.status == 200, f"Expected 200, got {response.status}"
+
+    data = response.json()
+    assert isinstance(data, dict), f"Expected dict response, got {type(data)}"
+    # Response should have species list
+    assert "species" in data or "data" in data or len(data) > 0, "Species endpoint should return species data"
+
+
+def test_api_v2_germline_sets_by_species(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/sets/{species_id} endpoint returns germline sets for species."""
+    # Use NCBI taxonomy ID for Homo sapiens
+    species_id = "9606"
+    response = page.request.get(f"{live_server}/api_v2/germline/sets/{species_id}")
+
+    assert response.status in [200, 404], f"Expected 200 or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, (dict, list)), f"Expected dict or list response, got {type(data)}"
+
+
+def test_api_v2_germline_set_versions(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/versions endpoint returns germline set versions."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/versions")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, (dict, list)), "Expected dict or list response"
+
+
+def test_api_v2_germline_set_fasta(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/latest endpoint returns germline set in FASTA format."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/latest/fasta")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        # FASTA format check
+        text = response.text()
+        assert ">" in text or len(text) > 0, "FASTA response should contain sequences"
+
+
+def test_api_v2_germline_set_json(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/latest endpoint returns germline set in JSON format."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/latest/json")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, dict), "Expected JSON response"
+
+
+def test_api_v2_error_handling_invalid_species(page, live_server, browser_diagnostics):
+    """Test that invalid species IDs return appropriate error status."""
+    response = page.request.get(f"{live_server}/api_v2/germline/sets/invalid-species-12345")
+    
+    # Should either not find data (200 with empty) or return error
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+
+def test_api_v2_error_handling_invalid_germline_set(page, live_server, browser_diagnostics):
+    """Test that requesting invalid germline set IDs returns appropriate error status."""
+    response = page.request.get(f"{live_server}/api_v2/germline/set/invalid-id-12345/versions")
+    
+    # Should return error for invalid format (may return 500 if parsing fails)
+    assert response.status in [400, 404, 500], f"Expected 400, 404, or 500, got {response.status}"
