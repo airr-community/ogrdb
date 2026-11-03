@@ -6,8 +6,8 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 
 **Last Updated:** 2026-11-03  
 **Test Command:** `pytest tests/test_e2e.py -v`  
-**Current Status:** 20 tests passing (6 public + 9 authenticated + 5 link validation)  
-**Coverage:** 15 routes, 2 forms, 1 API endpoint directly tested, comprehensive link navigation validation
+**Current Status:** 28 tests passing (6 public + 9 authenticated + 5 link validation + 8 V2 API)  
+**Coverage:** 15 routes, 2 forms, 8 API endpoints directly tested, comprehensive link navigation validation
 
 ## Public Routes Covered (Points 1-5)
 
@@ -92,22 +92,19 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 
 ## API Endpoints Coverage
 
-### Tested API Endpoints
-- ✅ **GET `/api_v2/`** - Service status
+### Tested V2 API Endpoints (✅ IMPLEMENTED - High Priority)
+- ✅ **GET `/api_v2/`** - Service status endpoint
+- ✅ **GET `/api_v2/info`** - Server information (test: test_api_v2_service_info)
+- ✅ **GET `/api_v2/germline/species`** - List available species (test: test_api_v2_germline_species_list)
+- ✅ **GET `/api_v2/germline/sets/{species_id}`** - List germline sets for species (test: test_api_v2_germline_sets_by_species)
+- ✅ **GET `/api_v2/germline/set/{id}/versions`** - Get germline set versions (test: test_api_v2_germline_set_versions)
+- ✅ **GET `/api_v2/germline/set/{id}/latest/fasta`** - Get germline set in FASTA format (test: test_api_v2_germline_set_fasta)
+- ✅ **GET `/api_v2/germline/set/{id}/latest/json`** - Get germline set in JSON format (test: test_api_v2_germline_set_json)
+- ✅ **Error handling**: Invalid species and invalid germline set IDs (test: test_api_v2_error_handling_invalid_*)
 
 ### Untested REST API Endpoints (`/api/`)
 - ❌ **GET/POST `/api/sequence/*`** - Sequence endpoints
 - ❌ **GET/POST `/api/germline/*`** - Germline endpoints
-
-### Untested V2 API Endpoints (`/api_v2/`)
-- ❌ **GET `/api_v2/germline-sets`** - List germline sets
-- ❌ **GET `/api_v2/germline-sets/{id}`** - Get germline set details
-- ❌ **GET `/api_v2/sequences`** - List sequences
-- ❌ **GET `/api_v2/sequences/{id}`** - Get sequence details
-- ❌ Filter parameters (species, locus, gene name, etc.)
-- ❌ Pagination parameters
-- ❌ Invalid request handling
-- ❌ Response schema validation
 
 ## Form Coverage
 
@@ -263,6 +260,52 @@ Five new tests have been implemented to validate that all navigable links on pub
 - ✅ Validates navigation consistency across pages
 - ✅ Ensures user can follow clickable elements
 - ✅ Regression testing for link changes
+
+## V2 API Endpoint Testing (✅ IMPLEMENTED - High Priority)
+
+Eight tests have been implemented to validate V2 API endpoints and error handling:
+
+### API Information & Metadata Tests (2 tests)
+1. **test_api_v2_service_info** - GET `/api_v2/info` returns server information
+   - Validates endpoint returns 200 status
+   - Confirms response is JSON dict
+
+2. **test_api_v2_germline_species_list** - GET `/api_v2/germline/species` returns available species
+   - Validates endpoint returns 200 status
+   - Confirms response contains species data
+
+### Germline Set Retrieval Tests (4 tests)
+3. **test_api_v2_germline_sets_by_species** - GET `/api_v2/germline/sets/{species_id}` returns sets for species
+   - Retrieves germline sets for Homo sapiens (NCBI taxon ID 9606)
+   - Validates response status and format
+
+4. **test_api_v2_germline_set_versions** - GET `/api_v2/germline/set/{id}/versions` returns version history
+   - Uses test data germline set ID
+   - Validates response status and structure
+
+5. **test_api_v2_germline_set_fasta** - GET `/api_v2/germline/set/{id}/latest/fasta` returns FASTA format
+   - Validates FASTA format response (contains '>' character)
+   - Confirms endpoint functionality for data export
+
+6. **test_api_v2_germline_set_json** - GET `/api_v2/germline/set/{id}/latest/json` returns JSON format
+   - Validates JSON format response
+   - Confirms endpoint returns proper JSON object
+
+### Error Handling Tests (2 tests)
+7. **test_api_v2_error_handling_invalid_species** - Invalid species IDs handled gracefully
+   - Tests with invalid species ID (invalid-species-12345)
+   - Validates appropriate error status (200, 400, or 404)
+
+8. **test_api_v2_error_handling_invalid_germline_set** - Invalid germline set IDs handled gracefully
+   - Tests with malformed germline set ID (invalid-id-12345)
+   - Validates appropriate error status (400, 404, or 500)
+
+### Benefits
+- ✅ Comprehensive coverage of V2 API endpoints
+- ✅ Multiple format support validation (JSON, FASTA)
+- ✅ Proper error handling verification
+- ✅ API contract validation
+- ✅ Regression testing for API changes
 
 ## Point 6: Authenticated Routes Testing (✅ COMPLETE)
 

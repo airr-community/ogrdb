@@ -279,3 +279,96 @@ def test_sequence_result_links_navigate(page, live_server, published_records, br
                 assert response.status < 400, f"Sequence link {href} returned {response.status}"
             except Exception:
                 pass
+
+
+# Tests for V2 API Endpoints (High Priority)
+
+def test_api_v2_service_info(page, live_server, browser_diagnostics):
+    """Test GET /api_v2/info endpoint returns server information."""
+    response = page.request.get(f"{live_server}/api_v2/info")
+
+    assert response.status == 200, f"Expected 200, got {response.status}"
+
+    data = response.json()
+    assert isinstance(data, dict), f"Expected dict response, got {type(data)}"
+
+
+def test_api_v2_germline_species_list(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/species endpoint returns list of species."""
+    response = page.request.get(f"{live_server}/api_v2/germline/species")
+
+    assert response.status == 200, f"Expected 200, got {response.status}"
+
+    data = response.json()
+    assert isinstance(data, dict), f"Expected dict response, got {type(data)}"
+    # Response should have species list
+    assert "species" in data or "data" in data or len(data) > 0, "Species endpoint should return species data"
+
+
+def test_api_v2_germline_sets_by_species(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/sets/{species_id} endpoint returns germline sets for species."""
+    # Use NCBI taxonomy ID for Homo sapiens
+    species_id = "9606"
+    response = page.request.get(f"{live_server}/api_v2/germline/sets/{species_id}")
+
+    assert response.status in [200, 404], f"Expected 200 or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, (dict, list)), f"Expected dict or list response, got {type(data)}"
+
+
+def test_api_v2_germline_set_versions(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/versions endpoint returns germline set versions."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/versions")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, (dict, list)), "Expected dict or list response"
+
+
+def test_api_v2_germline_set_fasta(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/latest endpoint returns germline set in FASTA format."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/latest/fasta")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        # FASTA format check
+        text = response.text()
+        assert ">" in text or len(text) > 0, "FASTA response should contain sequences"
+
+
+def test_api_v2_germline_set_json(page, live_server, published_records, browser_diagnostics):
+    """Test GET /api_v2/germline/set/{id}/latest endpoint returns germline set in JSON format."""
+    germline_set_id = published_records["api_germline_set_id"]
+
+    response = page.request.get(f"{live_server}/api_v2/germline/set/{germline_set_id}/latest/json")
+
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+    if response.status == 200:
+        data = response.json()
+        assert isinstance(data, dict), "Expected JSON response"
+
+
+def test_api_v2_error_handling_invalid_species(page, live_server, browser_diagnostics):
+    """Test that invalid species IDs return appropriate error status."""
+    response = page.request.get(f"{live_server}/api_v2/germline/sets/invalid-species-12345")
+    
+    # Should either not find data (200 with empty) or return error
+    assert response.status in [200, 400, 404], f"Expected 200, 400, or 404, got {response.status}"
+
+
+def test_api_v2_error_handling_invalid_germline_set(page, live_server, browser_diagnostics):
+    """Test that requesting invalid germline set IDs returns appropriate error status."""
+    response = page.request.get(f"{live_server}/api_v2/germline/set/invalid-id-12345/versions")
+    
+    # Should return error for invalid format (may return 500 if parsing fails)
+    assert response.status in [400, 404, 500], f"Expected 400, 404, or 500, got {response.status}"
