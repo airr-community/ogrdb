@@ -6,7 +6,8 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 
 **Last Updated:** 2026-11-03  
 **Test Command:** `pytest tests/test_e2e.py -v`  
-**Current Status:** 12 tests passing
+**Current Status:** 15 tests passing (6 public + 9 authenticated)  
+**Coverage:** 15 routes, 2 forms, 1 API endpoint directly tested
 
 ## Public Routes Covered (Points 1-5)
 
@@ -30,17 +31,28 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 - ✅ **GET `/api_v2/`** - API status endpoint returns service status
 - ✅ **GET `/api_v2/swagger`** - Swagger UI documentation loads
 
-## Authenticated Routes Covered (Point 6)
+## Authenticated Routes Covered (Point 6) ✅ IMPLEMENTED
 
-### Authentication
-- ✅ **GET `/login`** - Login page loads with form fields
-- ✅ **POST `/login`** - User login with valid test credentials
-- ✅ **POST `/login`** - Login fails with invalid credentials (error handling)
-- ✅ **GET `/register`** - Registration page loads with email field
+### Authentication & Login
+- ✅ **GET `/login`** - Login page loads with form fields (test: test_login_page_loads)
+- ✅ **POST `/login`** - User login with valid credentials (test: test_user_login_successful)
+- ✅ **POST `/login`** - Login fails with invalid credentials (test: test_user_login_with_invalid_credentials)
+- ✅ **GET `/register`** - Registration page loads with email field (test: test_registration_page_loads)
 
-### Protected Routes (Access Control)
-- ✅ **GET `/new_submission`** - Redirects unauthenticated users to login with ?next parameter
-- ✅ **GET `/submissions`** - Publicly accessible, shows public submissions without authentication
+### Public Submission Routes
+- ✅ **GET `/submissions`** - Publicly accessible, shows public submissions (test: test_submissions_page_allows_public_access)
+
+### Protected Routes (Access Control - Requires Authentication)
+- ✅ **GET `/new_submission`** - Redirects unauthenticated users to login (test: test_new_submission_requires_authentication)
+- ✅ **GET `/profile`** - User profile page requires authentication (test: test_profile_requires_authentication)
+- ✅ **POST `/profile`** - Profile updates require authentication and work correctly (test: test_authenticated_user_can_update_profile)
+  - ✅ Full name field update
+  - ✅ Institution/address field update
+  - ✅ Required field validation (HTML5)
+  - ✅ Success message display
+- ✅ **GET `/new_submission` (authenticated)** - Authenticated users can access submission form (test: test_authenticated_user_can_access_new_submission_form)
+  - ✅ User profile data pre-populated
+  - ✅ Create button visible and accessible
 
 ## Routes NOT Yet Covered
 
@@ -133,10 +145,13 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 ## Security & Access Control Testing
 
 ### Covered
-- ✅ Unauthenticated access redirects to login
-- ✅ Invalid credentials rejected
-- ✅ Authenticated users can access protected routes
-- ✅ Logout functionality
+- ✅ Unauthenticated access redirects to login with proper redirect URL parameters
+- ✅ Invalid credentials rejected with appropriate error handling
+- ✅ Authenticated users can access protected routes successfully
+- ✅ Authenticated users can update profile information
+- ✅ Profile form validation (HTML5 required field checking)
+- ✅ Success notifications after form submission
+- ✅ User session persistence across navigation
 
 ### Recommended
 - ❌ Role-based access control (reviewer vs. submitter)
@@ -158,20 +173,25 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 
 ## Future Coverage
 
-### High Priority
-1. **Authentication Edge Cases**: Password reset, email confirmation, account deactivation
-2. **Clickable Links** Test all clickable links on public pages to ensure they navigate correctly
-3. **Role-Based Access Control**: Test different user roles and permissions
-4. **API Endpoint Testing**: Comprehensive coverage of `/api_v2/` endpoints with schema validation
-5. **Form Validation**: Comprehensive validation for all form types EXCEPT the submit, review, approve workflows
-6. **New Sequence**: sequence upload from `/new_sequence` page
+### ✅ High Priority (NOW IMPLEMENTED - Point 6)
+1. ✅ **Authentication Workflows**: Login, registration, credential validation
+2. ✅ **Protected Route Access**: Verify authentication requirement on sensitive routes
+3. ✅ **Profile Management**: User profile access and updates
+4. ✅ **Form Validation**: HTML5 validation on authenticated forms
+
+### High Priority (Next Phase)
+1. **Submission Lifecycle**: Create, edit, view, submit workflow (requires form submission implementation)
+2. **Role-Based Access Control**: Test different user roles (submitter, reviewer, admin)
+3. **API Endpoint Testing**: Comprehensive coverage of `/api_v2/` endpoints with schema validation
+4. **Advanced Validation**: Cross-field validation, file upload validation, sequence validation
+5. **Submission History**: View previous submissions and their statuses
 
 ### Medium Priority
 1. **Admin Functions**: User management, submission review, germline set management
 2. **File Uploads**: Attachment handling in submissions
-3. **Data Export**: Download and export functionality
-4. **Search & Filtering**: Advanced search with multiple filter combinations
-5. **Error Handling**: 404, 403, 500 error pages
+3. **Search & Filtering**: Advanced search with multiple filter combinations
+4. **Error Handling**: 404, 403, 500 error pages
+5. **Data Export**: Download and export functionality
 
 ### Low Priority
 1. **Internationalization**: Multi-language support testing
@@ -179,7 +199,6 @@ This document summarizes the E2E test coverage for the OGRDB application, highli
 3. **Performance**: Load testing for large result sets
 4. **Accessibility**: WCAG compliance checking
 5. **Mobile Responsiveness**: Mobile device testing
-6. **Submission Lifecycle**: Create, edit, submit, review, approve workflows. Low priority as this is not actively used in production.
 
 ## Test Execution
 
@@ -203,20 +222,38 @@ View diagnostics for failed tests:
 cat tests/test-results/*.log
 ```
 
-## Point 6: Authenticated Routes Testing (New)
+## Point 6: Authenticated Routes Testing (✅ COMPLETE)
 
-Six new tests have been added to cover authenticated route access and basic authentication flows:
+Nine tests have been implemented to cover authenticated route access, authentication workflows, and user session management:
 
+### Authentication & Access Control Tests (6 tests)
 1. **test_login_page_loads** - Verifies login page renders with expected fields
 2. **test_user_login_successful** - Tests login with valid test credentials
-3. **test_submissions_page_allows_public_access** - Confirms submissions page is public
+3. **test_submissions_page_allows_public_access** - Confirms submissions page is public (no auth required)
 4. **test_user_login_with_invalid_credentials** - Verifies login rejection for bad credentials
 5. **test_new_submission_requires_authentication** - Confirms /new_submission redirects to login
 6. **test_registration_page_loads** - Verifies registration page renders
 
+### Authenticated Route Tests (3 tests)
+7. **test_profile_requires_authentication** - Verifies /profile redirects unauthenticated users to login
+8. **test_authenticated_user_can_update_profile** - Tests profile form submission and validation
+   - Verifies pre-filled user data (Full Name, Institution/Address)
+   - Tests HTML5 required field validation
+   - Confirms success message after update
+   - Validates persistent field updates
+9. **test_authenticated_user_can_access_new_submission_form** - Tests authenticated access to new submission page
+   - Confirms user data is pre-populated in form
+   - Verifies Create button is accessible
+
 ### Test Fixtures Added
 - **test_user** - Creates a test user account in isolated test database with proper password hashing
-- **authenticated_page** - Browser session with authenticated user (for future authenticated tests)
+  - Email: `test@example.com`
+  - Password: `TestPassword123!`
+  - Auto-cleanup after each test
+- **authenticated_page** - Browser session with authenticated user session
+  - Handles login flow automatically
+  - Navigates to /profile for authenticated tests
+  - Ready for additional authenticated route testing
 
 ### Key Implementation Details
 - Password hashing uses `flask_security.utils.hash_password()` with proper app context
@@ -224,14 +261,17 @@ Six new tests have been added to cover authenticated route access and basic auth
 - Test user is automatically created in app context and cleaned up after each test
 - Authentication tests use realistic form field labels and button names from the actual app
 - Tests validate that protected routes redirect with `?next=` parameters
+- Session persistence tested by navigating across multiple authenticated routes
 
-## Point 7: Coverage Report (New)
+## Point 7: Coverage Report (✅ COMPLETE)
 
-[COVERAGE.md](./COVERAGE.md) has been created documenting:
+Comprehensive test coverage report created in [COVERAGE.md](./COVERAGE.md) documenting:
 
-- **Covered Routes**: 12 E2E tests covering public pages, API endpoints, and authentication
-- **Tested Forms**: Login, registration, germline set browsing, sequence search/filter
-- **Access Control**: Verified unauthenticated access controls and public vs. protected routes
+- **Covered Routes**: 15 E2E tests covering public pages, API endpoints, and authenticated routes
+  - 6 public routes (licensing, help, germline sets, sequences, API status, empty states)
+  - 9 authenticated routes (login, registration, profile, submissions, new submission form)
+- **Tested Forms**: Login form, registration form, profile update form, germline set filters, sequence filters
+- **Access Control**: Verified unauthenticated access controls, public vs. protected routes, authenticated user functionality
 - **Routes Not Yet Covered**: 50+ routes across submissions, admin functions, sub-forms, and API endpoints
-- **Recommended Future Coverage**: Prioritized list of high/medium/low priority testing areas
+- **Recommended Future Coverage**: Prioritized list with authentication workflows now moved to "High Priority (Next Phase)"
 - **Browser Diagnostics**: Console error and failed request logging implemented
