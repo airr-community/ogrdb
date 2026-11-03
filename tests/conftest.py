@@ -1,4 +1,5 @@
 from contextlib import ExitStack, contextmanager
+import datetime
 import importlib
 import os
 from pathlib import Path
@@ -89,6 +90,7 @@ def live_server(test_database):
             "WORDPRESS_NEWS_URL = 'http://127.0.0.1:9/'",
             "WORDPRESS_REST = ''",
             "VDJBASE_NOVEL_FILE = 'static/docs/vdjbase.json'",
+            "SECURITY_PASSWORD_SALT = 'playwright-test-salt'",
         )
     ) + "\n"
     reference_config = "\n".join(
@@ -202,6 +204,60 @@ def published_records(live_server):
                 binomial=species_name
             ).delete()
             db.session.commit()
+
+
+@pytest.fixture
+def test_user(live_server):
+    """Create a test user for authenticated route testing."""
+    from db.userdb import User
+    from head import app, db
+    from flask_security.utils import hash_password
+    from datetime import datetime
+    import uuid
+
+    email = "test@example.com"
+    password = "TestPassword123!"
+
+    with app.app_context():
+        hashed_password = hash_password(password)
+        
+        # Check if user already exists
+        user = db.session.query(User).filter_by(email=email).one_or_none()
+        if user is None:
+            user = User(
+                email=email,
+                password=hashed_password,
+                name="Test User",
+                address="Test Address",
+                active=True,
+                confirmed_at=datetime.utcnow(),
+                accepted_terms=True,
+                fs_uniquifier=uuid.uuid4().hex,
+            )
+            db.session.add(user)
+            db.session.commit()
+
+    try:
+        yield {"email": email, "password": password}
+    finally:
+        with app.app_context():
+            user = db.session.query(User).filter_by(email=email).one_or_none()
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+
+
+@pytest.fixture
+def authenticated_page(page, live_server, test_user):
+    """Return a page fixture with authenticated user session."""
+    page.goto(f"{live_server}/login")
+    page.get_by_label("Email Address").fill(test_user["email"])
+    page.get_by_label("Password").fill(test_user["password"])
+    page.get_by_role("button", name="Login").click()
+    
+    # Wait for redirect to submissions page
+    page.wait_for_url(f"{live_server}/submissions")
+    return page
 
 
 @pytest.fixture

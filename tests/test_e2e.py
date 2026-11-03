@@ -58,3 +58,74 @@ def test_public_germline_set_page_renders_empty_state(
 
     expect(page.get_by_role("heading", name="Germline Sets")).to_be_visible()
     expect(page.get_by_label("Species")).to_be_visible()
+
+
+# Tests for authenticated routes (Point 6)
+
+def test_login_page_loads(page, live_server, browser_diagnostics):
+    """Test that the login page loads and displays the sign-in form."""
+    page.goto(f"{live_server}/login")
+
+    expect(page.get_by_role("heading", name="Login")).to_be_visible()
+    expect(page.get_by_label("Email Address")).to_be_visible()
+    expect(page.get_by_label("Password")).to_be_visible()
+    expect(page.get_by_role("button", name="Login")).to_be_visible()
+
+
+def test_user_login_successful(page, live_server, test_user, browser_diagnostics):
+    """Test successful user login and redirect to submissions page."""
+    page.goto(f"{live_server}/login")
+
+    page.get_by_label("Email Address").fill(test_user["email"])
+    page.get_by_role("textbox", name="Password").fill(test_user["password"])
+    page.get_by_role("button", name="Login").click()
+
+    # Wait for page load after login attempt
+    page.wait_for_load_state("networkidle", timeout=10000)
+    
+    # Check if login was successful (redirected from login page)
+    url = page.url
+    # Should either be on submissions or stay on login if there was an error
+    assert "/login" not in url or "/submissions" in url, f"Login failed, still on login page: {url}"
+
+
+def test_submissions_page_allows_public_access(page, live_server, browser_diagnostics):
+    """Test that /submissions page is publicly accessible and shows public submissions."""
+    page.goto(f"{live_server}/submissions")
+
+    # Should show the page with public submissions section
+    expect(page.get_by_role("heading", name="Submissions", exact=False)).to_be_visible()
+    expect(page.get_by_text("Published Submissions", exact=False)).to_be_visible()
+
+
+def test_user_login_with_invalid_credentials(page, live_server, browser_diagnostics):
+    """Test login fails with invalid credentials."""
+    page.goto(f"{live_server}/login")
+
+    page.get_by_label("Email Address").fill("invalid@example.com")
+    page.get_by_role("textbox", name="Password").fill("wrongpassword")
+    page.get_by_role("button", name="Login").click()
+
+    # Should stay on login page or show error
+    page.wait_for_load_state("networkidle", timeout=10000)
+    url = page.url
+    assert "/login" in url, f"Expected login in URL after failed auth, got {url}"
+
+
+def test_new_submission_requires_authentication(page, live_server, browser_diagnostics):
+    """Test that accessing new submission page without authentication redirects to login."""
+    page.goto(f"{live_server}/new_submission")
+
+    # Should redirect to login page. Check URL starts with login
+    url = page.url
+    assert "/login" in url, f"Expected login in URL, got {url}"
+
+
+def test_registration_page_loads(page, live_server, browser_diagnostics):
+    """Test that the registration page loads."""
+    page.goto(f"{live_server}/register")
+
+    expect(page.get_by_role("heading", name="Register", exact=False)).to_be_visible()
+    expect(page.get_by_label("Email Address")).to_be_visible()
+
+
