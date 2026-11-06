@@ -1,6 +1,121 @@
 import re
+from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup
 from playwright.sync_api import expect
+
+
+class BlankField:
+    description = ""
+    errors = ()
+
+    def __call__(self, **kwargs):
+        return Markup("")
+
+    label = __call__
+
+
+def render_table_page(template, table_name, table):
+    field = BlankField()
+    form = SimpleNamespace(
+        hidden_tag=lambda: Markup(""),
+        species=field,
+        species_subgroup=field,
+        locus=field,
+        submit=field,
+    )
+    env = Environment(
+        loader=FileSystemLoader(Path(__file__).resolve().parents[1] / "templates"),
+        autoescape=select_autoescape(["html"]),
+    )
+    env.globals.update(
+        url_for=lambda endpoint, **kwargs: "/",
+        url_for_security=lambda endpoint: "/",
+        get_flashed_messages=lambda **kwargs: [],
+        current_user=SimpleNamespace(active=False),
+    )
+    return env.get_template(template).render(
+        form=form,
+        selected_species="Homo sapiens",
+        selected_locus="IGH",
+        selected_subgroup=None,
+        tables={table_name: table},
+    )
+
+
+@pytest.mark.parametrize("has_rows", [False, True])
+def test_sequence_table_initialization(page, has_rows):
+    from db.styled_table import StyledCol, StyledTable
+
+    columns = {f"column_{i}": StyledCol(f"Column {i}") for i in range(64)}
+    table_class = type("SequenceTable", (StyledTable,), columns)
+    row = {f"column_{i}": f"value {i}" for i in range(64)}
+    table = table_class([row] if has_rows else [], table_id="affirmed")
+    html = render_table_page("sequence_list.html", "affirmed", table)
+    dialogs = []
+
+    def handle_dialog(dialog):
+        dialogs.append(dialog.message)
+        dialog.dismiss()
+
+    page.on("dialog", handle_dialog)
+    page.set_content(html, wait_until="load")
+    page.wait_for_function("() => window.jQuery && jQuery.fn.DataTable")
+    page.evaluate("() => new Promise(resolve => jQuery(resolve))")
+
+    expect(page.get_by_role("heading", name=re.compile(r"^\W*Affirmed Sequences$"))).to_be_visible()
+    expect(page.get_by_role("link", name="AA Alignment")).to_be_visible()
+    assert page.evaluate("document.querySelectorAll('#affirmed').length") == int(has_rows)
+    if has_rows:
+        assert page.evaluate("jQuery.fn.DataTable.isDataTable('#affirmed')")
+        expect(page.get_by_text("value 0", exact=True)).to_be_visible()
+        search = page.get_by_role("searchbox")
+        search.fill("not present")
+        expect(page.get_by_text("value 0", exact=True)).not_to_be_visible()
+        search.clear()
+        expect(page.get_by_text("value 0", exact=True)).to_be_visible()
+    else:
+        expect(page.get_by_text("No Items", exact=True)).to_be_visible()
+    assert not dialogs
+
+
+@pytest.mark.parametrize("has_rows", [False, True])
+def test_gene_table_initialization(page, has_rows):
+    from db.styled_table import StyledCol, StyledTable
+
+    class GeneCol(StyledCol):
+        def td_contents(self, item, attr_list):
+            return '<a href="/alignments">IGHV1</a>'
+
+    class TestGeneTable(StyledTable):
+        gene = GeneCol("Gene")
+        allele = StyledCol("Allele")
+
+    table = TestGeneTable([{"allele": "IGHV1*01"}] if has_rows else [], table_id="gene_table")
+    dialogs = []
+
+    def handle_dialog(dialog):
+        dialogs.append(dialog.message)
+        dialog.dismiss()
+
+    page.on("dialog", handle_dialog)
+    page.set_content(render_table_page("gene_table.html", "gene_table", table), wait_until="load")
+    page.wait_for_function("() => window.jQuery && jQuery.fn.DataTable")
+    page.evaluate("() => new Promise(resolve => jQuery(resolve))")
+    if has_rows:
+        assert page.evaluate("jQuery.fn.DataTable.isDataTable('#gene_table')")
+        expect(page.get_by_role("link", name="IGHV1")).to_be_visible()
+        search = page.get_by_role("searchbox")
+        search.fill("not present")
+        expect(page.get_by_role("link", name="IGHV1")).not_to_be_visible()
+        search.clear()
+        expect(page.get_by_role("link", name="IGHV1")).to_be_visible()
+    else:
+        expect(page.get_by_text("No Items", exact=True)).to_be_visible()
+    assert not dialogs
 
 
 def test_public_licensing_page_loads(page, live_server, browser_diagnostics):

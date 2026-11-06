@@ -50,19 +50,9 @@ class StyledTable(Table):
         )
 
     def __html__(self):
-        ret = super(StyledTable, self).__html__()
-        # Check if table is empty (no data rows) by looking for tbody content
-        if '<tbody>' in ret:
-            tbody_content = ret.split('<tbody>')[1].split('</tbody>')[0]
-            # If tbody is empty or only contains whitespace/no rows, add empty state
-            if not tbody_content.strip() or '<tr>' not in tbody_content:
-                tbody_start = ret.find('<tbody>')
-                if tbody_start >= 0:
-                    num_cols = ret.count('<th')
-                    if num_cols == 0:
-                        num_cols = 1
-                    empty_row = '<tr><td colspan="%d" style="text-align: center; padding: 20px; font-style: italic; color: #666;">%s</td></tr>' % (num_cols, self.empty_message)
-                    ret = ret[:tbody_start + 7] + empty_row + ret[tbody_start + 7:]
+        ret =  super(StyledTable, self).__html__()
+        if 'No Items' in ret:
+            ret = '<div class="%s">'% ' '.join(self.classes) + self.empty_message + '</div>'
         return ret
 
 class StyledCol(Col):
@@ -102,6 +92,5 @@ class HiddenCol(Col):
         #kwargs['td_html_attrs'] = {'class': 'collapsed, row-0'}
 
         super(HiddenCol, self).__init__(*args, **kwargs)
-
 
 
