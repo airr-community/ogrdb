@@ -1,6 +1,7 @@
 # OGRDB Flask stack upgrade plan
 
-Baseline (before any change): `pytest tests/ -v` in `ogre311` (Python 3.11.9) = 12 passed.
+Baseline (before any change): `pytest tests/ -v` in `ogre314` (Python 3.11.9) = 12 passed.
+This is a historical baseline; the current project testing environment is `ogre314`.
 
 This plan replaces the earlier upgrade documents, which used outdated version numbers and contained errors.
 

@@ -119,6 +119,10 @@ attach_path = app.config['ATTACHPATH'] + '/'
 # Files linked via AttachedFile model in db/attached_file_db.py
 ```
 
+## Coordinates
+Note that most coordinates in the system are 1-based and inclusive. Be careful when performing calculations or slicing sequences, as Python uses 0-based indexing.
+
+
 ## External Integrations
 
 - **IMGT**: Reference germline data import (`imgt/` directory)
@@ -145,7 +149,7 @@ attach_path = app.config['ATTACHPATH'] + '/'
 ## Cautions
 
 - jinja2 templating is used. Be careful to respect its syntax and preserve blocks. Check the block structure after changes to html files.
-- when testing code always use the conda environment ogre311
+- when testing code always use the conda environment ogre314
 - some python files are auto generated. If the first few lines of a file indicate that it is automatically generated, do not modify it.
 
 ## File Creation Standards

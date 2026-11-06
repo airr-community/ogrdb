@@ -1502,6 +1502,7 @@ def upload_evidence(form, species):
             errors.append('row %s: start and end must be integers' % row_count)
 
         if row['gene_label'] not in gene_descriptions_to_update:
+            print(row['gene_label'])
             gene_description = db.session.query(GeneDescription).filter(
                     and_(
                         GeneDescription.species == species,
@@ -2005,7 +2006,7 @@ def edit_sequence(id):
 
                 if pos < 0 and seq.sequence_type != 'C':
                     form.coding_seq_imgt.errors.append('Coding sequence not found in sequence')
-                    raise ValidationError()
+                    #raise ValidationError()
                 else:
                     seq.gene_start = pos + 1
                     seq.gene_end = pos + len(seq.coding_seq_imgt.replace('.', ''))  # i.e. start + len - 1
