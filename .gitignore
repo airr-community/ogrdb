@@ -1,5 +1,6 @@
 /.idea
 /temp
+/tests
 *.pyc
 __pycache__
 secret.cfg

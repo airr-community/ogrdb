@@ -65,15 +65,59 @@ def format_nuc_sequence(seq, width, ra=None, gapped=False):
 
     return ret
 
+
 # Format an unarranged sequence, including feature annotations for
 # whatever indeces we have
 def format_unrearranged_sequence(seq, width, gv_items):
     if seq is None or len(seq) == 0:
         return ''
 
-    possible_features = {'utr_5_prime': 'UTR', 'leader_1': 'LDR1', 'leader_2': 'LDR2', 'v_rs': 'RSS', 'd_rs_3_prime': "3' RSS", 'd_rs_5_prime': "5' RSS", 'j_rs': 'RSS',
-                         'c_exon_1': 'EXON_1', 'c_exon_2': 'EXON_2', 'c_exon_3': 'EXON_3', 'c_exon_4': 'EXON_4', 'c_exon_5': 'EXON_5', 'c_exon_6': 'EXON_6', 'c_exon_7': 'EXON_7', 'c_exon_8': 'EXON_8', 'c_exon_9': 'EXON_9',
-                         'utr_3_prime': 'UTR'}
+    downstream_features = {'utr_5_prime': 'UTR', 'leader_1': 'LDR1', 'leader_2': 'LDR2', 'd_rs_5_prime': "5' RSS", 'j_rs': 'RSS'}
+    upstream_features = {'v_rs': 'RSS', 'd_rs_3_prime': "3' RSS",'utr_3_prime': 'UTR'}
+    const_features = {'c_exon_1': 'EXON_1', 'c_exon_2': 'EXON_2', 'c_exon_3': 'EXON_3', 'c_exon_4': 'EXON_4', 'c_exon_5': 'EXON_5', 'c_exon_6': 'EXON_6', 'c_exon_7': 'EXON_7', 'c_exon_8': 'EXON_8', 'c_exon_9': 'EXON_9'}
+
+    possible_features = downstream_features | upstream_features | const_features
+
+    reverse_coords = False
+
+    # calculate downstream_range: lowest and highest start or end coord of any downstream features that are present, otherwise None
+    # calculate upstream_range: lowest and highest start or end coord of any upstream features that are present, otherwise None
+
+    downstream_coords = []
+    upstream_coords = []
+    for features, coords in (
+        (downstream_features, downstream_coords),
+        (upstream_features, upstream_coords),
+    ):
+        for feature in features:
+            start_item = gv_items.get(feature + '_start')
+            end_item = gv_items.get(feature + '_end')
+            if start_item is not None and end_item is not None:
+                start = start_item['value']
+                end = end_item['value']
+                if start and end:
+                    coords.extend((start, end))
+
+    downstream_range = (min(downstream_coords), max(downstream_coords)) if downstream_coords else None
+    upstream_range = (min(upstream_coords), max(upstream_coords)) if upstream_coords else None
+    reverse_coords = False
+
+    # Work out whether the coordinates apply to the sequence as represented or to the reverse sequence.
+    # If the downstream range starts after the upstream range, the coordinates are reversed relative to the sequence.
+    # If only one range is present, determine whether its midpoint is closer to the start or end of the sequence to infer orientation.
+
+    if downstream_range and upstream_range:
+        if downstream_range[0] > upstream_range[0]:
+            reverse_coords = True
+    elif downstream_range:
+        mid = (downstream_range[0] + downstream_range[1]) / 2
+        if mid > len(seq) / 2:
+            reverse_coords = True
+    elif upstream_range:
+        mid = (upstream_range[0] + upstream_range[1]) / 2
+        if mid < len(seq) / 2:
+            reverse_coords = True
+
     feature_string = ' ' * len(seq)
     for feature in possible_features.keys():
         if feature + '_start' in gv_items and feature + '_end' in gv_items and gv_items[feature + '_start']['value'] and gv_items[feature + '_end']['value']:
@@ -87,6 +131,23 @@ def format_unrearranged_sequence(seq, width, gv_items):
                     feature_string = feature_string[:start] + feat + feature_string[end:]
             except:
                 pass
+
+    if reverse_coords:
+        # invert the feature string, but keep text between < and > intact
+        inverted = ''
+        i = 0
+        while i < len(feature_string):
+            if feature_string[i] == '<':
+                j = i
+                while j < len(feature_string) and feature_string[j] != '>':
+                    j += 1
+                j += 1  # include '>'
+                inverted = feature_string[i:j] + inverted
+                i = j
+            else:
+                inverted = feature_string[i] + inverted
+                i += 1
+        feature_string = inverted
 
     ind = 1
     ret = ''
@@ -305,4 +366,3 @@ def popup_seq_button(sequence_id, sequence, gapped, seq, annots=[]):
          format_translated_fasta(sequence_id, gapped, 50) if gapped else ''
          )
     )
-

@@ -17,7 +17,7 @@ The separate **Schema** workflow (`.github/workflows/schema-test.yaml`) runs
 Use the project Conda environment and make sure MySQL is running and accessible:
 
 ```bash
-conda activate ogre311
+conda activate ogre314
 python -m pip install -r requirements.txt
 python -m playwright install --with-deps chromium
 pytest tests/ -v
