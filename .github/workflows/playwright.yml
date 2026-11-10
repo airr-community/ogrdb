@@ -28,8 +28,8 @@ jobs:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -41,7 +41,7 @@ jobs:
         run: pytest tests/ -v --tracing retain-on-failure --screenshot only-on-failure --output test-results
       - name: Upload browser diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-diagnostics
           path: test-results/
