@@ -45,7 +45,7 @@
                             <li><a href="{{ url_for('vdjbase_review') }}" class="dropdown-item m-item">Review VDJbase</a></li>
                         </ul>
                     </div> |
-                    <a href="{{ url_for('submissions') }}" class="m-item">Submissions</a> |
+                    <a href="/igblast" class="m-item">Annotate</a> |
                     {% if current_user.active %}
                     <a href="{{ url_for('profile') }}" class="m-item">Profile</a> |
                     {% if current_user.has_role('Admin') %}
